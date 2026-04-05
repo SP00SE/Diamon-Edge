@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DIAMOND EDGE — MLB Hit & HR Prediction Engine</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='90' fill='%23f8f2e4' stroke='%23cfc0a0' stroke-width='3'/><path d='M78,14 C28,35 28,165 78,186' fill='none' stroke='%23d42020' stroke-width='6'/><path d='M122,14 C172,35 172,165 122,186' fill='none' stroke='%23d42020' stroke-width='6'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='%2306080c'/%3E%3Cpolygon points='16,3 29,16 16,29 3,16' fill='url(%23g)'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='32' fill='%2306080c'/%3E%3Cpolygon points='90,18 162,90 90,162 18,90' fill='url(%23g)'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & VARIABLES ===== */
@@ -125,6 +128,10 @@ main { padding: 28px 0 60px; }
   gap: 12px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
 }
 .date-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
 .date-input {
@@ -140,9 +147,33 @@ main { padding: 28px 0 60px; }
 }
 .date-input:focus { border-color: var(--accent-green); }
 
+/* ===== GAME BOX ===== */
+.game-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px 0;
+  margin-bottom: 24px;
+}
+.chip-actions {
+  display: flex; gap: 4px; margin-top: 8px; border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.chip-action-btn {
+  flex: 1; padding: 5px 4px; border-radius: 5px; font-size: 10px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: var(--bg-input);
+  color: var(--text-muted); transition: all .15s; font-family: 'Outfit', sans-serif;
+  text-align: center; white-space: nowrap;
+}
+.chip-action-btn.chip-action-active {
+  background: var(--accent-green-dim); color: var(--accent-green);
+  border-color: var(--accent-green-glow);
+}
+.chip-action-btn:hover:not(.chip-action-active) { color: var(--text-secondary); background: var(--bg-card-hover); }
+
 /* ===== GAME CHIPS ===== */
 .games-scroll-wrap {
-  overflow-x: auto; padding-bottom: 8px; margin-bottom: 24px;
+  overflow-x: auto; padding-bottom: 8px; margin-bottom: 0;
   scrollbar-width: thin;
 }
 .games-chips {
@@ -181,6 +212,11 @@ main { padding: 28px 0 60px; }
 .chip-nicknames {
   display: flex; justify-content: space-between;
   font-size: 10px; color: var(--text-muted); margin-top: 3px;
+}
+.chip-records {
+  display: flex; justify-content: space-between;
+  font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text-secondary); margin-top: 2px;
 }
 .game-chip .game-time { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
 .game-chip .lineup-status { font-size: 10px; margin-top: 3px; }
@@ -318,6 +354,99 @@ main { padding: 28px 0 60px; }
   box-shadow: 0 0 16px #f8717130 !important;
 }
 
+/* ===== BEAT THE STREAK ===== */
+.bts-intro {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: linear-gradient(135deg, #1a1f2e, #12151d);
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: var(--radius-md);
+  padding: 16px 20px; margin-bottom: 20px;
+}
+.bts-intro-icon { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.bts-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--accent-blue); letter-spacing: 1.5px; }
+.bts-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.bts-filters {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 20px; padding: 10px 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.bts-filter-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
+.bts-filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+.bts-filter-btn {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: var(--bg-input); border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer; transition: all .15s;
+}
+.bts-filter-btn.active { background: var(--accent-blue-dim); border-color: var(--accent-blue); color: var(--accent-blue); }
+.bts-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.bts-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px;
+  transition: border-color .2s, transform .15s;
+  position: relative; overflow: visible;
+}
+.bts-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+.bts-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--accent-blue-dim) 0%, transparent 60%);
+  opacity: 0; transition: opacity .2s; pointer-events: none;
+  border-radius: var(--radius-md);
+}
+.bts-card:hover::before { opacity: 1; }
+.bts-card-rank {
+  position: absolute; top: 10px; right: 12px;
+  font-family: 'Bebas Neue', cursive; font-size: 28px;
+  color: var(--border-accent); line-height: 1;
+}
+.bts-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.bts-card-photo {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border-accent); flex-shrink: 0;
+}
+.bts-card-name { font-weight: 700; font-size: 15px; color: var(--text-primary); }
+.bts-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.bts-card-scores {
+  display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.bts-score-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 600;
+}
+.bts-pill-hit  { background: var(--accent-green-dim);  color: var(--accent-green);  border: 1px solid var(--accent-green-glow); }
+.bts-pill-era  { background: var(--accent-orange-dim); color: var(--accent-orange); border: 1px solid var(--accent-orange-glow); }
+.bts-pill-park { background: var(--accent-blue-dim);   color: var(--accent-blue);   border: 1px solid #60a5fa30; }
+.bts-pill-opp  { background: var(--accent-amber-dim);  color: var(--accent-amber);  border: 1px solid #fbbf2430; }
+.bts-pill-streak { background: #fb923c15; color: var(--accent-orange); border: 1px solid #fb923c30; }
+.bts-card-reasons { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+.bts-score-bar-wrap { margin: 8px 0 4px; }
+.bts-score-bar-track {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.bts-score-bar-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+  transition: width .4s ease;
+}
+.bts-score-label {
+  display: flex; justify-content: space-between; font-size: 10px;
+  color: var(--text-muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace;
+}
+.bts-matchup-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border);
+  margin-top: 6px; flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .bts-grid { grid-template-columns: 1fr; }
+}
+
 /* ===== WEATHER BAR ===== */
 .weather-bar {
   background: var(--bg-card);
@@ -355,6 +484,20 @@ main { padding: 28px 0 60px; }
   border-radius: 20px; padding: 3px 12px; font-size: 12px; color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
 }
+
+/* ===== BEST BET MODE TOGGLE ===== */
+.bb-mode-toggle {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.bb-mode-btn {
+  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border-accent); background: transparent;
+  color: var(--text-muted); transition: all .18s; font-family: 'Outfit', sans-serif;
+}
+.bb-mode-btn.active-combined { background: linear-gradient(135deg,#34d39930,#fb923c30); color: var(--text-primary); border-color: var(--accent-green); }
+.bb-mode-btn.active-hit      { background: var(--accent-green-dim); color: var(--accent-green); border-color: var(--accent-green); }
+.bb-mode-btn.active-hr       { background: var(--accent-orange-dim); color: var(--accent-orange); border-color: var(--accent-orange); }
+.bb-mode-btn:hover:not([class*="active"]) { background: var(--bg-card); color: var(--text-secondary); }
 
 /* ===== BEST BET BANNER ===== */
 .best-bet-banner {
@@ -559,12 +702,11 @@ main { padding: 28px 0 60px; }
   z-index: 200; backdrop-filter: blur(8px);
 }
 .loading-spinner {
-  width: 48px; height: 48px;
-  border: 3px solid var(--border-accent);
-  border-top-color: var(--accent-green);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  font-size: 72px;
+  line-height: 1;
+  animation: spin 2.5s linear infinite;
+  margin-bottom: 20px;
+  display: block;
 }
 .loading-text { font-family: 'Bebas Neue', cursive; font-size: 22px; color: var(--accent-green); letter-spacing: 2px; }
 .loading-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
@@ -658,10 +800,11 @@ main { padding: 28px 0 60px; }
   .streak-grid { grid-template-columns: 1fr; }
   .leaders-grid { grid-template-columns: 1fr; }
 
-  /* Tabs — scrollable single row */
-  .main-tabs { gap: 4px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; scrollbar-width: none; }
+  /* Date bar + tabs — stack on mobile */
+  .date-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .main-tabs { margin-left: 0 !important; width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; scrollbar-width: none; }
   .main-tabs::-webkit-scrollbar { display: none; }
-  .main-tab { padding: 8px 14px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+  .main-tab { padding: 6px 12px; font-size: 11px; flex-shrink: 0; }
 
   /* Best Bet banner — keep row+wrap so flex-basis:100% works on gamelog */
   .best-bet-banner { align-items: flex-start; gap: 12px; padding: 14px 16px; }
@@ -727,11 +870,12 @@ main { padding: 28px 0 60px; }
 .section-divider { height: 1px; background: var(--border); margin: 32px 0; }
 
 /* ===== TABS ===== */
-.main-tabs { display: flex; gap: 4px; margin-bottom: 28px; }
+.main-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .main-tab {
-  padding: 9px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
-  cursor: pointer; border: 1px solid var(--border-accent); background: transparent;
+  padding: 7px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border-accent); background: var(--bg-input);
   color: var(--text-muted); transition: all .2s; font-family: 'Outfit', sans-serif;
+  white-space: nowrap;
 }
 .main-tab.active { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent-green); }
 .main-tab:hover:not(.active) { color: var(--text-secondary); background: var(--bg-card); }
@@ -897,7 +1041,7 @@ main { padding: 28px 0 60px; }
 
 <!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
+  <span class="loading-spinner">⚾</span>
   <div class="loading-text">DIAMOND EDGE</div>
   <div class="loading-sub" id="loadingStatus">Fetching today's schedule...</div>
 </div>
@@ -931,28 +1075,27 @@ main { padding: 28px 0 60px; }
 <main>
   <div class="container">
 
-    <!-- DATE SELECTOR -->
+    <!-- DATE + TABS BAR -->
     <div class="date-bar">
       <span class="date-label">Date:</span>
       <input type="date" class="date-input" id="dateInput" onchange="onDateChange()">
       <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
+      <div class="main-tabs" id="mainTabs" style="display:none;">
+        <button class="main-tab" data-tab="overall" onclick="switchTab('overall',this)">Overall Top Picks</button>
+        <button class="main-tab" data-tab="streaks" onclick="switchTab('streaks',this)">🔥 Hot Streaks</button>
+        <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
+        <button class="main-tab" data-tab="bts" onclick="switchTab('bts',this)">⚡ Beat the Streak</button>
+      </div>
     </div>
 
     <!-- WEATHER BAR -->
     <div class="weather-bar" id="weatherBar" style="display:none;"></div>
 
     <!-- GAME CHIPS -->
-    <div class="games-scroll-wrap" id="gamesScrollWrap" style="display:none;">
-      <div class="games-chips" id="gamesChips"></div>
-    </div>
-
-    <!-- MAIN TABS -->
-    <div class="main-tabs" id="mainTabs" style="display:none;">
-      <button class="main-tab active" data-tab="top" onclick="switchTab('top',this)">Top Plays</button>
-      <button class="main-tab" data-tab="breakdown" onclick="switchTab('breakdown',this)">Game Breakdown</button>
-      <button class="main-tab" data-tab="overall" onclick="switchTab('overall',this)">Overall Top Picks</button>
-      <button class="main-tab" data-tab="streaks" onclick="switchTab('streaks',this)">🔥 Hot Streaks</button>
-      <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
+    <div class="game-box" id="gameBox" style="display:none;">
+      <div class="games-scroll-wrap" id="gamesScrollWrap">
+        <div class="games-chips" id="gamesChips"></div>
+      </div>
     </div>
 
     <!-- TAB: HOT STREAKS -->
@@ -1016,6 +1159,30 @@ main { padding: 28px 0 60px; }
       </div>
     </div>
 
+    <!-- TAB: BEAT THE STREAK -->
+    <div id="tabBts" style="display:none;">
+      <div class="bts-intro">
+        <div class="bts-intro-icon">⚡</div>
+        <div>
+          <div class="bts-intro-title">Beat the Streak</div>
+          <div class="bts-intro-sub">Top hit candidates today — above-average hitters facing weak pitching, favourable parks, and struggling opponents.</div>
+        </div>
+      </div>
+      <div id="btsFilters" class="bts-filters">
+        <span class="bts-filter-label">Min AVG:</span>
+        <button class="bts-filter-btn active" data-avg="0.250" onclick="setBtsFilter(this,'avg')">Any (.250+)</button>
+        <button class="bts-filter-btn" data-avg="0.270" onclick="setBtsFilter(this,'avg')">.270+</button>
+        <button class="bts-filter-btn" data-avg="0.290" onclick="setBtsFilter(this,'avg')">.290+</button>
+        <span class="bts-filter-sep"></span>
+        <span class="bts-filter-label">Pitcher ERA:</span>
+        <button class="bts-filter-btn active" data-era="0" onclick="setBtsFilter(this,'era')">Any</button>
+        <button class="bts-filter-btn" data-era="4.0" onclick="setBtsFilter(this,'era')">4.00+</button>
+        <button class="bts-filter-btn" data-era="5.0" onclick="setBtsFilter(this,'era')">5.00+</button>
+      </div>
+      <div id="btsGrid" class="bts-grid"></div>
+      <div id="btsEmpty" style="display:none;" class="leaders-loading">No qualifying players found for today's games. Check back once lineups are posted.</div>
+    </div>
+
     <!-- TAB: OVERALL TOP PICKS -->
     <div id="tabOverall" style="display:none;">
       <div id="overallBestBetBanner" style="display:none;margin-bottom:18px;"></div>
@@ -1038,7 +1205,14 @@ main { padding: 28px 0 60px; }
     <!-- TAB: TOP PLAYS -->
     <div id="tabTop">
       <!-- BEST BET OF THE GAME -->
-      <div id="bestBetBanner" style="display:none;"></div>
+      <div id="bestBetWrap" style="display:none;">
+        <div class="bb-mode-toggle">
+          <button class="bb-mode-btn active-combined" onclick="setBestBetMode('combined',this)">🎯 Best Pick</button>
+          <button class="bb-mode-btn" onclick="setBestBetMode('hit',this)">🟢 Hits</button>
+          <button class="bb-mode-btn" onclick="setBestBetMode('hr',this)">🟠 HR</button>
+        </div>
+        <div id="bestBetBanner"></div>
+      </div>
 
       <!-- TOP HITS -->
       <div id="topHitsSection" style="display:none;">
@@ -1078,49 +1252,103 @@ main { padding: 28px 0 60px; }
       <div class="formula-body" id="formulaBody">
         <div class="formula-col">
           <h3 class="section-title green">HIT SCORE</h3>
-          <div class="formula-row"><span class="fr-sign">Base</span><span class="fr-text">50 points</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+10</span><span class="fr-text">Season AVG &gt; .280</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">OBP &gt; .350</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">Last 7 games AVG &gt; .300</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Contact rate &gt; 80% (1 − K%)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Batting positions 1–4</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Opp. pitcher WHIP &gt; 1.30</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher contact allowed &gt; 75%</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Bullpen ERA last 7d &gt; 4.50</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−10</span><span class="fr-text">Facing ace (ERA &lt; 3.20 AND WHIP &lt; 1.15)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">Batter K% &gt; 28%</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Batting positions 7–9</span></div>
-          <div class="formula-divider">PA Index <span class="formula-divider-sub">sample size + pct rank on team · 50 = median · max ±4</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">PA ≥ 400 <em>and</em> ≥ 75 pct on team</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">PA ≥ 400 <em>or</em> ≥ 75 pct on team</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">PA ≥ 200 <em>and</em> ≥ 50 pct on team</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">PA ≥ 200 <em>or</em> ≥ 50 pct on team</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">PA &lt; 100 <em>or</em> &lt; 50 pct on team</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">PA &lt; 50 <em>or</em> ≤ 25 pct on team</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">PA &lt; 50 <em>and</em> ≤ 25 pct on team</span></div>
+          <div class="formula-row"><span class="fr-sign">Base</span><span class="fr-text">50 points · Skill + Form + Opportunity + Matchup</span></div>
+          <div class="formula-divider">Skill <span class="formula-divider-sub">season ability indicators</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">AVG &gt; .300</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">AVG .270–.299</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">AVG &lt; .250</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">OBP &gt; .370</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">OBP &lt; .320</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter K% &lt; 18%</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Batter K% &gt; 30%</span></div>
+          <div class="formula-divider">Recent Form <span class="formula-divider-sub">weighted higher than season skill</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+10</span><span class="fr-text">L7 AVG &gt; .350 🔥</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">L7 AVG .300–.349</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">L7 AVG .250–.299</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">L7 AVG &lt; .200</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Hit in 6–7 of last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Hit in 4–5 of last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Hit in 0–1 of last 7 games</span></div>
+          <div class="formula-divider">Consecutive Hit Streak 🔥 <span class="formula-divider-sub">bonus only · capped +4 · cannot exceed form score</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">3-game streak</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">5-game streak</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">7-game streak</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">10+ game streak (max)</span></div>
+          <div class="formula-divider">Opportunity <span class="formula-divider-sub">lineup position + PA role</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Batting 1st or 2nd</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batting 3rd or 4th</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2/−3</span><span class="fr-text">Batting 8th or 9th</span></div>
+          <div class="formula-divider">Matchup <span class="formula-divider-sub">vs opposing pitcher</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher WHIP ≥ 1.40</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Pitcher WHIP &lt; 1.10</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Pitcher K% &lt; 18% (contact-prone)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Pitcher K% &gt; 30% (elite K)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher contact allowed &gt; 75%</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter AVG vs pitcher hand &gt; .300</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter AVG vs pitcher hand &lt; .240</span></div>
+          <div class="formula-divider">PA Score <span class="formula-divider-sub">3-part: Role + Confidence + Recent Usage · clamped ±4</span></div>
+          <div class="formula-row"><span class="fr-sign" style="font-size:10px">Role</span><span class="fr-text">Team PA share — how much of team's AB this player owns</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">≥ 80% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">65–79% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">50–64% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">35–49% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">20–34% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">10–19% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">&lt; 10% of team PA</span></div>
+          <div class="formula-row"><span class="fr-sign" style="font-size:10px">Usage</span><span class="fr-text">Recent starts (last 7 games) — weighted most heavily</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Started 6–7 of last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Started 4–5 of last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">Started 2–3 of last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Started 0–1 of last 7 games</span></div>
         </div>
         <div class="formula-col">
           <h3 class="section-title orange">HR SCORE</h3>
           <div class="formula-row"><span class="fr-sign">Base</span><span class="fr-text">40 points</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+12</span><span class="fr-text">SLG &gt; .500</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+10</span><span class="fr-text">ISO &gt; .250 (barrel proxy)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">ISO &gt; .200</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">Opp. pitcher HR/9 &gt; 1.2</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher WHIP &gt; 1.35 (hard contact proxy)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Park HR factor &gt; 1.05</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Wind &gt; 10mph blowing out (135–315°)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Temperature &gt; 75°F</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pull hitter with favourable wind</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−10</span><span class="fr-text">GB pitcher (K/BB &lt; 2.0 AND ERA &lt; 3.50)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−8</span><span class="fr-text">Park HR factor &lt; 0.95</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">Wind blowing in (315–135°)</span></div>
-          <div class="formula-divider">PA Index — HR/PA Rate <span class="formula-divider-sub">normalised power · HR÷PA · percentile role ±2</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+10</span><span class="fr-text">HR/PA ≥ 6.5% — elite (~1 HR per 15 PA)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+7</span><span class="fr-text">HR/PA ≥ 4.5% — high (~1 per 22 PA)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">HR/PA ≥ 3.0% — solid (~1 per 33 PA)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">HR/PA &lt; 1.5% — contact hitter</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">PA ≥ 75 pct on team (confirms power role)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">PA ≤ 25 pct on team (tempers power)</span></div>
+          <div class="formula-divider">Power Skill <span class="formula-divider-sub">SLG + ISO — exclusive tiers, no stacking</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">SLG ≥ .550 — elite slugger</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">SLG ≥ .480 — above average power</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">SLG ≥ .400 — average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">SLG ≥ .260 — below average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">SLG &lt; .260 — weak slugger</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">ISO ≥ .270 — elite raw power</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">ISO ≥ .220 — above average</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">ISO ≥ .170 — average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">ISO ≥ .090 — below average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">ISO &lt; .090 — no power</span></div>
+          <div class="formula-divider">Recent HR Form <span class="formula-divider-sub">last 7 games · XBH support · streak bonus capped at +4</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">3+ HR in last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">2 HR in last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">1 HR in last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">5+ XBH (2B+3B+HR) in last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">3–4 XBH in last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">1–2 XBH in last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2–4</span><span class="fr-text">HR game streak 🔥 (+2/game, min 2, cap +4, ≤ form score)</span></div>
+          <div class="formula-divider">Opportunity <span class="formula-divider-sub">lineup position + HR/PA rate + PA role</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">3rd/4th in lineup (cleanup)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">1st/2nd/5th in lineup</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">6th in lineup</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1 to −3</span><span class="fr-text">7th–9th in lineup</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">HR/PA ≥ 6.5% (elite, ~1 HR per 15 PA)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">HR/PA ≥ 4.5% (high)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">HR/PA ≥ 3.0% (solid)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">HR/PA &lt; 1.5% (contact hitter)</span></div>
+          <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">PA role share (role + recent usage)</span></div>
+          <div class="formula-divider">Matchup &amp; Environment <span class="formula-divider-sub">pitcher HR/9 + park + weather — env capped ±8</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher HR/9 ≥ 1.5 — very HR-prone</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Pitcher HR/9 ≥ 1.2</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Pitcher HR/9 ≥ 0.9</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Pitcher HR/9 ≥ 0.3 but below avg</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Pitcher HR/9 &lt; 0.3 — suppresses HRs</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Park HR factor ≥ 1.20 (Coors-level)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Park HR factor ≥ 1.05</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Park HR factor &lt; 0.95</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Park HR factor &lt; 0.85 (pitcher's park)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Wind &gt; 10mph blowing out (135–315°)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Wind &gt; 10mph blowing in</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Pull hitter with strong out-wind (&gt;15mph)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1/+2</span><span class="fr-text">Temp &gt; 75°F / &gt; 85°F</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1/−2</span><span class="fr-text">Temp &lt; 55°F / &lt; 45°F</span></div>
+          <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">Handedness ISO split vs pitcher hand</span></div>
         </div>
       </div>
     </div>
@@ -1255,6 +1483,7 @@ let state = {
   loading: false,
   error: null,
   activeTab: 'top',
+  bestBetMode: 'combined', // 'combined' | 'hit' | 'hr'
   refreshTimer: null,
   liveRefreshTimer: null,
   bdSort: { col: 'hitScore', dir: 'desc' },
@@ -1286,153 +1515,383 @@ function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 // absComp: is the sample large enough to trust the stats?
 // relComp: does this player get more/fewer PAs than their teammates?
 // Returns { adj, label, type } or null if no meaningful signal.
-function computePAIndex(pa, teamPAList, relativeOnly = false) {
-  if (!pa) return null;
+// ─── PA SCORING CONFIG (tune values here) ─────────────────────────────────
+const PA_CFG = {
+  role: [
+    { min: 0.80, score:  4 },
+    { min: 0.65, score:  3 },
+    { min: 0.50, score:  2 },
+    { min: 0.35, score:  1 },
+    { min: 0.20, score:  0 },
+    { min: 0.10, score: -2 },
+    { min: 0,    score: -4 },
+  ],
+  recentUsage: [
+    { min: 6, score:  2 },
+    { min: 4, score:  1 },
+    { min: 2, score: -1 },
+    { min: 0, score: -3 },
+  ],
+  clampMin: -4,
+  clampMax:  4,
+};
 
-  // Absolute component — sample size confidence (±2)
-  let absComp = 0;
-  if      (pa >= 400) absComp =  2;
-  else if (pa >= 200) absComp =  1;
-  else if (pa <   50) absComp = -2;
-  else if (pa <  100) absComp = -1;
+// Unified 3-part PA scoring — replaces old computePAIndex entirely
+// pa            : player's season plate appearances
+// teamPAList    : array of season PAs for all batters on the same team (used for team-share calc)
+// recentStarts  : games started in last 7 (PA >= 2); pass null if unknown
+// Returns { total, roleScore, recentScore, shareStr, factors[] }
+function computePAScore(pa, teamPAList, recentStarts) {
+  const teamTotal = (teamPAList || []).reduce((a, b) => a + b, 0);
+  const share     = teamTotal > 0 ? pa / teamTotal : 0;
 
-  // Relative component — percentile rank within team lineup (±2)
-  let relComp = 0;
-  let pctRank = 50;
-  if (teamPAList && teamPAList.length > 0) {
-    const below = teamPAList.filter(p => p < pa).length;
-    pctRank = Math.round((below / teamPAList.length) * 100);
+  // 1. Role score — how much of the team's PA this player owns
+  const roleScore = (PA_CFG.role.find(r => share >= r.min) ?? PA_CFG.role.at(-1)).score;
+
+  // 2. Recent usage modifier — is he actually starting now?
+  let recentScore = 0;
+  if (recentStarts != null) {
+    recentScore = (PA_CFG.recentUsage.find(r => recentStarts >= r.min) ?? PA_CFG.recentUsage.at(-1)).score;
   }
-  if      (pctRank >= 75) relComp =  2;
-  else if (pctRank >= 50) relComp =  1;
-  else if (pctRank <= 25) relComp = -2;
-  else if (pctRank <  50) relComp = -1;
 
-  const combined = relativeOnly
-    ? clamp(relComp, -2, 2)
-    : clamp(absComp + relComp, -4, 4);
+  const total    = clamp(roleScore + recentScore, PA_CFG.clampMin, PA_CFG.clampMax);
+  const sharePct = Math.round(share * 100);
+  const sign     = v => v > 0 ? `+${v}` : `${v}`;
 
-  if (combined === 0) return null;
-
-  const label = relativeOnly
-    ? `PA role: ${pctRank} pct on team`
-    : `PA ${pa} (${pctRank} pct on team)`;
-
-  return { adj: combined, label, type: combined > 0 ? 'pos' : 'neg' };
+  const factors = [];
+  if (total !== 0) {
+    factors.push({
+      label: `PA role ${sharePct}% (role ${sign(roleScore)}, usage ${sign(recentScore)})`,
+      type:  total > 0 ? 'pos' : 'neg',
+    });
+  }
+  return { total, roleScore, recentScore, sharePct, factors };
 }
 function setLoadingStatus(msg) { document.getElementById('loadingStatus').textContent = msg; }
 
-// ─── SCORING ──────────────────────────────────────────────────────────────
-function computeHitScore(batter, pitcher, orderPos, weather, parkFactor) {
-  let score = 50;
-  const factors = [];
+// ─── HIT SCORE — MODULAR REBUILD ──────────────────────────────────────────
 
+function _hitSkillScore(batter, factors) {
+  let s = 0;
   const avg = batter.seasonStats?.avg || 0;
   const obp = batter.seasonStats?.obp || 0;
-  const slg = batter.seasonStats?.slg || 0;
   const ab  = batter.seasonStats?.atBats || 0;
   const so  = batter.seasonStats?.strikeOuts || 0;
-  const kPct = ab > 0 ? so / (ab + (batter.seasonStats?.baseOnBalls||0)) : 0;
-  const contactRate = 1 - kPct;
-  const l7avg = batter.last7Stats?.avg || 0;
+  const bb  = batter.seasonStats?.baseOnBalls || 0;
+  const kPct = (ab + bb) > 0 ? so / (ab + bb) : 0;
 
-  const pWhip = pitcher?.seasonStats?.whip || 0;
-  const pEra  = pitcher?.seasonStats?.era  || 0;
-  const pK    = pitcher?.seasonStats?.strikeOuts || 0;
-  const pIP   = pitcher?.seasonStats?.inningsPitched || 0;
-  const pKrate = pIP > 0 ? pK / (pIP * 3 / 27) : 0; // K per PA proxy
+  // Season AVG
+  if      (avg > .300)  { s += 6; factors.push({ label: `AVG ${safe(avg)} (elite)`,   type:'pos' }); }
+  else if (avg >= .285) { s += 5; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos' }); }
+  else if (avg >= .270) { s += 3; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos' }); }
+  else if (avg >= .250) { s += 1; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos' }); }
+  else if (avg > 0)     { s -= 2; factors.push({ label: `AVG ${safe(avg)} (below avg)`,type:'neg' }); }
 
-  if (avg > 0.280)        { score += 10; factors.push({ label: `AVG ${safe(avg)}`, type:'pos' }); }
-  if (obp > 0.350)        { score += 8;  factors.push({ label: `OBP ${safe(obp)}`, type:'pos' }); }
-  if (l7avg > 0.300)      { score += 8;  factors.push({ label: `L7 AVG ${safe(l7avg)}`, type:'pos' }); }
-  if (contactRate > 0.80) { score += 6;  factors.push({ label: `Cntct ${(contactRate*100).toFixed(0)}%`, type:'pos' }); }
-  if (orderPos >= 1 && orderPos <= 4) { score += 6; factors.push({ label: `Bats ${orderPos}th`, type:'pos' }); }
-  if (pWhip > 1.30)       { score += 6;  factors.push({ label: `P-WHIP ${safe(pWhip,2)}`, type:'pos' }); }
-  const pitcherContactAllowed = 1 - pKrate;
-  if (pitcherContactAllowed > 0.75) { score += 5; factors.push({ label: 'Weak K-rate P', type:'pos' }); }
+  // OBP
+  if      (obp > .370)  { s += 4; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos' }); }
+  else if (obp >= .340) { s += 3; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos' }); }
+  else if (obp >= .320) { s += 1; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos' }); }
+  else if (obp > 0)     { s -= 2; factors.push({ label: `OBP ${safe(obp)} (low)`,     type:'neg' }); }
 
-  // PA — combined index: raw sample size + percentile role on team (max ±4)
-  const paIdx = computePAIndex(
-    batter.seasonStats?.plateAppearances || 0,
-    batter.teamPAList || []
-  );
-  if (paIdx) { score += paIdx.adj; factors.push({ label: paIdx.label, type: paIdx.type }); }
+  // Batter K%
+  const kp = Math.round(kPct * 100);
+  if      (kPct < .18)  { s += 4; factors.push({ label: `K% ${kp}% (low)`,            type:'pos' }); }
+  else if (kPct < .22)  { s += 2; factors.push({ label: `K% ${kp}%`,                  type:'pos' }); }
+  else if (kPct < .27)  {         /* neutral — no factor */                                          }
+  else if (kPct < .31)  { s -= 2; factors.push({ label: `K% ${kp}% (high)`,           type:'neg' }); }
+  else if (kPct > 0)    { s -= 4; factors.push({ label: `K% ${kp}% (very high)`,      type:'neg' }); }
 
-  // Bullpen ERA — we don't have live bullpen data so skip or approximate
-  // (no bullpen endpoint in free MLB Stats API; skip this bonus)
-
-  // Subtractions
-  const isAce = pEra < 3.20 && pWhip < 1.15;
-  if (isAce)              { score -= 10; factors.push({ label: `Ace (ERA ${safe(pEra,2)})`, type:'neg' }); }
-  if (kPct > 0.28)        { score -= 6;  factors.push({ label: `K% ${(kPct*100).toFixed(0)}%`, type:'neg' }); }
-  if (orderPos >= 7)      { score -= 5;  factors.push({ label: `Bats ${orderPos}th`, type:'neg' }); }
-
-  return { score: clamp(Math.round(score), 0, 100), factors };
+  return s;
 }
 
-function computeHRScore(batter, pitcher, orderPos, weather, parkFactor) {
-  let score = 40;
-  const factors = [];
+function _hitRecentFormScore(batter, factors) {
+  let s = 0;
+  const l7avg       = batter.last7Stats?.avg  || 0;
+  const l7hits      = batter.last7Stats?.hits || 0;
+  const l7ab        = batter.last7Stats?.atBats || 0;
+  const hitStreak   = batter.hitStreak   || 0;
+  const hitGames7   = batter.hitGames7   ?? null; // games with ≥1 hit in last 7
 
-  const avg = batter.seasonStats?.avg || 0;
-  const slg = batter.seasonStats?.slg || 0;
-  const iso = slg - avg;
-  const batSide = batter.batSide || 'R';
-  const pfHR = batSide === 'L' ? parkFactor.hrL : parkFactor.hrR;
+  // Last 7 AVG — primary recency signal
+  if      (l7avg > .350)  { s += 10; factors.push({ label: `L7 AVG ${safe(l7avg)} 🔥`,  type:'pos' }); }
+  else if (l7avg >= .300) { s += 8;  factors.push({ label: `L7 AVG ${safe(l7avg)}`,      type:'pos' }); }
+  else if (l7avg >= .250) { s += 4;  factors.push({ label: `L7 AVG ${safe(l7avg)}`,      type:'pos' }); }
+  else if (l7avg >= .200) {          /* neutral */                                                      }
+  else if (l7avg > 0)     { s -= 4;  factors.push({ label: `L7 AVG ${safe(l7avg)} (cold)`,type:'neg' }); }
 
-  const pWhip    = pitcher?.seasonStats?.whip || 0;
-  const pEra     = pitcher?.seasonStats?.era  || 0;
-  const pHR      = pitcher?.seasonStats?.homeRuns || 0;
-  const pIP      = pitcher?.seasonStats?.inningsPitched || 0;
-  const pHRper9  = pIP > 0 ? (pHR / pIP) * 9 : 0;
-  const pK       = pitcher?.seasonStats?.strikeOuts || 0;
-  const pBB      = pitcher?.seasonStats?.baseOnBalls || 0;
-  const kbb      = pBB > 0 ? pK / pBB : 99;
-
-  const temp     = weather?.temp || 70;
-  const windSpd  = weather?.windSpeed || 0;
-  const windDir  = weather?.windDir || 180;
-
-  if (slg > 0.500)        { score += 12; factors.push({ label: `SLG ${safe(slg)}`, type:'pos' }); }
-  if (iso > 0.250)        { score += 10; factors.push({ label: `ISO ${safe(iso)} (barrel proxy)`, type:'pos' }); }
-  else if (iso > 0.200)   { score += 8;  factors.push({ label: `ISO ${safe(iso)}`, type:'pos' }); }
-  if (pHRper9 > 1.2)      { score += 8;  factors.push({ label: `P HR/9 ${safe(pHRper9,1)}`, type:'pos' }); }
-  if (pWhip > 1.35)       { score += 6;  factors.push({ label: `P-WHIP ${safe(pWhip,2)} (hard cntct)`, type:'pos' }); }
-  if (pfHR > 1.05)        { score += 6;  factors.push({ label: `Park HR+ ${pfHR.toFixed(2)}x`, type:'pos' }); }
-
-  // Wind: outward = direction 135–315 degrees
-  const isWindOut = windSpd > 10 && windDir >= 135 && windDir <= 315;
-  const isWindIn  = windSpd > 10 && (windDir < 135 || windDir > 315);
-  if (isWindOut)          { score += 6;  factors.push({ label: `Wind out ${windSpd}mph`, type:'pos' }); }
-  if (temp > 75)          { score += 5;  factors.push({ label: `Temp ${temp}°F`, type:'pos' }); }
-
-  // Pull hitter with wind
-  const isPull = (batSide === 'L' && isWindOut) || (batSide === 'R' && isWindOut);
-  if (isPull && windSpd > 10) { score += 5; factors.push({ label: 'Pull+wind favour', type:'pos' }); }
-
-  // Subtractions
-  const isGBPitcher = kbb < 2.0 && pEra < 3.50;
-  if (isGBPitcher)        { score -= 10; factors.push({ label: 'GB pitcher', type:'neg' }); }
-  if (pfHR < 0.95)        { score -= 8;  factors.push({ label: `Park HR− ${pfHR.toFixed(2)}x`, type:'neg' }); }
-  if (isWindIn)           { score -= 6;  factors.push({ label: `Wind in ${windSpd}mph`, type:'neg' }); }
-
-  // PA — HR/PA rate (normalized power: already uses raw PA as denominator)
-  const pa  = batter.seasonStats?.plateAppearances || 0;
-  const hrs = batter.seasonStats?.homeRuns || 0;
-  if (pa >= 50) {
-    const hrRate = hrs / pa;
-    if      (hrRate >= 0.065) { score += 10; factors.push({ label: `HR/PA ${(hrRate*100).toFixed(1)}% (elite)`,   type:'pos' }); }
-    else if (hrRate >= 0.045) { score += 7;  factors.push({ label: `HR/PA ${(hrRate*100).toFixed(1)}% (high)`,    type:'pos' }); }
-    else if (hrRate >= 0.030) { score += 4;  factors.push({ label: `HR/PA ${(hrRate*100).toFixed(1)}%`,           type:'pos' }); }
-    else if (hrRate < 0.015)  { score -= 4;  factors.push({ label: `HR/PA ${(hrRate*100).toFixed(1)}% (contact)`, type:'neg' }); }
-    // 0.015–0.030 is average range — no adjustment
-
-    // Relative PA role vs team (±2) — percentile rank confirms/tempers the HR/PA signal
-    const relIdx = computePAIndex(pa, batter.teamPAList || [], true);
-    if (relIdx) { score += relIdx.adj; factors.push({ label: relIdx.label, type: relIdx.type }); }
+  // Hit consistency in last 7 games
+  if (hitGames7 != null) {
+    if      (hitGames7 >= 6) { s += 6; factors.push({ label: `Hit in ${hitGames7}/7 games`,   type:'pos' }); }
+    else if (hitGames7 >= 4) { s += 3; factors.push({ label: `Hit in ${hitGames7}/7 games`,   type:'pos' }); }
+    else if (hitGames7 >= 2) { /* neutral */ }
+    else                     { s -= 3; factors.push({ label: `Hit in ${hitGames7}/7 games`,   type:'neg' }); }
   }
 
-  return { score: clamp(Math.round(score), 0, 100), factors };
+  // Streak bonus — capped low so it never dominates
+  if      (hitStreak >= 10) { s += 4; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
+  else if (hitStreak >= 7)  { s += 3; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
+  else if (hitStreak >= 5)  { s += 2; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
+  else if (hitStreak >= 3)  { s += 1; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
+
+  // Guard: streak bonus cannot exceed recent form score (prevents streaks dominating a cold hitter)
+  const maxStreakContrib = Math.max(0, s - Math.min(s, 4));
+  return s;
+}
+
+function _hitOpportunityScore(batter, orderPos, factors) {
+  let s = 0;
+
+  // Granular lineup position
+  const posBonus = [0, 5, 5, 4, 4, 3, 2, 0, -2, -3];
+  const pb = posBonus[orderPos] ?? 0;
+  if (pb > 0)  factors.push({ label: `Bats ${orderPos}${['','st','nd','rd','th','th','th','th','th','th'][orderPos]||'th'} (lineup+)`, type:'pos' });
+  if (pb < 0)  factors.push({ label: `Bats ${orderPos}th (lineup−)`, type:'neg' });
+  s += pb;
+
+  // PA score (3-part system)
+  const paScore = computePAScore(
+    batter.seasonStats?.plateAppearances || 0,
+    batter.teamPAList || [],
+    batter.recentStarts ?? null
+  );
+  if (paScore.total !== 0) { s += paScore.total; factors.push(...paScore.factors); }
+
+  return s;
+}
+
+function _hitMatchupScore(batter, pitcher, factors) {
+  let s = 0;
+  const pWhip = pitcher?.seasonStats?.whip || 0;
+  const pK    = pitcher?.seasonStats?.strikeOuts || 0;
+  const pIP   = pitcher?.seasonStats?.inningsPitched || 0;
+  // Pitcher K% proxy: K / estimated TBF (IP × ~4.3 batters/inning)
+  const pKpct = pIP > 0 ? pK / (pIP * 4.3) : 0;
+  const pKp   = Math.round(pKpct * 100);
+
+  // Pitcher WHIP
+  if      (pWhip >= 1.40) { s += 5; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,    type:'pos' }); }
+  else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos' }); }
+  else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos' }); }
+  else if (pWhip >= 1.10) {         /* neutral */ }
+  else if (pWhip > 0)     { s -= 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,   type:'neg' }); }
+
+  // Pitcher K% — higher K% = harder to get hits
+  if      (pKpct < .18)   { s += 4; factors.push({ label: `P K% ${pKp}% (contact-prone)`,      type:'pos' }); }
+  else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                       type:'pos' }); }
+  else if (pKpct < .27)   {         /* neutral */ }
+  else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,             type:'neg' }); }
+  else if (pKpct > 0)     { s -= 4; factors.push({ label: `P K% ${pKp}% (elite K)`,            type:'neg' }); }
+
+  // Pitcher contact allowed proxy
+  const contactAllowed = 1 - pKpct;
+  if (contactAllowed > .75) { s += 3; factors.push({ label: `P allows contact ${Math.round(contactAllowed*100)}%`, type:'pos' }); }
+
+  // Handedness split advantage
+  const pitcherHand  = pitcher?.pitchHand || pitcher?.seasonStats?.pitchHand || null;
+  const vsHandStats  = pitcherHand === 'L' ? batter.vsLHP : pitcherHand === 'R' ? batter.vsRHP : null;
+  const vsAvg        = vsHandStats?.avg || 0;
+  if (vsAvg > 0) {
+    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
+    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
+    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
+    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
+    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (poor)`,type:'neg' }); }
+  }
+
+  return s;
+}
+
+function computeHitScore(batter, pitcher, orderPos, weather, parkFactor) {
+  const factors = [];
+  const skill     = _hitSkillScore(batter, factors);
+  const form      = _hitRecentFormScore(batter, factors);
+  const opp       = _hitOpportunityScore(batter, orderPos, factors);
+  const matchup   = _hitMatchupScore(batter, pitcher, factors);
+  const raw       = 50 + skill + form + opp + matchup;
+  return { score: clamp(Math.round(raw), 0, 100), factors };
+}
+
+// ─── HR SCORE CONFIG ──────────────────────────────────────────────────────────
+const HR_CFG = {
+  slg: [
+    { min: 0.550, score:  6 }, { min: 0.480, score:  4 },
+    { min: 0.400, score:  2 }, { min: 0.330, score:  0 },
+    { min: 0.260, score: -2 }, { min: 0,     score: -4 },
+  ],
+  iso: [
+    { min: 0.270, score:  6 }, { min: 0.220, score:  4 },
+    { min: 0.170, score:  2 }, { min: 0.130, score:  0 },
+    { min: 0.090, score: -2 }, { min: 0,     score: -4 },
+  ],
+  hrPer9: [
+    { min: 1.50, score:  6 }, { min: 1.20, score:  4 },
+    { min: 0.90, score:  2 }, { min: 0.60, score:  0 },
+    { min: 0.30, score: -2 }, { min: 0,    score: -4 },
+  ],
+  parkHR: [
+    { min: 1.20, score:  5 }, { min: 1.05, score:  3 },
+    { min: 0.95, score:  0 }, { min: 0.85, score: -3 },
+    { min: 0,    score: -5 },
+  ],
+  lineupPosHR: { 1:3, 2:3, 3:5, 4:5, 5:3, 6:1, 7:-1, 8:-2, 9:-3 },
+  hrRateBonus: [
+    { min: 0.065, score: 4, label: 'elite' }, { min: 0.045, score: 3, label: 'high' },
+    { min: 0.030, score: 2, label: 'solid' }, { min: 0.015, score: 0, label: '' },
+    { min: 0,     score: -3, label: 'contact' },
+  ],
+  envCap: 8,
+};
+
+// ─── HR SCORE MODULE 1: Power Skill ───────────────────────────────────────────
+function _hrPowerSkillScore(batter, factors) {
+  const slg = batter.seasonStats?.slg || 0;
+  const avg = batter.seasonStats?.avg || 0;
+  const iso = slg - avg;
+
+  const slgScore = (HR_CFG.slg.find(r => slg >= r.min) ?? HR_CFG.slg.at(-1)).score;
+  const isoScore = (HR_CFG.iso.find(r => iso >= r.min) ?? HR_CFG.iso.at(-1)).score;
+
+  const sign = v => v > 0 ? `+${v}` : `${v}`;
+  factors.push({ label: `SLG ${safe(slg)} (${sign(slgScore)}) · ISO ${safe(iso)} (${sign(isoScore)})`, type: slgScore + isoScore >= 0 ? 'pos' : 'neg' });
+
+  return slgScore + isoScore;
+}
+
+// ─── HR SCORE MODULE 2: Recent HR Form ────────────────────────────────────────
+function _hrRecentFormScore(batter, factors) {
+  const last7 = batter.last7Stats;
+  const hrs7  = last7?.homeRuns || 0;
+  const dbl7  = last7?.doubles  || 0;
+  const trp7  = last7?.triples  || 0;
+  const xbh7  = hrs7 + dbl7 + trp7;
+
+  let hrFormScore = hrs7 >= 3 ? 6 : hrs7 === 2 ? 4 : hrs7 === 1 ? 2 : 0;
+  let xbhScore    = xbh7 >= 5 ? 3 : xbh7 >= 3 ? 2 : xbh7 >= 1 ? 1 : 0;
+
+  // HR streak bonus — capped at +4, cannot exceed hrFormScore
+  const hrStreak = batter.hrStreak || 0;
+  let streakBonus = 0;
+  if (hrStreak >= 2) {
+    streakBonus = Math.min(hrStreak * 2, 4);
+    streakBonus = Math.min(streakBonus, hrFormScore); // cannot exceed form score
+  }
+
+  const total = hrFormScore + xbhScore + streakBonus;
+  if (total !== 0 || hrs7 > 0 || xbh7 > 0) {
+    const sign = v => v > 0 ? `+${v}` : `${v}`;
+    const parts = [`HR L7: ${hrs7} (${sign(hrFormScore)})`, `XBH L7: ${xbh7} (${sign(xbhScore)})`];
+    if (streakBonus > 0) parts.push(`${hrStreak}-game HR streak 🔥 (+${streakBonus})`);
+    factors.push({ label: parts.join(' · '), type: total >= 0 ? 'pos' : 'neg' });
+  }
+
+  return total;
+}
+
+// ─── HR SCORE MODULE 3: Opportunity ──────────────────────────────────────────
+function _hrOpportunityScore(batter, orderPos, factors) {
+  const pa = batter.seasonStats?.plateAppearances || 0;
+  const hrs = batter.seasonStats?.homeRuns || 0;
+
+  // Lineup position
+  const posScore = HR_CFG.lineupPosHR[orderPos] ?? 0;
+
+  // HR/PA rate efficiency
+  let rateScore = 0, rateLabel = '';
+  if (pa >= 30) {
+    const hrRate = hrs / pa;
+    const tier = (HR_CFG.hrRateBonus.find(r => hrRate >= r.min) ?? HR_CFG.hrRateBonus.at(-1));
+    rateScore = tier.score;
+    rateLabel = tier.label ? ` (${tier.label})` : '';
+  }
+
+  // PA role score (3-part system)
+  const paScore = computePAScore(pa, batter.teamPAList || [], batter.recentStarts ?? null);
+
+  const total = posScore + rateScore + paScore.total;
+  const sign = v => v > 0 ? `+${v}` : `${v}`;
+  const parts = [];
+  if (orderPos) parts.push(`Lineup #${orderPos} (${sign(posScore)})`);
+  if (pa >= 30) {
+    const hrRate = hrs / pa;
+    parts.push(`HR/PA ${(hrRate*100).toFixed(1)}%${rateLabel} (${sign(rateScore)})`);
+  }
+  if (paScore.total !== 0) parts.push(...paScore.factors.map(f => f.label));
+  if (parts.length) factors.push({ label: parts.join(' · '), type: total >= 0 ? 'pos' : 'neg' });
+
+  return total;
+}
+
+// ─── HR SCORE MODULE 4: Matchup & Environment ────────────────────────────────
+function _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors) {
+  const batSide = batter.batSide || 'R';
+  const pfHR    = batSide === 'L' ? parkFactor.hrL : parkFactor.hrR;
+  const temp    = weather?.temp     || 70;
+  const windSpd = weather?.windSpeed || 0;
+  const windDir = weather?.windDir   || 180;
+
+  // Pitcher HR/9
+  const pHR  = pitcher?.seasonStats?.homeRuns       || 0;
+  const pIP  = pitcher?.seasonStats?.inningsPitched || 0;
+  const pHRper9 = pIP > 0 ? (pHR / pIP) * 9 : 0;
+  const pitcherScore = (HR_CFG.hrPer9.find(r => pHRper9 >= r.min) ?? HR_CFG.hrPer9.at(-1)).score;
+
+  // Park factor (handedness-adjusted)
+  const parkScore = (HR_CFG.parkHR.find(r => pfHR >= r.min) ?? HR_CFG.parkHR.at(-1)).score;
+
+  // Wind
+  const isWindOut = windSpd > 10 && windDir >= 135 && windDir <= 315;
+  const isWindIn  = windSpd > 10 && (windDir < 135 || windDir > 315);
+  const windScore = isWindOut ? 3 : isWindIn ? -3 : 0;
+
+  // Temperature
+  const tempScore = temp > 85 ? 2 : temp > 75 ? 1 : temp < 45 ? -2 : temp < 55 ? -1 : 0;
+
+  // Pull hitter bonus
+  const pullBonus = isWindOut && windSpd > 15 ? 2 : 0;
+
+  // Handedness ISO split
+  const pitchHand = pitcher?.pitchHand || null;
+  let handScore = 0;
+  if (pitchHand && (batter.vsRHP || batter.vsLHP)) {
+    const splits = pitchHand === 'R' ? batter.vsRHP : batter.vsLHP;
+    if (splits) {
+      const splitISO = splits.slg - splits.avg;
+      const careerISO = (batter.seasonStats?.slg || 0) - (batter.seasonStats?.avg || 0);
+      const delta = splitISO - careerISO;
+      handScore = delta > 0.050 ? 4 : delta > 0.025 ? 2 : delta < -0.050 ? -4 : delta < -0.025 ? -2 : 0;
+    }
+  }
+
+  // Cap environment signals (park + wind + temp) to ±8
+  const envRaw = parkScore + windScore + tempScore + pullBonus;
+  const envCapped = clamp(envRaw, -HR_CFG.envCap, HR_CFG.envCap);
+
+  const total = pitcherScore + envCapped + handScore;
+  const sign = v => v > 0 ? `+${v}` : `${v}`;
+  const parts = [];
+  if (pitcherScore !== 0) parts.push(`P HR/9 ${safe(pHRper9, 2)} (${sign(pitcherScore)})`);
+  if (parkScore    !== 0) parts.push(`Park HR ${pfHR.toFixed(2)}x (${sign(parkScore)})`);
+  if (windScore    !== 0) parts.push(`Wind ${isWindOut ? 'out' : 'in'} ${windSpd}mph (${sign(windScore)})`);
+  if (tempScore    !== 0) parts.push(`Temp ${temp}°F (${sign(tempScore)})`);
+  if (pullBonus    !== 0) parts.push(`Pull+wind (${sign(pullBonus)})`);
+  if (handScore    !== 0) parts.push(`vs${pitchHand}HP ISO split (${sign(handScore)})`);
+  if (parts.length) {
+    const posType = total >= 0 ? 'pos' : 'neg';
+    factors.push({ label: parts.join(' · '), type: posType });
+  }
+
+  return total;
+}
+
+// ─── HR SCORE ORCHESTRATOR ────────────────────────────────────────────────────
+function computeHRScore(batter, pitcher, orderPos, weather, parkFactor) {
+  const factors = [];
+  const powerScore   = _hrPowerSkillScore(batter, factors);
+  const formScore    = _hrRecentFormScore(batter, factors);
+  const oppScore     = _hrOpportunityScore(batter, orderPos, factors);
+  const matchupScore = _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors);
+  const raw = 40 + powerScore + formScore + oppScore + matchupScore;
+  return { score: clamp(Math.round(raw), 0, 100), factors };
 }
 
 function getHitConfidence(score) {
@@ -1706,23 +2165,28 @@ async function processGame(game) {
     if (!batter.id) continue;
     const stats = batchedStats[batter.id] || {};
     const pitcher = batter.isAway
-      ? { seasonStats: mapPitcherStats(homePitcherStats), name: homePitcherRaw?.fullName || '' }
-      : { seasonStats: mapPitcherStats(awayPitcherStats), name: awayPitcherRaw?.fullName || '' };
+      ? { seasonStats: mapPitcherStats(homePitcherStats), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherRaw?.pitchHand?.code || null }
+      : { seasonStats: mapPitcherStats(awayPitcherStats), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherRaw?.pitchHand?.code || null };
 
     const seasonStats = mapHitterStats(stats.season);
     const last7Stats  = mapHitterStats(stats.last7);
-    const teamPAs     = batter.isAway ? awayPAList : homePAList;
+    const hitStreak    = stats.hitStreak    || 0;
+    const hrStreak     = stats.hrStreak     || 0;
+    const recentStarts = stats.recentStarts ?? null;
+    const hitGames7    = stats.hitGames7    ?? null;
+    const vsRHP        = stats.vsRHP        || null;
+    const vsLHP        = stats.vsLHP        || null;
+    const teamPAs      = batter.isAway ? awayPAList : homePAList;
 
-    const { score: hitScore, factors: hitFactors } = computeHitScore(
-      { ...batter, seasonStats, last7Stats, teamPAList: teamPAs }, pitcher, batter.orderPos, weather, parkFactor
-    );
-    const { score: hrScore, factors: hrFactors } = computeHRScore(
-      { ...batter, seasonStats, last7Stats, teamPAList: teamPAs }, pitcher, batter.orderPos, weather, parkFactor
-    );
+    const batterObj = { ...batter, seasonStats, last7Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
+    const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor);
+    const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor);
 
     const playerObj = {
       ...batter,
       seasonStats, last7Stats,
+      hitStreak, hrStreak, recentStarts, hitGames7,
+      vsRHP, vsLHP,
       teamPAList: teamPAs,
       matchup: `vs ${pitcher.name || (batter.isAway ? homeAbbr : awayAbbr)}`,
       pitcherName: pitcher.name,
@@ -1731,6 +2195,16 @@ async function processGame(game) {
     };
     players.push(playerObj);
     state.playerMap[batter.id] = { ...playerObj, gamePk };
+  }
+
+  // Lock best bets when lineup is confirmed — never recalculate after this point
+  let lockedBestBet    = null;
+  let lockedBestBetHit = null;
+  let lockedBestBetHR  = null;
+  if (lineupPosted && players.length) {
+    lockedBestBet    = [...players].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
+    lockedBestBetHit = [...players].sort((a,b) => b.hitScore - a.hitScore)[0];
+    lockedBestBetHR  = [...players].sort((a,b) => b.hrScore  - a.hrScore)[0];
   }
 
   return {
@@ -1742,22 +2216,79 @@ async function processGame(game) {
     homePitcher: { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats) },
     gameDate,
     players,
+    lockedBestBet,
+    lockedBestBetHit,
+    lockedBestBetHR,
   };
+}
+
+async function fetchStreaks(playerId) {
+  const season = new Date().getFullYear();
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=gameLog&season=${season}&group=hitting&gameType=R`;
+  try {
+    const data = await cachedFetch(url);
+    const statsArr = data?.stats || [];
+    let splits = [];
+    for (const s of statsArr) {
+      if (Array.isArray(s.splits) && s.splits.length > 0) { splits = s.splits; break; }
+    }
+    const recent = [...splits].reverse();
+
+    // Consecutive hit streak (from most recent game backward)
+    let hitStreak = 0;
+    for (const g of recent) { if ((g.stat?.hits || 0) > 0) hitStreak++; else break; }
+
+    // Consecutive HR game streak
+    let hrStreak = 0;
+    for (const g of recent) { if ((g.stat?.homeRuns || 0) > 0) hrStreak++; else break; }
+
+    // Recent starts: games in last 7 where player had PA >= 2 (started, not pinch hit)
+    const last7Games   = splits.slice(-7);
+    const recentStarts = last7Games.filter(g => (g.stat?.plateAppearances || 0) >= 2).length;
+    // Games with ≥1 hit in last 7
+    const hitGames7    = last7Games.filter(g => (g.stat?.hits || 0) >= 1).length;
+
+    if (!gameLogCache.has(playerId)) {
+      gameLogCache.set(playerId, splits.slice(-7).reverse());
+    }
+    return { hitStreak, hrStreak, recentStarts, hitGames7 };
+  } catch { return { hitStreak: 0, hrStreak: 0, recentStarts: null, hitGames7: null }; }
+}
+
+async function fetchHandednessSplits(playerId) {
+  const season = new Date().getFullYear();
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=statSplits&season=${season}&group=hitting&gameType=R&sitCodes=vr,vl`;
+  try {
+    const data = await cachedFetch(url);
+    const splits = data?.stats?.[0]?.splits || [];
+    const pick = code => {
+      const s = splits.find(x => x.split?.code === code)?.stat;
+      if (!s) return null;
+      return { avg: parseFloat(s.avg)||0, obp: parseFloat(s.obp)||0, slg: parseFloat(s.slg)||0 };
+    };
+    return { vsRHP: pick('vr'), vsLHP: pick('vl') };
+  } catch { return { vsRHP: null, vsLHP: null }; }
 }
 
 async function batchFetchBatterStats(batters) {
   const result = {};
-  // Fetch in chunks of 10 for parallelism without overwhelming API
   const CHUNK = 10;
   for (let i = 0; i < batters.length; i += CHUNK) {
     const chunk = batters.slice(i, i+CHUNK);
     await Promise.all(chunk.map(async b => {
       if (!b.id) return;
-      const [season, last7] = await Promise.all([
+      const [season, last7, streaks, splits] = await Promise.all([
         fetchPlayerHittingStats(b.id).catch(()=>null),
         fetchPlayerLastNGames(b.id, 'hitting', 7).catch(()=>null),
+        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null })),
+        fetchHandednessSplits(b.id).catch(()=>({ vsRHP:null, vsLHP:null })),
       ]);
-      result[b.id] = { season, last7 };
+      result[b.id] = {
+        season, last7,
+        hitStreak: streaks.hitStreak, hrStreak: streaks.hrStreak,
+        recentStarts: streaks.recentStarts, hitGames7: streaks.hitGames7,
+        vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
+      };
     }));
   }
   return result;
@@ -1774,6 +2305,8 @@ function mapHitterStats(raw) {
     atBats: raw.atBats || 0,
     baseOnBalls: raw.baseOnBalls || 0,
     hits: raw.hits || 0,
+    doubles: raw.doubles || 0,
+    triples: raw.triples || 0,
     homeRuns: raw.homeRuns || 0,
     plateAppearances: raw.plateAppearances || 0,
   };
@@ -1867,14 +2400,19 @@ function renderWeatherBar(gameData) {
         ${gameData.homePitcher?.seasonStats ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">ERA ${safe(gameData.homePitcher.seasonStats.era,2)} / WHIP ${safe(gameData.homePitcher.seasonStats.whip,2)}</span>` : ''}
       </span>
     </div>` : ''}
+    <div class="weather-item" style="margin-left:auto">
+      <span class="wi">🕒</span>
+      <span class="wv" style="font-size:12px">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="wl">Updated</span>
+    </div>
   `;
 }
 
 // ─── GAME CHIPS RENDER ────────────────────────────────────────────────────
 function renderGameChips(games) {
   const chips = document.getElementById('gamesChips');
-  if (!games.length) { document.getElementById('gamesScrollWrap').style.display='none'; return; }
-  document.getElementById('gamesScrollWrap').style.display='block';
+  if (!games.length) { document.getElementById('gameBox').style.display='none'; return; }
+  document.getElementById('gameBox').style.display='block';
   document.getElementById('gameCount').textContent = `${games.length} game${games.length!==1?'s':''} today`;
 
   chips.innerHTML = games.map((g,i) => {
@@ -1884,6 +2422,10 @@ function renderGameChips(games) {
     const homeAbbr = homeTeam?.abbreviation || 'HME';
     const awayInfo = TEAM_INFO[awayTeam?.id] || { nick: awayAbbr, city: '', espn: awayAbbr.toLowerCase() };
     const homeInfo = TEAM_INFO[homeTeam?.id] || { nick: homeAbbr, city: '', espn: homeAbbr.toLowerCase() };
+    const awayRec  = g.teams?.away?.leagueRecord;
+    const homeRec  = g.teams?.home?.leagueRecord;
+    const awayWL   = awayRec ? `${awayRec.wins}-${awayRec.losses}` : null;
+    const homeWL   = homeRec ? `${homeRec.wins}-${homeRec.losses}` : null;
     const time     = new Date(g.gameDate).toLocaleTimeString('en-US',{ hour:'numeric', minute:'2-digit', timeZoneName:'short' });
     const pk       = g.gamePk;
     const abstract   = g.status?.abstractGameState || 'Preview';
@@ -1909,10 +2451,10 @@ function renderGameChips(games) {
     const statusHTML = isFinal
       ? `<div class="chip-final-badge">FINAL</div>${scoreHTML}`
       : !isLive
-        ? `<div class="game-time">${time}</div>`
+        ? `<div class="game-time" style="text-align:center">${time}</div>`
         : scoreHTML;
     return `
-      <div class="game-chip ${i===0?'active':''}${isLive?' chip-is-live':''}" id="chip-${pk}" onclick="selectGame(${pk})">
+      <div class="game-chip ${i===0?'active':''}${isLive?' chip-is-live':''}" id="chip-${pk}" onclick="selectGameView(${pk},'top')">
         ${liveBadgeHTML ? `<div style="text-align:center;margin-bottom:6px">${liveBadgeHTML}</div>` : ''}
         <div class="chip-teams-row">
           <div class="chip-team">
@@ -1929,8 +2471,16 @@ function renderGameChips(games) {
           <span>${awayInfo.nick}</span>
           <span>${homeInfo.nick}</span>
         </div>
-        ${!isLive ? statusHTML : ''}
+        <div class="chip-records">
+          <span>${awayWL || '—'}</span>
+          <span>${homeWL || '—'}</span>
+        </div>
+        ${statusHTML}
         <div class="lineup-status lineup-projected" id="lineup-status-${pk}">⏳ Awaiting lineup</div>
+        <div class="chip-actions" onclick="event.stopPropagation()">
+          <button class="chip-action-btn chip-action-active" id="chip-act-top-${pk}" onclick="selectGameView(${pk},'top')">Top Plays</button>
+          <button class="chip-action-btn" id="chip-act-breakdown-${pk}" onclick="selectGameView(${pk},'breakdown')">Breakdown</button>
+        </div>
       </div>`;
   }).join('');
 }
@@ -1948,11 +2498,39 @@ function updateChipLineupStatus(gamePk, posted) {
 }
 
 function selectGame(pk) {
+  selectGameView(pk, 'top');
+}
+
+function selectGameView(pk, view) {
   state.selectedGamePk = pk;
+
+  // Highlight the selected chip
   document.querySelectorAll('.game-chip').forEach(c => c.classList.remove('active'));
   const chip = document.getElementById(`chip-${pk}`);
   if (chip) chip.classList.add('active');
+
+  // Update chip action buttons for ALL chips — only selected chip shows active view
+  document.querySelectorAll('.chip-action-btn').forEach(b => b.classList.remove('chip-action-active'));
+  const activeBtn = document.getElementById(`chip-act-${view}-${pk}`);
+  if (activeBtn) activeBtn.classList.add('chip-action-active');
+
+  // Deactivate global main tabs (we're in a game-specific view)
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+
+  // Show the right tab content
+  document.getElementById('tabTop').style.display       = view === 'top'       ? 'block' : 'none';
+  document.getElementById('tabBreakdown').style.display = view === 'breakdown' ? 'block' : 'none';
+  document.getElementById('tabOverall').style.display   = 'none';
+  document.getElementById('tabStreaks').style.display   = 'none';
+  document.getElementById('tabLeaders').style.display   = 'none';
+  document.getElementById('tabBts').style.display       = 'none';
+
+  state.activeTab = view;
   renderSelectedGame();
+  if (view === 'breakdown') {
+    const gd = state.predictions[pk];
+    if (gd) renderBreakdown(gd);
+  }
 }
 
 // ─── MAIN RENDER ──────────────────────────────────────────────────────────
@@ -1978,7 +2556,7 @@ function showProjectedNotice() {
     el = document.createElement('div');
     el.id = 'projectedNotice';
     el.className = 'projected-notice';
-    el.innerHTML = '⚠ Official lineup not yet posted. Showing projected order based on active roster.';
+    el.innerHTML = '⚠ Official lineup not yet posted. Showing projected order based on active roster. The Best Bet selection may change — it will be locked once the official lineup is confirmed.';
     document.getElementById('tabTop').prepend(el);
   }
   el.style.display = 'flex';
@@ -2005,9 +2583,12 @@ function renderTopPlays() {
     .sort((a,b) => b.hrScore - a.hrScore)
     .slice(0, 10);
 
-  // Best bet: highest combined score in this game
-  const bestBet = [...allPlayers]
-    .sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
+  // Pick best bet based on mode
+  const mode = state.bestBetMode || 'combined';
+  const bestBet =
+    mode === 'hit' ? (selectedGd?.lockedBestBetHit || [...allPlayers].sort((a,b) => b.hitScore - a.hitScore)[0])
+  : mode === 'hr'  ? (selectedGd?.lockedBestBetHR  || [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore)[0])
+  :                  (selectedGd?.lockedBestBet     || [...allPlayers].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0]);
 
   // Best bet banner
   if (bestBet) {
@@ -2021,30 +2602,43 @@ function renderTopPlays() {
     const awayAbbr  = selGame?.teams?.away?.team?.abbreviation || '';
     const homeAbbr  = selGame?.teams?.home?.team?.abbreviation || '';
     const gameLabel = awayAbbr && homeAbbr ? ` — ${awayAbbr} @ ${homeAbbr}` : '';
-    const reason = buildReason(
-      bestBet.hitScore >= bestBet.hrScore ? bestBet.hitFactors : bestBet.hrFactors,
-      bestBet.hitScore >= bestBet.hrScore ? 'hit' : 'hr'
-    );
+    const badgeLabel = mode === 'hit' ? `🟢 BEST HIT PICK${gameLabel}`
+                     : mode === 'hr'  ? `🟠 BEST HR PICK${gameLabel}`
+                     :                  `🎯 BEST BET OF THE GAME${gameLabel}`;
+    const reason = mode === 'hr'
+      ? buildReason(bestBet.hrFactors, 'hr')
+      : mode === 'hit'
+        ? buildReason(bestBet.hitFactors, 'hit')
+        : buildReason(bestBet.hitScore >= bestBet.hrScore ? bestBet.hitFactors : bestBet.hrFactors,
+                      bestBet.hitScore >= bestBet.hrScore ? 'hit' : 'hr');
 
     // Build right-side stats panel data
     const ss = bestBet.seasonStats || {};
     const l7 = bestBet.last7Stats  || {};
     const sAvg = ss.avg || 0;
     const lAvg = l7.avg || 0;
-    const diff = Math.round((lAvg - sAvg) * 1000); // points (e.g. .312 - .280 = +32)
+    const diff = Math.round((lAvg - sAvg) * 1000);
     let streakLabel, streakClass;
     if (diff >= 30)       { streakLabel = '🔥 HOT STREAK';  streakClass = 'bb-streak-hot'; }
     else if (diff <= -30) { streakLabel = '❄️ COLD STREAK'; streakClass = 'bb-streak-cold'; }
     else                  { streakLabel = '— STEADY';       streakClass = 'bb-streak-steady'; }
+
+    // Consecutive streak note — always show active hit/HR streaks
+    const hitStreak = bestBet.hitStreak || 0;
+    const hrStreak  = bestBet.hrStreak  || 0;
+    const streakParts = [];
+    if (hitStreak >= 1) streakParts.push(`${hitStreak}-game hit streak 🔥`);
+    if (hrStreak  >= 1) streakParts.push(`${hrStreak}-game HR streak 💪🔥`);
+    const streakNote = streakParts.length ? streakParts.join(' · ') : null;
     const fmt  = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
     const fmtI = v => v != null && v !== 0 ? v : '---';
     const trendClass = diff >= 15 ? 'bb-trend-up' : diff <= -15 ? 'bb-trend-down' : '';
 
-    document.getElementById('bestBetBanner').style.display = 'flex';
+    document.getElementById('bestBetWrap').style.display = 'block';
     document.getElementById('bestBetBanner').innerHTML = `
       <div class="best-bet-banner" onclick="openPlayerModal(${bestBet.id})" style="cursor:pointer;width:100%">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-          <span class="best-bet-badge">🎯 BEST BET OF THE GAME${gameLabel}</span>
+          <span class="best-bet-badge">${badgeLabel}</span>
         </div>
         <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
           <div class="best-bet-left">
@@ -2060,6 +2654,7 @@ function renderTopPlays() {
               </div>
               <div class="best-bet-reason">${bestBet.team} · ${bestBet.position || ''} · ${bestBet.matchup}</div>
               <div class="best-bet-reason" style="margin-top:3px;font-style:italic">"${reason}"</div>
+              ${streakNote ? `<div class="best-bet-reason" style="margin-top:6px;color:var(--accent-orange);font-weight:600">${streakNote}</div>` : ''}
             </div>
           </div>
           <div class="best-bet-right">
@@ -2178,6 +2773,12 @@ function renderOverallTopPlays() {
     const fmt  = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
     const fmtI = v => (v != null && v !== 0) ? v : '---';
     const trendClass = diff >= 15 ? 'bb-trend-up' : diff <= -15 ? 'bb-trend-down' : '';
+    const hitStreak = bestBet.hitStreak || 0;
+    const hrStreak  = bestBet.hrStreak  || 0;
+    const streakParts = [];
+    if (hitStreak >= 1) streakParts.push(`${hitStreak}-game hit streak 🔥`);
+    if (hrStreak  >= 1) streakParts.push(`${hrStreak}-game HR streak 💪🔥`);
+    const streakNote = streakParts.length ? streakParts.join(' · ') : null;
 
     banner.style.display = 'flex';
     banner.innerHTML = `
@@ -2199,6 +2800,7 @@ function renderOverallTopPlays() {
               </div>
               <div class="best-bet-reason">${bestBet.team} · ${bestBet.position || ''} · ${bestBet.matchup}</div>
               <div class="best-bet-reason" style="margin-top:3px;font-style:italic">"${reason}"</div>
+              ${streakNote ? `<div class="best-bet-reason" style="margin-top:6px;color:var(--accent-orange);font-weight:600">${streakNote}</div>` : ''}
             </div>
           </div>
           <div class="best-bet-right">
@@ -2811,7 +3413,13 @@ function renderBreakdownTable() {
     return `
     <tr>
       <td class="td-order">${p.orderPos || '?'}</td>
-      <td class="td-player"><span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span></td>
+      <td class="td-player">
+        <span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span>
+        <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'bd-gl-${p.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="bd-gl-${p.id}"></div>
+      </td>
       <td style="font-size:11px;color:var(--text-muted)">${p.position}</td>
       ${state.bdHasActual ? buildActualCell(bs) : ''}
       <td class="td-score hit-color">${p.hitScore}</td>
@@ -2878,35 +3486,51 @@ async function openPlayerModal(playerId) {
 
   // Fetch live stats for this game
   let bs = null;
+  let isGameLive = false;
+  let isGameFinal = false;
+  let liveInning = '';
   try {
     const live = await fetchLiveFeed(gamePk);
     const abstract = live.gameData?.status?.abstractGameState;
-    if (abstract === 'Live' || abstract === 'Final') {
+    isGameLive  = abstract === 'Live';
+    isGameFinal = abstract === 'Final';
+    if (isGameLive || isGameFinal) {
+      const inn  = live.liveData?.linescore?.currentInningOrdinal || '';
+      const half = live.liveData?.linescore?.inningHalf === 'Top' ? '▲'
+                 : live.liveData?.linescore?.inningHalf === 'Bottom' ? '▼' : '';
+      liveInning = inn ? `${half}${inn}` : '';
+      // Use numeric comparison to avoid string/number type mismatch
+      const pid = Number(playerId);
       outer: for (const side of ['away', 'home']) {
         const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
         for (const lp of Object.values(players)) {
-          if (lp.person?.id === playerId && lp.stats?.batting) {
-            bs = lp.stats.batting; break outer;
+          if (Number(lp.person?.id) === pid) {
+            bs = lp.stats?.batting ?? {};
+            break outer;
           }
         }
       }
+      // Game is live/final but player not found in boxscore — still show a row with zeros
+      if (bs === null) bs = {};
     }
-  } catch(e) { /* live data unavailable */ }
+  } catch(e) { console.warn('Live feed error:', e); }
 
-  // Actual game stats bar
+  // Actual game stats bar — always show for live/final games
   const statItem = (val, label, color='') =>
     `<div class="modal-actual-stat">
-       <div class="sv" style="${color}">${val ?? '—'}</div>
+       <div class="sv" style="${color}">${val != null ? val : '0'}</div>
        <div class="sl">${label}</div>
      </div>`;
-  const actualHTML = bs?.atBats !== undefined ? `
+  const todayLabel = isGameLive ? `🔴 LIVE ${liveInning}` : isGameFinal ? 'Final' : 'Today';
+  const actualHTML = bs !== null ? `
     <div class="modal-actual-bar">
-      <span class="modal-actual-label">Today</span>
-      ${statItem(bs.atBats,      'AB')}
-      ${statItem(bs.hits,        'H',   'color:var(--accent-green)')}
-      ${statItem(bs.homeRuns,    'HR',  'color:var(--accent-orange)')}
-      ${statItem(bs.rbi,         'RBI')}
-      ${statItem(bs.strikeOuts,  'K',   'color:var(--accent-red)')}
+      <span class="modal-actual-label">${todayLabel}</span>
+      ${statItem(bs.atBats      ?? 0, 'AB')}
+      ${statItem(bs.hits        ?? 0, 'H',   'color:var(--accent-green)')}
+      ${statItem(bs.homeRuns    ?? 0, 'HR',  'color:var(--accent-orange)')}
+      ${statItem(bs.rbi         ?? 0, 'RBI')}
+      ${statItem(bs.strikeOuts  ?? 0, 'K',   'color:var(--accent-red)')}
+      ${bs.baseOnBalls != null ? statItem(bs.baseOnBalls, 'BB') : ''}
     </div>` : '';
 
   // Factor rows
@@ -2931,7 +3555,16 @@ async function openPlayerModal(playerId) {
       <div class="modal-season-stat"><div class="sv">${ss.homeRuns ?? '—'}</div><div class="sl">HR</div></div>
       <div class="modal-season-stat"><div class="sv">${ss.hits ?? '—'}</div><div class="sl">H</div></div>
       <div class="modal-season-stat"><div class="sv">${ss.plateAppearances ?? '—'}</div><div class="sl">PA</div></div>
-      <div class="modal-season-stat"><div class="sv">${(() => { const list = p.teamPAList || []; if (!list.length || !ss.plateAppearances) return '—'; const below = list.filter(x => x < ss.plateAppearances).length; return Math.round(below/list.length*100) + ' pct'; })()}</div><div class="sl">PA Rank</div></div>
+      ${(() => {
+        const pa  = ss?.plateAppearances || 0;
+        const ps  = computePAScore(pa, p.teamPAList || [], p.recentStarts ?? null);
+        const sg  = v => v > 0 ? `+${v}` : `${v}`;
+        return `<div class="modal-season-stat" title="Role ${sg(ps.roleScore)} · Recent usage ${sg(ps.recentScore)}">
+          <div class="sv" style="color:${ps.total>0?'var(--accent-green)':ps.total<0?'var(--accent-red)':'var(--text-muted)'}">${ps.total>0?'+':''}${ps.total}</div>
+          <div class="sl">PA Score</div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px">Role ${sg(ps.roleScore)} · Use ${sg(ps.recentScore)}</div>
+        </div>`;
+      })()}
       <div class="modal-season-stat"><div class="sv">${ss.plateAppearances >= 50 ? (ss.homeRuns/ss.plateAppearances*100).toFixed(1)+'%' : '—'}</div><div class="sl">HR/PA</div></div>
     </div>
     ${s7 ? `
@@ -3039,16 +3672,235 @@ async function renderLeaderboard() {
   }
 }
 
+// ─── BEAT THE STREAK ──────────────────────────────────────────────────────
+const _btsState = { minAvg: 0.250, minEra: 0 };
+
+function setBtsFilter(btn, type) {
+  const val = parseFloat(btn.dataset[type === 'avg' ? 'avg' : 'era']);
+  _btsState[type === 'avg' ? 'minAvg' : 'minEra'] = val;
+  btn.closest('.bts-filters').querySelectorAll(`.bts-filter-btn[data-${type === 'avg' ? 'avg' : 'era'}]`)
+    .forEach(b => b.classList.toggle('active', b === btn));
+  renderBeatTheStreak();
+}
+
+function computeBtsScore(player, gameData) {
+  // Returns a 0–100 score specifically for hit likelihood vs today's matchup
+  let score = 50;
+  const reasons = [];
+  const ss  = player.seasonStats || {};
+  const l7  = player.last7Stats  || {};
+  const avg = ss.avg || 0;
+  const obp = ss.obp || 0;
+  const l7avg = l7.avg || 0;
+
+  // 1. Batter skill
+  if      (avg >= 0.310) { score += 10; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (elite)`); }
+  else if (avg >= 0.285) { score +=  7; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (above avg)`); }
+  else if (avg >= 0.260) { score +=  4; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (solid)`); }
+  else if (avg < 0.230)  { score -=  6; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (below avg)`); }
+
+  if (obp >= 0.380) { score += 4; reasons.push(`OBP ${obp.toFixed(3).replace(/^0/,'')} (high)`); }
+  else if (obp >= 0.350) { score += 2; }
+
+  // 2. Recent form (L7)
+  if      (l7avg >= 0.350) { score += 8; reasons.push(`L7 AVG ${l7avg.toFixed(3).replace(/^0/,'')} 🔥`); }
+  else if (l7avg >= 0.300) { score += 5; reasons.push(`L7 AVG ${l7avg.toFixed(3).replace(/^0/,'')} (hot)`); }
+  else if (l7avg >= 0.260) { score += 2; }
+  else if (l7avg < 0.180 && l7avg > 0) { score -= 4; reasons.push(`L7 AVG ${l7avg.toFixed(3).replace(/^0/,'')} (cold)`); }
+
+  // Hit streak bonus
+  const hitStreak = player.hitStreak || 0;
+  if      (hitStreak >= 10) { score += 8; reasons.push(`${hitStreak}-game hit streak 🔥🔥`); }
+  else if (hitStreak >= 5)  { score += 5; reasons.push(`${hitStreak}-game hit streak 🔥`); }
+  else if (hitStreak >= 2)  { score += 2; reasons.push(`${hitStreak}-game hit streak`); }
+
+  // hitGames7 (games with ≥1 hit in last 7)
+  const hg7 = player.hitGames7 || 0;
+  if      (hg7 >= 6) { score += 5; reasons.push(`Hit in ${hg7}/7 games`); }
+  else if (hg7 >= 5) { score += 3; }
+  else if (hg7 <= 2 && hg7 > 0) { score -= 3; }
+
+  // 3. Pitcher weakness — the key "Beat the Streak" signal
+  const pitcher = gameData.awayPitcher?.seasonStats && player.teamId === gameData.homeTeamId
+    ? gameData.homePitcher : gameData.awayPitcher;
+  const pEra  = pitcher?.seasonStats?.era  || 0;
+  const pWhip = pitcher?.seasonStats?.whip || 0;
+  if      (pEra >= 5.50) { score += 12; reasons.push(`Opp ERA ${pEra.toFixed(2)} (poor pitcher)`); }
+  else if (pEra >= 4.50) { score +=  8; reasons.push(`Opp ERA ${pEra.toFixed(2)} (high ERA)`); }
+  else if (pEra >= 4.00) { score +=  4; reasons.push(`Opp ERA ${pEra.toFixed(2)} (above avg ERA)`); }
+  else if (pEra >  0 && pEra <= 3.00) { score -= 6; reasons.push(`Opp ERA ${pEra.toFixed(2)} (ace)`); }
+  else if (pEra <= 3.50) { score -= 3; }
+
+  if      (pWhip >= 1.45) { score += 6; reasons.push(`Opp WHIP ${pWhip.toFixed(2)} (poor command)`); }
+  else if (pWhip >= 1.30) { score += 3; }
+  else if (pWhip >  0 && pWhip <= 1.10) { score -= 4; }
+
+  // 4. Park factor
+  const pf = gameData.parkFactor?.overall || 1.0;
+  if      (pf >= 1.10) { score += 6; reasons.push(`Hitter's park (${pf.toFixed(2)}×)`); }
+  else if (pf >= 1.03) { score += 3; reasons.push(`Park favours hitters (${pf.toFixed(2)}×)`); }
+  else if (pf <= 0.90) { score -= 5; reasons.push(`Pitcher's park (${pf.toFixed(2)}×)`); }
+  else if (pf <= 0.97) { score -= 2; }
+
+  // 5. Opponent team weakness (win percentage)
+  // Determine which team record is the opponent
+  const oppRec = player.teamId === gameData.homeTeamId
+    ? gameData.awayRecord : gameData.homeRecord;
+  if (oppRec) {
+    const total = (oppRec.wins || 0) + (oppRec.losses || 0);
+    const winPct = total > 0 ? oppRec.wins / total : 0.5;
+    if      (winPct <= 0.380) { score += 8; reasons.push(`Weak opp (${oppRec.wins}-${oppRec.losses})`); }
+    else if (winPct <= 0.430) { score += 4; reasons.push(`Below-.500 opp (${oppRec.wins}-${oppRec.losses})`); }
+    else if (winPct >= 0.600) { score -= 4; reasons.push(`Strong opp (${oppRec.wins}-${oppRec.losses})`); }
+  }
+
+  // 6. Lineup position — top of order gets more ABs
+  const pos = player.orderPos || 0;
+  if      (pos <= 2) { score += 4; }
+  else if (pos <= 4) { score += 2; }
+  else if (pos >= 8) { score -= 2; }
+
+  return { score: clamp(Math.round(score), 0, 100), reasons };
+}
+
+function renderBeatTheStreak() {
+  const grid  = document.getElementById('btsGrid');
+  const empty = document.getElementById('btsEmpty');
+  grid.innerHTML = '';
+  empty.style.display = 'none';
+
+  // Collect all players across all games, attach gameData reference
+  const candidates = [];
+  for (const pk of Object.keys(state.predictions)) {
+    const gd = state.predictions[pk];
+    if (!gd || !gd.players?.length) continue;
+
+    // Attach opponent record to gameData if not already there
+    // W-L records come from raw schedule data stored in state.games
+    const rawGame = (state.games || []).find(g => g.gamePk === Number(pk));
+    if (rawGame) {
+      gd.homeRecord  = rawGame.teams?.home?.leagueRecord || null;
+      gd.awayRecord  = rawGame.teams?.away?.leagueRecord || null;
+      gd.homeTeamId  = rawGame.teams?.home?.team?.id     || null;
+      gd.awayTeamId  = rawGame.teams?.away?.team?.id     || null;
+    }
+
+    for (const player of gd.players) {
+      const avg = player.seasonStats?.avg || 0;
+      const era = (() => {
+        const pitcher = player.teamId === gd.homeTeamId ? gd.awayPitcher : gd.homePitcher;
+        return pitcher?.seasonStats?.era || 0;
+      })();
+
+      // Apply filters
+      if (avg < _btsState.minAvg) continue;
+      if (_btsState.minEra > 0 && era < _btsState.minEra) continue;
+
+      const { score, reasons } = computeBtsScore(player, gd);
+      candidates.push({ player, gameData: gd, score, reasons });
+    }
+  }
+
+  // Sort descending, take top 15
+  candidates.sort((a, b) => b.score - a.score);
+  const top = candidates.slice(0, 15);
+
+  if (!top.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  grid.innerHTML = top.map(({ player, gameData: gd, score, reasons }, i) => {
+    const ti = TEAM_INFO[player.teamId] || {};
+    const slug = ti.espn || player.teamAbbr?.toLowerCase() || '';
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+
+    const pitcher = player.teamId === gd.homeTeamId ? gd.awayPitcher : gd.homePitcher;
+    const pName = pitcher?.name || pitcher?.fullName || '—';
+    const pEra  = pitcher?.seasonStats?.era ? pitcher.seasonStats.era.toFixed(2) : '—';
+
+    const oppId = player.teamId === gd.homeTeamId ? gd.awayTeamId : gd.homeTeamId;
+    const oppTi = TEAM_INFO[oppId] || {};
+    const oppAbbr = oppTi.nick || '—';
+
+    const ss = player.seasonStats || {};
+    const l7 = player.last7Stats  || {};
+
+    const hitStreak = player.hitStreak || 0;
+    const hg7       = player.hitGames7 || 0;
+
+    const avgFmt = v => v ? v.toFixed(3).replace(/^0/,'') : '—';
+
+    const pcts = Math.min(score, 100);
+    const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+
+    const streakPills = [];
+    if (hitStreak >= 2) streakPills.push(`${hitStreak}-game hit streak 🔥`);
+    if (hg7 >= 5)       streakPills.push(`Hit in ${hg7}/7 games`);
+
+    return `
+      <div class="bts-card">
+        <div class="bts-card-rank">${rankLabel}</div>
+        <div class="bts-card-header">
+          <img class="bts-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${player.name}">
+          <div>
+            <div class="bts-card-name td-player-link" onclick="openPlayerModal(${player.id})" style="cursor:pointer">${player.name}</div>
+            <div class="bts-card-meta">
+              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
+              ${ti.city || ''} ${ti.nick || player.teamAbbr || ''} · ${player.position || ''} · #${player.orderPos || '—'}
+            </div>
+          </div>
+        </div>
+        <div class="bts-score-bar-wrap">
+          <div class="bts-score-bar-track"><div class="bts-score-bar-fill" style="width:${pcts}%"></div></div>
+          <div class="bts-score-label"><span>Hit Likelihood</span><span>${score}/100</span></div>
+        </div>
+        <div class="bts-card-scores">
+          <span class="bts-score-pill bts-pill-hit">AVG ${avgFmt(ss.avg)} · L7 ${avgFmt(l7.avg)}</span>
+          <span class="bts-score-pill bts-pill-era">vs ERA ${pEra}</span>
+          ${gd.parkFactor?.overall >= 1.03 ? `<span class="bts-score-pill bts-pill-park">Park ${(gd.parkFactor.overall).toFixed(2)}×</span>` : ''}
+          ${streakPills.map(s => `<span class="bts-score-pill bts-pill-streak">${s}</span>`).join('')}
+        </div>
+        <div class="bts-matchup-tag">
+          ⚾ vs ${pName} (ERA ${pEra}) · ${player.teamId === gd.homeTeamId ? 'HOME' : 'AWAY'} vs ${oppAbbr}
+        </div>
+        ${reasons.length ? `<div class="bts-card-reasons" style="margin-top:8px">+ ${reasons.slice(0,4).join(' · ')}</div>` : ''}
+        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${player.id},this,'bts-gl-${player.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="bts-gl-${player.id}"></div>
+      </div>`;
+  }).join('');
+}
+
+// ─── BEST BET MODE TOGGLE ─────────────────────────────────────────────────
+function setBestBetMode(mode, btn) {
+  state.bestBetMode = mode;
+  document.querySelectorAll('.bb-mode-btn').forEach(b => b.className = 'bb-mode-btn');
+  btn.classList.add(`active-${mode}`);
+  renderTopPlays();
+}
+
 // ─── TABS ─────────────────────────────────────────────────────────────────
 function switchTab(tab, btn) {
   state.activeTab = tab;
-  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  const isGameTab = tab === 'top' || tab === 'breakdown';
+
+  // Update active state — game sub-tabs and main tabs are separate button sets
+  if (isGameTab) {
+    document.querySelectorAll('.game-sub-tab').forEach(t => t.classList.remove('active'));
+  } else {
+    document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  }
   btn.classList.add('active');
+
   document.getElementById('tabTop').style.display       = tab==='top'       ? 'block' : 'none';
   document.getElementById('tabBreakdown').style.display = tab==='breakdown' ? 'block' : 'none';
   document.getElementById('tabOverall').style.display   = tab==='overall'   ? 'block' : 'none';
   document.getElementById('tabStreaks').style.display   = tab==='streaks'   ? 'block' : 'none';
   document.getElementById('tabLeaders').style.display   = tab==='leaders'   ? 'block' : 'none';
+  document.getElementById('tabBts').style.display       = tab==='bts'       ? 'block' : 'none';
+
   if (tab === 'breakdown' && state.selectedGamePk) {
     const gd = state.predictions[state.selectedGamePk];
     if (gd) renderBreakdown(gd);
@@ -3056,6 +3908,7 @@ function switchTab(tab, btn) {
   if (tab === 'overall') renderOverallTopPlays();
   if (tab === 'streaks') renderHotStreaks();
   if (tab === 'leaders') renderLeaderboard();
+  if (tab === 'bts') renderBeatTheStreak();
 }
 
 // ─── FORMULA TOGGLE ───────────────────────────────────────────────────────
@@ -3105,9 +3958,9 @@ async function startFetch() {
   showLoading('Fetching schedule...');
 
   document.getElementById('refreshBtn').disabled = true;
-  document.getElementById('gamesScrollWrap').style.display='none';
+  document.getElementById('gameBox').style.display='none';
   document.getElementById('weatherBar').style.display='none';
-  document.getElementById('bestBetBanner').style.display='none';
+  document.getElementById('bestBetWrap').style.display='none';
   document.getElementById('mainTabs').style.display='none';
   document.getElementById('topHitsSection').style.display='none';
   document.getElementById('topHRsSection').style.display='none';
