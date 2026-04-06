@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DIAMOND EDGE — MLB Hit & HR Prediction Engine</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='90' fill='%23f8f2e4' stroke='%23cfc0a0' stroke-width='3'/><path d='M78,14 C28,35 28,165 78,186' fill='none' stroke='%23d42020' stroke-width='6'/><path d='M122,14 C172,35 172,165 122,186' fill='none' stroke='%23d42020' stroke-width='6'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='%2306080c'/%3E%3Cpolygon points='16,3 29,16 16,29 3,16' fill='url(%23g)'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='32' fill='%2306080c'/%3E%3Cpolygon points='90,18 162,90 90,162 18,90' fill='url(%23g)'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & VARIABLES ===== */
@@ -125,6 +128,7 @@ main { padding: 28px 0 60px; }
   gap: 12px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+  position: relative;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -225,8 +229,30 @@ main { padding: 28px 0 60px; }
   animation: pulse 1.2s ease infinite;
 }
 .chip-final-badge {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
-  color: var(--text-muted); letter-spacing: 1.5px; margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  color: var(--accent-red); letter-spacing: 1.5px; text-align: center;
+}
+.chip-delayed-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  color: var(--accent-amber); letter-spacing: 1px; margin-top: 3px;
+}
+.bb-achieve-row {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+}
+.bb-achieve-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  padding: 2px 10px; border-radius: 20px; letter-spacing: 0.5px;
+}
+.bb-achieve-yes {
+  background: #22c55e20; color: #22c55e; border: 1px solid #22c55e40;
+}
+.bb-achieve-no {
+  background: #f8717120; color: var(--accent-red); border: 1px solid #f8717140;
+}
+.bb-live-pip {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  color: var(--accent-red); letter-spacing: 1px;
+  animation: pulse 1.2s ease infinite;
 }
 .chip-score {
   display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -351,6 +377,72 @@ main { padding: 28px 0 60px; }
   box-shadow: 0 0 16px #f8717130 !important;
 }
 
+/* ===== DAILY DOMINATORS ===== */
+.dom-intro {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: linear-gradient(135deg, #1a1a2e, #12151d);
+  border: 1px solid #f9731630; border-radius: var(--radius-md);
+  padding: 16px 20px; margin-bottom: 20px;
+}
+.dom-intro-icon { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.dom-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: #f97316; letter-spacing: 1.5px; }
+.dom-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.dom-cat-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  padding: 10px 14px; background: var(--bg-input);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+}
+.dom-cat-btn {
+  padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer; transition: all .15s;
+}
+.dom-cat-btn.active { background: #f9731620; border-color: #f97316; color: #f97316; }
+.dom-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.dom-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px;
+  transition: border-color .2s, transform .2s; position: relative;
+}
+.dom-card:hover { border-color: #f97316; transform: translateY(-2px); }
+.dom-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #f9731608 0%, transparent 60%);
+  border-radius: var(--radius-md); pointer-events: none;
+}
+.dom-card-rank {
+  position: absolute; top: 10px; right: 12px;
+  font-size: 18px; line-height: 1;
+}
+.dom-card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+}
+.dom-card-photo {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #f9731640; flex-shrink: 0;
+  background: var(--bg-input);
+}
+.dom-card-name {
+  font-weight: 700; font-size: 15px; color: var(--text-primary);
+}
+.dom-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dom-card-game { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.dom-stat-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.dom-stat-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.dom-pill-hits { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e40; }
+.dom-pill-hr   { background: #f9731620; color: #f97316; border: 1px solid #f9731640; }
+.dom-pill-tb   { background: #a78bfa20; color: #a78bfa; border: 1px solid #a78bfa40; }
+.dom-pill-rbi  { background: #38bdf820; color: #38bdf8; border: 1px solid #38bdf840; }
+.dom-pill-avg  { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+
 /* ===== BEAT THE STREAK ===== */
 .bts-intro {
   display: flex; align-items: flex-start; gap: 14px;
@@ -385,13 +477,14 @@ main { padding: 28px 0 60px; }
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-md); padding: 16px;
   transition: border-color .2s, transform .15s;
-  cursor: pointer; position: relative; overflow: hidden;
+  position: relative; overflow: visible;
 }
 .bts-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
 .bts-card::before {
   content: ''; position: absolute; inset: 0;
   background: linear-gradient(135deg, var(--accent-blue-dim) 0%, transparent 60%);
   opacity: 0; transition: opacity .2s; pointer-events: none;
+  border-radius: var(--radius-md);
 }
 .bts-card:hover::before { opacity: 1; }
 .bts-card-rank {
@@ -480,6 +573,20 @@ main { padding: 28px 0 60px; }
   border-radius: 20px; padding: 3px 12px; font-size: 12px; color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;
 }
+
+/* ===== BEST BET MODE TOGGLE ===== */
+.bb-mode-toggle {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.bb-mode-btn {
+  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border-accent); background: transparent;
+  color: var(--text-muted); transition: all .18s; font-family: 'Outfit', sans-serif;
+}
+.bb-mode-btn.active-combined { background: linear-gradient(135deg,#34d39930,#fb923c30); color: var(--text-primary); border-color: var(--accent-green); }
+.bb-mode-btn.active-hit      { background: var(--accent-green-dim); color: var(--accent-green); border-color: var(--accent-green); }
+.bb-mode-btn.active-hr       { background: var(--accent-orange-dim); color: var(--accent-orange); border-color: var(--accent-orange); }
+.bb-mode-btn:hover:not([class*="active"]) { background: var(--bg-card); color: var(--text-secondary); }
 
 /* ===== BEST BET BANNER ===== */
 .best-bet-banner {
@@ -684,12 +791,11 @@ main { padding: 28px 0 60px; }
   z-index: 200; backdrop-filter: blur(8px);
 }
 .loading-spinner {
-  width: 48px; height: 48px;
-  border: 3px solid var(--border-accent);
-  border-top-color: var(--accent-green);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  font-size: 72px;
+  line-height: 1;
+  animation: spin 2.5s linear infinite;
+  margin-bottom: 20px;
+  display: block;
 }
 .loading-text { font-family: 'Bebas Neue', cursive; font-size: 22px; color: var(--accent-green); letter-spacing: 2px; }
 .loading-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
@@ -851,6 +957,19 @@ main { padding: 28px 0 60px; }
 
 /* ===== SECTION DIVIDER ===== */
 .section-divider { height: 1px; background: var(--border); margin: 32px 0; }
+
+.toggle-switch {
+  width: 34px; height: 18px; border-radius: 9px;
+  background: var(--border-accent); position: relative;
+  transition: background .2s; flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: ''; position: absolute; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--text-muted);
+  top: 3px; left: 3px; transition: all .2s;
+}
+.customize-toggle.on .toggle-switch { background: var(--accent-green); }
+.customize-toggle.on .toggle-switch::after { left: 19px; background: #fff; }
 
 /* ===== TABS ===== */
 .main-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -1024,7 +1143,7 @@ main { padding: 28px 0 60px; }
 
 <!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner"></div>
+  <span class="loading-spinner">⚾</span>
   <div class="loading-text">DIAMOND EDGE</div>
   <div class="loading-sub" id="loadingStatus">Fetching today's schedule...</div>
 </div>
@@ -1062,12 +1181,13 @@ main { padding: 28px 0 60px; }
     <div class="date-bar">
       <span class="date-label">Date:</span>
       <input type="date" class="date-input" id="dateInput" onchange="onDateChange()">
-      <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;margin-left:auto;"></div>
+      <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
       <div class="main-tabs" id="mainTabs" style="display:none;">
         <button class="main-tab" data-tab="overall" onclick="switchTab('overall',this)">Overall Top Picks</button>
         <button class="main-tab" data-tab="streaks" onclick="switchTab('streaks',this)">🔥 Hot Streaks</button>
         <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
         <button class="main-tab" data-tab="bts" onclick="switchTab('bts',this)">⚡ Beat the Streak</button>
+        <button class="main-tab" data-tab="dominators" onclick="switchTab('dominators',this)">🔥 Daily Dominators</button>
       </div>
     </div>
 
@@ -1166,6 +1286,26 @@ main { padding: 28px 0 60px; }
       <div id="btsEmpty" style="display:none;" class="leaders-loading">No qualifying players found for today's games. Check back once lineups are posted.</div>
     </div>
 
+    <!-- TAB: DAILY DOMINATORS -->
+    <div id="tabDominators" style="display:none;">
+      <div class="dom-intro">
+        <div class="dom-intro-icon">🔥</div>
+        <div>
+          <div class="dom-intro-title">Daily Dominators</div>
+          <div class="dom-intro-sub">Top performers from today's completed games — sorted by actual hits, home runs, and total bases. Final games only.</div>
+        </div>
+      </div>
+      <div id="domCatTabs" class="dom-cat-tabs">
+        <button class="dom-cat-btn active" data-cat="hits" onclick="setDomCat('hits',this)">🟢 Most Hits</button>
+        <button class="dom-cat-btn" data-cat="hr" onclick="setDomCat('hr',this)">🟠 Home Runs</button>
+        <button class="dom-cat-btn" data-cat="tb" onclick="setDomCat('tb',this)">💥 Total Bases</button>
+        <button class="dom-cat-btn" data-cat="rbi" onclick="setDomCat('rbi',this)">🏃 RBI</button>
+      </div>
+      <div id="domGrid" class="dom-grid"></div>
+      <div id="domEmpty" class="leaders-loading" style="display:none;">No final games yet today. Check back after games wrap up.</div>
+      <div id="domLoading" class="leaders-loading" style="display:none;">Loading final game stats...</div>
+    </div>
+
     <!-- TAB: OVERALL TOP PICKS -->
     <div id="tabOverall" style="display:none;">
       <div id="overallBestBetBanner" style="display:none;margin-bottom:18px;"></div>
@@ -1188,7 +1328,14 @@ main { padding: 28px 0 60px; }
     <!-- TAB: TOP PLAYS -->
     <div id="tabTop">
       <!-- BEST BET OF THE GAME -->
-      <div id="bestBetBanner" style="display:none;"></div>
+      <div id="bestBetWrap" style="display:none;">
+        <div class="bb-mode-toggle">
+          <button class="bb-mode-btn active-combined" onclick="setBestBetMode('combined',this)">🎯 Best Pick</button>
+          <button class="bb-mode-btn" onclick="setBestBetMode('hit',this)">🟢 Hits</button>
+          <button class="bb-mode-btn" onclick="setBestBetMode('hr',this)">🟠 HR</button>
+        </div>
+        <div id="bestBetBanner"></div>
+      </div>
 
       <!-- TOP HITS -->
       <div id="topHitsSection" style="display:none;">
@@ -1271,11 +1418,6 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">20–34% of team PA</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">10–19% of team PA</span></div>
           <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">&lt; 10% of team PA</span></div>
-          <div class="formula-row"><span class="fr-sign" style="font-size:10px">Conf</span><span class="fr-text">Season sample reliability (not the main ranking signal)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">350+ season PA</span></div>
-          <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">150–349 season PA</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">50–149 season PA</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">&lt; 50 season PA</span></div>
           <div class="formula-row"><span class="fr-sign" style="font-size:10px">Usage</span><span class="fr-text">Recent starts (last 7 games) — weighted most heavily</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Started 6–7 of last 7 games</span></div>
           <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Started 4–5 of last 7 games</span></div>
@@ -1313,7 +1455,7 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">HR/PA ≥ 4.5% (high)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">HR/PA ≥ 3.0% (solid)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">HR/PA &lt; 1.5% (contact hitter)</span></div>
-          <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">PA role share (3-part: role + confidence + usage)</span></div>
+          <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">PA role share (role + recent usage)</span></div>
           <div class="formula-divider">Matchup &amp; Environment <span class="formula-divider-sub">pitcher HR/9 + park + weather — env capped ±8</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher HR/9 ≥ 1.5 — very HR-prone</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Pitcher HR/9 ≥ 1.2</span></div>
@@ -1463,12 +1605,14 @@ let state = {
   weather: {},       // gamePk -> weather obj
   loading: false,
   error: null,
-  activeTab: 'top',
+  activeTab: 'overall',
+  bestBetMode: 'combined', // 'combined' | 'hit' | 'hr'
   refreshTimer: null,
   liveRefreshTimer: null,
   bdSort: { col: 'hitScore', dir: 'desc' },
   bdActualStats: {},
   bdHasActual: false,
+  bdGameIsLive: false,
   bdGameData: null,
   playerMap: {},   // id -> { ...player, gamePk }
   streakFilter: 'both',
@@ -1506,12 +1650,6 @@ const PA_CFG = {
     { min: 0.10, score: -2 },
     { min: 0,    score: -4 },
   ],
-  confidence: [
-    { min: 350, score:  1 },
-    { min: 150, score:  0 },
-    { min:  50, score: -1 },
-    { min:   0, score: -2 },
-  ],
   recentUsage: [
     { min: 6, score:  2 },
     { min: 4, score:  1 },
@@ -1526,7 +1664,7 @@ const PA_CFG = {
 // pa            : player's season plate appearances
 // teamPAList    : array of season PAs for all batters on the same team (used for team-share calc)
 // recentStarts  : games started in last 7 (PA >= 2); pass null if unknown
-// Returns { total, roleScore, confScore, recentScore, shareStr, factors[] }
+// Returns { total, roleScore, recentScore, shareStr, factors[] }
 function computePAScore(pa, teamPAList, recentStarts) {
   const teamTotal = (teamPAList || []).reduce((a, b) => a + b, 0);
   const share     = teamTotal > 0 ? pa / teamTotal : 0;
@@ -1534,29 +1672,24 @@ function computePAScore(pa, teamPAList, recentStarts) {
   // 1. Role score — how much of the team's PA this player owns
   const roleScore = (PA_CFG.role.find(r => share >= r.min) ?? PA_CFG.role.at(-1)).score;
 
-  // 2. Confidence modifier — season sample reliability
-  const confScore = (PA_CFG.confidence.find(c => pa >= c.min) ?? PA_CFG.confidence.at(-1)).score;
-
-  // 3. Recent usage modifier — is he actually starting now?
+  // 2. Recent usage modifier — is he actually starting now?
   let recentScore = 0;
-  if (recentStarts == null) {
-    recentScore = 0; // missing data — neutral, don't penalise
-  } else {
+  if (recentStarts != null) {
     recentScore = (PA_CFG.recentUsage.find(r => recentStarts >= r.min) ?? PA_CFG.recentUsage.at(-1)).score;
   }
 
-  const total     = clamp(roleScore + confScore + recentScore, PA_CFG.clampMin, PA_CFG.clampMax);
-  const sharePct  = Math.round(share * 100);
-  const sign      = v => v > 0 ? `+${v}` : `${v}`;
+  const total    = clamp(roleScore + recentScore, PA_CFG.clampMin, PA_CFG.clampMax);
+  const sharePct = Math.round(share * 100);
+  const sign     = v => v > 0 ? `+${v}` : `${v}`;
 
   const factors = [];
   if (total !== 0) {
     factors.push({
-      label: `PA role ${sharePct}% (role ${sign(roleScore)}, conf ${sign(confScore)}, usage ${sign(recentScore)})`,
+      label: `PA role ${sharePct}% (role ${sign(roleScore)}, usage ${sign(recentScore)})`,
       type:  total > 0 ? 'pos' : 'neg',
     });
   }
-  return { total, roleScore, confScore, recentScore, sharePct, factors };
+  return { total, roleScore, recentScore, sharePct, factors };
 }
 function setLoadingStatus(msg) { document.getElementById('loadingStatus').textContent = msg; }
 
@@ -2175,6 +2308,7 @@ async function processGame(game) {
 
     const playerObj = {
       ...batter,
+      gamePk,
       seasonStats, last7Stats,
       hitStreak, hrStreak, recentStarts, hitGames7,
       vsRHP, vsLHP,
@@ -2188,11 +2322,14 @@ async function processGame(game) {
     state.playerMap[batter.id] = { ...playerObj, gamePk };
   }
 
-  // Lock best bet when lineup is confirmed — never recalculate after this point
-  let lockedBestBet = null;
+  // Lock best bets when lineup is confirmed — never recalculate after this point
+  let lockedBestBet    = null;
+  let lockedBestBetHit = null;
+  let lockedBestBetHR  = null;
   if (lineupPosted && players.length) {
-    lockedBestBet = [...players]
-      .sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
+    lockedBestBet    = [...players].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
+    lockedBestBetHit = [...players].sort((a,b) => b.hitScore - a.hitScore)[0];
+    lockedBestBetHR  = [...players].sort((a,b) => b.hrScore  - a.hrScore)[0];
   }
 
   return {
@@ -2205,6 +2342,8 @@ async function processGame(game) {
     gameDate,
     players,
     lockedBestBet,
+    lockedBestBetHit,
+    lockedBestBetHR,
   };
 }
 
@@ -2218,6 +2357,8 @@ async function fetchStreaks(playerId) {
     for (const s of statsArr) {
       if (Array.isArray(s.splits) && s.splits.length > 0) { splits = s.splits; break; }
     }
+    // Exclude today's game — only use prior games for scoring/streaks
+    splits = splits.filter(g => g.date !== state.date);
     const recent = [...splits].reverse();
 
     // Consecutive hit streak (from most recent game backward)
@@ -2234,10 +2375,30 @@ async function fetchStreaks(playerId) {
     // Games with ≥1 hit in last 7
     const hitGames7    = last7Games.filter(g => (g.stat?.hits || 0) >= 1).length;
 
-    if (!gameLogCache.has(playerId)) {
-      gameLogCache.set(playerId, splits.slice(-7).reverse());
+    // Aggregate last-7 stats (excluding today) — used instead of lastXGames API
+    const last7Agg = last7Games.reduce((acc, g) => {
+      const st = g.stat || {};
+      acc.atBats           += st.atBats           || 0;
+      acc.hits             += st.hits             || 0;
+      acc.doubles          += st.doubles          || 0;
+      acc.triples          += st.triples          || 0;
+      acc.homeRuns         += st.homeRuns         || 0;
+      acc.strikeOuts       += st.strikeOuts       || 0;
+      acc.baseOnBalls      += st.baseOnBalls      || 0;
+      acc.plateAppearances += st.plateAppearances || 0;
+      return acc;
+    }, { atBats:0, hits:0, doubles:0, triples:0, homeRuns:0, strikeOuts:0, baseOnBalls:0, plateAppearances:0 });
+    if (last7Agg.atBats > 0) {
+      last7Agg.avg = last7Agg.hits / last7Agg.atBats;
+      last7Agg.obp = (last7Agg.hits + last7Agg.baseOnBalls) / last7Agg.plateAppearances;
+      const tb = last7Agg.hits + last7Agg.doubles + last7Agg.triples * 2 + last7Agg.homeRuns * 3;
+      last7Agg.slg = tb / last7Agg.atBats;
+      last7Agg.ops = last7Agg.obp + last7Agg.slg;
     }
-    return { hitStreak, hrStreak, recentStarts, hitGames7 };
+
+    // Always update so display reflects the correct viewing date's excluded games
+    gameLogCache.set(playerId, splits.slice(-7).reverse());
+    return { hitStreak, hrStreak, recentStarts, hitGames7, last7Agg };
   } catch { return { hitStreak: 0, hrStreak: 0, recentStarts: null, hitGames7: null }; }
 }
 
@@ -2263,14 +2424,14 @@ async function batchFetchBatterStats(batters) {
     const chunk = batters.slice(i, i+CHUNK);
     await Promise.all(chunk.map(async b => {
       if (!b.id) return;
-      const [season, last7, streaks, splits] = await Promise.all([
+      const [season, streaks, splits] = await Promise.all([
         fetchPlayerHittingStats(b.id).catch(()=>null),
-        fetchPlayerLastNGames(b.id, 'hitting', 7).catch(()=>null),
-        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null })),
+        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null, last7Agg:null })),
         fetchHandednessSplits(b.id).catch(()=>({ vsRHP:null, vsLHP:null })),
       ]);
       result[b.id] = {
-        season, last7,
+        season,
+        last7: streaks.last7Agg || null,  // from game log, today excluded
         hitStreak: streaks.hitStreak, hrStreak: streaks.hrStreak,
         recentStarts: streaks.recentStarts, hitGames7: streaks.hitGames7,
         vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
@@ -2414,9 +2575,11 @@ function renderGameChips(games) {
     const homeWL   = homeRec ? `${homeRec.wins}-${homeRec.losses}` : null;
     const time     = new Date(g.gameDate).toLocaleTimeString('en-US',{ hour:'numeric', minute:'2-digit', timeZoneName:'short' });
     const pk       = g.gamePk;
-    const abstract   = g.status?.abstractGameState || 'Preview';
-    const isLive     = abstract === 'Live';
-    const isFinal    = abstract === 'Final';
+    const abstract     = g.status?.abstractGameState || 'Preview';
+    const detailedSt   = g.status?.detailedState || abstract;
+    const isLive       = abstract === 'Live';
+    const isFinal      = abstract === 'Final';
+    const isDelayed    = detailedSt.toLowerCase().includes('delayed');
     const awayScore  = g.teams?.away?.score ?? null;
     const homeScore  = g.teams?.home?.score ?? null;
     const hasScore   = (isLive || isFinal) && awayScore != null && homeScore != null;
@@ -2431,16 +2594,19 @@ function renderGameChips(games) {
       : '';
     const liveInn    = g.linescore?.currentInningOrdinal || '';
     const liveHalf   = g.linescore?.inningHalf === 'Top' ? '▲' : g.linescore?.inningHalf === 'Bottom' ? '▼' : '';
-    const liveBadgeHTML = isLive
+    const liveBadgeHTML = isLive && !isDelayed
       ? `<div class="chip-live-badge">● LIVE ${liveHalf}${liveInn}</div>`
       : '';
-    const statusHTML = isFinal
-      ? `<div class="chip-final-badge">FINAL</div>${scoreHTML}`
-      : !isLive
-        ? `<div class="game-time" style="text-align:center">${time}</div>`
-        : scoreHTML;
+    const delayReason = detailedSt.replace(/delayed[:\s-]*/i, '').trim();
+    const statusHTML = isDelayed
+      ? `<div class="chip-delayed-badge">⏸ DELAYED${delayReason ? ' · ' + delayReason : ''}</div>${hasScore ? scoreHTML : `<div class="game-time" style="text-align:center">${time}</div>`}`
+      : isFinal
+        ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div class="chip-final-badge">FINAL</div>${scoreHTML}</div>`
+        : !isLive
+          ? `<div class="game-time" style="text-align:center">${time}</div>`
+          : scoreHTML;
     return `
-      <div class="game-chip ${i===0?'active':''}${isLive?' chip-is-live':''}" id="chip-${pk}" onclick="selectGameView(${pk},'top')">
+      <div class="game-chip${isLive?' chip-is-live':''}" id="chip-${pk}" onclick="selectGameView(${pk},'top')">
         ${liveBadgeHTML ? `<div style="text-align:center;margin-bottom:6px">${liveBadgeHTML}</div>` : ''}
         <div class="chip-teams-row">
           <div class="chip-team">
@@ -2504,12 +2670,13 @@ function selectGameView(pk, view) {
   document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
 
   // Show the right tab content
-  document.getElementById('tabTop').style.display       = view === 'top'       ? 'block' : 'none';
-  document.getElementById('tabBreakdown').style.display = view === 'breakdown' ? 'block' : 'none';
-  document.getElementById('tabOverall').style.display   = 'none';
-  document.getElementById('tabStreaks').style.display   = 'none';
-  document.getElementById('tabLeaders').style.display   = 'none';
-  document.getElementById('tabBts').style.display       = 'none';
+  document.getElementById('tabTop').style.display        = view === 'top'       ? 'block' : 'none';
+  document.getElementById('tabBreakdown').style.display  = view === 'breakdown' ? 'block' : 'none';
+  document.getElementById('tabOverall').style.display    = 'none';
+  document.getElementById('tabStreaks').style.display    = 'none';
+  document.getElementById('tabLeaders').style.display    = 'none';
+  document.getElementById('tabBts').style.display        = 'none';
+  document.getElementById('tabDominators').style.display = 'none';
 
   state.activeTab = view;
   renderSelectedGame();
@@ -2557,6 +2724,13 @@ function renderTopPlays() {
   const selectedGd = state.predictions[state.selectedGamePk];
   const allPlayers = selectedGd ? selectedGd.players : [];
 
+  // Hide game-specific panels when no game is selected
+  if (!state.selectedGamePk || !selectedGd) {
+    document.getElementById('bestBetWrap').style.display = 'none';
+    document.getElementById('topHitsSection').style.display = 'none';
+    document.getElementById('topHRsSection').style.display = 'none';
+  }
+
   // TOP HITS: score >= 70
   const topHits = allPlayers
     .filter(p => p.hitScore >= 70)
@@ -2569,9 +2743,12 @@ function renderTopPlays() {
     .sort((a,b) => b.hrScore - a.hrScore)
     .slice(0, 10);
 
-  // Use locked best bet if lineup was posted — never recalculate mid-game
-  const bestBet = selectedGd?.lockedBestBet
-    || [...allPlayers].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
+  // Pick best bet based on mode
+  const mode = state.bestBetMode || 'combined';
+  const bestBet =
+    mode === 'hit' ? (selectedGd?.lockedBestBetHit || [...allPlayers].sort((a,b) => b.hitScore - a.hitScore)[0])
+  : mode === 'hr'  ? (selectedGd?.lockedBestBetHR  || [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore)[0])
+  :                  (selectedGd?.lockedBestBet     || [...allPlayers].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0]);
 
   // Best bet banner
   if (bestBet) {
@@ -2585,10 +2762,15 @@ function renderTopPlays() {
     const awayAbbr  = selGame?.teams?.away?.team?.abbreviation || '';
     const homeAbbr  = selGame?.teams?.home?.team?.abbreviation || '';
     const gameLabel = awayAbbr && homeAbbr ? ` — ${awayAbbr} @ ${homeAbbr}` : '';
-    const reason = buildReason(
-      bestBet.hitScore >= bestBet.hrScore ? bestBet.hitFactors : bestBet.hrFactors,
-      bestBet.hitScore >= bestBet.hrScore ? 'hit' : 'hr'
-    );
+    const badgeLabel = mode === 'hit' ? `🟢 BEST HIT PICK${gameLabel}`
+                     : mode === 'hr'  ? `🟠 BEST HR PICK${gameLabel}`
+                     :                  `🎯 BEST BET OF SELECTED GAME${gameLabel}`;
+    const reason = mode === 'hr'
+      ? buildReason(bestBet.hrFactors, 'hr')
+      : mode === 'hit'
+        ? buildReason(bestBet.hitFactors, 'hit')
+        : buildReason(bestBet.hitScore >= bestBet.hrScore ? bestBet.hitFactors : bestBet.hrFactors,
+                      bestBet.hitScore >= bestBet.hrScore ? 'hit' : 'hr');
 
     // Build right-side stats panel data
     const ss = bestBet.seasonStats || {};
@@ -2612,11 +2794,36 @@ function renderTopPlays() {
     const fmtI = v => v != null && v !== 0 ? v : '---';
     const trendClass = diff >= 15 ? 'bb-trend-up' : diff <= -15 ? 'bb-trend-down' : '';
 
-    document.getElementById('bestBetBanner').style.display = 'flex';
+    // Achievement badges — show if live/final game stats exist for this player
+    const liveStats  = state.bdHasActual ? (state.bdActualStats[bestBet.id] || null) : null;
+    const gameIsLive = state.bdGameIsLive || false;
+    let achieveHTML = '';
+    if (liveStats) {
+      const gotHit = (liveStats.hits || 0) > 0;
+      const gotHR  = (liveStats.homeRuns || 0) > 0;
+      const ab     = liveStats.atBats || 0;
+      if (gotHit || gotHR || ab > 0) {
+        const livePip = gameIsLive ? `<span class="bb-live-pip">● LIVE</span>` : '';
+        const hitBadge = gotHit
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${liveStats.hits}/${ab})</span>`
+          : ab > 0
+            ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>`
+            : '';
+        const hrBadge = gotHR
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+          : ab > 0
+            ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>`
+            : '';
+        achieveHTML = `<div class="bb-achieve-row">${livePip}${hitBadge}${hrBadge}</div>`;
+      }
+    }
+
+    document.getElementById('bestBetWrap').style.display = 'block';
     document.getElementById('bestBetBanner').innerHTML = `
       <div class="best-bet-banner" onclick="openPlayerModal(${bestBet.id})" style="cursor:pointer;width:100%">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-          <span class="best-bet-badge">🎯 BEST BET OF THE GAME${gameLabel}</span>
+          <span class="best-bet-badge">${badgeLabel}</span>
+          ${achieveHTML}
         </div>
         <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
           <div class="best-bet-left">
@@ -2714,9 +2921,16 @@ function renderTopPlays() {
   }
 
   document.getElementById('mainTabs').style.display = 'flex';
+
+  // Default to Overall Top Picks on very first load only
+  if (!state._tabInitialized) {
+    state._tabInitialized = true;
+    const overallBtn = document.querySelector('.main-tab[data-tab="overall"]');
+    if (overallBtn) switchTab('overall', overallBtn);
+  }
 }
 
-function renderOverallTopPlays() {
+async function renderOverallTopPlays() {
   // Collect all players across every processed game
   let allPlayers = [];
   for (const gd of Object.values(state.predictions)) {
@@ -2758,11 +2972,49 @@ function renderOverallTopPlays() {
     if (hrStreak  >= 1) streakParts.push(`${hrStreak}-game HR streak 💪🔥`);
     const streakNote = streakParts.length ? streakParts.join(' · ') : null;
 
+    // Fetch live/final stats for the best bet's game
+    let achieveHTML = '';
+    try {
+      const live = await fetchLiveFeed(bestBet.gamePk);
+      const abstractState = live.gameData?.status?.abstractGameState;
+      const gameStarted = abstractState === 'Live' || abstractState === 'Final';
+      const gameIsLive  = abstractState === 'Live';
+      if (gameStarted) {
+        let liveStats = null;
+        for (const side of ['away', 'home']) {
+          const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
+          for (const lp of Object.values(players)) {
+            if (Number(lp.person?.id) === bestBet.id && lp.stats?.batting) {
+              liveStats = lp.stats.batting;
+              break;
+            }
+          }
+          if (liveStats) break;
+        }
+        if (liveStats) {
+          const gotHit = (liveStats.hits || 0) > 0;
+          const gotHR  = (liveStats.homeRuns || 0) > 0;
+          const ab     = liveStats.atBats || 0;
+          if (gotHit || gotHR || ab > 0) {
+            const livePip  = gameIsLive ? `<span class="bb-live-pip">● LIVE</span>` : '';
+            const hitBadge = gotHit
+              ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${liveStats.hits}/${ab})</span>`
+              : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>` : '';
+            const hrBadge  = gotHR
+              ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+              : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+            achieveHTML = `<div class="bb-achieve-row">${livePip}${hitBadge}${hrBadge}</div>`;
+          }
+        }
+      }
+    } catch { /* no live data available */ }
+
     banner.style.display = 'flex';
     banner.innerHTML = `
       <div class="best-bet-banner" onclick="openPlayerModal(${bestBet.id})" style="cursor:pointer;width:100%">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
           <span class="best-bet-badge">⭐ BEST BET OF THE DAY — ALL GAMES</span>
+          ${achieveHTML}
         </div>
         <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
           <div class="best-bet-left">
@@ -3080,6 +3332,8 @@ async function fetchGameLog(playerId) {
         break;
       }
     }
+    // Exclude today's game — only show prior games for display/scoring
+    splits = splits.filter(g => g.date !== state.date);
     // Most recent 7 games, newest first
     const last7 = splits.slice(-7).reverse();
     gameLogCache.set(playerId, last7);
@@ -3164,8 +3418,10 @@ function renderLivePanel(gamePk) {
     const abstractState = status?.abstractGameState || 'Preview';
     const detailedState = status?.detailedState || abstractState;
 
+    const isDelayedGame = detailedState.toLowerCase().includes('delayed');
     let badgeClass = 'preview';
-    if (abstractState === 'Live') badgeClass = 'live';
+    if (isDelayedGame) badgeClass = 'warmup';  // amber styling for delayed
+    else if (abstractState === 'Live') badgeClass = 'live';
     else if (abstractState === 'Final') badgeClass = 'final';
     else if (detailedState.includes('Warmup') || detailedState.includes('Pre-Game')) badgeClass = 'warmup';
 
@@ -3328,12 +3584,14 @@ async function renderBreakdown(gameData) {
   state.bdGameData = gameData;
   state.bdActualStats = {};
   state.bdHasActual = false;
+  state.bdGameIsLive = false;
 
   try {
     const live = await fetchLiveFeed(gameData.gamePk);
     const abstractState = live.gameData?.status?.abstractGameState;
     const gameStarted = abstractState === 'Live' || abstractState === 'Final';
     if (gameStarted) {
+      state.bdGameIsLive = abstractState === 'Live';
       for (const side of ['away', 'home']) {
         const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
         for (const key of Object.keys(players)) {
@@ -3346,6 +3604,8 @@ async function renderBreakdown(gameData) {
   } catch (e) { /* show predictions only */ }
 
   renderBreakdownTable();
+  // Refresh best bet banner so achievement badges (hit/HR checkmarks) reflect live stats
+  if (state.bdHasActual) renderTopPlays();
 }
 
 function bdSortVal(p, col) {
@@ -3391,7 +3651,13 @@ function renderBreakdownTable() {
     return `
     <tr>
       <td class="td-order">${p.orderPos || '?'}</td>
-      <td class="td-player"><span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span></td>
+      <td class="td-player">
+        <span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span>
+        <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'bd-gl-${p.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="bd-gl-${p.id}"></div>
+      </td>
       <td style="font-size:11px;color:var(--text-muted)">${p.position}</td>
       ${state.bdHasActual ? buildActualCell(bs) : ''}
       <td class="td-score hit-color">${p.hitScore}</td>
@@ -3458,35 +3724,51 @@ async function openPlayerModal(playerId) {
 
   // Fetch live stats for this game
   let bs = null;
+  let isGameLive = false;
+  let isGameFinal = false;
+  let liveInning = '';
   try {
     const live = await fetchLiveFeed(gamePk);
     const abstract = live.gameData?.status?.abstractGameState;
-    if (abstract === 'Live' || abstract === 'Final') {
+    isGameLive  = abstract === 'Live';
+    isGameFinal = abstract === 'Final';
+    if (isGameLive || isGameFinal) {
+      const inn  = live.liveData?.linescore?.currentInningOrdinal || '';
+      const half = live.liveData?.linescore?.inningHalf === 'Top' ? '▲'
+                 : live.liveData?.linescore?.inningHalf === 'Bottom' ? '▼' : '';
+      liveInning = inn ? `${half}${inn}` : '';
+      // Use numeric comparison to avoid string/number type mismatch
+      const pid = Number(playerId);
       outer: for (const side of ['away', 'home']) {
         const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
         for (const lp of Object.values(players)) {
-          if (lp.person?.id === playerId && lp.stats?.batting) {
-            bs = lp.stats.batting; break outer;
+          if (Number(lp.person?.id) === pid) {
+            bs = lp.stats?.batting ?? {};
+            break outer;
           }
         }
       }
+      // Game is live/final but player not found in boxscore — still show a row with zeros
+      if (bs === null) bs = {};
     }
-  } catch(e) { /* live data unavailable */ }
+  } catch(e) { console.warn('Live feed error:', e); }
 
-  // Actual game stats bar
+  // Actual game stats bar — always show for live/final games
   const statItem = (val, label, color='') =>
     `<div class="modal-actual-stat">
-       <div class="sv" style="${color}">${val ?? '—'}</div>
+       <div class="sv" style="${color}">${val != null ? val : '0'}</div>
        <div class="sl">${label}</div>
      </div>`;
-  const actualHTML = bs?.atBats !== undefined ? `
+  const todayLabel = isGameLive ? `🔴 LIVE ${liveInning}` : isGameFinal ? 'Final' : 'Today';
+  const actualHTML = bs !== null ? `
     <div class="modal-actual-bar">
-      <span class="modal-actual-label">Today</span>
-      ${statItem(bs.atBats,      'AB')}
-      ${statItem(bs.hits,        'H',   'color:var(--accent-green)')}
-      ${statItem(bs.homeRuns,    'HR',  'color:var(--accent-orange)')}
-      ${statItem(bs.rbi,         'RBI')}
-      ${statItem(bs.strikeOuts,  'K',   'color:var(--accent-red)')}
+      <span class="modal-actual-label">${todayLabel}</span>
+      ${statItem(bs.atBats      ?? 0, 'AB')}
+      ${statItem(bs.hits        ?? 0, 'H',   'color:var(--accent-green)')}
+      ${statItem(bs.homeRuns    ?? 0, 'HR',  'color:var(--accent-orange)')}
+      ${statItem(bs.rbi         ?? 0, 'RBI')}
+      ${statItem(bs.strikeOuts  ?? 0, 'K',   'color:var(--accent-red)')}
+      ${bs.baseOnBalls != null ? statItem(bs.baseOnBalls, 'BB') : ''}
     </div>` : '';
 
   // Factor rows
@@ -3515,10 +3797,10 @@ async function openPlayerModal(playerId) {
         const pa  = ss?.plateAppearances || 0;
         const ps  = computePAScore(pa, p.teamPAList || [], p.recentStarts ?? null);
         const sg  = v => v > 0 ? `+${v}` : `${v}`;
-        return `<div class="modal-season-stat" title="Role ${sg(ps.roleScore)} · Confidence ${sg(ps.confScore)} · Recent usage ${sg(ps.recentScore)}">
+        return `<div class="modal-season-stat" title="Role ${sg(ps.roleScore)} · Recent usage ${sg(ps.recentScore)}">
           <div class="sv" style="color:${ps.total>0?'var(--accent-green)':ps.total<0?'var(--accent-red)':'var(--text-muted)'}">${ps.total>0?'+':''}${ps.total}</div>
           <div class="sl">PA Score</div>
-          <div style="font-size:9px;color:var(--text-muted);margin-top:2px">Role ${sg(ps.roleScore)} · Conf ${sg(ps.confScore)} · Use ${sg(ps.recentScore)}</div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px">Role ${sg(ps.roleScore)} · Use ${sg(ps.recentScore)}</div>
         </div>`;
       })()}
       <div class="modal-season-stat"><div class="sv">${ss.plateAppearances >= 50 ? (ss.homeRuns/ss.plateAppearances*100).toFixed(1)+'%' : '—'}</div><div class="sl">HR/PA</div></div>
@@ -3795,12 +4077,12 @@ function renderBeatTheStreak() {
     if (hg7 >= 5)       streakPills.push(`Hit in ${hg7}/7 games`);
 
     return `
-      <div class="bts-card" onclick="openPlayerModal(${player.id})">
+      <div class="bts-card">
         <div class="bts-card-rank">${rankLabel}</div>
         <div class="bts-card-header">
           <img class="bts-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${player.name}">
           <div>
-            <div class="bts-card-name">${player.name}</div>
+            <div class="bts-card-name td-player-link" onclick="openPlayerModal(${player.id})" style="cursor:pointer">${player.name}</div>
             <div class="bts-card-meta">
               ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || player.teamAbbr || ''} · ${player.position || ''} · #${player.orderPos || '—'}
@@ -3821,9 +4103,146 @@ function renderBeatTheStreak() {
           ⚾ vs ${pName} (ERA ${pEra}) · ${player.teamId === gd.homeTeamId ? 'HOME' : 'AWAY'} vs ${oppAbbr}
         </div>
         ${reasons.length ? `<div class="bts-card-reasons" style="margin-top:8px">+ ${reasons.slice(0,4).join(' · ')}</div>` : ''}
+        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${player.id},this,'bts-gl-${player.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="bts-gl-${player.id}"></div>
       </div>`;
   }).join('');
 }
+
+// ─── DAILY DOMINATORS ─────────────────────────────────────────────────────
+let _domCat = 'hits';
+
+function setDomCat(cat, btn) {
+  _domCat = cat;
+  document.querySelectorAll('.dom-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDailyDominators();
+}
+
+async function renderDailyDominators() {
+  const grid    = document.getElementById('domGrid');
+  const empty   = document.getElementById('domEmpty');
+  const loading = document.getElementById('domLoading');
+  grid.innerHTML = '';
+  empty.style.display   = 'none';
+  loading.style.display = 'block';
+
+  // Find all final games today
+  const finalGames = (state.games || []).filter(g => g.status?.abstractGameState === 'Final');
+  if (!finalGames.length) {
+    loading.style.display = 'none';
+    empty.style.display   = 'block';
+    return;
+  }
+
+  // Fetch boxscore for each final game in parallel
+  const performers = [];
+  await Promise.all(finalGames.map(async g => {
+    try {
+      const live = await fetchLiveFeed(g.gamePk);
+      const awayAbbr = live.gameData?.teams?.away?.abbreviation || g.teams?.away?.team?.abbreviation || '';
+      const homeAbbr = live.gameData?.teams?.home?.abbreviation || g.teams?.home?.team?.abbreviation || '';
+      const gameLabel = `${awayAbbr} @ ${homeAbbr}`;
+      const awayScore = live.liveData?.linescore?.teams?.away?.runs ?? '?';
+      const homeScore = live.liveData?.linescore?.teams?.home?.runs ?? '?';
+      const scoreLine = `${awayScore}–${homeScore}`;
+
+      for (const side of ['away', 'home']) {
+        const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
+        for (const lp of Object.values(players)) {
+          const bs = lp.stats?.batting;
+          if (!bs || !bs.atBats) continue;
+          const pid = Number(lp.person?.id);
+          performers.push({
+            id:        pid,
+            name:      lp.person?.fullName || '?',
+            position:  lp.position?.abbreviation || '',
+            teamAbbr:  side === 'away' ? awayAbbr : homeAbbr,
+            teamId:    live.gameData?.teams?.[side]?.id || null,
+            gamePk:    g.gamePk,
+            gameLabel, scoreLine,
+            hits:      bs.hits       || 0,
+            hr:        bs.homeRuns   || 0,
+            tb:        (bs.hits || 0) + (bs.doubles || 0) + (bs.triples || 0) * 2 + (bs.homeRuns || 0) * 3,
+            rbi:       bs.rbi        || 0,
+            ab:        bs.atBats     || 0,
+            doubles:   bs.doubles    || 0,
+            triples:   bs.triples    || 0,
+            bb:        bs.baseOnBalls|| 0,
+            k:         bs.strikeOuts || 0,
+          });
+        }
+      }
+    } catch { /* skip failed game */ }
+  }));
+
+  loading.style.display = 'none';
+
+  if (!performers.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  // Sort by selected category, break ties by total bases
+  const sortKey = _domCat;
+  performers.sort((a, b) => b[sortKey] - a[sortKey] || b.tb - a.tb);
+
+  // Top 20, must have at least 1 in the category
+  const top = performers.filter(p => p[sortKey] > 0).slice(0, 20);
+  if (!top.length) {
+    empty.style.display = 'block';
+    empty.textContent   = `No players with ${sortKey === 'hits' ? 'a hit' : sortKey === 'hr' ? 'a home run' : sortKey === 'tb' ? 'total bases' : 'an RBI'} in today's final games yet.`;
+    return;
+  }
+
+  grid.innerHTML = top.map((p, i) => {
+    const ti       = TEAM_INFO[p.teamId] || {};
+    const slug     = ti.espn || p.teamAbbr?.toLowerCase() || '';
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+    const avgStr   = p.hits && p.ab ? (p.hits / p.ab).toFixed(3).replace(/^0/, '') : '.000';
+
+    return `
+      <div class="dom-card">
+        <div class="dom-card-rank">${rankLabel}</div>
+        <div class="dom-card-header">
+          <img class="dom-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${p.name}">
+          <div>
+            <div class="dom-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${p.name}</div>
+            <div class="dom-card-meta">
+              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
+              ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position}
+            </div>
+            <div class="dom-card-game">${p.gameLabel} · Final ${p.scoreLine}</div>
+          </div>
+        </div>
+        <div class="dom-stat-row">
+          <span class="dom-stat-pill dom-pill-hits">${p.hits} H / ${p.ab} AB</span>
+          ${p.hr  ? `<span class="dom-stat-pill dom-pill-hr">${p.hr} HR</span>` : ''}
+          ${p.rbi ? `<span class="dom-stat-pill dom-pill-rbi">${p.rbi} RBI</span>` : ''}
+          <span class="dom-stat-pill dom-pill-tb">${p.tb} TB</span>
+          ${p.doubles ? `<span class="dom-stat-pill dom-pill-avg">${p.doubles} 2B</span>` : ''}
+          ${p.triples ? `<span class="dom-stat-pill dom-pill-avg">${p.triples} 3B</span>` : ''}
+          ${p.bb  ? `<span class="dom-stat-pill dom-pill-avg">${p.bb} BB</span>` : ''}
+        </div>
+        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${p.id},this,'dom-gl-${p.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="dom-gl-${p.id}"></div>
+      </div>`;
+  }).join('');
+}
+
+// ─── BEST BET MODE TOGGLE ─────────────────────────────────────────────────
+function setBestBetMode(mode, btn) {
+  state.bestBetMode = mode;
+  document.querySelectorAll('.bb-mode-btn').forEach(b => b.className = 'bb-mode-btn');
+  btn.classList.add(`active-${mode}`);
+  renderTopPlays();
+}
+
 
 // ─── TABS ─────────────────────────────────────────────────────────────────
 function switchTab(tab, btn) {
@@ -3838,12 +4257,13 @@ function switchTab(tab, btn) {
   }
   btn.classList.add('active');
 
-  document.getElementById('tabTop').style.display       = tab==='top'       ? 'block' : 'none';
-  document.getElementById('tabBreakdown').style.display = tab==='breakdown' ? 'block' : 'none';
-  document.getElementById('tabOverall').style.display   = tab==='overall'   ? 'block' : 'none';
-  document.getElementById('tabStreaks').style.display   = tab==='streaks'   ? 'block' : 'none';
-  document.getElementById('tabLeaders').style.display   = tab==='leaders'   ? 'block' : 'none';
-  document.getElementById('tabBts').style.display       = tab==='bts'       ? 'block' : 'none';
+  document.getElementById('tabTop').style.display        = tab==='top'        ? 'block' : 'none';
+  document.getElementById('tabBreakdown').style.display  = tab==='breakdown'  ? 'block' : 'none';
+  document.getElementById('tabOverall').style.display    = tab==='overall'    ? 'block' : 'none';
+  document.getElementById('tabStreaks').style.display    = tab==='streaks'    ? 'block' : 'none';
+  document.getElementById('tabLeaders').style.display    = tab==='leaders'    ? 'block' : 'none';
+  document.getElementById('tabBts').style.display        = tab==='bts'        ? 'block' : 'none';
+  document.getElementById('tabDominators').style.display = tab==='dominators' ? 'block' : 'none';
 
   if (tab === 'breakdown' && state.selectedGamePk) {
     const gd = state.predictions[state.selectedGamePk];
@@ -3853,6 +4273,7 @@ function switchTab(tab, btn) {
   if (tab === 'streaks') renderHotStreaks();
   if (tab === 'leaders') renderLeaderboard();
   if (tab === 'bts') renderBeatTheStreak();
+  if (tab === 'dominators') renderDailyDominators();
 }
 
 // ─── FORMULA TOGGLE ───────────────────────────────────────────────────────
@@ -3891,6 +4312,9 @@ function onDateChange() {
   state.predictions = {};
   state.playerMap = {};
   leaderboardLoaded = false;
+  // Clear all caches so fresh player stats are fetched for the new date
+  cache.clear();
+  gameLogCache.clear();
   startFetch();
 }
 
@@ -3904,7 +4328,7 @@ async function startFetch() {
   document.getElementById('refreshBtn').disabled = true;
   document.getElementById('gameBox').style.display='none';
   document.getElementById('weatherBar').style.display='none';
-  document.getElementById('bestBetBanner').style.display='none';
+  document.getElementById('bestBetWrap').style.display='none';
   document.getElementById('mainTabs').style.display='none';
   document.getElementById('topHitsSection').style.display='none';
   document.getElementById('topHRsSection').style.display='none';
@@ -3945,13 +4369,13 @@ async function startFetch() {
       }
     }
 
-    // Select first game by default
-    if (!state.selectedGamePk || !state.predictions[state.selectedGamePk]) {
-      state.selectedGamePk = games[0]?.gamePk;
+    // No game auto-selected — user must click a game chip
+    if (state.selectedGamePk && !state.predictions[state.selectedGamePk]) {
+      state.selectedGamePk = null;
     }
 
     hideLoading();
-    renderSelectedGame();
+    if (state.selectedGamePk) renderSelectedGame();
     renderTopPlays();
     renderOverallTopPlays();
     renderHotStreaks();
