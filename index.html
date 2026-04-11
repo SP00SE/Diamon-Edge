@@ -4,9 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DIAMOND EDGE — MLB Hit & HR Prediction Engine</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='90' fill='%23f8f2e4' stroke='%23cfc0a0' stroke-width='3'/><path d='M78,14 C28,35 28,165 78,186' fill='none' stroke='%23d42020' stroke-width='6'/><path d='M122,14 C172,35 172,165 122,186' fill='none' stroke='%23d42020' stroke-width='6'/></svg>">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='%2306080c'/%3E%3Cpolygon points='16,3 29,16 16,29 3,16' fill='url(%23g)'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2334d399'/%3E%3Cstop offset='100%25' stop-color='%2360a5fa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='32' fill='%2306080c'/%3E%3Cpolygon points='90,18 162,90 90,162 18,90' fill='url(%23g)'/%3E%3C/svg%3E">
+<link rel="icon" id="faviconLink" type="image/png" href="">
+<link rel="apple-touch-icon" id="appleTouchIcon" href="">
+<link rel="manifest" id="manifestLink" href="">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diamond Edge">
+<meta name="theme-color" content="#06080c">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ===== RESET & VARIABLES ===== */
@@ -89,7 +93,7 @@ h1, h2, h3, .bebas { font-family: 'Bebas Neue', cursive; letter-spacing: 1.5px; 
   align-items: center;
   gap: 10px;
 }
-.logo-diamond {
+.logo-diamond-unused {
   width: 36px; height: 36px;
   background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
@@ -249,10 +253,36 @@ main { padding: 28px 0 60px; }
 .bb-achieve-no {
   background: #f8717120; color: var(--accent-red); border: 1px solid #f8717140;
 }
+.bb-score-conf-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 5px; margin-bottom: 5px;
+}
+.bb-mini-score {
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 10px; text-align: center; white-space: nowrap;
+}
+.bb-mini-score .bb-ms-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; line-height: 1;
+}
+.bb-mini-score .bb-ms-lbl {
+  font-size: 9px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-top: 2px;
+}
+.bb-conf-phrase {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.3px; font-family: 'Outfit', sans-serif;
+}
+.bb-conf-phrase.bb-conf-very      { color: #22c55e; }
+.bb-conf-phrase.bb-conf-confident { color: #f59e0b; }
+.bb-conf-phrase.bb-conf-notso     { color: #f97316; }
+.bb-conf-phrase.bb-conf-low       { color: #ef4444; }
 .bb-live-pip {
   font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
   color: var(--accent-red); letter-spacing: 1px;
   animation: pulse 1.2s ease infinite;
+}
+.bb-pip-final {
+  color: var(--text-muted); animation: none;
 }
 .chip-score {
   display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -443,6 +473,133 @@ main { padding: 28px 0 60px; }
 .dom-pill-rbi  { background: #38bdf820; color: #38bdf8; border: 1px solid #38bdf840; }
 .dom-pill-avg  { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
 
+/* ===== DAILY DOMINATORS SUB-TABS ===== */
+.dom-sub-tabs {
+  display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.dom-sub-btn {
+  padding: 7px 18px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-input); color: var(--text-secondary);
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .2s;
+}
+.dom-sub-btn:hover { border-color: var(--accent-orange); color: var(--text-primary); }
+.dom-sub-btn.active { background: #f9731618; color: #f97316; border-color: #f9731660; }
+.dom-sub-btn.active-rising { background: #a78bfa18; color: #a78bfa; border-color: #a78bfa60; }
+
+/* ===== RISING STARS ===== */
+.rising-intro {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: linear-gradient(135deg, #1a1428, #12151d);
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid #a78bfa;
+  border-radius: var(--radius-md);
+  padding: 16px 20px; margin-bottom: 20px;
+}
+.rising-intro-icon { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.rising-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: #a78bfa; letter-spacing: 1.5px; }
+.rising-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.rising-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
+}
+.rising-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px; position: relative;
+  transition: border-color .2s, transform .2s;
+}
+.rising-card:hover { border-color: #a78bfa; transform: translateY(-2px); }
+.rising-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #a78bfa08 0%, transparent 60%);
+  border-radius: var(--radius-md); pointer-events: none;
+}
+.rising-card-rank {
+  position: absolute; top: 10px; right: 12px; font-size: 18px; line-height: 1;
+}
+.rising-card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.rising-card-photo {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #a78bfa40; flex-shrink: 0; background: var(--bg-input);
+}
+.rising-card-name { font-weight: 700; font-size: 15px; color: var(--text-primary); }
+.rising-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.rising-dom-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  background: #a78bfa20; color: #a78bfa; border: 1px solid #a78bfa40; margin-bottom: 8px;
+}
+.rising-matchup-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: #fb923c20; color: #fb923c; border: 1px solid #fb923c40; margin-left: 6px;
+}
+.rising-stat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+
+/* ===== DUE FOR A HIT ===== */
+.dfh-intro {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: linear-gradient(135deg, #0e1820, #12151d);
+  border: 1px solid var(--border-accent);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: var(--radius-md);
+  padding: 16px 20px; margin-bottom: 20px;
+}
+.dfh-intro-icon { font-size: 28px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.dfh-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--accent-blue); letter-spacing: 1.5px; }
+.dfh-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+.dfh-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
+}
+.dfh-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px; position: relative;
+  transition: border-color .2s, transform .2s;
+}
+.dfh-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+.dfh-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #60a5fa08 0%, transparent 60%);
+  border-radius: var(--radius-md); pointer-events: none;
+}
+.dfh-card-rank {
+  position: absolute; top: 10px; right: 12px; font-size: 18px; line-height: 1;
+}
+.dfh-card-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.dfh-card-photo {
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #60a5fa40; flex-shrink: 0; background: var(--bg-input);
+}
+.dfh-card-name { font-weight: 700; font-size: 15px; color: var(--text-primary); }
+.dfh-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.dfh-slump-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  background: #60a5fa20; color: var(--accent-blue); border: 1px solid #60a5fa50; margin-bottom: 8px;
+}
+.dfh-slump-count { font-size: 20px; font-weight: 900; color: var(--accent-blue); }
+.dfh-bar-wrap {
+  background: var(--bg-input); border-radius: 4px; height: 6px; margin: 6px 0 10px; overflow: hidden;
+}
+.dfh-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #60a5fa, #a78bfa);
+  transition: width .4s;
+}
+.dfh-stat-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.dfh-stat-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.dfh-pill-ba  { background: #22c55e20; color: #22c55e; border: 1px solid #22c55e40; }
+.dfh-pill-era { background: #f9731620; color: #f97316; border: 1px solid #f9731640; }
+.dfh-pill-opp { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+
 /* ===== BEAT THE STREAK ===== */
 .bts-intro {
   display: flex; align-items: flex-start; gap: 14px;
@@ -478,12 +635,14 @@ main { padding: 28px 0 60px; }
   border-radius: var(--radius-md); padding: 16px;
   transition: border-color .2s, transform .15s;
   position: relative; overflow: visible;
+  position: relative; overflow: visible;
 }
 .bts-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
 .bts-card::before {
   content: ''; position: absolute; inset: 0;
   background: linear-gradient(135deg, var(--accent-blue-dim) 0%, transparent 60%);
   opacity: 0; transition: opacity .2s; pointer-events: none;
+  border-radius: var(--radius-md);
   border-radius: var(--radius-md);
 }
 .bts-card:hover::before { opacity: 1; }
@@ -587,6 +746,36 @@ main { padding: 28px 0 60px; }
 .bb-mode-btn.active-hit      { background: var(--accent-green-dim); color: var(--accent-green); border-color: var(--accent-green); }
 .bb-mode-btn.active-hr       { background: var(--accent-orange-dim); color: var(--accent-orange); border-color: var(--accent-orange); }
 .bb-mode-btn:hover:not([class*="active"]) { background: var(--bg-card); color: var(--text-secondary); }
+.ovr-bb-btn {
+  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border-accent); background: transparent;
+  color: var(--text-muted); transition: all .18s; font-family: 'Outfit', sans-serif;
+}
+.ovr-bb-btn.active-combined { background: linear-gradient(135deg,#34d39930,#fb923c30); color: var(--text-primary); border-color: var(--accent-green); }
+.ovr-bb-btn.active-hit      { background: var(--accent-green-dim); color: var(--accent-green); border-color: var(--accent-green); }
+.ovr-bb-btn.active-hr       { background: var(--accent-orange-dim); color: var(--accent-orange); border-color: var(--accent-orange); }
+.ovr-bb-btn:hover:not([class*="active"]) { background: var(--bg-card); color: var(--text-secondary); }
+
+/* ===== BEST BET TRIPLE LAYOUT ===== */
+.bb-triple {
+  display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
+}
+.bb-pick-section {
+  flex: 1; min-width: 260px;
+  background: linear-gradient(135deg,#34d39910,#fb923c10);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.bb-pick-label {
+  font-family: 'Bebas Neue', cursive; font-size: 15px; letter-spacing: 1px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.bb-pick-label-combined { color: var(--text-primary); }
+.bb-pick-label-hit      { color: var(--accent-green); }
+.bb-pick-label-hr       { color: var(--accent-orange); }
+.bb-pick-sublabel { font-family: 'Outfit',sans-serif; font-size: 10px; font-weight: 400; color: var(--text-muted); letter-spacing: 0.3px; text-transform: none; }
+@media (max-width: 700px) { .bb-triple { flex-direction: column; } }
 
 /* ===== BEST BET BANNER ===== */
 .best-bet-banner {
@@ -595,9 +784,8 @@ main { padding: 28px 0 60px; }
   border-radius: var(--radius-lg);
   padding: 18px 24px;
   margin-bottom: 28px;
-  display: flex; align-items: center; gap: 18px;
+  display: flex; flex-direction: column; gap: 14px;
   animation: fadeInUp .5s ease;
-  flex-wrap: wrap;
 }
 .best-bet-badge {
   background: linear-gradient(135deg, var(--accent-green), var(--accent-orange));
@@ -605,7 +793,7 @@ main { padding: 28px 0 60px; }
   font-family: 'Bebas Neue', cursive; font-size: 16px; letter-spacing: 1px;
   flex-shrink: 0;
 }
-.best-bet-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 220px; }
+.best-bet-left { display: flex; align-items: flex-start; gap: 14px; width: 100%; }
 .best-bet-headshot-wrap {
   width: 72px; height: 86px; flex-shrink: 0;
   border-radius: var(--radius-md); overflow: hidden;
@@ -638,12 +826,21 @@ main { padding: 28px 0 60px; }
 .best-bet-score-item .sv { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; line-height: 1; }
 .best-bet-score-item .sl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
 .best-bet-score-item .sm { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-.best-bet-right {
-  display: flex; flex-direction: row; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto;
-}
+.best-bet-right { display: contents; }
+.bb-header-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .best-bet-stats-panel {
   background: var(--bg-secondary); border: 1px solid var(--border);
   border-radius: var(--radius-md); padding: 12px 16px;
+  align-self: flex-start;
+}
+@media (max-width: 540px) {
+  .best-bet-banner { padding: 12px 14px; gap: 10px; }
+  .best-bet-badge { font-size: 13px; padding: 3px 10px; }
+  .best-bet-headshot-wrap { width: 60px; height: 72px; }
+  .best-bet-headshot-fallback { width: 60px; height: 72px; }
+  .best-bet-name { font-size: 19px; }
+  .bb-main-row { flex-direction: column; }
+  .best-bet-stats-panel { width: 100%; box-sizing: border-box; min-width: 0; }
 }
 .best-bet-stats-label {
   font-size: 10px; color: var(--text-muted); text-transform: uppercase;
@@ -767,6 +964,24 @@ main { padding: 28px 0 60px; }
 }
 .breakdown-tab.active { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent-green); }
 
+.bd-team-filter {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.bd-team-btn {
+  padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: transparent;
+  color: var(--text-muted); transition: all .18s; font-family: 'Outfit', sans-serif;
+  display: flex; align-items: center; gap: 4px;
+}
+.bd-team-btn.active { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent-green); }
+.bd-team-btn:hover:not(.active) { background: var(--bg-card); color: var(--text-secondary); }
+.bd-projected-warn {
+  font-size: 11px; color: var(--accent-orange); font-weight: 600;
+  background: #fb923c12; border: 1px solid #fb923c30;
+  border-radius: var(--radius-sm); padding: 6px 12px;
+  margin-bottom: 12px; letter-spacing: 0.3px;
+}
+
 .breakdown-table-wrap { overflow-x: auto; }
 .breakdown-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .breakdown-table th {
@@ -791,6 +1006,11 @@ main { padding: 28px 0 60px; }
   z-index: 200; backdrop-filter: blur(8px);
 }
 .loading-spinner {
+  font-size: 72px;
+  line-height: 1;
+  animation: spin 2.5s linear infinite;
+  margin-bottom: 20px;
+  display: block;
   font-size: 72px;
   line-height: 1;
   animation: spin 2.5s linear infinite;
@@ -832,6 +1052,7 @@ main { padding: 28px 0 60px; }
   padding: 20px; display: none;
 }
 .formula-body.open { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+#legendBody[style*="grid"] { display: grid !important; grid-template-columns: 1fr 1fr; gap: 24px; }
 .formula-col h3 { font-size: 18px; margin-bottom: 14px; }
 .formula-row { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-bottom: 6px; }
 .formula-row .fr-sign { font-family: 'JetBrains Mono', monospace; font-weight: 700; min-width: 24px; }
@@ -886,6 +1107,7 @@ main { padding: 28px 0 60px; }
   .header-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
   .pred-grid { grid-template-columns: 1fr; }
   .formula-body.open { grid-template-columns: 1fr; }
+  #legendBody[style*="grid"] { grid-template-columns: 1fr !important; }
   .streak-grid { grid-template-columns: 1fr; }
   .leaders-grid { grid-template-columns: 1fr; }
 
@@ -900,8 +1122,7 @@ main { padding: 28px 0 60px; }
   .best-bet-left { flex: 1 1 100%; min-width: unset; }
   .best-bet-right { flex: 1 1 100%; flex-direction: column; align-items: stretch; margin-left: 0; width: 100%; }
   .best-bet-scores { justify-content: flex-start; }
-  .best-bet-stats-panel { width: 100%; box-sizing: border-box; }
-  .best-bet-stat-row { flex-wrap: wrap; gap: 12px; }
+  .best-bet-stat-row { gap: 12px; }
   .best-bet-stat-cell { min-width: 52px; }
 
   /* Score items */
@@ -1153,7 +1374,7 @@ main { padding: 28px 0 60px; }
   <div class="container">
     <div class="header-inner">
       <div class="logo">
-        <div class="logo-diamond">⬥</div>
+        <canvas id="headerLogoCanvas" width="44" height="44" style="border-radius:8px;flex-shrink:0;display:block"></canvas>
         <div>
           <h1>DIAMOND EDGE</h1>
           <span>MLB Hit & HR Prediction Engine</span>
@@ -1182,9 +1403,11 @@ main { padding: 28px 0 60px; }
       <span class="date-label">Date:</span>
       <input type="date" class="date-input" id="dateInput" onchange="onDateChange()">
       <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
+      <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
       <div class="main-tabs" id="mainTabs" style="display:none;">
         <button class="main-tab" data-tab="overall" onclick="switchTab('overall',this)">Overall Top Picks</button>
         <button class="main-tab" data-tab="streaks" onclick="switchTab('streaks',this)">🔥 Hot Streaks</button>
+        <button class="main-tab" data-tab="dueforhit" onclick="switchTab('dueforhit',this)">💧⚾ Due for a Hit</button>
         <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
         <button class="main-tab" data-tab="bts" onclick="switchTab('bts',this)">⚡ Beat the Streak</button>
         <button class="main-tab" data-tab="dominators" onclick="switchTab('dominators',this)">🔥 Daily Dominators</button>
@@ -1240,6 +1463,27 @@ main { padding: 28px 0 60px; }
       </div>
     </div>
 
+    <!-- TAB: DUE FOR A HIT -->
+    <div id="tabDueForHit" style="display:none;">
+      <div class="dfh-intro">
+        <div class="dfh-intro-icon">💧⚾</div>
+        <div>
+          <div class="dfh-intro-title">Due for a Hit</div>
+          <div class="dfh-intro-sub">Players stuck in a consecutive hitless AB streak — the longer the drought and the higher their average, the higher they rank. A hit is overdue.</div>
+        </div>
+      </div>
+      <div class="bts-filters" style="margin-bottom:20px;">
+        <span class="bts-filter-label">Min AVG:</span>
+        <button class="bts-filter-btn active" data-dfhavg="0" onclick="setDfhFilter(this)">Any</button>
+        <button class="bts-filter-btn" data-dfhavg="0.250" onclick="setDfhFilter(this)">.250+</button>
+        <button class="bts-filter-btn" data-dfhavg="0.270" onclick="setDfhFilter(this)">.270+</button>
+        <button class="bts-filter-btn" data-dfhavg="0.290" onclick="setDfhFilter(this)">.290+</button>
+      </div>
+      <div id="dfhGrid" class="dfh-grid"></div>
+      <div id="dfhEmpty" class="leaders-loading" style="display:none;">No qualifying slumps found. All hitters are performing near their averages.</div>
+      <div id="dfhLoading" class="leaders-loading" style="display:none;">Analyzing consecutive hitless streaks...</div>
+    </div>
+
     <!-- TAB: LEADERBOARD -->
     <div id="tabLeaders" style="display:none;">
       <div id="leadersContent">
@@ -1288,27 +1532,57 @@ main { padding: 28px 0 60px; }
 
     <!-- TAB: DAILY DOMINATORS -->
     <div id="tabDominators" style="display:none;">
-      <div class="dom-intro">
-        <div class="dom-intro-icon">🔥</div>
-        <div>
-          <div class="dom-intro-title">Daily Dominators</div>
-          <div class="dom-intro-sub">Top performers from today's completed games — sorted by actual hits, home runs, and total bases. Final games only.</div>
+      <!-- Sub-tab toggle: Daily Dominators / Rising Stars -->
+      <div class="dom-sub-tabs">
+        <button class="dom-sub-btn active" id="domSubBtnDom" onclick="switchDomSub('dominators',this)">🔥 Daily Dominators</button>
+        <button class="dom-sub-btn" id="domSubBtnRising" onclick="switchDomSub('rising',this)">⭐ Rising Stars</button>
+      </div>
+
+      <!-- Dominators section -->
+      <div id="domDomSection">
+        <div class="dom-intro">
+          <div class="dom-intro-icon">🔥</div>
+          <div>
+            <div class="dom-intro-title">Daily Dominators</div>
+            <div class="dom-intro-sub">Top performers from today's completed games — sorted by actual hits, home runs, and total bases. Final games only.</div>
+          </div>
         </div>
+        <div id="domCatTabs" class="dom-cat-tabs">
+          <button class="dom-cat-btn active" data-cat="hits" onclick="setDomCat('hits',this)">🟢 Most Hits</button>
+          <button class="dom-cat-btn" data-cat="hr" onclick="setDomCat('hr',this)">🟠 Home Runs</button>
+          <button class="dom-cat-btn" data-cat="tb" onclick="setDomCat('tb',this)">💥 Total Bases</button>
+          <button class="dom-cat-btn" data-cat="rbi" onclick="setDomCat('rbi',this)">🏃 RBI</button>
+        </div>
+        <div id="domGrid" class="dom-grid"></div>
+        <div id="domEmpty" class="leaders-loading" style="display:none;">No final games yet today. Check back after games wrap up.</div>
+        <div id="domLoading" class="leaders-loading" style="display:none;">Loading final game stats...</div>
       </div>
-      <div id="domCatTabs" class="dom-cat-tabs">
-        <button class="dom-cat-btn active" data-cat="hits" onclick="setDomCat('hits',this)">🟢 Most Hits</button>
-        <button class="dom-cat-btn" data-cat="hr" onclick="setDomCat('hr',this)">🟠 Home Runs</button>
-        <button class="dom-cat-btn" data-cat="tb" onclick="setDomCat('tb',this)">💥 Total Bases</button>
-        <button class="dom-cat-btn" data-cat="rbi" onclick="setDomCat('rbi',this)">🏃 RBI</button>
+
+      <!-- Rising Stars section -->
+      <div id="domRisingSection" style="display:none;">
+        <div class="rising-intro">
+          <div class="rising-intro-icon">⭐</div>
+          <div>
+            <div class="rising-intro-title">Rising Stars</div>
+            <div class="rising-intro-sub">Players who have performed at Daily Dominators top-10 level in 2+ of their last 5 games — consistently hot performers showing a pattern of excellence.</div>
+          </div>
+        </div>
+        <div id="domRisingGrid" class="rising-grid"></div>
+        <div id="domRisingEmpty" class="leaders-loading" style="display:none;">No rising stars identified yet. Check back once more recent game data is available.</div>
+        <div id="domRisingLoading" class="leaders-loading" style="display:none;">Analyzing recent game logs...</div>
       </div>
-      <div id="domGrid" class="dom-grid"></div>
-      <div id="domEmpty" class="leaders-loading" style="display:none;">No final games yet today. Check back after games wrap up.</div>
-      <div id="domLoading" class="leaders-loading" style="display:none;">Loading final game stats...</div>
     </div>
 
     <!-- TAB: OVERALL TOP PICKS -->
     <div id="tabOverall" style="display:none;">
-      <div id="overallBestBetBanner" style="display:none;margin-bottom:18px;"></div>
+      <div id="overallBestBetWrap" style="display:none;margin-bottom:18px;">
+        <div class="bb-mode-toggle">
+          <button class="ovr-bb-btn active-combined" onclick="switchOvrBbMode('combined',this)">🎯 Best Pick</button>
+          <button class="ovr-bb-btn" onclick="switchOvrBbMode('hit',this)">🟢 Best Hit</button>
+          <button class="ovr-bb-btn" onclick="switchOvrBbMode('hr',this)">🟠 Best HR</button>
+        </div>
+        <div class="bb-triple" id="overallBestBetBanner"></div>
+      </div>
       <div id="overallHitsSection" style="display:none;">
         <div class="section-header">
           <div class="section-title green bebas">TOP HIT PLAYS — ALL GAMES</div>
@@ -1330,11 +1604,11 @@ main { padding: 28px 0 60px; }
       <!-- BEST BET OF THE GAME -->
       <div id="bestBetWrap" style="display:none;">
         <div class="bb-mode-toggle">
-          <button class="bb-mode-btn active-combined" onclick="setBestBetMode('combined',this)">🎯 Best Pick</button>
-          <button class="bb-mode-btn" onclick="setBestBetMode('hit',this)">🟢 Hits</button>
-          <button class="bb-mode-btn" onclick="setBestBetMode('hr',this)">🟠 HR</button>
+          <button class="bb-mode-btn active-combined" onclick="switchBbMode('combined',this)">🎯 Best Pick</button>
+          <button class="bb-mode-btn" onclick="switchBbMode('hit',this)">🟢 Best Hit</button>
+          <button class="bb-mode-btn" onclick="switchBbMode('hr',this)">🟠 Best HR</button>
         </div>
-        <div id="bestBetBanner"></div>
+        <div class="bb-triple" id="bestBetBanner"></div>
       </div>
 
       <!-- TOP HITS -->
@@ -1364,6 +1638,64 @@ main { padding: 28px 0 60px; }
 
     <!-- ERROR STATE -->
     <div id="errorState" style="display:none;"></div>
+
+    <!-- LEGEND CARD -->
+    <div class="formula-section" id="legendSection" style="display:none;">
+      <div class="formula-toggle" onclick="toggleLegend()" id="legendToggle">
+        <span>📖</span>
+        <span>Indicators &amp; Labels Explained</span>
+        <span class="formula-arrow" id="legendArrow">▶</span>
+      </div>
+      <div class="formula-body" id="legendBody" style="display:none;">
+
+        <!-- Column 1 -->
+        <div class="formula-col">
+
+          <h3 class="section-title green">HIT &amp; HR SCORES</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Each player is assigned a score from 0–100 predicting how likely they are to get a hit or homer in today's game.</p>
+          <div class="formula-row"><span class="fr-sign pos">80–100</span><span class="fr-text">Elite — very high probability</span></div>
+          <div class="formula-row"><span class="fr-sign pos">70–79</span><span class="fr-text">Strong — above-average chance</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">60–69</span><span class="fr-text">Moderate — worth watching</span></div>
+          <div class="formula-row"><span class="fr-sign neg">0–59</span><span class="fr-text">Low — limited positive indicators</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">Confidence Levels <span class="formula-divider-sub">how sure the model is</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#22c55e">★ Very Confident</span><span class="fr-text">Multiple strong factors all pointing the same way</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f59e0b">✦ Confident</span><span class="fr-text">Most factors are positive with minor concerns</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">◆ Not So Confident</span><span class="fr-text">Mixed signals — some positive, some negative</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#ef4444">▲ Low Confidence</span><span class="fr-text">Weak or conflicting indicators — use caution</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">Lineup Status <span class="formula-divider-sub">how certain the player is playing</span></div>
+          <div class="formula-row"><span class="fr-sign pos">✓ Posted</span><span class="fr-text">Official lineup confirmed — player is definitely playing</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">⏳ Projected</span><span class="fr-text">Lineup not yet announced — based on expected batting order. Picks update automatically once lineups are posted</span></div>
+
+        </div>
+
+        <!-- Column 2 -->
+        <div class="formula-col">
+
+          <h3 class="section-title orange">STREAK LABELS</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Compares a player's last 7 games batting average (L7 AVG) to their full season AVG. The difference is measured in batting average points.</p>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥 Hot Streak</span><span class="fr-text">L7 AVG is <strong>30+ points higher</strong> than season AVG — player is on fire recently</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#60a5fa">❄️ Cold Streak</span><span class="fr-text">L7 AVG is <strong>30+ points lower</strong> than season AVG — player is in a recent slump</span></div>
+          <div class="formula-row"><span class="fr-sign">— Steady</span><span class="fr-text">L7 AVG is within 29 points of season AVG — performing close to their normal level</span></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Example: Season AVG .280, L7 AVG .220 → difference = −60 pts → ❄️ Cold Streak</p>
+
+          <div class="formula-divider" style="margin-top:16px">Live Game Badges <span class="formula-divider-sub">shown once a game starts</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-red)">● LIVE</span><span class="fr-text">Game is currently in progress — stats update in real time</span></div>
+          <div class="formula-row"><span class="fr-sign">● FINAL</span><span class="fr-text">Game has ended — stats are the player's final result for the day</span></div>
+          <div class="formula-row"><span class="fr-sign pos">✅ Hit (2/4)</span><span class="fr-text">Player got a hit — number shown is hits / at-bats</span></div>
+          <div class="formula-row"><span class="fr-sign neg">❌ No Hit (0/3)</span><span class="fr-text">Player has at-bats but no hit yet</span></div>
+          <div class="formula-row"><span class="fr-sign pos">✅ HR</span><span class="fr-text">Player hit a home run today</span></div>
+          <div class="formula-row"><span class="fr-sign neg">❌ No HR</span><span class="fr-text">Player has at-bats but no homer yet</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">Leaderboard Rank Badges <span class="formula-divider-sub">season-long rankings</span></div>
+          <div class="formula-row"><span class="fr-sign pos">🏆 #1 Hit Leaderboard</span><span class="fr-text">Player ranks in the top 10 for total hits across the entire MLB season</span></div>
+          <div class="formula-row"><span class="fr-sign pos">🏆 #1 HR Leaderboard</span><span class="fr-text">Player ranks in the top 10 for home runs across the entire MLB season</span></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Only shown when a player is ranked #1–10. Players ranked #11 or lower are not flagged.</p>
+
+        </div>
+      </div>
+    </div>
 
     <!-- FORMULA CARD -->
     <div class="formula-section" id="formulaSection" style="display:none;">
@@ -1455,6 +1787,7 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">HR/PA ≥ 4.5% (high)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">HR/PA ≥ 3.0% (solid)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">HR/PA &lt; 1.5% (contact hitter)</span></div>
+          <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">PA role share (role + recent usage)</span></div>
           <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">PA role share (role + recent usage)</span></div>
           <div class="formula-divider">Matchup &amp; Environment <span class="formula-divider-sub">pitcher HR/9 + park + weather — env capped ±8</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher HR/9 ≥ 1.5 — very HR-prone</span></div>
@@ -1617,6 +1950,7 @@ let state = {
   playerMap: {},   // id -> { ...player, gamePk }
   streakFilter: 'both',
   streakConsecMin: 0,
+  allGamesLiveData: {}, // gamePk -> { statsMap, isLive, isFinal }
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────
@@ -1664,6 +1998,7 @@ const PA_CFG = {
 // pa            : player's season plate appearances
 // teamPAList    : array of season PAs for all batters on the same team (used for team-share calc)
 // recentStarts  : games started in last 7 (PA >= 2); pass null if unknown
+// Returns { total, roleScore, recentScore, shareStr, factors[] }
 // Returns { total, roleScore, recentScore, shareStr, factors[] }
 function computePAScore(pa, teamPAList, recentStarts) {
   const teamTotal = (teamPAList || []).reduce((a, b) => a + b, 0);
@@ -2078,6 +2413,26 @@ function predCardHTML(player, type, delay=0, prefix='c') {
       ${player.seasonStats?.ops ? `<div class="stat-pill"><span>OPS</span><strong>${safe(player.seasonStats.ops)}</strong></div>` : ''}
     </div>`;
 
+  // Live / Final achievement badges
+  const _ld = (state.allGamesLiveData || {})[player.gamePk];
+  let achieveBadgeHTML = '';
+  if (_ld) {
+    const _bs = _ld.statsMap[player.id];
+    const _ab = _bs?.atBats || 0;
+    if (_bs && (_ab > 0 || (_bs.hits || 0) > 0 || (_bs.homeRuns || 0) > 0)) {
+      const _pip = _ld.isLive
+        ? `<span class="bb-live-pip">● LIVE</span>`
+        : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+      const _hitBadge = (_bs.hits || 0) > 0
+        ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
+        : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
+      const _hrBadge = (_bs.homeRuns || 0) > 0
+        ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+        : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+      achieveBadgeHTML = `<div class="bb-achieve-row" style="margin-top:6px">${_pip}${_hitBadge}${_hrBadge}</div>`;
+    }
+  }
+
   return `
     <div class="pred-card ${type}" style="animation-delay:${delay}ms">
       <div class="card-top">
@@ -2090,6 +2445,7 @@ function predCardHTML(player, type, delay=0, prefix='c') {
         </div>
         <span class="confidence-badge ${conf.cls}">${conf.label}</span>
       </div>
+      ${achieveBadgeHTML}
       ${statsHTML}
       <div class="card-reason" style="margin-top:10px">"${reason}"</div>
       <div class="factor-chips">${chipsHTML}</div>
@@ -2230,8 +2586,15 @@ async function processGame(game) {
     const awayPlayers = Object.values(boxscore.teams.away?.players || {});
     const homePlayers = Object.values(boxscore.teams.home?.players || {});
 
+    // For final games the API keeps scratched players in the boxscore with their
+    // original battingOrder intact (0 PA). Filter them out so only players who
+    // actually stepped to the plate are included. For live/preview games keep all
+    // batting-order entries since not everyone has batted yet.
+    const isFinalGame = game.status?.abstractGameState === 'Final';
+    const playedFilter = p => !isFinalGame || (p.stats?.batting?.plateAppearances || 0) > 0;
+
     awayLineup = awayPlayers
-      .filter(p => p.battingOrder && p.battingOrder !== '')
+      .filter(p => p.battingOrder && p.battingOrder !== '' && playedFilter(p))
       .sort((a,b) => parseInt(a.battingOrder) - parseInt(b.battingOrder))
       .map(p => ({
         id: p.person?.id,
@@ -2244,7 +2607,7 @@ async function processGame(game) {
       }));
 
     homeLineup = homePlayers
-      .filter(p => p.battingOrder && p.battingOrder !== '')
+      .filter(p => p.battingOrder && p.battingOrder !== '' && playedFilter(p))
       .sort((a,b) => parseInt(a.battingOrder) - parseInt(b.battingOrder))
       .map(p => ({
         id: p.person?.id,
@@ -2326,6 +2689,13 @@ async function processGame(game) {
   let lockedBestBet    = null;
   let lockedBestBetHit = null;
   let lockedBestBetHR  = null;
+  // Attach confidence to every player (uses gameLogCache if already populated)
+  for (const p of players) {
+    p.confidence    = computePickConfidence(p, { awayPitcher: awayPitcherRaw, homePitcher: homePitcherRaw, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'combined');
+    p.hitConfidence = computePickConfidence(p, { awayPitcher: awayPitcherRaw, homePitcher: homePitcherRaw, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'hit');
+    p.hrConfidence  = computePickConfidence(p, { awayPitcher: awayPitcherRaw, homePitcher: homePitcherRaw, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'hr');
+  }
+
   if (lineupPosted && players.length) {
     lockedBestBet    = [...players].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
     lockedBestBetHit = [...players].sort((a,b) => b.hitScore - a.hitScore)[0];
@@ -2342,6 +2712,8 @@ async function processGame(game) {
     gameDate,
     players,
     lockedBestBet,
+    lockedBestBetHit,
+    lockedBestBetHR,
     lockedBestBetHit,
     lockedBestBetHR,
   };
@@ -2481,7 +2853,6 @@ async function fetchRosterProjected(teamId) {
         const pos = p.position?.type || '';
         return pos !== 'Pitcher';
       })
-      .slice(0,9)
       .map(p => ({
         id: p.person?.id,
         name: p.person?.fullName || 'Unknown',
@@ -2675,6 +3046,7 @@ function selectGameView(pk, view) {
   document.getElementById('tabOverall').style.display    = 'none';
   document.getElementById('tabStreaks').style.display    = 'none';
   document.getElementById('tabLeaders').style.display    = 'none';
+  document.getElementById('tabDueForHit').style.display  = 'none';
   document.getElementById('tabBts').style.display        = 'none';
   document.getElementById('tabDominators').style.display = 'none';
 
@@ -2719,6 +3091,121 @@ function hideProjectedNotice() {
   if (el) el.style.display = 'none';
 }
 
+// ─── BUILD PICK CARD (shared helper for triple best bet layout) ───────────
+function buildPickCard(player, mode, glId, selGame, lineupPosted) {
+  const bbTeamInfo  = TEAM_INFO[player.teamId] || null;
+  const bbLogoSlug  = bbTeamInfo?.espn || player.teamAbbr?.toLowerCase() || '';
+  const bbPhotoUrl  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const teamLogoHTML = bbLogoSlug
+    ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${bbLogoSlug}.png" alt="${player.teamAbbr}" onerror="this.style.display='none'">`
+    : '';
+
+  const reason = mode === 'hr'
+    ? buildReason(player.hrFactors, 'hr')
+    : mode === 'hit'
+      ? buildReason(player.hitFactors, 'hit')
+      : buildReason(player.hitScore >= player.hrScore ? player.hitFactors : player.hrFactors,
+                    player.hitScore >= player.hrScore ? 'hit' : 'hr');
+
+  const ss  = player.seasonStats || {};
+  const l7  = player.last7Stats  || {};
+  const sAvg = ss.avg || 0;
+  const lAvg = l7.avg || 0;
+  const diff = Math.round((lAvg - sAvg) * 1000);
+  let streakLabel, streakClass;
+  if (diff >= 30)       { streakLabel = '🔥 HOT STREAK';  streakClass = 'bb-streak-hot'; }
+  else if (diff <= -30) { streakLabel = '❄️ COLD STREAK'; streakClass = 'bb-streak-cold'; }
+  else                  { streakLabel = '— STEADY';       streakClass = 'bb-streak-steady'; }
+
+  const hitStreak = player.hitStreak || 0;
+  const hrStreak  = player.hrStreak  || 0;
+  const streakParts = [];
+  if (hitStreak >= 1) streakParts.push(`${hitStreak}-game hit streak 🔥`);
+  if (hrStreak  >= 1) streakParts.push(`${hrStreak}-game HR streak 💪🔥`);
+  const _pid     = Number(player.id);
+  const _hitRank = seasonLeaderRanks.hits.get(_pid);
+  const _hrRank  = seasonLeaderRanks.homeRuns.get(_pid);
+  if (_hitRank && _hitRank <= 10) streakParts.push(`#${_hitRank} Hit Leaderboard 🏆`);
+  if (_hrRank  && _hrRank  <= 10) streakParts.push(`#${_hrRank} HR Leaderboard 🏆`);
+  const streakNote = streakParts.length ? streakParts.join(' · ') : null;
+
+  const fmt  = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
+  const fmtI = v => v != null && v !== 0 ? v : '---';
+  const trendClass = diff >= 15 ? 'bb-trend-up' : diff <= -15 ? 'bb-trend-down' : '';
+
+  const liveStats  = state.bdHasActual ? (state.bdActualStats[player.id] || null) : null;
+  const gameIsLive = state.bdGameIsLive || false;
+  let achieveHTML = '';
+  if (liveStats) {
+    const gotHit = (liveStats.hits || 0) > 0;
+    const gotHR  = (liveStats.homeRuns || 0) > 0;
+    const ab     = liveStats.atBats || 0;
+    if (gotHit || gotHR || ab > 0) {
+      const livePip  = gameIsLive ? `<span class="bb-live-pip">● LIVE</span>` : '';
+      const hitBadge = gotHit
+        ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${liveStats.hits}/${ab})</span>`
+        : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>` : '';
+      const hrBadge  = gotHR
+        ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+        : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+      achieveHTML = `<div class="bb-achieve-row">${livePip}${hitBadge}${hrBadge}</div>`;
+    }
+  }
+
+  const conf = mode === 'hit' ? player.hitConfidence : mode !== 'hr' ? player.confidence : null;
+  const projWarn = !lineupPosted
+    ? `<div style="font-size:10px;color:var(--accent-orange);font-weight:600;letter-spacing:0.4px;margin-bottom:2px">⏳ PROJECTED — updates when lineup is confirmed</div>`
+    : '';
+
+  return `
+    <div onclick="openPlayerModal(${player.id})" style="cursor:pointer;display:flex;flex-direction:column;gap:10px">
+      ${projWarn}
+      ${achieveHTML}
+      <div class="best-bet-left">
+        <div class="best-bet-headshot-wrap">
+          <img class="best-bet-headshot" src="${bbPhotoUrl}" alt="${player.name}"
+            onerror="this.closest('.best-bet-headshot-wrap').style.display='none';this.closest('.best-bet-headshot-wrap').nextElementSibling.style.display='flex'">
+        </div>
+        <div class="best-bet-headshot-fallback" style="display:none">${(player.name||'?')[0]}</div>
+        <div class="best-bet-info">
+          <div class="best-bet-name-row">
+            ${teamLogoHTML}
+            <div class="best-bet-name">${player.name}</div>
+          </div>
+          <div class="bb-score-conf-row">
+            <span class="bb-mini-score"><div class="bb-ms-val" style="color:var(--accent-green)">${player.hitScore}</div><div class="bb-ms-lbl">Hit Score</div></span>
+            <span class="bb-mini-score"><div class="bb-ms-val" style="color:var(--accent-orange)">${player.hrScore}</div><div class="bb-ms-lbl">HR Score</div></span>
+          </div>
+          ${conf ? `<div class="bb-conf-phrase bb-conf-${conf.tier}" style="margin-top:4px">${conf.icon} ${conf.label}</div>` : ''}
+        </div>
+      </div>
+      <div class="best-bet-reason">${player.team} · ${player.position || ''} · ${player.matchup}</div>
+      <div class="best-bet-reason" style="margin-top:3px;font-style:italic">"${reason}"</div>
+      ${streakNote ? `<div class="best-bet-reason" style="margin-top:5px;color:var(--accent-orange);font-weight:600">${streakNote}</div>` : ''}
+      <div class="best-bet-stats-panel">
+        <div class="best-bet-stats-label">
+          Season Stats
+          <span class="bb-streak-badge ${streakClass}">${streakLabel}</span>
+        </div>
+        <div class="best-bet-stat-row">
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(sAvg)}</div><div class="sl">AVG</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmtI(ss.hits)}</div><div class="sl">H</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmtI(ss.homeRuns)}</div><div class="sl">HR</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.obp)}</div><div class="sl">OBP</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.slg)}</div><div class="sl">SLG</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.ops)}</div><div class="sl">OPS</div></div>
+          <div class="best-bet-stat-cell" style="border-left:1px solid var(--border);padding-left:10px;margin-left:2px">
+            <div class="sv ${trendClass}">${fmt(lAvg)}</div><div class="sl">L7 AVG</div>
+          </div>
+        </div>
+      </div>
+      <div class="streak-expand-btn" style="margin-top:-4px" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}')">
+        <span>Last 7 Games</span><span class="chevron">▼</span>
+      </div>
+      <div class="streak-gamelog" id="${glId}" style="min-width:0;overflow:hidden"></div>
+    </div>`;
+}
+
 function renderTopPlays() {
   // Players from the selected game only
   const selectedGd = state.predictions[state.selectedGamePk];
@@ -2743,182 +3230,100 @@ function renderTopPlays() {
     .sort((a,b) => b.hrScore - a.hrScore)
     .slice(0, 10);
 
-  // Pick best bet based on mode
-  const mode = state.bestBetMode || 'combined';
-  const bestBet =
-    mode === 'hit' ? (selectedGd?.lockedBestBetHit || [...allPlayers].sort((a,b) => b.hitScore - a.hitScore)[0])
-  : mode === 'hr'  ? (selectedGd?.lockedBestBetHR  || [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore)[0])
-  :                  (selectedGd?.lockedBestBet     || [...allPlayers].sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0]);
+  // Compute picks
+  const lineupPosted = selectedGd?.lineupPosted || false;
+  const bestBetCombined = lineupPosted
+    ? (selectedGd.lockedBestBet || [...allPlayers].sort((a,b) => (b.hitScore+b.hrScore)-(a.hitScore+a.hrScore))[0])
+    : ([...allPlayers].sort((a,b) => (b.hitScore+b.hrScore)-(a.hitScore+a.hrScore))[0] || null);
 
-  // Best bet banner
-  if (bestBet) {
-    const bbTeamInfo = TEAM_INFO[bestBet.teamId] || null;
-    const bbLogoSlug = bbTeamInfo?.espn || bestBet.teamAbbr?.toLowerCase() || '';
-    const bbPhotoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${bestBet.id}/headshot/67/current`;
-    const teamLogoHTML = bbLogoSlug
-      ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${bbLogoSlug}.png" alt="${bestBet.teamAbbr}" onerror="this.style.display='none'">`
-      : '';
-    const selGame   = state.games.find(g => g.gamePk === state.selectedGamePk);
-    const awayAbbr  = selGame?.teams?.away?.team?.abbreviation || '';
-    const homeAbbr  = selGame?.teams?.home?.team?.abbreviation || '';
-    const gameLabel = awayAbbr && homeAbbr ? ` — ${awayAbbr} @ ${homeAbbr}` : '';
-    const badgeLabel = mode === 'hit' ? `🟢 BEST HIT PICK${gameLabel}`
-                     : mode === 'hr'  ? `🟠 BEST HR PICK${gameLabel}`
-                     :                  `🎯 BEST BET OF SELECTED GAME${gameLabel}`;
-    const reason = mode === 'hr'
-      ? buildReason(bestBet.hrFactors, 'hr')
-      : mode === 'hit'
-        ? buildReason(bestBet.hitFactors, 'hit')
-        : buildReason(bestBet.hitScore >= bestBet.hrScore ? bestBet.hitFactors : bestBet.hrFactors,
-                      bestBet.hitScore >= bestBet.hrScore ? 'hit' : 'hr');
+  // Top 3 hit picks and top 3 HR picks (always ranked by score, naturally unique)
+  const hitPicks = [...allPlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
+  const hrPicks  = [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
 
-    // Build right-side stats panel data
-    const ss = bestBet.seasonStats || {};
-    const l7 = bestBet.last7Stats  || {};
-    const sAvg = ss.avg || 0;
-    const lAvg = l7.avg || 0;
-    const diff = Math.round((lAvg - sAvg) * 1000);
-    let streakLabel, streakClass;
-    if (diff >= 30)       { streakLabel = '🔥 HOT STREAK';  streakClass = 'bb-streak-hot'; }
-    else if (diff <= -30) { streakLabel = '❄️ COLD STREAK'; streakClass = 'bb-streak-cold'; }
-    else                  { streakLabel = '— STEADY';       streakClass = 'bb-streak-steady'; }
+  const selGame = state.games.find(g => g.gamePk === state.selectedGamePk);
 
-    // Consecutive streak note — always show active hit/HR streaks
-    const hitStreak = bestBet.hitStreak || 0;
-    const hrStreak  = bestBet.hrStreak  || 0;
-    const streakParts = [];
-    if (hitStreak >= 1) streakParts.push(`${hitStreak}-game hit streak 🔥`);
-    if (hrStreak  >= 1) streakParts.push(`${hrStreak}-game HR streak 💪🔥`);
-    const streakNote = streakParts.length ? streakParts.join(' · ') : null;
-    const fmt  = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
-    const fmtI = v => v != null && v !== 0 ? v : '---';
-    const trendClass = diff >= 15 ? 'bb-trend-up' : diff <= -15 ? 'bb-trend-down' : '';
+  // Render picks banner
+  if (bestBetCombined || hitPicks.length || hrPicks.length) {
+    const cId    = bestBetCombined ? String(bestBetCombined.id) : null;
+    const hitIds = hitPicks.map(p => String(p.id));
+    const hrIds  = hrPicks.map(p => String(p.id));
 
-    // Achievement badges — show if live/final game stats exist for this player
-    const liveStats  = state.bdHasActual ? (state.bdActualStats[bestBet.id] || null) : null;
-    const gameIsLive = state.bdGameIsLive || false;
-    let achieveHTML = '';
-    if (liveStats) {
-      const gotHit = (liveStats.hits || 0) > 0;
-      const gotHR  = (liveStats.homeRuns || 0) > 0;
-      const ab     = liveStats.atBats || 0;
-      if (gotHit || gotHR || ab > 0) {
-        const livePip = gameIsLive ? `<span class="bb-live-pip">● LIVE</span>` : '';
-        const hitBadge = gotHit
-          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${liveStats.hits}/${ab})</span>`
-          : ab > 0
-            ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>`
-            : '';
-        const hrBadge = gotHR
-          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
-          : ab > 0
-            ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>`
-            : '';
-        achieveHTML = `<div class="bb-achieve-row">${livePip}${hitBadge}${hrBadge}</div>`;
-      }
-    }
+    // Slash labels: flag any hit/hr pick that is also the combined pick
+    const overallExtras = [
+      ...hitIds.map((id,i) => id === cId ? `🟢 #${i+1} Hit Pick` : ''),
+      ...hrIds.map((id,i)  => id === cId ? `🟠 #${i+1} HR Pick`  : ''),
+    ].filter(Boolean);
+    const overallLabel = overallExtras.length
+      ? `🎯 BEST OVERALL PICK / ${overallExtras.join(' / ')}`
+      : '🎯 BEST OVERALL PICK';
+
+    state.bbPickIds = { combined: cId, hits: hitIds, hrs: hrIds };
+
+    // Build hit sections (#1 / #2 / #3)
+    const hitSectionsHTML = hitPicks.map((p, i) => {
+      const isDup  = cId && String(p.id) === cId;
+      const label  = isDup ? `🟢 #${i+1} HIT PICK / 🎯 Best Overall` : `🟢 #${i+1} HIT PICK`;
+      return `
+        <div class="bb-pick-section" id="bb-pick-hit-${i+1}">
+          <div class="bb-pick-label bb-pick-label-hit">${label}</div>
+          ${buildPickCard(p, 'hit', `bb-gl-hit-${i+1}`, selGame, lineupPosted)}
+        </div>`;
+    }).join('');
+
+    // Build HR sections (#1 / #2 / #3)
+    const hrSectionsHTML = hrPicks.map((p, i) => {
+      const isDup  = cId && String(p.id) === cId;
+      const label  = isDup ? `🟠 #${i+1} HR PICK / 🎯 Best Overall` : `🟠 #${i+1} HR PICK`;
+      return `
+        <div class="bb-pick-section" id="bb-pick-hr-${i+1}">
+          <div class="bb-pick-label bb-pick-label-hr">${label}</div>
+          ${buildPickCard(p, 'hr', `bb-gl-hr-${i+1}`, selGame, lineupPosted)}
+        </div>`;
+    }).join('');
 
     document.getElementById('bestBetWrap').style.display = 'block';
     document.getElementById('bestBetBanner').innerHTML = `
-      <div class="best-bet-banner" onclick="openPlayerModal(${bestBet.id})" style="cursor:pointer;width:100%">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-          <span class="best-bet-badge">${badgeLabel}</span>
-          ${achieveHTML}
-        </div>
-        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-          <div class="best-bet-left">
-            <div class="best-bet-headshot-wrap">
-              <img class="best-bet-headshot" src="${bbPhotoUrl}" alt="${bestBet.name}"
-                onerror="this.closest('.best-bet-headshot-wrap').style.display='none';this.closest('.best-bet-headshot-wrap').nextElementSibling.style.display='flex'">
-            </div>
-            <div class="best-bet-headshot-fallback" style="display:none">${(bestBet.name||'?')[0]}</div>
-            <div class="best-bet-info">
-              <div class="best-bet-name-row">
-                ${teamLogoHTML}
-                <div class="best-bet-name">${bestBet.name}</div>
-              </div>
-              <div class="best-bet-reason">${bestBet.team} · ${bestBet.position || ''} · ${bestBet.matchup}</div>
-              <div class="best-bet-reason" style="margin-top:3px;font-style:italic">"${reason}"</div>
-              ${streakNote ? `<div class="best-bet-reason" style="margin-top:6px;color:var(--accent-orange);font-weight:600">${streakNote}</div>` : ''}
-            </div>
-          </div>
-          <div class="best-bet-right">
-            <div class="best-bet-scores">
-              <div class="best-bet-score-item">
-                <div class="sv" style="color:var(--accent-green)">${bestBet.hitScore}</div>
-                <div class="sl">Hit Score</div>
-                <div class="sm">out of 100</div>
-              </div>
-              <div class="best-bet-score-item">
-                <div class="sv" style="color:var(--accent-orange)">${bestBet.hrScore}</div>
-                <div class="sl">HR Score</div>
-                <div class="sm">out of 100</div>
-              </div>
-            </div>
-            <div class="best-bet-stats-panel">
-              <div class="best-bet-stats-label">
-                Season Stats
-                <span class="bb-streak-badge ${streakClass}">${streakLabel}</span>
-              </div>
-              <div class="best-bet-stat-row">
-                <div class="best-bet-stat-cell">
-                  <div class="sv">${fmt(sAvg)}</div>
-                  <div class="sl">AVG</div>
-                </div>
-                <div class="best-bet-stat-cell">
-                  <div class="sv">${fmtI(ss.hits)}</div>
-                  <div class="sl">H</div>
-                </div>
-                <div class="best-bet-stat-cell">
-                  <div class="sv">${fmtI(ss.homeRuns)}</div>
-                  <div class="sl">HR</div>
-                </div>
-                <div class="best-bet-stat-cell">
-                  <div class="sv">${fmt(ss.obp)}</div>
-                  <div class="sl">OBP</div>
-                </div>
-                <div class="best-bet-stat-cell">
-                  <div class="sv">${fmt(ss.slg)}</div>
-                  <div class="sl">SLG</div>
-                </div>
-                <div class="best-bet-stat-cell">
-                  <div class="sv">${fmt(ss.ops)}</div>
-                  <div class="sl">OPS</div>
-                </div>
-                <div class="best-bet-stat-cell" style="border-left:1px solid var(--border);padding-left:12px;margin-left:2px">
-                  <div class="sv ${trendClass}">${fmt(lAvg)}</div>
-                  <div class="sl">L7 AVG</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="streak-expand-btn" style="flex-basis:100%;margin-top:4px" onclick="event.stopPropagation();toggleStreakGameLog(${bestBet.id},this,'bb-gamelog')">
-          <span>Last 7 Games</span><span class="chevron">▼</span>
-        </div>
-        <div class="streak-gamelog" id="bb-gamelog" style="flex-basis:100%;min-width:0;overflow:hidden"></div>
-      </div>`;
+      <div class="bb-pick-section" id="bb-pick-overall">
+        <div class="bb-pick-label bb-pick-label-combined">${overallLabel}
+          <span class="bb-pick-sublabel">Most likely to hit or homer</span></div>
+        ${bestBetCombined ? buildPickCard(bestBetCombined, 'combined', 'bb-gl-overall', selGame, lineupPosted) : ''}
+      </div>
+      ${hitSectionsHTML}
+      ${hrSectionsHTML}`;
+
+    // Restore active button state and apply visibility filter
+    const currentMode = state.bbViewMode || 'combined';
+    document.querySelectorAll('.bb-mode-btn').forEach(b => b.className = 'bb-mode-btn');
+    const activeBtn = [...document.querySelectorAll('.bb-mode-btn')].find(b =>
+      (currentMode === 'combined' && b.textContent.includes('Best Pick')) ||
+      (currentMode === 'hit'      && b.textContent.includes('Best Hit'))  ||
+      (currentMode === 'hr'       && b.textContent.includes('Best HR'))
+    );
+    if (activeBtn) activeBtn.classList.add(`active-${currentMode}`);
   }
 
-  // Hits grid
+  // Hits grid — always update innerHTML to prevent stale data from prior game
   const hitsSection = document.getElementById('topHitsSection');
+  document.getElementById('hitGrid').innerHTML = topHits.map((p,i) => predCardHTML(p,'hit',i*50,'top')).join('');
   if (topHits.length > 0) {
     hitsSection.style.display='block';
     document.getElementById('hitCount').textContent = `${topHits.length} plays`;
-    document.getElementById('hitGrid').innerHTML = topHits.map((p,i) => predCardHTML(p,'hit',i*50,'top')).join('');
   } else {
     hitsSection.style.display='none';
   }
 
-  // HRs grid
+  // HRs grid — always update innerHTML to prevent stale data from prior game
   const hrSection = document.getElementById('topHRsSection');
+  document.getElementById('hrGrid').innerHTML = topHRs.map((p,i) => predCardHTML(p,'hr',i*50,'top')).join('');
   if (topHRs.length > 0) {
     hrSection.style.display='block';
     document.getElementById('hrCount').textContent = `${topHRs.length} plays`;
-    document.getElementById('hrGrid').innerHTML = topHRs.map((p,i) => predCardHTML(p,'hr',i*50,'top')).join('');
   } else {
     hrSection.style.display='none';
   }
+
+  // Apply mode filter after grids are rendered
+  applyBbModeFilter(state.bbViewMode || 'combined');
 
   document.getElementById('mainTabs').style.display = 'flex';
 
@@ -2930,148 +3335,124 @@ function renderTopPlays() {
   }
 }
 
+// ─── FETCH LIVE DATA FOR ALL GAMES ────────────────────────────────────────
+async function fetchAllGamesLiveData() {
+  const gamePks = [...new Set(
+    Object.values(state.predictions).map(gd => gd.gamePk).filter(Boolean)
+  )];
+  await Promise.all(gamePks.map(async gPk => {
+    try {
+      const live = await fetchLiveFeed(gPk);
+      const abstractState = live.gameData?.status?.abstractGameState;
+      const isLive  = abstractState === 'Live';
+      const isFinal = abstractState === 'Final';
+      if (isLive || isFinal) {
+        const statsMap = {};
+        for (const side of ['away', 'home']) {
+          const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
+          for (const lp of Object.values(players)) {
+            if (lp.person?.id && lp.stats?.batting) statsMap[lp.person.id] = lp.stats.batting;
+          }
+        }
+        state.allGamesLiveData[gPk] = { statsMap, isLive, isFinal };
+      }
+    } catch { /* live data unavailable for this game */ }
+  }));
+}
+
 async function renderOverallTopPlays() {
-  // Collect all players across every processed game
+  await fetchAllGamesLiveData();
+
+  // Include all players — projected or confirmed (lineupPosted flag used for warnings only)
   let allPlayers = [];
   for (const gd of Object.values(state.predictions)) {
     allPlayers.push(...(gd.players || []));
   }
 
-  // Best bet across all games
-  const bestBet = [...allPlayers]
-    .sort((a,b) => (b.hitScore + b.hrScore) - (a.hitScore + a.hrScore))[0];
+  // Best overall + top 3 hit picks + top 3 HR picks
+  const bestBetCombined = [...allPlayers].sort((a,b) => (b.hitScore+b.hrScore)-(a.hitScore+a.hrScore))[0] || null;
+  const hitPicks = [...allPlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
+  const hrPicks  = [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
 
+  const wrap   = document.getElementById('overallBestBetWrap');
   const banner = document.getElementById('overallBestBetBanner');
-  if (bestBet) {
-    const bbTeamInfo  = TEAM_INFO[bestBet.teamId] || null;
-    const bbLogoSlug  = bbTeamInfo?.espn || bestBet.teamAbbr?.toLowerCase() || '';
-    const bbPhotoUrl  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${bestBet.id}/headshot/67/current`;
-    const teamLogoHTML = bbLogoSlug
-      ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${bbLogoSlug}.png" alt="${bestBet.teamAbbr}" onerror="this.style.display='none'">`
-      : '';
-    const reason = buildReason(
-      bestBet.hitScore >= bestBet.hrScore ? bestBet.hitFactors : bestBet.hrFactors,
-      bestBet.hitScore >= bestBet.hrScore ? 'hit' : 'hr'
-    );
-    const ss = bestBet.seasonStats || {};
-    const l7 = bestBet.last7Stats  || {};
-    const sAvg = ss.avg || 0;
-    const lAvg = l7.avg || 0;
-    const diff = Math.round((lAvg - sAvg) * 1000);
-    let streakLabel, streakClass;
-    if (diff >= 30)       { streakLabel = '🔥 HOT STREAK';  streakClass = 'bb-streak-hot'; }
-    else if (diff <= -30) { streakLabel = '❄️ COLD STREAK'; streakClass = 'bb-streak-cold'; }
-    else                  { streakLabel = '— STEADY';       streakClass = 'bb-streak-steady'; }
-    const fmt  = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
-    const fmtI = v => (v != null && v !== 0) ? v : '---';
-    const trendClass = diff >= 15 ? 'bb-trend-up' : diff <= -15 ? 'bb-trend-down' : '';
-    const hitStreak = bestBet.hitStreak || 0;
-    const hrStreak  = bestBet.hrStreak  || 0;
-    const streakParts = [];
-    if (hitStreak >= 1) streakParts.push(`${hitStreak}-game hit streak 🔥`);
-    if (hrStreak  >= 1) streakParts.push(`${hrStreak}-game HR streak 💪🔥`);
-    const streakNote = streakParts.length ? streakParts.join(' · ') : null;
 
-    // Fetch live/final stats for the best bet's game
-    let achieveHTML = '';
-    try {
-      const live = await fetchLiveFeed(bestBet.gamePk);
-      const abstractState = live.gameData?.status?.abstractGameState;
-      const gameStarted = abstractState === 'Live' || abstractState === 'Final';
-      const gameIsLive  = abstractState === 'Live';
-      if (gameStarted) {
-        let liveStats = null;
-        for (const side of ['away', 'home']) {
-          const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
-          for (const lp of Object.values(players)) {
-            if (Number(lp.person?.id) === bestBet.id && lp.stats?.batting) {
-              liveStats = lp.stats.batting;
-              break;
-            }
-          }
-          if (liveStats) break;
-        }
-        if (liveStats) {
-          const gotHit = (liveStats.hits || 0) > 0;
-          const gotHR  = (liveStats.homeRuns || 0) > 0;
-          const ab     = liveStats.atBats || 0;
-          if (gotHit || gotHR || ab > 0) {
-            const livePip  = gameIsLive ? `<span class="bb-live-pip">● LIVE</span>` : '';
-            const hitBadge = gotHit
-              ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${liveStats.hits}/${ab})</span>`
-              : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>` : '';
-            const hrBadge  = gotHR
-              ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
-              : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
-            achieveHTML = `<div class="bb-achieve-row">${livePip}${hitBadge}${hrBadge}</div>`;
-          }
-        }
-      }
-    } catch { /* no live data available */ }
+  if (bestBetCombined || hitPicks.length || hrPicks.length) {
+    const cId    = bestBetCombined ? String(bestBetCombined.id) : null;
+    const hitIds = hitPicks.map(p => String(p.id));
+    const hrIds  = hrPicks.map(p => String(p.id));
 
-    banner.style.display = 'flex';
+    // Slash labels for any hit/hr pick that also matches the combined pick
+    const overallExtras = [
+      ...hitIds.map((id,i) => id === cId ? `🟢 #${i+1} Hit Pick` : ''),
+      ...hrIds.map((id,i)  => id === cId ? `🟠 #${i+1} HR Pick`  : ''),
+    ].filter(Boolean);
+    const overallLabel = overallExtras.length
+      ? `🎯 BEST OVERALL PICK / ${overallExtras.join(' / ')}`
+      : '🎯 BEST OVERALL PICK';
+
+    state.ovrBbPickIds = { combined: cId, hits: hitIds, hrs: hrIds };
+
+    // Per-card live context (state.allGamesLiveData already populated by fetchAllGamesLiveData)
+    const savedStats  = state.bdActualStats;
+    const savedHas    = state.bdHasActual;
+    const savedIsLive = state.bdGameIsLive;
+    function buildOvrCard(player, mode, glId) {
+      const ld = (state.allGamesLiveData || {})[player.gamePk];
+      state.bdHasActual   = !!ld;
+      state.bdActualStats = ld ? ld.statsMap : {};
+      state.bdGameIsLive  = ld ? ld.isLive   : false;
+      return buildPickCard(player, mode, glId, null, true);
+    }
+
+    // Build hit sections (#1 / #2 / #3)
+    const hitSectionsHTML = hitPicks.map((p, i) => {
+      const isDup = cId && String(p.id) === cId;
+      const label = isDup ? `🟢 #${i+1} HIT PICK / 🎯 Best Overall` : `🟢 #${i+1} HIT PICK`;
+      return `
+        <div class="bb-pick-section" id="ovr-pick-hit-${i+1}">
+          <div class="bb-pick-label bb-pick-label-hit">${label}</div>
+          ${buildOvrCard(p, 'hit', `ovr-gl-hit-${i+1}`)}
+        </div>`;
+    }).join('');
+
+    // Build HR sections (#1 / #2 / #3)
+    const hrSectionsHTML = hrPicks.map((p, i) => {
+      const isDup = cId && String(p.id) === cId;
+      const label = isDup ? `🟠 #${i+1} HR PICK / 🎯 Best Overall` : `🟠 #${i+1} HR PICK`;
+      return `
+        <div class="bb-pick-section" id="ovr-pick-hr-${i+1}">
+          <div class="bb-pick-label bb-pick-label-hr">${label}</div>
+          ${buildOvrCard(p, 'hr', `ovr-gl-hr-${i+1}`)}
+        </div>`;
+    }).join('');
+
+    wrap.style.display = 'block';
     banner.innerHTML = `
-      <div class="best-bet-banner" onclick="openPlayerModal(${bestBet.id})" style="cursor:pointer;width:100%">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-          <span class="best-bet-badge">⭐ BEST BET OF THE DAY — ALL GAMES</span>
-          ${achieveHTML}
-        </div>
-        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-          <div class="best-bet-left">
-            <div class="best-bet-headshot-wrap">
-              <img class="best-bet-headshot" src="${bbPhotoUrl}" alt="${bestBet.name}"
-                onerror="this.closest('.best-bet-headshot-wrap').style.display='none';this.closest('.best-bet-headshot-wrap').nextElementSibling.style.display='flex'">
-            </div>
-            <div class="best-bet-headshot-fallback" style="display:none">${(bestBet.name||'?')[0]}</div>
-            <div class="best-bet-info">
-              <div class="best-bet-name-row">
-                ${teamLogoHTML}
-                <div class="best-bet-name">${bestBet.name}</div>
-              </div>
-              <div class="best-bet-reason">${bestBet.team} · ${bestBet.position || ''} · ${bestBet.matchup}</div>
-              <div class="best-bet-reason" style="margin-top:3px;font-style:italic">"${reason}"</div>
-              ${streakNote ? `<div class="best-bet-reason" style="margin-top:6px;color:var(--accent-orange);font-weight:600">${streakNote}</div>` : ''}
-            </div>
-          </div>
-          <div class="best-bet-right">
-            <div class="best-bet-scores">
-              <div class="best-bet-score-item">
-                <div class="sv" style="color:var(--accent-green)">${bestBet.hitScore}</div>
-                <div class="sl">Hit Score</div>
-                <div class="sm">out of 100</div>
-              </div>
-              <div class="best-bet-score-item">
-                <div class="sv" style="color:var(--accent-orange)">${bestBet.hrScore}</div>
-                <div class="sl">HR Score</div>
-                <div class="sm">out of 100</div>
-              </div>
-            </div>
-            <div class="best-bet-stats-panel">
-              <div class="best-bet-stats-label">
-                Season Stats
-                <span class="bb-streak-badge ${streakClass}">${streakLabel}</span>
-              </div>
-              <div class="best-bet-stat-row">
-                <div class="best-bet-stat-cell"><div class="sv">${fmt(sAvg)}</div><div class="sl">AVG</div></div>
-                <div class="best-bet-stat-cell"><div class="sv">${fmtI(ss.hits)}</div><div class="sl">H</div></div>
-                <div class="best-bet-stat-cell"><div class="sv">${fmtI(ss.homeRuns)}</div><div class="sl">HR</div></div>
-                <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.obp)}</div><div class="sl">OBP</div></div>
-                <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.slg)}</div><div class="sl">SLG</div></div>
-                <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.ops)}</div><div class="sl">OPS</div></div>
-                <div class="best-bet-stat-cell" style="border-left:1px solid var(--border);padding-left:12px;margin-left:2px">
-                  <div class="sv ${trendClass}">${fmt(lAvg)}</div><div class="sl">L7 AVG</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="streak-expand-btn" style="flex-basis:100%;margin-top:4px" onclick="event.stopPropagation();toggleStreakGameLog(${bestBet.id},this,'bb-overall-gamelog')">
-          <span>Last 7 Games</span><span class="chevron">▼</span>
-        </div>
-        <div class="streak-gamelog" id="bb-overall-gamelog" style="flex-basis:100%;min-width:0;overflow:hidden"></div>
-      </div>`;
+      <div class="bb-pick-section" id="ovr-pick-overall">
+        <div class="bb-pick-label bb-pick-label-combined">${overallLabel}
+          <span class="bb-pick-sublabel">Best across all today's games</span></div>
+        ${bestBetCombined ? buildOvrCard(bestBetCombined, 'combined', 'ovr-gl-overall') : ''}
+      </div>
+      ${hitSectionsHTML}
+      ${hrSectionsHTML}`;
+
+    // Restore original live state
+    state.bdActualStats = savedStats;
+    state.bdHasActual   = savedHas;
+    state.bdGameIsLive  = savedIsLive;
+
+    // Restore button active state
+    const currentMode = state.ovrBbViewMode || 'combined';
+    document.querySelectorAll('.ovr-bb-btn').forEach(b => b.className = 'ovr-bb-btn');
+    const activeBtn = [...document.querySelectorAll('.ovr-bb-btn')].find(b =>
+      (currentMode === 'combined' && b.textContent.includes('Best Pick')) ||
+      (currentMode === 'hit'      && b.textContent.includes('Best Hit'))  ||
+      (currentMode === 'hr'       && b.textContent.includes('Best HR'))
+    );
+    if (activeBtn) activeBtn.classList.add(`active-${currentMode}`);
   } else {
-    banner.style.display = 'none';
+    wrap.style.display = 'none';
   }
 
   // Top Hits across all games (score >= 70, top 15)
@@ -3101,6 +3482,9 @@ async function renderOverallTopPlays() {
   } else {
     hrSection.style.display = 'none';
   }
+
+  // Apply mode filter after everything is rendered
+  applyOvrBbModeFilter(state.ovrBbViewMode || 'combined');
 }
 
 // ─── HOT STREAKS ──────────────────────────────────────────────────────────
@@ -3317,13 +3701,13 @@ async function renderHotStreaks() {
 // ─── STREAK GAME LOG ──────────────────────────────────────────────────────
 const gameLogCache = new Map();
 
-async function fetchGameLog(playerId) {
-  if (gameLogCache.has(playerId)) return gameLogCache.get(playerId);
+async function fetchGameLog(playerId, includeToday = false) {
+  const cacheKey = includeToday ? `${playerId}_today` : playerId;
+  if (gameLogCache.has(cacheKey)) return gameLogCache.get(cacheKey);
   const season = new Date().getFullYear();
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=gameLog&season=${season}&group=hitting&gameType=R`;
   try {
     const data = await cachedFetch(url);
-    // Search all stats entries for one with splits (handles traded/multi-team players)
     const statsArr = data?.stats || [];
     let splits = [];
     for (const s of statsArr) {
@@ -3332,16 +3716,15 @@ async function fetchGameLog(playerId) {
         break;
       }
     }
-    // Exclude today's game — only show prior games for display/scoring
-    splits = splits.filter(g => g.date !== state.date);
-    // Most recent 7 games, newest first
+    // Exclude today's game unless caller explicitly wants it (e.g. Daily Dominators)
+    if (!includeToday) splits = splits.filter(g => g.date !== state.date);
     const last7 = splits.slice(-7).reverse();
-    gameLogCache.set(playerId, last7);
+    gameLogCache.set(cacheKey, last7);
     return last7;
   } catch { return []; }
 }
 
-async function toggleStreakGameLog(playerId, btnEl, logId) {
+async function toggleStreakGameLog(playerId, btnEl, logId, includeToday = false) {
   const logEl  = document.getElementById(logId || `gamelog-${playerId}`);
   const isOpen = logEl.classList.contains('open');
 
@@ -3354,7 +3737,7 @@ async function toggleStreakGameLog(playerId, btnEl, logId) {
   if (logEl.dataset.loaded) return; // already loaded, just show
 
   logEl.innerHTML = `<div class="streak-gamelog-loading">Loading...</div>`;
-  const games = await fetchGameLog(playerId);
+  const games = await fetchGameLog(playerId, includeToday);
 
   if (!games.length) {
     logEl.innerHTML = `<div class="streak-gamelog-loading">No recent game data available.</div>`;
@@ -3585,6 +3968,7 @@ async function renderBreakdown(gameData) {
   state.bdActualStats = {};
   state.bdHasActual = false;
   state.bdGameIsLive = false;
+  state.bdTeamFilter = 'combined'; // reset to combined on each new game
 
   try {
     const live = await fetchLiveFeed(gameData.gamePk);
@@ -3600,6 +3984,13 @@ async function renderBreakdown(gameData) {
         }
       }
       state.bdHasActual = Object.keys(state.bdActualStats).length > 0;
+      if (state.bdHasActual) {
+        state.allGamesLiveData[gameData.gamePk] = {
+          statsMap: state.bdActualStats,
+          isLive:  state.bdGameIsLive,
+          isFinal: !state.bdGameIsLive,
+        };
+      }
     }
   } catch (e) { /* show predictions only */ }
 
@@ -3634,13 +4025,29 @@ function setSortBreakdown(col) {
   renderBreakdownTable();
 }
 
+function setTeamFilter(filter, btn) {
+  state.bdTeamFilter = filter;
+  document.querySelectorAll('.bd-team-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBreakdownTable();
+}
+
 function renderBreakdownTable() {
   const el = document.getElementById('breakdownContent');
   const gameData = state.bdGameData;
   if (!el || !gameData) return;
 
   const { col, dir } = state.bdSort;
-  const sorted = [...gameData.players].sort((a, b) => {
+
+  // Filter players by selected team
+  let filteredPlayers = [...gameData.players];
+  if (state.bdTeamFilter === 'home') {
+    filteredPlayers = filteredPlayers.filter(p => p.teamAbbr === gameData.homeAbbr);
+  } else if (state.bdTeamFilter === 'away') {
+    filteredPlayers = filteredPlayers.filter(p => p.teamAbbr === gameData.awayAbbr);
+  }
+
+  const sorted = [...filteredPlayers].sort((a, b) => {
     const av = bdSortVal(a, col), bv = bdSortVal(b, col);
     if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     return dir === 'asc' ? av - bv : bv - av;
@@ -3679,6 +4086,13 @@ function renderBreakdownTable() {
     ${th('H', 'hits', 'color:var(--accent-green)')}
     ${th('HR', 'hr', 'color:var(--accent-orange)')}` : '';
 
+  const awayLogoSlug = (TEAM_INFO[gameData.awayId]?.espn || gameData.awayAbbr?.toLowerCase() || '');
+  const homeLogoSlug = (TEAM_INFO[gameData.homeId]?.espn || gameData.homeAbbr?.toLowerCase() || '');
+  const awayLogo = awayLogoSlug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
+  const homeLogo = homeLogoSlug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
+  const projWarn = !gameData.lineupPosted
+    ? `<div class="bd-projected-warn">⏳ Projected lineup — scores will update once the lineup is confirmed</div>` : '';
+
   el.innerHTML = `
     <div class="game-breakdown">
       <div class="breakdown-header">
@@ -3688,6 +4102,12 @@ function renderBreakdownTable() {
         </div>
         ${!gameData.lineupPosted ? '<span class="lineup-projected" style="font-size:12px;">~ Projected</span>' : '<span class="lineup-posted" style="font-size:12px;">✓ Posted</span>'}
       </div>
+      <div class="bd-team-filter">
+        <button class="bd-team-btn${state.bdTeamFilter === 'combined' ? ' active' : ''}" onclick="setTeamFilter('combined',this)">⚾ Combined</button>
+        <button class="bd-team-btn${state.bdTeamFilter === 'away'     ? ' active' : ''}" onclick="setTeamFilter('away',this)">${awayLogo}${gameData.awayAbbr} Away</button>
+        <button class="bd-team-btn${state.bdTeamFilter === 'home'     ? ' active' : ''}" onclick="setTeamFilter('home',this)">${homeLogo}${gameData.homeAbbr} Home</button>
+      </div>
+      ${projWarn}
       <div class="breakdown-table-wrap">
         <table class="breakdown-table">
           <thead>
@@ -3737,7 +4157,6 @@ async function openPlayerModal(playerId) {
       const half = live.liveData?.linescore?.inningHalf === 'Top' ? '▲'
                  : live.liveData?.linescore?.inningHalf === 'Bottom' ? '▼' : '';
       liveInning = inn ? `${half}${inn}` : '';
-      // Use numeric comparison to avoid string/number type mismatch
       const pid = Number(playerId);
       outer: for (const side of ['away', 'home']) {
         const players = live.liveData?.boxscore?.teams?.[side]?.players || {};
@@ -3748,12 +4167,10 @@ async function openPlayerModal(playerId) {
           }
         }
       }
-      // Game is live/final but player not found in boxscore — still show a row with zeros
       if (bs === null) bs = {};
     }
   } catch(e) { console.warn('Live feed error:', e); }
 
-  // Actual game stats bar — always show for live/final games
   const statItem = (val, label, color='') =>
     `<div class="modal-actual-stat">
        <div class="sv" style="${color}">${val != null ? val : '0'}</div>
@@ -3845,6 +4262,7 @@ document.addEventListener('keydown', e => {
 
 // ─── LEADERBOARD ──────────────────────────────────────────────────────────
 let leaderboardLoaded = false; // reset if data failed to render
+const seasonLeaderRanks = { hits: new Map(), homeRuns: new Map() };
 
 async function renderLeaderboard() {
   if (leaderboardLoaded) return;
@@ -3871,6 +4289,9 @@ async function renderLeaderboard() {
       const leaders  = group.leaders || [];
 
       rendered++;
+      const rankMap = isHit ? seasonLeaderRanks.hits : seasonLeaderRanks.homeRuns;
+      rankMap.clear();
+      leaders.forEach(l => { if (l.person?.id) rankMap.set(Number(l.person.id), l.rank); });
       document.getElementById(countId).textContent = `Top ${leaders.length}`;
       document.getElementById(listId).innerHTML = leaders.map(l => {
         const rank     = l.rank;
@@ -3999,6 +4420,108 @@ function computeBtsScore(player, gameData) {
   else if (pos >= 8) { score -= 2; }
 
   return { score: clamp(Math.round(score), 0, 100), reasons };
+}
+
+// ─── PICK CONFIDENCE ──────────────────────────────────────────────────────
+function computePickConfidence(player, gameData, lineupPosted, mode = 'combined') {
+  let score = 50;
+
+  // 1. Hit/HR score — biggest base input
+  const baseScore = mode === 'hit' ? (player.hitScore || 0)
+                  : mode === 'hr'  ? (player.hrScore  || 0)
+                  : ((player.hitScore || 0) + (player.hrScore || 0)) / 2;
+  if      (baseScore >= 80) score += 25;
+  else if (baseScore >= 65) score += 15;
+  else if (baseScore >= 50) score += 5;
+  else if (baseScore >= 35) score -= 5;
+  else                      score -= 15;
+
+  // 2. Opposing pitcher — ace is the biggest situational confidence killer
+  const oppPitcher = player.teamId === gameData?.homeTeamId
+    ? gameData.awayPitcher : gameData.homePitcher;
+  const pEra  = oppPitcher?.seasonStats?.era  || 0;
+  const pWhip = oppPitcher?.seasonStats?.whip || 0;
+  if (!oppPitcher?.seasonStats)            score -= 5;
+  else if (pEra <= 2.50 || pWhip <= 0.95) score -= 20;
+  else if (pEra <= 3.20 || pWhip <= 1.05) score -= 12;
+  else if (pEra <= 3.80 || pWhip <= 1.15) score -= 4;
+  else if (pEra >= 5.50 || pWhip >= 1.50) score += 15;
+  else if (pEra >= 4.51 || pWhip >= 1.35) score += 8;
+
+  // 3. Hit streak — always boosts, never penalizes (0 = neutral)
+  const hitStreak = player.hitStreak || 0;
+  const hrStreak  = player.hrStreak  || 0;
+  if      (hitStreak >= 10) score += 20;
+  else if (hitStreak >= 7)  score += 16;
+  else if (hitStreak >= 5)  score += 12;
+  else if (hitStreak >= 3)  score += 8;
+  else if (hitStreak >= 1)  score += 4;
+  if (mode !== 'hit') {
+    if      (hrStreak >= 2) score += 8;
+    else if (hrStreak >= 1) score += 4;
+  }
+
+  // 4. Due factor — only when player has no active hit streak
+  const log = gameLogCache.get(player.id) || [];
+  const seasonAvg = player.seasonStats?.avg || 0;
+  if (mode !== 'hr' && hitStreak === 0 && seasonAvg >= 0.270) {
+    let hitlessABs = 0;
+    for (const g of log) {
+      if ((g.stat?.hits || 0) === 0) hitlessABs += (g.stat?.atBats || 0);
+      else break;
+    }
+    if      (hitlessABs >= 13) score += 15;
+    else if (hitlessABs >= 7)  score += 10;
+  }
+
+  // 5. Handedness split vs opposing pitcher
+  const pitcherHand = oppPitcher?.pitchHand?.code || oppPitcher?.pitchHand;
+  const splitStats  = pitcherHand === 'L' ? player.vsLHP : player.vsRHP;
+  const splitAvg    = splitStats?.avg || 0;
+  if (splitAvg && seasonAvg) {
+    const diff = splitAvg - seasonAvg;
+    if      (diff >  0.025) score += 15;
+    else if (diff > -0.025) score += 5;
+    else                    score -= 12;
+  }
+
+  // 6. Lineup certainty
+  if (lineupPosted) score += 20; else score -= 5;
+
+  // 7. Rest factor — smaller boost if on a streak (preserve rhythm)
+  if (log.length) {
+    const yesterday = new Date(state.date);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toISOString().slice(0, 10);
+    const lastDate = log[0]?.date || '';
+    if (lastDate < yStr) {
+      score += hitStreak > 0 ? 5 : 10;
+    }
+    // played yesterday = neutral (0 change)
+  }
+
+  // 8. Recent PA vs season average
+  const seasonPA   = player.seasonStats?.plateAppearances || 0;
+  const seasonG    = player.seasonStats?.gamesPlayed      || 1;
+  const recentPA   = player.last7Stats?.plateAppearances  || 0;
+  const recentG    = player.recentStarts                  || 1;
+  const seasonRate = seasonPA / seasonG;
+  const recentRate = recentPA / recentG;
+  if (seasonRate > 0) {
+    if      (recentRate < seasonRate * 0.70) score -= 15;
+    else if (recentRate >= seasonRate * 0.90) score += 5;
+  }
+
+  // 9. Data completeness
+  if (player.vsRHP?.avg || player.vsLHP?.avg) score += 4;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  let tier, label, icon;
+  if      (score >= 80) { tier = 'very';      label = 'Very Confident';   icon = '✅'; }
+  else if (score >= 60) { tier = 'confident'; label = 'Confident';        icon = '🟡'; }
+  else if (score >= 40) { tier = 'notso';     label = 'Not So Confident'; icon = '🟠'; }
+  else                  { tier = 'low';       label = 'Low Confidence';   icon = '🔴'; }
+  return { score, tier, label, icon };
 }
 
 function renderBeatTheStreak() {
@@ -4134,8 +4657,14 @@ async function renderDailyDominators() {
   if (!finalGames.length) {
     loading.style.display = 'none';
     empty.style.display   = 'block';
+    // No final games (likely a future date) — auto-switch to Rising Stars
+    const risingBtn = document.getElementById('domSubBtnRising');
+    if (risingBtn) switchDomSub('rising', risingBtn);
     return;
   }
+  // Final games exist — show the Dominators sub-tab
+  const domBtn = document.getElementById('domSubBtnDom');
+  if (domBtn && !domBtn.classList.contains('active')) switchDomSub('dominators', domBtn);
 
   // Fetch boxscore for each final game in parallel
   const performers = [];
@@ -4227,7 +4756,7 @@ async function renderDailyDominators() {
           ${p.triples ? `<span class="dom-stat-pill dom-pill-avg">${p.triples} 3B</span>` : ''}
           ${p.bb  ? `<span class="dom-stat-pill dom-pill-avg">${p.bb} BB</span>` : ''}
         </div>
-        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${p.id},this,'dom-gl-${p.id}')">
+        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${p.id},this,'dom-gl-${p.id}',true)">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
         <div class="streak-gamelog" id="dom-gl-${p.id}"></div>
@@ -4235,12 +4764,432 @@ async function renderDailyDominators() {
   }).join('');
 }
 
-// ─── BEST BET MODE TOGGLE ─────────────────────────────────────────────────
-function setBestBetMode(mode, btn) {
-  state.bestBetMode = mode;
+// ─── DAILY DOMINATORS SUB-TAB SWITCH ─────────────────────────────────────
+function switchDomSub(sub, btn) {
+  document.querySelectorAll('.dom-sub-btn').forEach(b => {
+    b.className = 'dom-sub-btn';
+  });
+  if (sub === 'rising') {
+    btn.classList.add('active-rising');
+    document.getElementById('domDomSection').style.display = 'none';
+    document.getElementById('domRisingSection').style.display = 'block';
+    renderRisingStars();
+  } else {
+    btn.classList.add('active');
+    document.getElementById('domDomSection').style.display = 'block';
+    document.getElementById('domRisingSection').style.display = 'none';
+  }
+}
+
+// ─── RISING STARS ──────────────────────────────────────────────────────────
+async function renderRisingStars() {
+  const grid    = document.getElementById('domRisingGrid');
+  const empty   = document.getElementById('domRisingEmpty');
+  const loading = document.getElementById('domRisingLoading');
+  if (!grid) return;
+  grid.innerHTML = '';
+  empty.style.display   = 'none';
+  loading.style.display = 'block';
+
+  // Collect all players across all loaded games
+  let allPlayers = [];
+  for (const gd of Object.values(state.predictions)) {
+    allPlayers.push(...(gd.players || []).map(p => ({ ...p, _gd: gd })));
+  }
+
+  if (!allPlayers.length) {
+    loading.style.display = 'none';
+    empty.style.display   = 'block';
+    return;
+  }
+
+  // Deduplicate by player ID (keep first occurrence)
+  const seen = new Set();
+  allPlayers = allPlayers.filter(p => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  // Fetch game logs for all players in parallel
+  // Fetch game logs and capture return values directly
+  const rsPlayerLogs = new Map();
+  await Promise.all(allPlayers.map(async p => {
+    const log = await fetchGameLog(p.id).catch(() => []);
+    rsPlayerLogs.set(p.id, log);
+  }));
+
+  // Daily Dominators top-10 caliber threshold per game:
+  // hits >= 2 OR homeRuns >= 1 (strong individual performance)
+  function isDomPerformance(gameSplit) {
+    const s = gameSplit.stat || {};
+    return (s.hits || 0) >= 2 || (s.homeRuns || 0) >= 1;
+  }
+
+  const fmt = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
+
+  const risingStars = [];
+  for (const p of allPlayers) {
+    const log = (rsPlayerLogs.get(p.id) || []).slice(0, 5); // last 5 games
+    if (!log.length) continue;
+    const qualifyingGames = log.filter(isDomPerformance);
+    const domCount = qualifyingGames.length;
+    if (domCount < 2) continue;
+
+    // Get today's opposing pitcher ERA
+    const gd = p._gd;
+    const oppPitcher = p.isAway ? gd.homePitcher : gd.awayPitcher;
+    const pitcherEra = oppPitcher?.seasonStats?.era || 0;
+    const pitcherName = oppPitcher?.fullName || oppPitcher?.name || '';
+    const favorableMatchup = pitcherEra >= 4.00;
+
+    // Sort score: domCount × 10 + ERA bonus + tiebreaker stats
+    const totalQualHits = qualifyingGames.reduce((a,g) => a + (g.stat?.hits || 0), 0);
+    const totalQualHR   = qualifyingGames.reduce((a,g) => a + (g.stat?.homeRuns || 0), 0);
+    const sortScore = domCount * 10 + (favorableMatchup ? pitcherEra * 0.1 : 0) + (totalQualHits + totalQualHR) * 0.1;
+
+    risingStars.push({ p, domCount, log, pitcherEra, pitcherName, favorableMatchup, sortScore, totalQualHits, totalQualHR, gd });
+  }
+
+  loading.style.display = 'none';
+
+  if (!risingStars.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  risingStars.sort((a, b) => b.sortScore - a.sortScore);
+  const top10 = risingStars.slice(0, 10);
+
+  grid.innerHTML = top10.map(({ p, domCount, pitcherEra, pitcherName, favorableMatchup, totalQualHits, totalQualHR, log, gd }, i) => {
+    const ti       = TEAM_INFO[p.teamId] || {};
+    const slug     = ti.espn || (p.teamAbbr || '').toLowerCase();
+    const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+
+    const ss  = p.seasonStats || {};
+    const l7  = p.last7Stats  || {};
+    const sAvg = ss.avg || 0;
+    const lAvg = l7.avg || 0;
+    const diff = Math.round((lAvg - sAvg) * 1000);
+    let streakLabel, streakClass;
+    if (diff >= 30)       { streakLabel = '🔥 HOT STREAK';  streakClass = 'bb-streak-hot'; }
+    else if (diff <= -30) { streakLabel = '❄️ COLD STREAK'; streakClass = 'bb-streak-cold'; }
+    else                  { streakLabel = '— STEADY';       streakClass = 'bb-streak-steady'; }
+
+    // Live badge
+    const _ld = (state.allGamesLiveData || {})[p.gamePk];
+    let liveHTML = '';
+    if (_ld) {
+      const _bs = _ld.statsMap[p.id];
+      const _ab = _bs?.atBats || 0;
+      if (_bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+        const _pip = _ld.isLive ? `<span class="bb-live-pip">● LIVE</span>` : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+        const _hitBadge = (_bs.hits || 0) > 0
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
+          : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
+        const _hrBadge  = (_bs.homeRuns || 0) > 0
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+          : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+        liveHTML = `<div class="bb-achieve-row" style="margin-bottom:6px">${_pip}${_hitBadge}${_hrBadge}</div>`;
+      }
+    }
+
+    const oppAbbr = p.isAway ? gd.homeAbbr : gd.awayAbbr;
+
+    return `
+      <div class="rising-card">
+        <div class="rising-card-rank">${rankLabel}</div>
+        <div class="rising-card-header">
+          <img class="rising-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${p.name}">
+          <div style="min-width:0">
+            <div class="rising-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${p.name}</div>
+            <div class="rising-card-meta">
+              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
+              ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position || ''} · Bats ${p.orderPos || '?'}
+            </div>
+            <div class="rising-card-meta" style="margin-top:3px">vs ${oppAbbr}${pitcherName ? ` · SP: ${pitcherName}` : ''}</div>
+          </div>
+        </div>
+        <div class="rising-dom-badge">⭐ ${domCount}/5 games dominated · ${totalQualHits}H ${totalQualHR}HR in qualifying games</div>
+        ${favorableMatchup ? `<span class="rising-matchup-badge">⚡ Favorable Matchup · vs ERA ${pitcherEra.toFixed(2)}</span>` : ''}
+        <div class="rising-stat-row" style="margin-top:8px">
+          <span class="dom-stat-pill dom-pill-hits">AVG ${fmt(sAvg)}</span>
+          <span class="dom-stat-pill dom-pill-hits">L7 ${fmt(lAvg)}</span>
+          ${ss.homeRuns ? `<span class="dom-stat-pill dom-pill-hr">${ss.homeRuns} HR</span>` : ''}
+          <span class="dom-stat-pill dom-pill-avg">${ss.gamesPlayed || 0}G</span>
+        </div>
+        ${liveHTML}
+        <span class="bb-streak-badge ${streakClass}" style="display:inline-block;margin:4px 0">${streakLabel}</span>
+        <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'rising-gl-${p.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="rising-gl-${p.id}"></div>
+      </div>`;
+  }).join('');
+}
+
+// ─── DUE FOR A HIT ────────────────────────────────────────────────────────
+let _dfhMinAvg = 0; // default: any avg
+
+function setDfhFilter(btn) {
+  _dfhMinAvg = parseFloat(btn.dataset.dfhavg) || 0;
+  document.querySelectorAll('[data-dfhavg]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDueForHit();
+}
+
+async function renderDueForHit() {
+  const grid    = document.getElementById('dfhGrid');
+  const empty   = document.getElementById('dfhEmpty');
+  const loading = document.getElementById('dfhLoading');
+  if (!grid) return;
+  grid.innerHTML = '';
+  empty.style.display   = 'none';
+  loading.style.display = 'block';
+
+  // Collect all players across all loaded games
+  let allPlayers = [];
+  for (const gd of Object.values(state.predictions)) {
+    allPlayers.push(...(gd.players || []).map(p => ({ ...p, _gd: gd })));
+  }
+
+  // Deduplicate by player ID
+  const seen = new Set();
+  allPlayers = allPlayers.filter(p => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  // Filter: season BA >= selected threshold (0 = any)
+  if (_dfhMinAvg > 0) {
+    allPlayers = allPlayers.filter(p => (p.seasonStats?.avg || 0) >= _dfhMinAvg);
+  }
+
+  if (!allPlayers.length) {
+    loading.style.display = 'none';
+    empty.style.display   = 'block';
+    return;
+  }
+
+  // Fetch game logs in parallel — include today so current slumps count
+  const playerLogs = new Map();
+  await Promise.all(allPlayers.map(async p => {
+    const log = await fetchGameLog(p.id, true).catch(() => []);
+    playerLogs.set(p.id, log);
+  }));
+
+  const fmt = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
+
+  const slumpers = [];
+  for (const p of allPlayers) {
+    const log = playerLogs.get(p.id) || []; // newest first
+    // Count consecutive hitless ABs from most recent game
+    // Skip 0-AB games (walks, HBP-only, sit-out) — they don't end a hitless AB streak
+    let hitlessABs = 0;
+    let hitlessGames = 0;
+    for (const g of log) {
+      const s = g.stat || {};
+      const h  = s.hits   || 0;
+      const ab = s.atBats || 0;
+      if (ab === 0) continue;        // no at-bats — skip, don't break streak
+      if (h === 0) { hitlessABs += ab; hitlessGames++; }
+      else break;                    // had a hit — streak ends
+    }
+    if (hitlessABs < 7) continue;
+
+    const gd = p._gd;
+    const oppPitcher = p.isAway ? gd.homePitcher : gd.awayPitcher;
+    const pitcherEra  = oppPitcher?.seasonStats?.era  || 0;
+    const pitcherName = oppPitcher?.fullName || oppPitcher?.name || '';
+    const seasonAvg   = p.seasonStats?.avg || 0;
+
+    slumpers.push({ p, hitlessABs, hitlessGames, pitcherEra, pitcherName, seasonAvg, log, gd });
+  }
+
+  loading.style.display = 'none';
+
+  if (!slumpers.length) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  // Sort: hitless ABs desc, then season BA desc (higher BA = more overdue)
+  slumpers.sort((a, b) => b.hitlessABs - a.hitlessABs || b.seasonAvg - a.seasonAvg);
+  const top12 = slumpers.slice(0, 12);
+
+  // Max hitless ABs for bar scaling
+  const maxABs = top12[0].hitlessABs;
+
+  grid.innerHTML = top12.map(({ p, hitlessABs, hitlessGames, pitcherEra, pitcherName, seasonAvg, log, gd }, i) => {
+    const ti       = TEAM_INFO[p.teamId] || {};
+    const slug     = ti.espn || (p.teamAbbr || '').toLowerCase();
+    const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+
+    const ss  = p.seasonStats || {};
+    const l7  = p.last7Stats  || {};
+    const sAvg = ss.avg || 0;
+    const lAvg = l7.avg || 0;
+    const diff = Math.round((lAvg - sAvg) * 1000);
+    let streakLabel, streakClass;
+    if (diff >= 30)       { streakLabel = '🔥 HOT STREAK';  streakClass = 'bb-streak-hot'; }
+    else if (diff <= -30) { streakLabel = '❄️ COLD STREAK'; streakClass = 'bb-streak-cold'; }
+    else                  { streakLabel = '— STEADY';       streakClass = 'bb-streak-steady'; }
+
+    const barPct = Math.round((hitlessABs / maxABs) * 100);
+
+    const oppAbbr = p.isAway ? gd.homeAbbr : gd.awayAbbr;
+
+    // Live badge
+    const _ld = (state.allGamesLiveData || {})[p.gamePk];
+    let liveHTML = '';
+    if (_ld) {
+      const _bs = _ld.statsMap[p.id];
+      const _ab = _bs?.atBats || 0;
+      if (_bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+        const _pip = _ld.isLive ? `<span class="bb-live-pip">● LIVE</span>` : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+        const _hitBadge = (_bs.hits || 0) > 0
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit! Streak Broken</span>`
+          : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ Still Hitless (0/${_ab})</span>` : '';
+        liveHTML = `<div class="bb-achieve-row" style="margin-bottom:6px">${_pip}${_hitBadge}</div>`;
+      }
+    }
+
+    return `
+      <div class="dfh-card">
+        <div class="dfh-card-rank">${rankLabel}</div>
+        <div class="dfh-card-header">
+          <img class="dfh-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${p.name}">
+          <div style="min-width:0">
+            <div class="dfh-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${p.name}</div>
+            <div class="dfh-card-meta">
+              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
+              ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position || ''} · Bats ${p.orderPos || '?'}
+            </div>
+            <div class="dfh-card-meta" style="margin-top:3px">vs ${oppAbbr}${pitcherName ? ` · SP: ${pitcherName}` : ''}</div>
+          </div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div class="dfh-slump-badge">💧 <span class="dfh-slump-count">${hitlessABs}</span>&nbsp;consecutive hitless AB${hitlessABs !== 1 ? 's' : ''} &nbsp;·&nbsp; ${hitlessGames} game${hitlessGames !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="dfh-bar-wrap">
+          <div class="dfh-bar-fill" style="width:${barPct}%"></div>
+        </div>
+        <div class="dfh-stat-row">
+          <span class="dfh-stat-pill dfh-pill-ba">Season AVG ${fmt(seasonAvg)}</span>
+          <span class="dfh-stat-pill dfh-pill-ba">L7 AVG ${fmt(lAvg)}</span>
+          ${ss.homeRuns ? `<span class="dfh-stat-pill dfh-pill-opp">${ss.homeRuns} HR</span>` : ''}
+          ${pitcherEra > 0 ? `<span class="dfh-stat-pill dfh-pill-era">vs ERA ${pitcherEra.toFixed(2)}</span>` : ''}
+          <span class="dfh-stat-pill dfh-pill-opp">vs ${oppAbbr}</span>
+        </div>
+        ${liveHTML}
+        <span class="bb-streak-badge ${streakClass}" style="display:inline-block;margin:4px 0">${streakLabel}</span>
+        <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'dfh-gl-${p.id}')">
+          <span>Last 7 Games</span><span class="chevron">▼</span>
+        </div>
+        <div class="streak-gamelog" id="dfh-gl-${p.id}"></div>
+      </div>`;
+  }).join('');
+}
+
+// ─── BEST BET MODE FILTER (game-specific) ─────────────────────────────────
+function applyBbModeFilter(mode) {
+  const overall     = document.getElementById('bb-pick-overall');
+  const hitsSection = document.getElementById('topHitsSection');
+  const hrSection   = document.getElementById('topHRsSection');
+  const hitEls = [1,2,3].map(n => document.getElementById(`bb-pick-hit-${n}`));
+  const hrEls  = [1,2,3].map(n => document.getElementById(`bb-pick-hr-${n}`));
+
+  if (mode === 'hit') {
+    if (overall) overall.style.display = 'none';
+    hitEls.forEach(el => el && (el.style.display = ''));
+    hrEls.forEach(el  => el && (el.style.display = 'none'));
+    if (hrSection)   hrSection.style.display   = 'none';
+    if (hitsSection) hitsSection.style.display = '';
+  } else if (mode === 'hr') {
+    if (overall) overall.style.display = 'none';
+    hitEls.forEach(el => el && (el.style.display = 'none'));
+    hrEls.forEach(el  => el && (el.style.display = ''));
+    if (hitsSection) hitsSection.style.display = 'none';
+    if (hrSection)   hrSection.style.display   = '';
+  } else {
+    // Combined — show overall + #1 hit + #1 HR only; hide #2 and #3
+    const ids = state.bbPickIds || {};
+    const cId = ids.combined;
+    if (overall) overall.style.display = '';
+    hitEls.forEach((el, i) => {
+      if (!el) return;
+      // #1 hit: hide only if same player as overall pick
+      // #2 and #3: always hidden in combined mode
+      el.style.display = (i === 0 && !(cId && ids.hits?.[0] === cId)) ? '' : 'none';
+    });
+    hrEls.forEach((el, i) => {
+      if (!el) return;
+      el.style.display = (i === 0 && !(cId && ids.hrs?.[0] === cId)) ? '' : 'none';
+    });
+    if (hitsSection) hitsSection.style.display = '';
+    if (hrSection)   hrSection.style.display   = '';
+  }
+}
+
+// ─── OVERALL TAB MODE FILTER ──────────────────────────────────────────────
+function applyOvrBbModeFilter(mode) {
+  const overall     = document.getElementById('ovr-pick-overall');
+  const hitsSection = document.getElementById('overallHitsSection');
+  const hrSection   = document.getElementById('overallHRsSection');
+  const hitEls = [1,2,3].map(n => document.getElementById(`ovr-pick-hit-${n}`));
+  const hrEls  = [1,2,3].map(n => document.getElementById(`ovr-pick-hr-${n}`));
+
+  if (mode === 'hit') {
+    if (overall) overall.style.display = 'none';
+    hitEls.forEach(el => el && (el.style.display = ''));
+    hrEls.forEach(el  => el && (el.style.display = 'none'));
+    if (hrSection)   hrSection.style.display   = 'none';
+    if (hitsSection) hitsSection.style.display = '';
+  } else if (mode === 'hr') {
+    if (overall) overall.style.display = 'none';
+    hitEls.forEach(el => el && (el.style.display = 'none'));
+    hrEls.forEach(el  => el && (el.style.display = ''));
+    if (hitsSection) hitsSection.style.display = 'none';
+    if (hrSection)   hrSection.style.display   = '';
+  } else {
+    // Combined — show overall + #1 hit + #1 HR only; hide #2 and #3
+    const ids = state.ovrBbPickIds || {};
+    const cId = ids.combined;
+    if (overall) overall.style.display = '';
+    hitEls.forEach((el, i) => {
+      if (!el) return;
+      el.style.display = (i === 0 && !(cId && ids.hits?.[0] === cId)) ? '' : 'none';
+    });
+    hrEls.forEach((el, i) => {
+      if (!el) return;
+      el.style.display = (i === 0 && !(cId && ids.hrs?.[0] === cId)) ? '' : 'none';
+    });
+    if (hitsSection) hitsSection.style.display = '';
+    if (hrSection)   hrSection.style.display   = '';
+  }
+}
+
+function switchOvrBbMode(mode, btn) {
+  state.ovrBbViewMode = mode;
+  document.querySelectorAll('.ovr-bb-btn').forEach(b => b.className = 'ovr-bb-btn');
+  btn.classList.add(`active-${mode}`);
+  applyOvrBbModeFilter(mode);
+  const targetId = mode === 'hit' ? 'ovr-pick-hit-1' : mode === 'hr' ? 'ovr-pick-hr-1' : 'overallBestBetWrap';
+  const el = document.getElementById(targetId);
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+}
+
+function switchBbMode(mode, btn) {
+  state.bbViewMode = mode;
   document.querySelectorAll('.bb-mode-btn').forEach(b => b.className = 'bb-mode-btn');
   btn.classList.add(`active-${mode}`);
-  renderTopPlays();
+  applyBbModeFilter(mode);
+  const targetId = mode === 'hit' ? 'bb-pick-hit-1' : mode === 'hr' ? 'bb-pick-hr-1' : 'bestBetWrap';
+  const el = document.getElementById(targetId);
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
 }
 
 
@@ -4261,19 +5210,26 @@ function switchTab(tab, btn) {
   document.getElementById('tabBreakdown').style.display  = tab==='breakdown'  ? 'block' : 'none';
   document.getElementById('tabOverall').style.display    = tab==='overall'    ? 'block' : 'none';
   document.getElementById('tabStreaks').style.display    = tab==='streaks'    ? 'block' : 'none';
+  document.getElementById('tabDueForHit').style.display  = tab==='dueforhit'  ? 'block' : 'none';
   document.getElementById('tabLeaders').style.display    = tab==='leaders'    ? 'block' : 'none';
   document.getElementById('tabBts').style.display        = tab==='bts'        ? 'block' : 'none';
   document.getElementById('tabDominators').style.display = tab==='dominators' ? 'block' : 'none';
-
   if (tab === 'breakdown' && state.selectedGamePk) {
     const gd = state.predictions[state.selectedGamePk];
     if (gd) renderBreakdown(gd);
   }
   if (tab === 'overall') renderOverallTopPlays();
   if (tab === 'streaks') renderHotStreaks();
+  if (tab === 'dueforhit') renderDueForHit();
   if (tab === 'leaders') renderLeaderboard();
   if (tab === 'bts') renderBeatTheStreak();
   if (tab === 'dominators') renderDailyDominators();
+
+  // On mobile, scroll the tab bar into view so content appears immediately below
+  if (window.innerWidth <= 900) {
+    const tabsEl = document.getElementById('mainTabs');
+    if (tabsEl) setTimeout(() => tabsEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
 }
 
 // ─── FORMULA TOGGLE ───────────────────────────────────────────────────────
@@ -4282,6 +5238,14 @@ function toggleFormula() {
   const arrow = document.getElementById('formulaArrow');
   const open  = body.classList.toggle('open');
   arrow.classList.toggle('open', open);
+}
+
+function toggleLegend() {
+  const body  = document.getElementById('legendBody');
+  const arrow = document.getElementById('legendArrow');
+  const isOpen = body.style.display === 'grid';
+  body.style.display = isOpen ? 'none' : 'grid';
+  arrow.classList.toggle('open', !isOpen);
 }
 
 // ─── LOADING / ERROR UTILS ────────────────────────────────────────────────
@@ -4319,15 +5283,31 @@ function onDateChange() {
 }
 
 // ─── MAIN FETCH & PROCESS ─────────────────────────────────────────────────
+async function prefetchLeaderRanks() {
+  try {
+    const season = new Date().getFullYear();
+    const url  = `https://statsapi.mlb.com/api/v1/stats/leaders?leaderCategories=hits,homeRuns&season=${season}&sportId=1&limit=20&leaderGameTypes=R`;
+    const data = await cachedFetch(url);
+    for (const group of (data?.leagueLeaders || [])) {
+      if (group.statGroup !== 'hitting') continue;
+      const rankMap = group.leaderCategory === 'hits' ? seasonLeaderRanks.hits : seasonLeaderRanks.homeRuns;
+      rankMap.clear();
+      (group.leaders || []).forEach(l => { if (l.person?.id) rankMap.set(Number(l.person.id), l.rank); });
+    }
+  } catch { /* silent — ranks just won't show */ }
+}
+
 async function startFetch() {
   if (state.loading) return;
   state.loading = true;
   clearError();
   showLoading('Fetching schedule...');
+  prefetchLeaderRanks(); // fire and forget — populates seasonLeaderRanks in background
 
   document.getElementById('refreshBtn').disabled = true;
   document.getElementById('gameBox').style.display='none';
   document.getElementById('weatherBar').style.display='none';
+  document.getElementById('bestBetWrap').style.display='none';
   document.getElementById('bestBetWrap').style.display='none';
   document.getElementById('mainTabs').style.display='none';
   document.getElementById('topHitsSection').style.display='none';
@@ -4358,8 +5338,16 @@ async function startFetch() {
     renderGameChips(games);
 
     // Process games sequentially to avoid rate limiting
+    // Skip reprocessing if already scored AND lineup was officially locked —
+    // this keeps scores stable across refreshes (past data doesn't change)
     for (const game of games) {
       try {
+        const existing = state.predictions[game.gamePk];
+        if (existing?.lineupPosted) {
+          // Already have a locked score — just refresh lineup status display, don't recompute
+          updateChipLineupStatus(game.gamePk, true);
+          continue;
+        }
         setLoadingStatus(`Processing ${game.teams?.away?.team?.abbreviation||'?'} @ ${game.teams?.home?.team?.abbreviation||'?'}...`);
         const gameData = await processGame(game);
         state.predictions[game.gamePk] = gameData;
@@ -4381,6 +5369,7 @@ async function startFetch() {
     renderHotStreaks();
 
     document.getElementById('formulaSection').style.display='block';
+    document.getElementById('legendSection').style.display='block';
     document.getElementById('lastUpdated').innerHTML = `Updated: <span>${new Date().toLocaleTimeString()}</span>`;
 
   } catch (err) {
@@ -4400,8 +5389,173 @@ function scheduleRefresh() {
   }, 30 * 60 * 1000);
 }
 
+// ─── ICON / PWA MANIFEST ──────────────────────────────────────────────────
+async function generateAppIcon() {
+  const S = 512;
+  const c = document.createElement('canvas');
+  c.width = c.height = S;
+  const ctx = c.getContext('2d');
+  const cx = S / 2, cy = S / 2;
+
+  // Render emoji reliably on all platforms (iOS Safari ignores ctx.fillText emoji)
+  // by routing through SVG→img, which forces the system emoji font
+  function emojiImg(emoji, size) {
+    return new Promise(resolve => {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+        `<text x="50%" y="54%" font-size="${Math.round(size * 0.88)}" text-anchor="middle" dominant-baseline="central" ` +
+        `font-family="Apple Color Emoji,Noto Color Emoji,Segoe UI Emoji,sans-serif">${emoji}</text></svg>`;
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+    });
+  }
+
+  // ── Rounded dark background ──
+  const br = S * 0.14;
+  ctx.beginPath();
+  ctx.moveTo(br, 0); ctx.lineTo(S - br, 0);
+  ctx.quadraticCurveTo(S, 0, S, br);
+  ctx.lineTo(S, S - br);
+  ctx.quadraticCurveTo(S, S, S - br, S);
+  ctx.lineTo(br, S);
+  ctx.quadraticCurveTo(0, S, 0, S - br);
+  ctx.lineTo(0, br);
+  ctx.quadraticCurveTo(0, 0, br, 0);
+  ctx.closePath();
+  ctx.fillStyle = '#06080c';
+  ctx.fill();
+
+  // ── Diamond ──
+  const dh = S * 0.43;
+  const vTop   = { x: cx,      y: cy - dh };
+  const vRight = { x: cx + dh, y: cy      };
+  const vBot   = { x: cx,      y: cy + dh };
+  const vLeft  = { x: cx - dh, y: cy      };
+
+  ctx.beginPath();
+  ctx.moveTo(vTop.x, vTop.y); ctx.lineTo(vRight.x, vRight.y);
+  ctx.lineTo(vBot.x, vBot.y); ctx.lineTo(vLeft.x,  vLeft.y);
+  ctx.closePath();
+  const dGrad = ctx.createLinearGradient(cx, cy - dh, cx, cy + dh);
+  dGrad.addColorStop(0, '#162b1e');
+  dGrad.addColorStop(1, '#0a1620');
+  ctx.fillStyle = dGrad;
+  ctx.fill();
+
+  // Top 3 edges — green glow
+  ctx.beginPath();
+  ctx.moveTo(vLeft.x, vLeft.y); ctx.lineTo(vTop.x, vTop.y); ctx.lineTo(vRight.x, vRight.y);
+  ctx.strokeStyle = '#34d399'; ctx.lineWidth = S * 0.026;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // ── SVG baseball bats along the bottom two diamond edges ──
+  // Build the bat as an inline SVG (knob at left, barrel at right, viewBox 520×80)
+  function loadBatSvg(w, h) {
+    const svg = [
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 80" width="${w}" height="${h}">`,
+      `<defs>`,
+      `<linearGradient id="wd" x1="0" y1="0" x2="0" y2="80" gradientUnits="userSpaceOnUse">`,
+      `<stop offset="0%"   stop-color="#1e0a04"/>`,
+      `<stop offset="22%"  stop-color="#7a3510"/>`,
+      `<stop offset="50%"  stop-color="#c8722e"/>`,
+      `<stop offset="78%"  stop-color="#7a3510"/>`,
+      `<stop offset="100%" stop-color="#1e0a04"/>`,
+      `</linearGradient>`,
+      `</defs>`,
+      // Bat silhouette: knob (left oval) → thin handle → taper → barrel → rounded barrel end
+      `<path fill="url(#wd)" stroke="#0f0602" stroke-width="1.5" stroke-linejoin="round"`,
+      `  d="M 8,30 Q 0,30 0,40 Q 0,50 8,50`,
+      `     L 24,46 L 295,46 L 358,68 L 488,68`,
+      `     Q 522,68 522,40 Q 522,12 488,12`,
+      `     L 358,12 L 295,34 L 24,34 Z"/>`,
+      // Barrel top highlight
+      `<path fill="rgba(255,210,100,0.20)"`,
+      `  d="M 358,16 L 488,16 Q 514,16 518,28 L 518,22 Q 514,12 488,12 L 358,12 Z"/>`,
+      // Grip tape bands
+      `<line x1="28" y1="34" x2="28" y2="46" stroke="#0a0604" stroke-width="3" opacity="0.5"/>`,
+      `<line x1="41" y1="34" x2="41" y2="46" stroke="#0a0604" stroke-width="3" opacity="0.5"/>`,
+      `<line x1="54" y1="34" x2="54" y2="46" stroke="#0a0604" stroke-width="3" opacity="0.5"/>`,
+      `<line x1="67" y1="34" x2="67" y2="46" stroke="#0a0604" stroke-width="3" opacity="0.5"/>`,
+      `<line x1="80" y1="34" x2="80" y2="46" stroke="#0a0604" stroke-width="3" opacity="0.5"/>`,
+      `</svg>`
+    ].join('');
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+    });
+  }
+
+  const batW   = Math.round(S * 0.64);
+  const batH   = Math.round(batW * 80 / 520);
+  const batImg = await loadBatSvg(batW, batH);
+
+  if (batImg) {
+    // Left bat: knob toward vLeft, barrel toward vBot
+    const lmx  = (vLeft.x + vBot.x) / 2;
+    const lmy  = (vLeft.y + vBot.y) / 2;
+    const lAng = Math.atan2(vBot.y - vLeft.y, vBot.x - vLeft.x);
+    ctx.save();
+    ctx.translate(lmx, lmy);
+    ctx.rotate(lAng);
+    ctx.drawImage(batImg, -batW / 2, -batH / 2, batW, batH);
+    ctx.restore();
+
+    // Right bat: flip horizontally so knob faces vRight, barrel faces vBot
+    const rmx  = (vRight.x + vBot.x) / 2;
+    const rmy  = (vRight.y + vBot.y) / 2;
+    const rAng = Math.atan2(vBot.y - vRight.y, vBot.x - vRight.x);
+    ctx.save();
+    ctx.translate(rmx, rmy);
+    ctx.rotate(rAng);
+    ctx.scale(-1, 1); // mirror so barrel still points toward vBot
+    ctx.drawImage(batImg, -batW / 2, -batH / 2, batW, batH);
+    ctx.restore();
+  }
+
+  // ── ⚾ baseball in center ──
+  const ballSize = Math.round(S * 0.40);
+  const ballImg  = await emojiImg('⚾', ballSize);
+  if (ballImg) {
+    ctx.drawImage(ballImg, cx - ballSize / 2, cy - ballSize / 2 - S * 0.03, ballSize, ballSize);
+  }
+
+  const png = c.toDataURL('image/png');
+  document.getElementById('faviconLink').href    = png;
+  document.getElementById('appleTouchIcon').href = png;
+
+  // Render into header logo canvas
+  const headerCanvas = document.getElementById('headerLogoCanvas');
+  if (headerCanvas) {
+    const hCtx = headerCanvas.getContext('2d');
+    hCtx.drawImage(c, 0, 0, S, S, 0, 0, headerCanvas.width, headerCanvas.height);
+  }
+
+  // Web app manifest
+  const manifest = {
+    name: 'Diamond Edge',
+    short_name: 'Diamond Edge',
+    description: 'MLB Hit & HR Prediction Engine',
+    start_url: location.href,
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#06080c',
+    theme_color: '#34d399',
+    icons: [
+      { src: png, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+      { src: png, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────
-function init() {
+async function init() {
+  await generateAppIcon();
   const dateInput = document.getElementById('dateInput');
   dateInput.value = state.date;
   scheduleRefresh();
