@@ -1021,6 +1021,10 @@ main { padding: 28px 0 60px; }
 }
 .loading-text { font-family: 'Bebas Neue', cursive; font-size: 22px; color: var(--accent-green); letter-spacing: 2px; }
 .loading-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+.loading-bar-wrap { margin-top: 20px; width: 260px; text-align: center; }
+.loading-bar-track { width: 100%; height: 5px; background: var(--bg-input); border-radius: 99px; overflow: hidden; }
+.loading-bar-fill { height: 100%; width: 0%; background: var(--accent-green); border-radius: 99px; transition: width .35s ease; }
+.loading-bar-pct { font-size: 11px; color: var(--accent-green); font-family: 'JetBrains Mono', monospace; margin-top: 8px; letter-spacing: 1px; }
 
 /* ===== ERROR STATE ===== */
 .error-card {
@@ -1473,6 +1477,12 @@ main { padding: 28px 0 60px; }
   <span class="loading-spinner">⚾</span>
   <div class="loading-text">DIAMOND EDGE</div>
   <div class="loading-sub" id="loadingStatus">Fetching today's schedule...</div>
+  <div class="loading-bar-wrap" id="loadingBarWrap" style="display:none;">
+    <div class="loading-bar-track">
+      <div class="loading-bar-fill" id="loadingBarFill"></div>
+    </div>
+    <div class="loading-bar-pct" id="loadingBarPct">0%</div>
+  </div>
 </div>
 
 <!-- HEADER -->
@@ -5460,6 +5470,20 @@ async function startFetch() {
 
     renderGameChips(games);
 
+    // Show progress bar now that we know total game count
+    const totalGames = games.length;
+    let doneGames = 0;
+    const barWrap = document.getElementById('loadingBarWrap');
+    const barFill = document.getElementById('loadingBarFill');
+    const barPct  = document.getElementById('loadingBarPct');
+    barWrap.style.display = 'block';
+    function updateProgress() {
+      const pct = totalGames > 0 ? Math.round((doneGames / totalGames) * 100) : 0;
+      barFill.style.width = pct + '%';
+      barPct.textContent  = pct + '%';
+    }
+    updateProgress();
+
     // Process games sequentially to avoid rate limiting
     // Skip reprocessing if already scored AND lineup was officially locked —
     // this keeps scores stable across refreshes (past data doesn't change)
@@ -5467,18 +5491,27 @@ async function startFetch() {
       try {
         const existing = state.predictions[game.gamePk];
         if (existing?.lineupPosted) {
-          // Already have a locked score — just refresh lineup status display, don't recompute
           updateChipLineupStatus(game.gamePk, true);
+          doneGames++;
+          updateProgress();
           continue;
         }
-        setLoadingStatus(`Processing ${game.teams?.away?.team?.abbreviation||'?'} @ ${game.teams?.home?.team?.abbreviation||'?'}...`);
+        const awayAbbr = game.teams?.away?.team?.abbreviation || '?';
+        const homeAbbr = game.teams?.home?.team?.abbreviation || '?';
+        setLoadingStatus(`Loading game ${doneGames + 1} of ${totalGames} · ${awayAbbr} @ ${homeAbbr}`);
         const gameData = await processGame(game);
         state.predictions[game.gamePk] = gameData;
         updateChipLineupStatus(game.gamePk, gameData.lineupPosted);
+        doneGames++;
+        updateProgress();
       } catch (err) {
         console.warn('Game processing error:', game.gamePk, err);
+        doneGames++;
+        updateProgress();
       }
     }
+    barFill.style.width = '100%';
+    barPct.textContent  = '100%';
 
     // No game auto-selected — user must click a game chip
     if (state.selectedGamePk && !state.predictions[state.selectedGamePk]) {
