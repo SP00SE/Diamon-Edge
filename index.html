@@ -2628,12 +2628,14 @@ async function fetchPlayerLastNGames(personId, group='hitting', n=7) {
 }
 
 async function fetchPitcherStats(personId, season=2026) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&season=${season}&group=pitching&gameType=R`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${personId}?hydrate=stats(group=%5Bpitching%5D,type=%5Bseason%5D,season=${season},gameType=R)`;
   try {
     const data = await cachedFetch(url);
-    const splits = data.stats?.[0]?.splits;
-    return splits?.[0]?.stat || null;
-  } catch { return null; }
+    const person = data.people?.[0] || null;
+    const stat   = person?.stats?.[0]?.splits?.[0]?.stat || null;
+    const pitchHand = person?.pitchHand?.code || null;
+    return { stat, pitchHand };
+  } catch { return { stat: null, pitchHand: null }; }
 }
 
 async function fetchPlayerInfo(personId) {
@@ -2773,8 +2775,8 @@ async function processGame(game) {
     if (!batter.id) continue;
     const stats = batchedStats[batter.id] || {};
     const pitcher = batter.isAway
-      ? { seasonStats: mapPitcherStats(homePitcherStats), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherRaw?.pitchHand?.code || null }
-      : { seasonStats: mapPitcherStats(awayPitcherStats), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherRaw?.pitchHand?.code || null };
+      ? { seasonStats: mapPitcherStats(homePitcherStats?.stat), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherStats?.pitchHand || homePitcherRaw?.pitchHand?.code || null }
+      : { seasonStats: mapPitcherStats(awayPitcherStats?.stat), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherStats?.pitchHand || awayPitcherRaw?.pitchHand?.code || null };
 
     const seasonStats = mapHitterStats(stats.season);
     const last7Stats  = mapHitterStats(stats.last7);
@@ -2828,8 +2830,8 @@ async function processGame(game) {
     awayTeam, homeTeam, awayAbbr, homeAbbr,
     venueName, parkFactor,
     weather, lineupPosted,
-    awayPitcher: { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats) },
-    homePitcher: { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats) },
+    awayPitcher: { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats?.stat), pitchHand: awayPitcherStats?.pitchHand || awayPitcherRaw?.pitchHand?.code || null },
+    homePitcher: { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats?.stat), pitchHand: homePitcherStats?.pitchHand || homePitcherRaw?.pitchHand?.code || null },
     gameDate,
     players,
     lockedBestBet,
