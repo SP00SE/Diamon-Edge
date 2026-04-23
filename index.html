@@ -2143,6 +2143,7 @@ function computePAScore(pa, teamPAList, recentStarts) {
     factors.push({
       label: `PA role ${sharePct}% (role ${sign(roleScore)}, usage ${sign(recentScore)})`,
       type:  total > 0 ? 'pos' : 'neg',
+      score: total,
     });
   }
   return { total, roleScore, recentScore, sharePct, factors };
@@ -2161,25 +2162,25 @@ function _hitSkillScore(batter, factors) {
   const kPct = (ab + bb) > 0 ? so / (ab + bb) : 0;
 
   // Season AVG
-  if      (avg > .300)  { s += 6; factors.push({ label: `AVG ${safe(avg)} (elite)`,   type:'pos' }); }
-  else if (avg >= .285) { s += 5; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos' }); }
-  else if (avg >= .270) { s += 3; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos' }); }
-  else if (avg >= .250) { s += 1; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos' }); }
-  else if (avg > 0)     { s -= 2; factors.push({ label: `AVG ${safe(avg)} (below avg)`,type:'neg' }); }
+  if      (avg > .300)  { s += 6; factors.push({ label: `AVG ${safe(avg)} (elite)`,    type:'pos', score:  6 }); }
+  else if (avg >= .285) { s += 5; factors.push({ label: `AVG ${safe(avg)}`,             type:'pos', score:  5 }); }
+  else if (avg >= .270) { s += 3; factors.push({ label: `AVG ${safe(avg)}`,             type:'pos', score:  3 }); }
+  else if (avg >= .250) { s += 1; factors.push({ label: `AVG ${safe(avg)}`,             type:'pos', score:  1 }); }
+  else if (avg > 0)     { s -= 2; factors.push({ label: `AVG ${safe(avg)} (below avg)`, type:'neg', score: -2 }); }
 
   // OBP
-  if      (obp > .370)  { s += 4; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos' }); }
-  else if (obp >= .340) { s += 3; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos' }); }
-  else if (obp >= .320) { s += 1; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos' }); }
-  else if (obp > 0)     { s -= 2; factors.push({ label: `OBP ${safe(obp)} (low)`,     type:'neg' }); }
+  if      (obp > .370)  { s += 4; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos', score:  4 }); }
+  else if (obp >= .340) { s += 3; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos', score:  3 }); }
+  else if (obp >= .320) { s += 1; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos', score:  1 }); }
+  else if (obp > 0)     { s -= 2; factors.push({ label: `OBP ${safe(obp)} (low)`,     type:'neg', score: -2 }); }
 
   // Batter K%
   const kp = Math.round(kPct * 100);
-  if      (kPct < .18)  { s += 4; factors.push({ label: `K% ${kp}% (low)`,            type:'pos' }); }
-  else if (kPct < .22)  { s += 2; factors.push({ label: `K% ${kp}%`,                  type:'pos' }); }
-  else if (kPct < .27)  {         /* neutral — no factor */                                          }
-  else if (kPct < .31)  { s -= 2; factors.push({ label: `K% ${kp}% (high)`,           type:'neg' }); }
-  else if (kPct > 0)    { s -= 4; factors.push({ label: `K% ${kp}% (very high)`,      type:'neg' }); }
+  if      (kPct < .18)  { s += 4; factors.push({ label: `K% ${kp}% (low)`,            type:'pos', score:  4 }); }
+  else if (kPct < .22)  { s += 2; factors.push({ label: `K% ${kp}%`,                  type:'pos', score:  2 }); }
+  else if (kPct < .27)  {         /* neutral — no factor */                                                     }
+  else if (kPct < .31)  { s -= 2; factors.push({ label: `K% ${kp}% (high)`,           type:'neg', score: -2 }); }
+  else if (kPct > 0)    { s -= 4; factors.push({ label: `K% ${kp}% (very high)`,      type:'neg', score: -4 }); }
 
   return s;
 }
@@ -2193,25 +2194,25 @@ function _hitRecentFormScore(batter, factors) {
   const hitGames7   = batter.hitGames7   ?? null; // games with ≥1 hit in last 7
 
   // Last 7 AVG — primary recency signal
-  if      (l7avg > .350)  { s += 10; factors.push({ label: `L7 AVG ${safe(l7avg)} 🔥`,  type:'pos' }); }
-  else if (l7avg >= .300) { s += 8;  factors.push({ label: `L7 AVG ${safe(l7avg)}`,      type:'pos' }); }
-  else if (l7avg >= .250) { s += 4;  factors.push({ label: `L7 AVG ${safe(l7avg)}`,      type:'pos' }); }
-  else if (l7avg >= .200) {          /* neutral */                                                      }
-  else if (l7avg > 0)     { s -= 4;  factors.push({ label: `L7 AVG ${safe(l7avg)} (cold)`,type:'neg' }); }
+  if      (l7avg > .350)  { s += 10; factors.push({ label: `L7 AVG ${safe(l7avg)} 🔥`,   type:'pos', score: 10 }); }
+  else if (l7avg >= .300) { s += 8;  factors.push({ label: `L7 AVG ${safe(l7avg)}`,       type:'pos', score:  8 }); }
+  else if (l7avg >= .250) { s += 4;  factors.push({ label: `L7 AVG ${safe(l7avg)}`,       type:'pos', score:  4 }); }
+  else if (l7avg >= .200) {          /* neutral */                                                                  }
+  else if (l7avg > 0)     { s -= 4;  factors.push({ label: `L7 AVG ${safe(l7avg)} (cold)`,type:'neg', score: -4 }); }
 
   // Hit consistency in last 7 games
   if (hitGames7 != null) {
-    if      (hitGames7 >= 6) { s += 6; factors.push({ label: `Hit in ${hitGames7}/7 games`,   type:'pos' }); }
-    else if (hitGames7 >= 4) { s += 3; factors.push({ label: `Hit in ${hitGames7}/7 games`,   type:'pos' }); }
+    if      (hitGames7 >= 6) { s += 6; factors.push({ label: `Hit in ${hitGames7}/7 games`, type:'pos', score:  6 }); }
+    else if (hitGames7 >= 4) { s += 3; factors.push({ label: `Hit in ${hitGames7}/7 games`, type:'pos', score:  3 }); }
     else if (hitGames7 >= 2) { /* neutral */ }
-    else                     { s -= 3; factors.push({ label: `Hit in ${hitGames7}/7 games`,   type:'neg' }); }
+    else                     { s -= 3; factors.push({ label: `Hit in ${hitGames7}/7 games`, type:'neg', score: -3 }); }
   }
 
   // Streak bonus — capped low so it never dominates
-  if      (hitStreak >= 10) { s += 4; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
-  else if (hitStreak >= 7)  { s += 3; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
-  else if (hitStreak >= 5)  { s += 2; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
-  else if (hitStreak >= 3)  { s += 1; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos' }); }
+  if      (hitStreak >= 10) { s += 4; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', score: 4 }); }
+  else if (hitStreak >= 7)  { s += 3; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', score: 3 }); }
+  else if (hitStreak >= 5)  { s += 2; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', score: 2 }); }
+  else if (hitStreak >= 3)  { s += 1; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', score: 1 }); }
 
   // Guard: streak bonus cannot exceed recent form score (prevents streaks dominating a cold hitter)
   const maxStreakContrib = Math.max(0, s - Math.min(s, 4));
@@ -2224,8 +2225,8 @@ function _hitOpportunityScore(batter, orderPos, factors) {
   // Granular lineup position
   const posBonus = [0, 5, 5, 4, 4, 3, 2, 0, -2, -3];
   const pb = posBonus[orderPos] ?? 0;
-  if (pb > 0)  factors.push({ label: `Bats ${orderPos}${['','st','nd','rd','th','th','th','th','th','th'][orderPos]||'th'} (lineup+)`, type:'pos' });
-  if (pb < 0)  factors.push({ label: `Bats ${orderPos}th (lineup−)`, type:'neg' });
+  if (pb > 0)  factors.push({ label: `Bats ${orderPos}${['','st','nd','rd','th','th','th','th','th','th'][orderPos]||'th'} (lineup+)`, type:'pos', score: pb });
+  if (pb < 0)  factors.push({ label: `Bats ${orderPos}th (lineup−)`, type:'neg', score: pb });
   s += pb;
 
   // PA score (3-part system)
@@ -2248,34 +2249,36 @@ function _hitMatchupScore(batter, pitcher, factors) {
   const pKpct = pIP > 0 ? pK / (pIP * 4.3) : 0;
   const pKp   = Math.round(pKpct * 100);
 
-  // Pitcher WHIP
-  if      (pWhip >= 1.40) { s += 5; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,    type:'pos' }); }
-  else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos' }); }
-  else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos' }); }
-  else if (pWhip >= 1.10) {         /* neutral */ }
-  else if (pWhip > 0)     { s -= 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,   type:'neg' }); }
+  // Pitcher WHIP/K%/contact — only score when pitcher has innings data
+  if (pIP > 0) {
+    if      (pWhip >= 1.40) { s += 5; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,    type:'pos', score:  5 }); }
+    else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos', score:  4 }); }
+    else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos', score:  2 }); }
+    else if (pWhip >= 1.10) { /* neutral */ }
+    else if (pWhip > 0)     { s -= 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,   type:'neg', score: -2 }); }
 
-  // Pitcher K% — higher K% = harder to get hits
-  if      (pKpct < .18)   { s += 4; factors.push({ label: `P K% ${pKp}% (contact-prone)`,      type:'pos' }); }
-  else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                       type:'pos' }); }
-  else if (pKpct < .27)   {         /* neutral */ }
-  else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,             type:'neg' }); }
-  else if (pKpct > 0)     { s -= 4; factors.push({ label: `P K% ${pKp}% (elite K)`,            type:'neg' }); }
+    // Pitcher K% — higher K% = harder to get hits
+    if      (pKpct < .18)   { s += 4; factors.push({ label: `P K% ${pKp}% (contact-prone)`,      type:'pos', score:  4 }); }
+    else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                       type:'pos', score:  2 }); }
+    else if (pKpct < .27)   { /* neutral */ }
+    else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,             type:'neg', score: -2 }); }
+    else if (pKpct > 0)     { s -= 4; factors.push({ label: `P K% ${pKp}% (elite K)`,            type:'neg', score: -4 }); }
 
-  // Pitcher contact allowed proxy
-  const contactAllowed = 1 - pKpct;
-  if (contactAllowed > .75) { s += 3; factors.push({ label: `P allows contact ${Math.round(contactAllowed*100)}%`, type:'pos' }); }
+    // Pitcher contact allowed proxy
+    const contactAllowed = 1 - pKpct;
+    if (contactAllowed > .75) { s += 3; factors.push({ label: `P allows contact ${Math.round(contactAllowed*100)}%`, type:'pos', score: 3 }); }
+  }
 
   // Handedness split advantage
   const pitcherHand  = pitcher?.pitchHand || pitcher?.seasonStats?.pitchHand || null;
   const vsHandStats  = pitcherHand === 'L' ? batter.vsLHP : pitcherHand === 'R' ? batter.vsRHP : null;
   const vsAvg        = vsHandStats?.avg || 0;
   if (vsAvg > 0) {
-    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
-    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
-    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
-    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos' }); }
-    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (poor)`,type:'neg' }); }
+    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', score:  4 }); }
+    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', score:  3 }); }
+    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', score:  2 }); }
+    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', score:  1 }); }
+    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (poor)`,type:'neg', score: -2 }); }
   }
 
   return s;
@@ -2808,15 +2811,27 @@ async function processGame(game) {
     state.playerMap[batter.id] = { ...playerObj, gamePk };
   }
 
+  // Build processed pitcher objects with seasonStats — shared by confidence + return
+  const processedAwayPitcher = {
+    ...awayPitcherRaw,
+    seasonStats: mapPitcherStats(awayPitcherStats?.stat),
+    pitchHand: awayPitcherStats?.pitchHand || awayPitcherRaw?.pitchHand?.code || null,
+  };
+  const processedHomePitcher = {
+    ...homePitcherRaw,
+    seasonStats: mapPitcherStats(homePitcherStats?.stat),
+    pitchHand: homePitcherStats?.pitchHand || homePitcherRaw?.pitchHand?.code || null,
+  };
+
   // Lock best bets when lineup is confirmed — never recalculate after this point
   let lockedBestBet    = null;
   let lockedBestBetHit = null;
   let lockedBestBetHR  = null;
   // Attach confidence to every player (uses gameLogCache if already populated)
   for (const p of players) {
-    p.confidence    = computePickConfidence(p, { awayPitcher: awayPitcherRaw, homePitcher: homePitcherRaw, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'combined');
-    p.hitConfidence = computePickConfidence(p, { awayPitcher: awayPitcherRaw, homePitcher: homePitcherRaw, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'hit');
-    p.hrConfidence  = computePickConfidence(p, { awayPitcher: awayPitcherRaw, homePitcher: homePitcherRaw, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'hr');
+    p.confidence    = computePickConfidence(p, { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'combined');
+    p.hitConfidence = computePickConfidence(p, { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'hit');
+    p.hrConfidence  = computePickConfidence(p, { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'hr');
   }
 
   if (lineupPosted && players.length) {
@@ -2830,8 +2845,8 @@ async function processGame(game) {
     awayTeam, homeTeam, awayAbbr, homeAbbr,
     venueName, parkFactor,
     weather, lineupPosted,
-    awayPitcher: { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats?.stat), pitchHand: awayPitcherStats?.pitchHand || awayPitcherRaw?.pitchHand?.code || null },
-    homePitcher: { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats?.stat), pitchHand: homePitcherStats?.pitchHand || homePitcherRaw?.pitchHand?.code || null },
+    awayPitcher: processedAwayPitcher,
+    homePitcher: processedHomePitcher,
     gameDate,
     players,
     lockedBestBet,
@@ -4299,12 +4314,17 @@ async function openPlayerModal(playerId) {
   // Factor rows
   const factorRows = factors => factors.length === 0
     ? '<div style="color:var(--text-muted);font-size:13px;padding:6px 0">No factors recorded.</div>'
-    : factors.map(f => `
-      <div class="modal-factor-row">
-        <div class="modal-factor-dot ${f.type}"></div>
-        <div class="modal-factor-label">${f.label}</div>
-        <div class="modal-factor-sign ${f.type}">${f.type === 'pos' ? '+' : '−'}</div>
-      </div>`).join('');
+    : factors.map(f => {
+      const scoreStr = f.score != null
+        ? (f.score > 0 ? `+${f.score}` : `${f.score}`)
+        : (f.type === 'pos' ? '+' : '−');
+      return `
+        <div class="modal-factor-row">
+          <div class="modal-factor-dot ${f.type}"></div>
+          <div class="modal-factor-label">${f.label}</div>
+          <div class="modal-factor-sign ${f.type}">${scoreStr}</div>
+        </div>`;
+    }).join('');
 
   // Season stats grid
   const ss = p.seasonStats, s7 = p.last7Stats;
