@@ -5834,6 +5834,12 @@ function toggleLegend() {
 function showLoading(msg='Loading...') {
   document.getElementById('loadingOverlay').style.display='flex';
   document.getElementById('loadingStatus').textContent = msg;
+  const bw = document.getElementById('loadingBarWrap');
+  const bf = document.getElementById('loadingBarFill');
+  const bp = document.getElementById('loadingBarPct');
+  if (bw) bw.style.display = 'none';
+  if (bf) bf.style.width = '0%';
+  if (bp) bp.textContent = '0%';
 }
 function hideLoading() {
   document.getElementById('loadingOverlay').style.display='none';
@@ -5920,15 +5926,28 @@ async function startFetch() {
 
     renderGameChips(games);
 
+    // Show progress bar now that we know the game count
+    const _barWrap = document.getElementById('loadingBarWrap');
+    const _barFill = document.getElementById('loadingBarFill');
+    const _barPct  = document.getElementById('loadingBarPct');
+    if (_barWrap) _barWrap.style.display = 'block';
+    const _setBar  = pct => {
+      if (_barFill) _barFill.style.width = `${pct}%`;
+      if (_barPct)  _barPct.textContent  = `${Math.round(pct)}%`;
+    };
+    _setBar(0);
+
     // Process games sequentially to avoid rate limiting
     // Skip reprocessing if already scored AND lineup was officially locked —
     // this keeps scores stable across refreshes (past data doesn't change)
+    let _processed = 0;
     for (const game of games) {
       try {
         const existing = state.predictions[game.gamePk];
         if (existing?.lineupPosted) {
-          // Already have a locked score — just refresh lineup status display, don't recompute
           updateChipLineupStatus(game.gamePk, true);
+          _processed++;
+          _setBar(Math.round((_processed / games.length) * 100));
           continue;
         }
         setLoadingStatus(`Processing ${game.teams?.away?.team?.abbreviation||'?'} @ ${game.teams?.home?.team?.abbreviation||'?'}...`);
@@ -5938,7 +5957,10 @@ async function startFetch() {
       } catch (err) {
         console.warn('Game processing error:', game.gamePk, err);
       }
+      _processed++;
+      _setBar(Math.round((_processed / games.length) * 100));
     }
+    _setBar(100);
 
     // No game auto-selected — user must click a game chip
     if (state.selectedGamePk && !state.predictions[state.selectedGamePk]) {
