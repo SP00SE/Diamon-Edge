@@ -552,7 +552,7 @@ main { padding: 28px 0 60px; }
 .dfh-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--accent-blue); letter-spacing: 1.5px; }
 .dfh-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .dfh-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start;
 }
 .dfh-card {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -757,6 +757,187 @@ main { padding: 28px 0 60px; }
 .ovr-bb-btn.active-hr       { background: var(--accent-orange-dim); color: var(--accent-orange); border-color: var(--accent-orange); }
 .ovr-bb-btn:hover:not([class*="active"]) { background: var(--bg-card); color: var(--text-secondary); }
 
+/* ===== OVERALL SUB-TABS ===== */
+.ovr-sub-nav { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+.ovr-sub-btn { padding:7px 18px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text-muted); font-size:12px; font-weight:600; cursor:pointer; letter-spacing:.4px; transition:all .2s; }
+.ovr-sub-btn.active { background:var(--bg-card-hover); color:var(--text-primary); border-color:var(--accent-green); }
+.ovr-sub-btn:hover:not(.active) { background:var(--bg-card); color:var(--text-secondary); }
+
+/* ===== HIT FORGE ===== */
+.hf-intro { display:flex; align-items:center; gap:14px; margin-bottom:20px; padding:14px 16px; background:var(--bg-card); border-radius:10px; border:1px solid var(--border); }
+.hf-intro-icon { font-size:28px; }
+.hf-intro-title { font-size:16px; font-weight:700; color:var(--text-primary); letter-spacing:.5px; }
+.hf-intro-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.hf-section-wrap { margin-bottom:24px; }
+.hf-section-hdr { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.hf-section-toggle { cursor:pointer; user-select:none; }
+.hf-section-toggle:hover { color:var(--text-primary); border-color:var(--accent-green)50; }
+.hf-chevron { margin-left:auto; font-size:11px; transition:transform .2s; }
+.hf-chevron-collapsed { transform:rotate(-90deg); }
+.hf-section-body { overflow:hidden; }
+.hf-section-collapsed { display:none; }
+.hf-section-icon { font-size:15px; }
+.hf-hdr-green { color:var(--accent-green); border-color:var(--accent-green)30; }
+.hf-hdr-orange { color:var(--accent-orange); border-color:var(--accent-orange)30; }
+.hf-hdr-blue { color:#60a5fa; border-color:#60a5fa30; }
+
+/* Pick rows */
+.hf-pick-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-card); border-radius:8px; margin-bottom:6px; border:1px solid var(--border); transition:background .15s; }
+.hf-pick-row:hover { background:var(--bg-card-hover); }
+.hf-pick-row-top { border-color:var(--accent-green)60; background:linear-gradient(90deg,var(--accent-green)08,transparent); }
+.hf-pick-rank { width:24px; font-size:13px; font-weight:700; color:var(--text-muted); text-align:center; flex-shrink:0; }
+.hf-team-logo { width:28px; height:28px; border-radius:50%; object-fit:contain; background:#fff1; padding:2px; flex-shrink:0; }
+.hf-pick-info { flex:1; min-width:0; }
+.hf-pick-name { font-size:13px; font-weight:700; color:var(--text-primary); }
+.hf-pick-meta { font-size:11px; color:var(--text-muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hf-pick-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.hf-score-badge { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:var(--bg-card-hover); border:2px solid var(--border); color:var(--text-primary); }
+.hf-score-ring { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; background:var(--bg-card-hover); border:2px solid var(--border); color:var(--text-primary); flex-shrink:0; }
+
+/* Tier badges */
+.hf-tier-badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; letter-spacing:.5px; white-space:nowrap; }
+.hf-elite  { background:#f59e0b20; color:#f59e0b; border:1px solid #f59e0b50; }
+.hf-strong { background:var(--accent-green-dim); color:var(--accent-green); border:1px solid var(--accent-green)50; }
+.hf-solid  { background:#3b82f620; color:#60a5fa; border:1px solid #3b82f650; }
+.hf-risky  { background:var(--accent-orange-dim); color:var(--accent-orange); border:1px solid var(--accent-orange)50; }
+.hf-avoid  { background:#ef444420; color:#f87171; border:1px solid #ef444450; }
+
+/* Trend badges */
+.hf-trend-badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; white-space:nowrap; }
+.hf-trend-hot     { background:#ef444420; color:#f87171; border:1px solid #ef444450; }
+.hf-trend-cold    { background:#60a5fa20; color:#93c5fd; border:1px solid #60a5fa50; }
+.hf-trend-neutral { background:var(--bg-card-hover); color:var(--text-muted); border:1px solid var(--border); }
+
+/* Compact Top Hit Picks grid */
+.hf-compact-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+.hf-compact-card { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:11px 12px; }
+.hf-compact-card-top { border-color:var(--accent-green); background:linear-gradient(135deg,var(--accent-green-dim),transparent); }
+.hf-compact-header { display:flex; align-items:flex-start; gap:10px; }
+.hf-compact-photo-wrap { position:relative; flex-shrink:0; }
+.hf-compact-photo { width:48px; height:48px; border-radius:50%; object-fit:cover; border:1px solid var(--border); background:var(--bg-card-hover); display:block; }
+.hf-compact-rank { position:absolute; bottom:-4px; right:-4px; background:var(--bg-card); border:1px solid var(--border); border-radius:50%; width:17px; height:17px; font-size:9px; font-weight:800; color:var(--text-muted); display:flex; align-items:center; justify-content:center; }
+.hf-compact-info { flex:1; min-width:0; }
+.hf-compact-name-row { display:flex; align-items:center; gap:5px; margin-bottom:1px; }
+.hf-compact-name { font-size:13px; font-weight:700; color:var(--text-primary); }
+.hf-compact-meta { font-size:10px; color:var(--text-muted); line-height:1.4; }
+.hf-compact-scores { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+@media (max-width:480px) { .hf-compact-grid { grid-template-columns:1fr; } }
+
+/* Legacy breakdown card classes (kept for any remaining references) */
+.hf-breakdown-grid { display:flex; flex-direction:column; }
+.hf-breakdown-card { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.hf-bd-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:10px; }
+.hf-bd-left { flex:1; min-width:0; }
+.hf-bd-name { font-size:14px; font-weight:700; color:var(--text-primary); }
+.hf-bd-sub { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.hf-era-tough    { color:#f87171; font-weight:600; } /* ERA < 3.00 — tough pitcher */
+.hf-era-avg      { color:#facc15; font-weight:600; } /* ERA 3.00–4.49 — average */
+.hf-era-hittable { color:#4ade80; font-weight:600; } /* ERA 4.50+ — hittable */
+.hf-bd-scores { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.hf-bd-stats { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.hf-stat-chip { padding:2px 8px; background:var(--bg-card-hover); border-radius:8px; font-size:10px; color:var(--text-muted); font-weight:600; }
+.hf-val-up   { color:var(--accent-green); background:var(--accent-green-dim); border-radius:8px; padding:2px 8px; font-size:10px; font-weight:700; }
+.hf-val-down { color:#f87171; background:#ef444415; border-radius:8px; padding:2px 8px; font-size:10px; font-weight:700; }
+.hf-val-flat { color:var(--text-muted); }
+.hf-bd-factors { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:4px; }
+.hf-factor-pos { font-size:11px; color:var(--accent-green); padding-left:10px; position:relative; }
+.hf-factor-pos::before { content:'▲'; position:absolute; left:0; font-size:8px; }
+.hf-factor-neg { font-size:11px; color:#f87171; padding-left:10px; position:relative; }
+.hf-factor-neg::before { content:'▼'; position:absolute; left:0; font-size:8px; }
+
+/* Trend insight cards */
+.hf-trend-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+@media(max-width:600px) { .hf-trend-grid { grid-template-columns:1fr; } }
+.hf-trend-card { padding:14px; border-radius:10px; border:1px solid var(--border); text-align:center; }
+.hf-trend-hot-card  { background:linear-gradient(135deg,#ef444410,var(--bg-card)); border-color:#ef444440; }
+.hf-trend-cold-card { background:linear-gradient(135deg,#60a5fa10,var(--bg-card)); border-color:#60a5fa40; }
+.hf-trend-elite-card{ background:linear-gradient(135deg,#f59e0b10,var(--bg-card)); border-color:#f59e0b40; }
+.hf-trend-label { font-size:11px; font-weight:700; letter-spacing:.5px; color:var(--text-muted); margin-bottom:6px; }
+.hf-trend-count { font-size:28px; font-weight:700; color:var(--text-primary); }
+.hf-trend-names { font-size:11px; color:var(--text-muted); margin-top:4px; }
+
+/* Parlay builder */
+.hf-parlay-group { margin-bottom:16px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.hf-parlay-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; font-size:12px; font-weight:700; letter-spacing:.5px; }
+.hf-parlay-safe     { background:linear-gradient(90deg,var(--accent-green)15,transparent); color:var(--accent-green); }
+.hf-parlay-balanced { background:linear-gradient(90deg,#60a5fa15,transparent); color:#60a5fa; }
+.hf-parlay-risky    { background:linear-gradient(90deg,var(--accent-orange)15,transparent); color:var(--accent-orange); }
+.hf-parlay-list { padding:8px 12px; display:flex; flex-direction:column; gap:6px; }
+.hf-parlay-pick { display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--bg-card); border-radius:7px; border:1px solid var(--border); }
+.hf-parlay-num  { width:20px; font-size:11px; font-weight:700; color:var(--text-muted); text-align:center; flex-shrink:0; }
+.hf-parlay-name { flex:1; font-size:13px; font-weight:600; color:var(--text-primary); }
+.hf-clickable { cursor:pointer; }
+.hf-clickable:hover { color:var(--accent-green); text-decoration:underline; }
+.hf-parlay-team { font-size:11px; color:var(--text-muted); width:36px; }
+.hf-parlay-score{ font-size:12px; font-weight:700; color:var(--text-primary); width:28px; text-align:right; }
+.hf-copy-btn { padding:4px 12px; border-radius:12px; border:1px solid var(--border); background:var(--bg-card-hover); color:var(--text-muted); font-size:11px; font-weight:600; cursor:pointer; transition:all .2s; }
+.hf-copy-btn:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--accent-green); }
+.hf-risky-added { color:var(--accent-green); border-color:var(--accent-green)50; opacity:.7; cursor:default; }
+.hf-parlay-remove { background:none; border:none; color:#f87171; font-size:15px; font-weight:700; cursor:pointer; padding:0 4px; line-height:1; opacity:.7; }
+.hf-parlay-remove:hover { opacity:1; }
+
+/* Parlay tab nav */
+.prl-tab-nav { display:flex; gap:8px; margin-bottom:12px; }
+.prl-tab-btn { flex:1; padding:8px 4px; border-radius:20px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-muted); font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; text-align:center; }
+.prl-tab-btn.active { background:var(--accent-green-dim); color:var(--accent-green); border-color:var(--accent-green); }
+
+/* Parlay filters */
+.prl-filters { display:flex; flex-direction:column; gap:14px; padding:4px 0 14px; }
+.prl-filter-label { font-size:10px; font-weight:700; letter-spacing:.8px; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; }
+.prl-filter-row { display:flex; flex-wrap:wrap; gap:6px; }
+.prl-filter-btn { padding:5px 13px; border-radius:16px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-muted); font-size:11px; font-weight:600; cursor:pointer; transition:all .2s; }
+.prl-filter-btn.active { background:var(--accent-green-dim); color:var(--accent-green); border-color:var(--accent-green); }
+.prl-team-row { flex-wrap:wrap; }
+
+/* Build button */
+.prl-build-btn { width:100%; padding:11px; border-radius:10px; border:none; background:var(--accent-green); color:#000; font-size:13px; font-weight:800; cursor:pointer; letter-spacing:.5px; transition:opacity .2s; margin-bottom:12px; }
+.prl-build-btn:hover { opacity:.85; }
+.prl-reroll-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--accent-amber); background:var(--accent-amber-dim); color:var(--accent-amber); font-size:11px; font-weight:700; cursor:pointer; letter-spacing:.5px; transition:all .2s; }
+.prl-reroll-btn:hover { background:var(--accent-amber); color:#000; }
+.prl-reset-btn  { padding:6px 10px; border-radius:8px; border:1px solid var(--border-accent); background:transparent; color:var(--text-muted); font-size:11px; font-weight:600; cursor:pointer; transition:all .2s; }
+.prl-reset-btn:hover  { color:var(--text-primary); border-color:var(--text-muted); }
+
+/* Result card */
+.prl-result-card { border:1px solid var(--accent-green)60; border-radius:10px; overflow:hidden; }
+.prl-result-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; font-size:12px; font-weight:700; background:linear-gradient(90deg,var(--accent-green)15,transparent); color:var(--accent-green); }
+/* Safest parlay card */
+.soa-card { border:1px solid #22c55e80; border-radius:12px; overflow:hidden; background:var(--bg-card); }
+.soa-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:linear-gradient(90deg,#22c55e20,transparent); }
+.soa-title { font-family:'Bebas Neue',cursive; font-size:18px; letter-spacing:1.5px; color:#22c55e; }
+.soa-sub { font-size:10px; color:var(--text-muted); margin-top:1px; }
+.soa-criteria { display:flex; gap:8px; flex-wrap:wrap; padding:8px 16px; border-bottom:1px solid var(--border); background:var(--bg-input); }
+.soa-tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; letter-spacing:.4px; }
+.soa-tag-avg { background:#22c55e20; color:#22c55e; border:1px solid #22c55e40; }
+.soa-tag-era { background:#f9731620; color:#f97316; border:1px solid #f9731640; }
+.soa-tag-opp { background:#60a5fa20; color:#60a5fa; border:1px solid #60a5fa40; }
+.soa-pick { display:flex; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid var(--border); }
+.soa-pick:last-child { border-bottom:none; }
+.soa-num  { width:20px; font-size:11px; font-weight:700; color:var(--text-muted); text-align:center; flex-shrink:0; }
+.soa-name { flex:1; font-size:13px; font-weight:700; color:var(--text-primary); cursor:pointer; }
+.soa-name:hover { color:var(--accent-green); }
+.soa-avg  { font-size:11px; font-weight:700; color:#22c55e; min-width:38px; text-align:right; }
+.soa-era  { font-size:11px; font-weight:700; color:#f97316; min-width:44px; text-align:right; }
+.soa-opp  { font-size:10px; color:var(--text-muted); min-width:60px; text-align:right; }
+.soa-empty { padding:20px; text-align:center; color:var(--text-muted); font-size:12px; }
+
+/* Sneaky picks */
+.hf-sneaky-card { padding:14px; background:var(--bg-card); border:1px solid #f59e0b40; border-radius:10px; margin-bottom:10px; }
+.hf-sneaky-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.hf-sneaky-name { font-size:14px; font-weight:700; color:var(--text-primary); }
+
+/* Sneaky picks — last 7 games mini-log */
+.hf-l7-wrap { margin-top:8px; }
+.hf-l7-label { font-size:9px; font-weight:700; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; }
+.hf-l7-row { display:flex; gap:4px; flex-wrap:wrap; }
+.hf-l7-game { display:flex; flex-direction:column; align-items:center; gap:1px; min-width:34px; padding:4px 5px; border-radius:6px; }
+.hf-l7-hit  { background:#16a34a25; border:1px solid #16a34a60; }
+.hf-l7-no   { background:#dc262625; border:1px solid #dc262650; }
+.hf-l7-na   { background:var(--bg-card); border:1px solid var(--border); }
+.hf-l7-date { font-size:9px; color:var(--text-muted); }
+.hf-l7-stat { font-size:10px; font-weight:700; color:var(--text-primary); }
+.hf-l7-hit .hf-l7-stat  { color:#4ade80; }
+.hf-l7-no  .hf-l7-stat  { color:#f87171; }
+
 /* ===== BEST BET TRIPLE LAYOUT ===== */
 .bb-triple {
   display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap;
@@ -870,6 +1051,7 @@ main { padding: 28px 0 60px; }
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
   margin-bottom: 40px;
+  align-items: start;
 }
 
 /* ===== PREDICTION CARD ===== */
@@ -1684,27 +1866,178 @@ main { padding: 28px 0 60px; }
 
     <!-- TAB: OVERALL TOP PICKS -->
     <div id="tabOverall" style="display:none;">
-      <div id="overallBestBetWrap" style="display:none;margin-bottom:18px;">
-        <div class="bb-mode-toggle">
-          <button class="ovr-bb-btn active-combined" onclick="switchOvrBbMode('combined',this)">🎯 Best Pick</button>
-          <button class="ovr-bb-btn" onclick="switchOvrBbMode('hit',this)">🟢 Best Hit</button>
-          <button class="ovr-bb-btn" onclick="switchOvrBbMode('hr',this)">🟠 Best HR</button>
-        </div>
-        <div class="bb-triple" id="overallBestBetBanner"></div>
+      <!-- Overall sub-tab navigation -->
+      <div class="ovr-sub-nav">
+        <button class="ovr-sub-btn active" onclick="switchOvrSub('picks',this)">🎯 Top Picks</button>
+        <button class="ovr-sub-btn" onclick="switchOvrSub('hitforge',this)">⚒️ Hit Forge</button>
+        <button class="ovr-sub-btn" onclick="switchOvrSub('parlays',this)">🪙 Parlays</button>
       </div>
-      <div id="overallHitsSection" style="display:none;">
-        <div class="section-header">
-          <div class="section-title green bebas">TOP HIT PLAYS — ALL GAMES</div>
-          <div class="section-count" id="overallHitCount">0</div>
+
+      <!-- Sub: Top Picks (existing) -->
+      <div id="ovrSubPicks">
+        <div id="overallBestBetWrap" style="display:none;margin-bottom:18px;">
+          <div class="bb-mode-toggle">
+            <button class="ovr-bb-btn active-combined" onclick="switchOvrBbMode('combined',this)">🎯 Best Pick</button>
+            <button class="ovr-bb-btn" onclick="switchOvrBbMode('hit',this)">🟢 Best Hit</button>
+            <button class="ovr-bb-btn" onclick="switchOvrBbMode('hr',this)">🟠 Best HR</button>
+          </div>
+          <div class="bb-triple" id="overallBestBetBanner"></div>
         </div>
-        <div class="pred-grid" id="overallHitGrid"></div>
+        <div id="overallHitsSection" style="display:none;">
+          <div class="section-header">
+            <div class="section-title green bebas">TOP HIT PLAYS — ALL GAMES</div>
+            <div class="section-count" id="overallHitCount">0</div>
+          </div>
+          <div class="pred-grid" id="overallHitGrid"></div>
+        </div>
+        <div id="overallHRsSection" style="display:none;">
+          <div class="section-header">
+            <div class="section-title orange bebas">TOP HR PLAYS — ALL GAMES</div>
+            <div class="section-count" id="overallHRCount">0</div>
+          </div>
+          <div class="pred-grid" id="overallHRGrid"></div>
+        </div>
       </div>
-      <div id="overallHRsSection" style="display:none;">
-        <div class="section-header">
-          <div class="section-title orange bebas">TOP HR PLAYS — ALL GAMES</div>
-          <div class="section-count" id="overallHRCount">0</div>
+
+      <!-- Sub: Hit Forge -->
+      <div id="ovrSubHitForge" style="display:none;">
+        <div class="hf-intro">
+          <div class="hf-intro-icon">⚒️</div>
+          <div>
+            <div class="hf-intro-title">Hit Forge</div>
+            <div class="hf-intro-sub">Data-driven hit prediction engine — scores every starting hitter, builds optimized parlays, and surfaces sneaky value picks.</div>
+          </div>
         </div>
-        <div class="pred-grid" id="overallHRGrid"></div>
+        <div id="hfLoading" class="leaders-loading" style="display:none;">⚒️ Forging hit predictions…</div>
+        <div id="hfEmpty"   class="leaders-loading" style="display:none;">No game data available. Load today's schedule first.</div>
+
+        <!-- TOP HIT PICKS (combined) -->
+        <div class="hf-section-wrap">
+          <div class="hf-section-hdr hf-section-toggle" onclick="toggleHfSection('hfBreakdownBody')">
+            <span class="hf-section-icon">🔥</span><span>TOP HIT PICKS</span>
+            <span class="hf-chevron" id="chev-hfBreakdownBody">▼</span>
+          </div>
+          <div class="hf-section-body" id="hfBreakdownBody">
+            <div id="hfBreakdownList"></div>
+          </div>
+        </div>
+
+        <!-- 3. Trend Insights -->
+        <div class="hf-section-wrap">
+          <div class="hf-section-hdr hf-section-toggle" onclick="toggleHfSection('hfTrendBody')">
+            <span class="hf-section-icon">🧠</span><span>TREND INSIGHTS</span>
+            <span class="hf-chevron hf-chevron-collapsed" id="chev-hfTrendBody">▼</span>
+          </div>
+          <div class="hf-section-body hf-section-collapsed" id="hfTrendBody">
+            <div id="hfTrendContent"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sub: Parlays -->
+      <div id="ovrSubParlays" style="display:none;">
+        <div class="hf-intro">
+          <div class="hf-intro-icon">🪙</div>
+          <div>
+            <div class="hf-intro-title">Parlays</div>
+            <div class="hf-intro-sub">Quick auto-generated parlays + build your own with custom filters.</div>
+          </div>
+        </div>
+
+        <!-- Parlay Builder (top) -->
+        <div class="hf-section-wrap" style="margin-bottom:18px;">
+          <div class="hf-section-hdr hf-section-toggle" onclick="toggleHfSection('prlBuilderBody')">
+            <span class="hf-section-icon">🏗️</span><span>PARLAY BUILDER</span>
+            <span class="hf-chevron" id="chev-prlBuilderBody">▼</span>
+          </div>
+          <div class="hf-section-body" id="prlBuilderBody">
+            <div class="prl-filters">
+              <div class="prl-filter-group">
+                <div class="prl-filter-label">Bet Type</div>
+                <div class="prl-filter-row" data-filter="bettype">
+                  <button class="prl-filter-btn active" data-val="hits" onclick="selectPrlFilter(this)">🟢 Hits</button>
+                  <button class="prl-filter-btn" data-val="hr" onclick="selectPrlFilter(this)">🟠 HR</button>
+                  <button class="prl-filter-btn" data-val="both" onclick="selectPrlFilter(this)">🎯 Both</button>
+                </div>
+              </div>
+              <div class="prl-filter-group">
+                <div class="prl-filter-label">Risk Level</div>
+                <div class="prl-filter-row" data-filter="risk">
+                  <button class="prl-filter-btn active" data-val="safe" onclick="selectPrlFilter(this)">🔒 Safe</button>
+                  <button class="prl-filter-btn" data-val="balanced" onclick="selectPrlFilter(this)">⚖️ Balanced</button>
+                  <button class="prl-filter-btn" data-val="risky" onclick="selectPrlFilter(this)">⚡ High Risk</button>
+                </div>
+              </div>
+              <div class="prl-filter-group">
+                <div class="prl-filter-label">Player Focus <small style="font-weight:400;text-transform:none;">(multi-select)</small></div>
+                <div class="prl-filter-row" data-filter="focus">
+                  <button class="prl-filter-btn active" data-val="all" onclick="togglePrlFocus(this)">🌐 All</button>
+                  <button class="prl-filter-btn" data-val="hotstreak" onclick="togglePrlFocus(this)">🔥 Hot Streak</button>
+                  <button class="prl-filter-btn" data-val="dueforhit" onclick="togglePrlFocus(this)">📈 Due for Hit</button>
+                  <button class="prl-filter-btn" data-val="rising" onclick="togglePrlFocus(this)">⭐ Rising Stars</button>
+                  <button class="prl-filter-btn" data-val="sneaky" onclick="togglePrlFocus(this)">🎯 Sneaky Picks</button>
+                  <button class="prl-filter-btn" data-val="safest" onclick="togglePrlFocus(this)">🛡️ Safest of All</button>
+                </div>
+              </div>
+              <div class="prl-filter-group">
+                <div class="prl-filter-label">Legs</div>
+                <div class="prl-filter-row" data-filter="legs" style="align-items:center;">
+                  <button class="prl-filter-btn" data-val="2" onclick="selectPrlFilter(this)">2</button>
+                  <button class="prl-filter-btn active" data-val="3" onclick="selectPrlFilter(this)">3</button>
+                  <button class="prl-filter-btn" data-val="4" onclick="selectPrlFilter(this)">4</button>
+                  <button class="prl-filter-btn" data-val="5" onclick="selectPrlFilter(this)">5</button>
+                  <button class="prl-filter-btn" data-val="custom" onclick="selectPrlFilter(this)">Custom</button>
+                  <input type="number" id="prlCustomLegs" min="6" max="20" placeholder="6–20" style="display:none;width:64px;padding:4px 8px;border-radius:14px;border:1px solid var(--border-accent);background:var(--bg-card);color:var(--text-primary);font-size:12px;font-weight:600;text-align:center;">
+                </div>
+              </div>
+              <div class="prl-filter-group">
+                <div class="prl-filter-label">Teams <small style="font-weight:400;">(leave empty = all teams)</small></div>
+                <div class="prl-filter-row prl-team-row" id="prlTeamChips"></div>
+              </div>
+            </div>
+            <button class="prl-build-btn" onclick="buildCustomParlay()">🏗️ Build My Parlay</button>
+            <div id="prlBuilderResult"></div>
+          </div>
+        </div>
+
+        <!-- Safest of All -->
+        <div class="hf-section-wrap" style="margin-bottom:18px;">
+          <div class="hf-section-hdr hf-section-toggle" onclick="toggleHfSection('soaBody')">
+            <span class="hf-section-icon">🛡️</span><span>SAFEST OF ALL</span>
+            <span class="hf-chevron" id="chev-soaBody">▼</span>
+          </div>
+          <div class="hf-section-body" id="soaBody">
+            <div id="soaContent"><div class="soa-empty">Loading…</div></div>
+          </div>
+        </div>
+
+        <!-- Quick Parlays -->
+        <div class="hf-section-wrap" style="margin-bottom:18px;">
+          <div class="hf-section-hdr hf-section-toggle" onclick="toggleHfSection('prlQuickBody')">
+            <span class="hf-section-icon">📋</span><span>TODAY'S PARLAYS</span>
+            <span class="hf-chevron hf-chevron-collapsed" id="chev-prlQuickBody">▼</span>
+          </div>
+          <div class="hf-section-body hf-section-collapsed" id="prlQuickBody">
+            <div class="prl-tab-nav" style="margin-top:10px;">
+              <button class="prl-tab-btn active" onclick="switchParlayTab('hits',this)">🟢 Hits</button>
+              <button class="prl-tab-btn" onclick="switchParlayTab('hr',this)">🟠 HR</button>
+              <button class="prl-tab-btn" onclick="switchParlayTab('overall',this)">🎯 Overall</button>
+            </div>
+            <div id="prlTabContent"><div class="leaders-loading">Loading parlays…</div></div>
+          </div>
+        </div>
+
+        <!-- Sneaky Picks -->
+        <div class="hf-section-wrap">
+          <div class="hf-section-hdr hf-section-toggle" onclick="toggleHfSection('hfSneakyBody')">
+            <span class="hf-section-icon">🎯</span><span>SNEAKY PICKS</span>
+            <span class="hf-chevron" id="chev-hfSneakyBody">▼</span>
+          </div>
+          <div class="hf-section-body" id="hfSneakyBody">
+            <div id="hfSneakyContent"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1801,6 +2134,15 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign">— Steady</span><span class="fr-text">L7 AVG is within 29 points of season AVG — performing close to their normal level</span></div>
           <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Example: Season AVG .280, L7 AVG .220 → difference = −60 pts → ❄️ Cold Streak</p>
 
+          <div class="formula-divider" style="margin-top:16px">Hot Streaks Tab — Flame Intensity <span class="formula-divider-sub">shown on streak cards</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">The number of 🔥 flames on a streak card shows how hot the streak is.</p>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥🔥 Hit</span><span class="fr-text">L7 AVG is <strong>80+ points above</strong> season AVG — elite recent form</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥 Hit</span><span class="fr-text">L7 AVG is <strong>50–79 points above</strong> season AVG — very hot</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥 Hit</span><span class="fr-text">L7 AVG is <strong>up to 49 points above</strong> season AVG — on a streak</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥🔥 HR</span><span class="fr-text"><strong>3+ home runs</strong> in the last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥 HR</span><span class="fr-text"><strong>2 home runs</strong> in the last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥 HR</span><span class="fr-text"><strong>1 home run</strong> in the last 7 games</span></div>
+
           <div class="formula-divider" style="margin-top:16px">Live Game Badges <span class="formula-divider-sub">shown once a game starts</span></div>
           <div class="formula-row"><span class="fr-sign" style="color:var(--accent-red)">● LIVE</span><span class="fr-text">Game is currently in progress — stats update in real time</span></div>
           <div class="formula-row"><span class="fr-sign">● FINAL</span><span class="fr-text">Game has ended — stats are the player's final result for the day</span></div>
@@ -1845,11 +2187,11 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Hit in 6–7 of last 7 games</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Hit in 4–5 of last 7 games</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Hit in 0–1 of last 7 games</span></div>
-          <div class="formula-divider">Consecutive Hit Streak 🔥 <span class="formula-divider-sub">bonus only · max +3 at 7+ game streak</span></div>
+          <div class="formula-divider">Consecutive Hit Streak 🔥 <span class="formula-divider-sub">bonus only · max +3 (7+ game streak) · total form+streak capped +12</span></div>
           <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">3-game streak</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">5-game streak</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">7+ game streak (max)</span></div>
-          <div class="formula-divider">Opportunity <span class="formula-divider-sub">lineup position + usage score</span></div>
+          <div class="formula-divider">Opportunity <span class="formula-divider-sub">lineup position + PA role</span></div>
           <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Batting 1st or 2nd</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batting 3rd or 4th</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2/−3</span><span class="fr-text">Batting 8th or 9th</span></div>
@@ -2039,29 +2381,55 @@ function getParkFactor(venueName) {
 const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+// ─── GLOBAL REQUEST THROTTLE ─────────────────────────────────────────────
+// Limits total simultaneous MLB API requests to prevent ECONNRESET errors.
+const MAX_CONCURRENT_REQUESTS = 3;
+let _activeRequests = 0;
+const _requestQueue = [];
+function _throttledFetch(url, opts) {
+  return new Promise((resolve, reject) => {
+    const execute = () => {
+      _activeRequests++;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 15000); // 15s timeout
+      fetch(url, { ...opts, signal: ctrl.signal })
+        .then(resolve, reject)
+        .finally(() => {
+          clearTimeout(timer);
+          _activeRequests--;
+          if (_requestQueue.length) _requestQueue.shift()();
+        });
+    };
+    if (_activeRequests < MAX_CONCURRENT_REQUESTS) execute();
+    else _requestQueue.push(execute);
+  });
+}
+
 async function cachedFetch(url, opts={}) {
   const now = Date.now();
   if (cache.has(url)) {
     const { ts, data } = cache.get(url);
     if (now - ts < CACHE_TTL) return data;
   }
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 4;
   let lastErr;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 12000);
-      const res = await fetch(url, { ...opts, signal: controller.signal });
-      clearTimeout(timer);
+      if (attempt > 0) {
+        // Exponential backoff with jitter: 1s → 2s → 4s
+        const base = 1000 * Math.pow(2, attempt - 1);
+        const jitter = Math.floor(Math.random() * 400) - 200;
+        await new Promise(r => setTimeout(r, base + jitter));
+      }
+      const res = await _throttledFetch(url, opts);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       cache.set(url, { ts: Date.now(), data });
       return data;
     } catch (err) {
       lastErr = err;
-      if (attempt < MAX_RETRIES) {
-        await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 600));
-      }
+      const msg = err.message || '';
+      if (msg.startsWith('HTTP 4')) throw err; // don't retry 4xx
     }
   }
   throw lastErr;
@@ -2123,20 +2491,20 @@ const PA_CFG = {
     { min: 0,    score: -4 },
   ],
   recentUsage: [
-    { min: 29, score:   6 },
-    { min: 23, score:   3 },
-    { min: 17, score:   0 },
-    { min: 11, score:  -3 },
-    { min: 6,  score:  -6 },
-    { min: 1,  score: -10 },
-    { min: 0,  score: -12 },
+    { min: 29, score:  6 },  // 29+ AB — very strong everyday usage
+    { min: 23, score:  3 },  // 23–28 AB — strong everyday usage
+    { min: 17, score:  0 },  // 17–22 AB — acceptable / lower-end normal
+    { min: 11, score: -3 },  // 11–16 AB — below-avg opportunity
+    { min:  6, score: -6 },  // 6–10 AB — limited role / bench
+    { min:  1, score: -10 }, // 1–5 AB — bench/platoon/injury concern
+    { min:  0, score: -12 }, // 0 AB — not playing
   ],
 };
 
-// Usage Score: Season PA role + Recent AB (last 7 game log) — not capped
-// pa         : player's season plate appearances
-// teamPAList : array of season PAs for all batters on the same team
-// recentAB   : total AB in last 7 game log entries; pass null if unknown
+// Unified PA scoring — Season role + Recent AB from game log
+// pa        : player's season plate appearances
+// teamPAList: array of season PAs for all teammates (used for team-share calc)
+// recentAB  : total AB in last 7 game log entries (0–30+); pass null if unknown
 // Returns { total, roleScore, recentScore, sharePct, factors[] }
 function computePAScore(pa, teamPAList, recentAB) {
   const teamTotal = (teamPAList || []).reduce((a, b) => a + b, 0);
@@ -2145,7 +2513,7 @@ function computePAScore(pa, teamPAList, recentAB) {
   // 1. Role score — season PA share vs team
   const roleScore = (PA_CFG.role.find(r => share >= r.min) ?? PA_CFG.role.at(-1)).score;
 
-  // 2. Recent AB — total at-bats in last 7 game log entries
+  // 2. Recent AB — realistic MLB weekly volume indicator (not capped)
   let recentScore = 0;
   if (recentAB != null) {
     recentScore = (PA_CFG.recentUsage.find(r => recentAB >= r.min) ?? PA_CFG.recentUsage.at(-1)).score;
@@ -2180,11 +2548,11 @@ function _hitSkillScore(batter, factors) {
   const kPct = (ab + bb) > 0 ? so / (ab + bb) : 0;
 
   // Season AVG
-  if      (avg > .300)  { s += 6; factors.push({ label: `AVG ${safe(avg)} (elite)`,    type:'pos', pts:  6 }); }
-  else if (avg >= .285) { s += 5; factors.push({ label: `AVG ${safe(avg)}`,             type:'pos', pts:  5 }); }
-  else if (avg >= .270) { s += 3; factors.push({ label: `AVG ${safe(avg)}`,             type:'pos', pts:  3 }); }
-  else if (avg >= .250) { s += 1; factors.push({ label: `AVG ${safe(avg)}`,             type:'pos', pts:  1 }); }
-  else if (avg > 0)     { s -= 2; factors.push({ label: `AVG ${safe(avg)} (below avg)`, type:'neg', pts: -2 }); }
+  if      (avg > .300)  { s += 6; factors.push({ label: `AVG ${safe(avg)} (elite)`,   type:'pos', pts:  6 }); }
+  else if (avg >= .285) { s += 5; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos', pts:  5 }); }
+  else if (avg >= .270) { s += 3; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos', pts:  3 }); }
+  else if (avg >= .250) { s += 1; factors.push({ label: `AVG ${safe(avg)}`,            type:'pos', pts:  1 }); }
+  else if (avg > 0)     { s -= 2; factors.push({ label: `AVG ${safe(avg)} (below avg)`,type:'neg', pts: -2 }); }
 
   // OBP
   if      (obp > .370)  { s += 4; factors.push({ label: `OBP ${safe(obp)}`,           type:'pos', pts:  4 }); }
@@ -2205,17 +2573,21 @@ function _hitSkillScore(batter, factors) {
 
 function _hitRecentFormScore(batter, factors) {
   let s = 0;
-  const l7avg     = batter.last7Stats?.avg || 0;
-  const hitStreak = batter.hitStreak || 0;
-  const hitGames7 = batter.hitGames7 ?? null;
+  const l7avg       = batter.last7Stats?.avg  || 0;
+  const l7hits      = batter.last7Stats?.hits || 0;
+  const l7ab        = batter.last7Stats?.atBats || 0;
+  const hitStreak   = batter.hitStreak   || 0;
+  const hitGames7   = batter.hitGames7   ?? null; // games with ≥1 hit in last 7
 
+  // Last 7 AVG — primary recency signal
   let formScore = 0;
   if      (l7avg > .350)  { formScore +=  8; factors.push({ label: `L7 AVG ${safe(l7avg)} 🔥`,    type:'pos', pts:  8 }); }
   else if (l7avg >= .300) { formScore +=  6; factors.push({ label: `L7 AVG ${safe(l7avg)}`,        type:'pos', pts:  6 }); }
   else if (l7avg >= .250) { formScore +=  3; factors.push({ label: `L7 AVG ${safe(l7avg)}`,        type:'pos', pts:  3 }); }
-  else if (l7avg >= .200) { /* neutral */ }
+  else if (l7avg >= .200) {                  /* neutral */                                                                   }
   else if (l7avg > 0)     { formScore -=  4; factors.push({ label: `L7 AVG ${safe(l7avg)} (cold)`, type:'neg', pts: -4 }); }
 
+  // Hit consistency in last 7 games
   let consistScore = 0;
   if (hitGames7 != null) {
     if      (hitGames7 >= 6) { consistScore += 4; factors.push({ label: `Hit in ${hitGames7}/7 games`, type:'pos', pts:  4 }); }
@@ -2224,11 +2596,13 @@ function _hitRecentFormScore(batter, factors) {
     else                     { consistScore -= 2; factors.push({ label: `Hit in ${hitGames7}/7 games`, type:'neg', pts: -2 }); }
   }
 
+  // Streak bonus — max +3 (7+ game streak), capped so total form+streak ≤ 12
   let streakScore = 0;
   if      (hitStreak >= 7) { streakScore = 3; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', pts: 3 }); }
   else if (hitStreak >= 5) { streakScore = 2; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', pts: 2 }); }
   else if (hitStreak >= 3) { streakScore = 1; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', pts: 1 }); }
 
+  // Cap: combined form + consistency + streak ≤ +12
   const rawForm = formScore + consistScore + streakScore;
   s += rawForm > 12 ? 12 : rawForm;
   return s;
@@ -2244,14 +2618,15 @@ function _hitOpportunityScore(batter, orderPos, factors) {
   if (pb < 0)  factors.push({ label: `Bats ${orderPos}th (lineup−)`, type:'neg', pts: pb });
   s += pb;
 
-  // Recent AB from game log (last 7 games)
+  // Recent AB from game log (last 7 games) — realistic weekly playing-time indicator
   const _l7log   = gameLogCache.get(batter.id) || [];
   const recentAB = _l7log.slice(0, 7).reduce((sum, g) => sum + (g.stat?.atBats || 0), 0);
 
+  // PA / Usage score
   const paScore = computePAScore(
     batter.seasonStats?.plateAppearances || 0,
     batter.teamPAList || [],
-    _l7log.length > 0 ? recentAB : null
+    _l7log.length > 0 ? recentAB : null   // pass null if log not yet loaded
   );
   if (paScore.total !== 0) { s += paScore.total; factors.push(...paScore.factors); }
 
@@ -2267,18 +2642,19 @@ function _hitMatchupScore(batter, pitcher, factors) {
   const pKpct = pIP > 0 ? pK / (pIP * 4.3) : 0;
   const pKp   = Math.round(pKpct * 100);
 
-  if      (pWhip >= 1.40) { s += 6; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,    type:'pos', pts:  6 }); }
-  else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos', pts:  4 }); }
-  else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,            type:'pos', pts:  2 }); }
-  else if (pWhip >= 1.10) { /* neutral */ }
-  else if (pWhip > 0)     { s -= 3; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,   type:'neg', pts: -3 }); }
+  // Pitcher WHIP
+  if      (pWhip >= 1.40) { s += 6; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,   type:'pos', pts:  6 }); }
+  else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,           type:'pos', pts:  4 }); }
+  else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,           type:'pos', pts:  2 }); }
+  else if (pWhip >= 1.10) {         /* neutral */ }
+  else if (pWhip > 0)     { s -= 3; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,  type:'neg', pts: -3 }); }
 
-  // Pitcher K% — higher K% = harder to get hits
-  if      (pKpct < .18)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,      type:'pos', pts:  5 }); }
-  else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                       type:'pos', pts:  2 }); }
-  else if (pKpct < .27)   { /* neutral */ }
-  else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,             type:'neg', pts: -2 }); }
-  else if (pKpct > 0)     { s -= 5; factors.push({ label: `P K% ${pKp}% (elite K)`,            type:'neg', pts: -5 }); }
+  // Pitcher K%
+  if      (pKpct < .18)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,     type:'pos', pts:  5 }); }
+  else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                      type:'pos', pts:  2 }); }
+  else if (pKpct < .27)   {         /* neutral */ }
+  else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts: -2 }); }
+  else if (pKpct > 0)     { s -= 5; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -5 }); }
 
   // Pitcher contact allowed proxy
   const contactAllowed = 1 - pKpct;
@@ -2289,11 +2665,11 @@ function _hitMatchupScore(batter, pitcher, factors) {
   const vsHandStats  = pitcherHand === 'L' ? batter.vsLHP : pitcherHand === 'R' ? batter.vsRHP : null;
   const vsAvg        = vsHandStats?.avg || 0;
   if (vsAvg > 0) {
-    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', pts:  4 }); }
-    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', pts:  3 }); }
-    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', pts:  2 }); }
-    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,       type:'pos', pts:  1 }); }
-    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (poor)`,type:'neg', pts: -2 }); }
+    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  4 }); }
+    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  3 }); }
+    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  2 }); }
+    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  1 }); }
+    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (poor)`, type:'neg', pts: -2 }); }
   }
 
   return s;
@@ -2402,9 +2778,11 @@ function _hrOpportunityScore(batter, orderPos, factors) {
     rateLabel = tier.label ? ` (${tier.label})` : '';
   }
 
-  // PA score (role + recent AB from game log)
-  const _hrL7log    = gameLogCache.get(batter.id) || [];
+  // Recent AB from game log (last 7 games)
+  const _hrL7log   = gameLogCache.get(batter.id) || [];
   const _hrRecentAB = _hrL7log.slice(0, 7).reduce((sum, g) => sum + (g.stat?.atBats || 0), 0);
+
+  // PA / Usage score
   const paScore = computePAScore(pa, batter.teamPAList || [], _hrL7log.length > 0 ? _hrRecentAB : null);
 
   const total = posScore + rateScore + paScore.total;
@@ -2648,14 +3026,12 @@ async function fetchPlayerLastNGames(personId, group='hitting', n=7) {
 }
 
 async function fetchPitcherStats(personId, season=2026) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${personId}?hydrate=stats(group=%5Bpitching%5D,type=%5Bseason%5D,season=${season},gameType=R)`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&season=${season}&group=pitching&gameType=R`;
   try {
     const data = await cachedFetch(url);
-    const person = data.people?.[0] || null;
-    const stat   = person?.stats?.[0]?.splits?.[0]?.stat || null;
-    const pitchHand = person?.pitchHand?.code || null;
-    return { stat, pitchHand };
-  } catch { return { stat: null, pitchHand: null }; }
+    const splits = data.stats?.[0]?.splits;
+    return splits?.[0]?.stat || null;
+  } catch { return null; }
 }
 
 async function fetchPlayerInfo(personId) {
@@ -2762,10 +3138,23 @@ async function processGame(game) {
         isAway: false,
       }));
 
-    lineupPosted = awayLineup.length > 0 || homeLineup.length > 0;
+    const awayPosted = awayLineup.length > 0;
+    const homePosted = homeLineup.length > 0;
+    lineupPosted = awayPosted || homePosted;
+
+    // If only one team has posted, fill the missing team with projected roster
+    // so both sides always have players (avoids blank team in breakdown + Hit Forge)
+    if (lineupPosted && !awayPosted) {
+      const proj = await fetchRosterProjected(game.teams?.away?.team?.id).catch(() => []);
+      awayLineup = proj.map((p, i) => ({ ...p, orderPos: i + 1, team: awayTeam, teamAbbr: awayAbbr, teamId: game.teams?.away?.team?.id, isAway: true, _projected: true }));
+    }
+    if (lineupPosted && !homePosted) {
+      const proj = await fetchRosterProjected(game.teams?.home?.team?.id).catch(() => []);
+      homeLineup = proj.map((p, i) => ({ ...p, orderPos: i + 1, team: homeTeam, teamAbbr: homeAbbr, teamId: game.teams?.home?.team?.id, isAway: false, _projected: true }));
+    }
   }
 
-  // If no posted lineup, try roster-based projected lineup
+  // If no posted lineup at all, try roster-based projected lineup for both teams
   if (!lineupPosted) {
     const [awayRoster, homeRoster] = await Promise.all([
       fetchRosterProjected(game.teams?.away?.team?.id).catch(()=>[]),
@@ -2795,8 +3184,8 @@ async function processGame(game) {
     if (!batter.id) continue;
     const stats = batchedStats[batter.id] || {};
     const pitcher = batter.isAway
-      ? { seasonStats: mapPitcherStats(homePitcherStats?.stat), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherStats?.pitchHand || homePitcherRaw?.pitchHand?.code || null }
-      : { seasonStats: mapPitcherStats(awayPitcherStats?.stat), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherStats?.pitchHand || awayPitcherRaw?.pitchHand?.code || null };
+      ? { seasonStats: mapPitcherStats(homePitcherStats), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherRaw?.pitchHand?.code || null }
+      : { seasonStats: mapPitcherStats(awayPitcherStats), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherRaw?.pitchHand?.code || null };
 
     const seasonStats = mapHitterStats(stats.season);
     const last7Stats  = mapHitterStats(stats.last7);
@@ -2819,7 +3208,7 @@ async function processGame(game) {
       hitStreak, hrStreak, recentStarts, hitGames7,
       vsRHP, vsLHP,
       teamPAList: teamPAs,
-      matchup: `vs ${pitcher.name || (batter.isAway ? homeAbbr : awayAbbr)}`,
+      matchup: `vs ${pitcher.name || (batter.isAway ? homeAbbr : awayAbbr)}${pitcher.seasonStats?.era != null ? ` (ERA ${Number(pitcher.seasonStats.era).toFixed(2)})` : ''}`,
       pitcherName: pitcher.name,
       hitScore, hitFactors,
       hrScore, hrFactors,
@@ -2828,22 +3217,14 @@ async function processGame(game) {
     state.playerMap[batter.id] = { ...playerObj, gamePk };
   }
 
-  // Build processed pitcher objects with seasonStats — shared by confidence + return
-  const processedAwayPitcher = {
-    ...awayPitcherRaw,
-    seasonStats: mapPitcherStats(awayPitcherStats?.stat),
-    pitchHand: awayPitcherStats?.pitchHand || awayPitcherRaw?.pitchHand?.code || null,
-  };
-  const processedHomePitcher = {
-    ...homePitcherRaw,
-    seasonStats: mapPitcherStats(homePitcherStats?.stat),
-    pitchHand: homePitcherStats?.pitchHand || homePitcherRaw?.pitchHand?.code || null,
-  };
-
   // Lock best bets when lineup is confirmed — never recalculate after this point
   let lockedBestBet    = null;
   let lockedBestBetHit = null;
   let lockedBestBetHR  = null;
+  // Build processed pitcher objects with seasonStats before confidence loop
+  const processedAwayPitcher = { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats), pitchHand: awayPitcherRaw?.pitchHand?.code || null };
+  const processedHomePitcher = { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats), pitchHand: homePitcherRaw?.pitchHand?.code || null };
+
   // Attach confidence to every player (uses gameLogCache if already populated)
   for (const p of players) {
     p.confidence    = computePickConfidence(p, { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId: homeTeam?.id, parkFactor, weather }, lineupPosted, 'combined');
@@ -2862,8 +3243,10 @@ async function processGame(game) {
     awayTeam, homeTeam, awayAbbr, homeAbbr,
     venueName, parkFactor,
     weather, lineupPosted,
-    awayPitcher: processedAwayPitcher,
-    homePitcher: processedHomePitcher,
+    awayLineupPosted: awayLineup.some(p => !p._projected),
+    homeLineupPosted: homeLineup.some(p => !p._projected),
+    awayPitcher: { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats) },
+    homePitcher: { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats) },
     gameDate,
     players,
     lockedBestBet,
@@ -2946,7 +3329,7 @@ async function fetchHandednessSplits(playerId) {
 
 async function batchFetchBatterStats(batters) {
   const result = {};
-  const CHUNK = 10;
+  const CHUNK = 5; // reduced from 10 — fewer concurrent requests prevents ECONNRESET
   for (let i = 0; i < batters.length; i += CHUNK) {
     const chunk = batters.slice(i, i+CHUNK);
     await Promise.all(chunk.map(async b => {
@@ -2958,12 +3341,14 @@ async function batchFetchBatterStats(batters) {
       ]);
       result[b.id] = {
         season,
-        last7: streaks.last7Agg || null,  // from game log, today excluded
+        last7: streaks.last7Agg || null,
         hitStreak: streaks.hitStreak, hrStreak: streaks.hrStreak,
         recentStarts: streaks.recentStarts, hitGames7: streaks.hitGames7,
         vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
       };
     }));
+    // Small pause between chunks to avoid overwhelming the MLB Stats API
+    if (i + CHUNK < batters.length) await new Promise(r => setTimeout(r, 300));
   }
   return result;
 }
@@ -3841,10 +4226,9 @@ async function renderHotStreaks() {
 const gameLogCache = new Map();
 
 async function fetchGameLog(playerId, includeToday = false, limit = 7) {
-  const cacheKey = limit > 7
-    ? `${playerId}_ext${limit}${includeToday?'_t':''}`
-    : includeToday ? `${playerId}_today` : playerId;
-  if (gameLogCache.has(cacheKey)) return gameLogCache.get(cacheKey);
+  const cacheKey = includeToday ? `${playerId}_today` : playerId;
+  // For limit>7 always fetch fresh; otherwise use cache
+  if (limit <= 7 && gameLogCache.has(cacheKey)) return gameLogCache.get(cacheKey);
   const season = new Date().getFullYear();
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=gameLog&season=${season}&group=hitting&gameType=R`;
   try {
@@ -3858,14 +4242,26 @@ async function fetchGameLog(playerId, includeToday = false, limit = 7) {
       }
     }
     if (!includeToday) splits = splits.filter(g => g.date !== state.date);
-    const result = splits.slice(-limit).reverse();
-    gameLogCache.set(cacheKey, result);
-    return result;
+    const recent = splits.slice(-limit).reverse();
+    if (limit <= 7) gameLogCache.set(cacheKey, recent);
+    return recent;
   } catch { return []; }
 }
 
 async function toggleStreakGameLog(playerId, btnEl, logId, includeToday = false) {
-  const logEl  = document.getElementById(logId || `gamelog-${playerId}`);
+  // Use DOM traversal to find the gamelog — avoids ID-collision issues
+  // when the same player appears in multiple sections of the page.
+  let logEl = btnEl.nextElementSibling;
+  if (!logEl || !logEl.classList.contains('streak-gamelog')) {
+    // Leaderboard case: button is the last child inside .leaders-row,
+    // gamelog is that row's next sibling.
+    logEl = btnEl.parentElement?.nextElementSibling;
+  }
+  if (!logEl || !logEl.classList.contains('streak-gamelog')) {
+    // Final fallback to ID lookup
+    logEl = document.getElementById(logId || `gamelog-${playerId}`);
+  }
+  if (!logEl) return;
   const isOpen = logEl.classList.contains('open');
 
   // Toggle visual state immediately
@@ -4200,6 +4596,7 @@ function renderBreakdownTable() {
       <td class="td-order">${p.orderPos || '?'}</td>
       <td class="td-player">
         <span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span>
+        <button class="pa-analyze-btn" onclick="openPlayerAnalyzer(${p.id})" style="padding:2px 8px;font-size:10px;margin-left:6px">🔍</button>
         <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'bd-gl-${p.id}')">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -4230,8 +4627,15 @@ function renderBreakdownTable() {
   const homeLogoSlug = (TEAM_INFO[gameData.homeId]?.espn || gameData.homeAbbr?.toLowerCase() || '');
   const awayLogo = awayLogoSlug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
   const homeLogo = homeLogoSlug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
+  const awayStatusBadge = gameData.lineupPosted && !gameData.awayLineupPosted
+    ? `<span style="font-size:10px;color:#f59e0b;margin-left:5px;font-weight:600;">📋 Projected</span>` : '';
+  const homeStatusBadge = gameData.lineupPosted && !gameData.homeLineupPosted
+    ? `<span style="font-size:10px;color:#f59e0b;margin-left:5px;font-weight:600;">📋 Projected</span>` : '';
   const projWarn = !gameData.lineupPosted
-    ? `<div class="bd-projected-warn">⏳ Projected lineup — scores will update once the lineup is confirmed</div>` : '';
+    ? `<div class="bd-projected-warn">⏳ Projected lineup — scores will update once the lineup is confirmed</div>`
+    : ((!gameData.awayLineupPosted || !gameData.homeLineupPosted)
+      ? `<div class="bd-projected-warn">⏳ One team's lineup is not yet confirmed — projected order shown for that team</div>`
+      : '');
 
   el.innerHTML = `
     <div class="game-breakdown">
@@ -4244,8 +4648,8 @@ function renderBreakdownTable() {
       </div>
       <div class="bd-team-filter">
         <button class="bd-team-btn${state.bdTeamFilter === 'combined' ? ' active' : ''}" onclick="setTeamFilter('combined',this)">⚾ Combined</button>
-        <button class="bd-team-btn${state.bdTeamFilter === 'away'     ? ' active' : ''}" onclick="setTeamFilter('away',this)">${awayLogo}${gameData.awayAbbr} Away</button>
-        <button class="bd-team-btn${state.bdTeamFilter === 'home'     ? ' active' : ''}" onclick="setTeamFilter('home',this)">${homeLogo}${gameData.homeAbbr} Home</button>
+        <button class="bd-team-btn${state.bdTeamFilter === 'away'     ? ' active' : ''}" onclick="setTeamFilter('away',this)">${awayLogo}${gameData.awayAbbr} Away${awayStatusBadge}</button>
+        <button class="bd-team-btn${state.bdTeamFilter === 'home'     ? ' active' : ''}" onclick="setTeamFilter('home',this)">${homeLogo}${gameData.homeAbbr} Home${homeStatusBadge}</button>
       </div>
       ${projWarn}
       <div class="breakdown-table-wrap">
@@ -4333,15 +4737,14 @@ async function openPlayerModal(playerId) {
     ? '<div style="color:var(--text-muted);font-size:13px;padding:6px 0">No factors recorded.</div>'
     : factors.map(f => {
       const pts = f.pts ?? null;
-      const scoreStr = pts != null
-        ? (pts > 0 ? `+${pts}` : `${pts}`)
-        : (f.type === 'pos' ? '+' : '−');
+      const ptsStr = pts === null ? (f.type === 'pos' ? '+' : '−')
+                   : pts > 0 ? `+${pts}` : pts < 0 ? `${pts}` : '0';
       return `
-        <div class="modal-factor-row">
-          <div class="modal-factor-dot ${f.type}"></div>
-          <div class="modal-factor-label">${f.label}</div>
-          <div class="modal-factor-sign ${f.type}">${scoreStr}</div>
-        </div>`;
+      <div class="modal-factor-row">
+        <div class="modal-factor-dot ${f.type}"></div>
+        <div class="modal-factor-label">${f.label}</div>
+        <div class="modal-factor-sign ${f.type}" style="min-width:36px;text-align:right">${ptsStr}</div>
+      </div>`;
     }).join('');
 
   // Season stats grid
@@ -4382,7 +4785,7 @@ async function openPlayerModal(playerId) {
         <div class="modal-player-name">${p.name}</div>
         <div class="modal-meta">${p.team} · ${p.position} · ${p.matchup} · Bats ${p.orderPos || '?'}</div>
       </div>
-      <button class="pa-analyze-btn" style="margin-top:4px;flex-shrink:0;" onclick="openPlayerAnalyzer(${p.id})">🔍 Analyze</button>
+      <button class="pa-analyze-btn" onclick="closePlayerModal({target:null});openPlayerAnalyzer(${p.id})" style="margin-top:6px;flex-shrink:0">🔍 Analyze</button>
     </div>
     ${actualHTML}
     <div class="modal-score-row">
@@ -4403,7 +4806,7 @@ async function openPlayerModal(playerId) {
 }
 
 function closePlayerModal(e) {
-  if (e && e.target !== document.getElementById('playerModal')) return;
+  if (e && e.target && e.target !== document.getElementById('playerModal')) return;
   document.getElementById('playerModal').style.display = 'none';
 }
 
@@ -4579,7 +4982,7 @@ function computeBtsScore(player, gameData) {
 function computePickConfidence(player, gameData, lineupPosted, mode = 'combined') {
   let score = 50;
 
-  // 1. Hit/HR score — guide, not dominate
+  // ── 1. HIT/HR SCORE INFLUENCE (guide, not dominate) ──────────────────────
   const baseScore = mode === 'hit' ? (player.hitScore || 0)
                   : mode === 'hr'  ? (player.hrScore  || 0)
                   : ((player.hitScore || 0) + (player.hrScore || 0)) / 2;
@@ -4591,33 +4994,36 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
   else if (baseScore >= 35) score -= 6;
   else                      score -= 12;
 
-  // 2. Opposing pitcher — primary risk factor
+  // ── 2. OPPOSING PITCHER (primary risk factor) ─────────────────────────────
   const oppPitcher = player.teamId === gameData?.homeTeamId
     ? gameData.awayPitcher : gameData.homePitcher;
   const pEra  = oppPitcher?.seasonStats?.era  || 0;
   const pWhip = oppPitcher?.seasonStats?.whip || 0;
   const elitePitcher = pEra > 0 && (pEra <= 2.50 || pWhip <= 0.95);
-  if (!oppPitcher?.seasonStats)            score -= 5;
-  else if (elitePitcher)                   score -= 20;
-  else if (pEra <= 3.30 || pWhip <= 1.10) score -= 10;
-  else if (pEra >= 5.50 || pWhip >= 1.50) score += 12;
+  if (!oppPitcher?.seasonStats)              score -= 5;
+  else if (elitePitcher)                     score -= 20;
+  else if (pEra <= 3.30 || pWhip <= 1.10)   score -= 10;
+  else if (pEra >= 5.50 || pWhip >= 1.50)   score += 12;
 
-  // 3. Lineup confirmation — critical, unconfirmed caps at 75
+  // ── 3. LINEUP CONFIRMATION (critical) ────────────────────────────────────
   if (lineupPosted) score += 20; else score -= 10;
 
-  // 4. Opportunity risk — recent AB and lineup position
+  // ── 4. OPPORTUNITY RISK ───────────────────────────────────────────────────
+  // Recent AB (last 7 game log)
   const log = gameLogCache.get(player.id) || [];
   const recentAB = log.slice(0, 7).reduce((s, g) => s + (g.stat?.atBats || 0), 0);
   if (log.length > 0) {
     if      (recentAB <= 10) score -= 15;
     else if (recentAB <= 16) score -= 8;
     else if (recentAB >= 23) score += 5;
+    // 17–22 = neutral (0)
   }
+  // Lineup position
   const orderPos = player.orderPos || 0;
-  if      (orderPos >= 8)                  score -= 8;
+  if      (orderPos >= 8) score -= 8;
   else if (orderPos >= 1 && orderPos <= 4) score += 5;
 
-  // 5. Streak — light confirmation only (already baked into Hit Score)
+  // ── 5. STREAK (light confirmation only — already in Hit Score) ────────────
   const hitStreak = player.hitStreak || 0;
   const hrStreak  = player.hrStreak  || 0;
   if      (hitStreak >= 7) score += 6;
@@ -4629,7 +5035,7 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
     else if (hrStreak >= 1) score += 1;
   }
 
-  // 6. Due for a hit — anti-gambler's-fallacy, capped
+  // ── 6. "DUE FOR A HIT" (anti-gambler's-fallacy, capped) ──────────────────
   const seasonAvg = player.seasonStats?.avg || 0;
   if (mode !== 'hr' && hitStreak === 0 && seasonAvg >= 0.270 && !elitePitcher) {
     let hitlessABs = 0;
@@ -4638,9 +5044,10 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
       else break;
     }
     if (hitlessABs >= 7 && hitlessABs <= 12) score += 3;
+    // 12+ AB hitless: NO bonus (avoid gambler's fallacy)
   }
 
-  // 7. Handedness split
+  // ── 7. HANDEDNESS SPLIT ───────────────────────────────────────────────────
   const pitcherHand = oppPitcher?.pitchHand?.code || oppPitcher?.pitchHand;
   const splitStats  = pitcherHand === 'L' ? player.vsLHP : player.vsRHP;
   const splitAvg    = splitStats?.avg || 0;
@@ -4651,19 +5058,20 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
     else                    score -= 12;
   }
 
-  // 8. Rest factor — full-time starters only
+  // ── 8. REST FACTOR (minor edge only, full-time starters only) ────────────
   if (log.length) {
     const yesterday = new Date(state.date);
     yesterday.setDate(yesterday.getDate() - 1);
     const yStr = yesterday.toISOString().slice(0, 10);
     const lastDate = log[0]?.date || '';
     const isRested = lastDate < yStr;
-    const isFullTime = recentAB >= 17;
+    const isFullTime = recentAB >= 17; // full-time usage threshold
     if (isRested && isFullTime) score += 5;
     else if (isRested)          score += 3;
+    // bench/platoon (low AB) get no rest bonus
   }
 
-  // 9. Recent PA rate vs season — usage consistency
+  // ── 9. RECENT PA RATE vs SEASON (usage consistency) ──────────────────────
   const seasonPA   = player.seasonStats?.plateAppearances || 0;
   const seasonG    = player.seasonStats?.gamesPlayed      || 1;
   const recentPA   = player.last7Stats?.plateAppearances  || 0;
@@ -4675,24 +5083,25 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
     else if (recentRate >= seasonRate * 0.90) score += 5;
   }
 
-  // 10. Contradiction penalties — high score but risky situation
+  // ── 10. CONTRADICTION PENALTIES ───────────────────────────────────────────
+  // High hit score but risky situation — core purpose of confidence
   if (baseScore >= 80) {
-    if (elitePitcher)                        score -= 8;
-    if (orderPos >= 8)                       score -= 6;
-    if (log.length > 0 && recentAB <= 10)   score -= 8;
+    if (elitePitcher)          score -= 8;
+    if (orderPos >= 8)         score -= 6;
+    if (log.length > 0 && recentAB <= 10) score -= 8;
   }
 
-  // Unconfirmed lineup hard cap
+  // ── CAP: unconfirmed lineup cannot exceed 75 ─────────────────────────────
   if (!lineupPosted) score = Math.min(score, 75);
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   let tier, label, icon, cls;
-  if      (score >= 80) { tier = 'very';      label = 'Very Confident';      icon = '★'; cls = 'bb-conf-very'; }
-  else if (score >= 65) { tier = 'confident'; label = 'Confident';           icon = '✦'; cls = 'bb-conf-confident'; }
-  else if (score >= 50) { tier = 'neutral';   label = 'Neutral/Risk Present';icon = '◆'; cls = 'bb-conf-neutral'; }
-  else if (score >= 35) { tier = 'low';       label = 'Low Confidence';      icon = '▲'; cls = 'bb-conf-low'; }
-  else                  { tier = 'highrisk';  label = 'High Risk';           icon = '⚠'; cls = 'bb-conf-highrisk'; }
+  if      (score >= 80) { tier = 'very';      label = 'Very Confident';    icon = '★';  cls = 'bb-conf-very'; }
+  else if (score >= 65) { tier = 'confident'; label = 'Confident';         icon = '✦';  cls = 'bb-conf-confident'; }
+  else if (score >= 50) { tier = 'neutral';   label = 'Neutral/Risk Present'; icon = '◆'; cls = 'bb-conf-neutral'; }
+  else if (score >= 35) { tier = 'low';       label = 'Low Confidence';    icon = '▲';  cls = 'bb-conf-low'; }
+  else                  { tier = 'highrisk';  label = 'High Risk';         icon = '⚠';  cls = 'bb-conf-highrisk'; }
 
   return { score, tier, label, icon, cls };
 }
@@ -5473,6 +5882,7 @@ async function prefetchLeaderRanks() {
 async function startFetch() {
   if (state.loading) return;
   state.loading = true;
+  _hfScoredCache = null; // clear so sample-size penalties are recalculated fresh
   clearError();
   showLoading('Fetching schedule...');
   prefetchLeaderRanks(); // fire and forget — populates seasonLeaderRanks in background
@@ -5510,20 +5920,6 @@ async function startFetch() {
 
     renderGameChips(games);
 
-    // Show progress bar now that we know total game count
-    const totalGames = games.length;
-    let doneGames = 0;
-    const barWrap = document.getElementById('loadingBarWrap');
-    const barFill = document.getElementById('loadingBarFill');
-    const barPct  = document.getElementById('loadingBarPct');
-    barWrap.style.display = 'block';
-    function updateProgress() {
-      const pct = totalGames > 0 ? Math.round((doneGames / totalGames) * 100) : 0;
-      barFill.style.width = pct + '%';
-      barPct.textContent  = pct + '%';
-    }
-    updateProgress();
-
     // Process games sequentially to avoid rate limiting
     // Skip reprocessing if already scored AND lineup was officially locked —
     // this keeps scores stable across refreshes (past data doesn't change)
@@ -5531,27 +5927,18 @@ async function startFetch() {
       try {
         const existing = state.predictions[game.gamePk];
         if (existing?.lineupPosted) {
+          // Already have a locked score — just refresh lineup status display, don't recompute
           updateChipLineupStatus(game.gamePk, true);
-          doneGames++;
-          updateProgress();
           continue;
         }
-        const awayAbbr = game.teams?.away?.team?.abbreviation || '?';
-        const homeAbbr = game.teams?.home?.team?.abbreviation || '?';
-        setLoadingStatus(`Loading game ${doneGames + 1} of ${totalGames} · ${awayAbbr} @ ${homeAbbr}`);
+        setLoadingStatus(`Processing ${game.teams?.away?.team?.abbreviation||'?'} @ ${game.teams?.home?.team?.abbreviation||'?'}...`);
         const gameData = await processGame(game);
         state.predictions[game.gamePk] = gameData;
         updateChipLineupStatus(game.gamePk, gameData.lineupPosted);
-        doneGames++;
-        updateProgress();
       } catch (err) {
         console.warn('Game processing error:', game.gamePk, err);
-        doneGames++;
-        updateProgress();
       }
     }
-    barFill.style.width = '100%';
-    barPct.textContent  = '100%';
 
     // No game auto-selected — user must click a game chip
     if (state.selectedGamePk && !state.predictions[state.selectedGamePk]) {
@@ -5570,11 +5957,1027 @@ async function startFetch() {
 
   } catch (err) {
     console.error('Fetch error:', err);
-    showError(`Unable to connect to MLB Stats API. ${err.message || ''}. Check your internet connection and try again.`);
+    showError('Could not reach the MLB Stats API. Check your connection and tap Retry.');
   } finally {
     state.loading = false;
     document.getElementById('refreshBtn').disabled = false;
   }
+}
+
+// ─── AUTO REFRESH ─────────────────────────────────────────────────────────
+// ─── HIT FORGE ENGINE ─────────────────────────────────────────────────────
+const hfCache = new Map();
+let _hfScoredCache = null;        // locked after all lineups confirmed — cleared on manual refresh
+let _prlActiveTab  = 'hits';     // which quick parlay tab is active
+let _prlHitPicks   = [];         // stored hit picks from renderParlaySection
+let _prlHrPicks    = [];         // stored HR picks
+let _prlOvrPicks   = [];         // stored overall picks
+let _prlTeamFilter      = new Set();  // team IDs selected in builder (empty = all)
+let _prlRerollExcluded  = new Set();  // player IDs excluded from reroll cycles
+let _soaRerollExcluded  = new Set();  // reroll exclusion for Safest of All
+
+function hfDateStr(daysAgo = 0) {
+  const base = state.date || new Date().toISOString().slice(0,10);
+  const d = new Date(base + 'T12:00:00');
+  d.setDate(d.getDate() - daysAgo);
+  return d.toISOString().slice(0,10);
+}
+
+async function fetchBvP(batterId, pitcherId) {
+  if (!batterId || !pitcherId) return { avg:0, ab:0, hits:0 };
+  const key = `bvp_${batterId}_${pitcherId}`;
+  if (hfCache.has(key)) return hfCache.get(key);
+  const season = new Date().getFullYear();
+  const url = `https://statsapi.mlb.com/api/v1/people/${batterId}/stats?stats=vsPlayer&group=hitting&opposingPlayerId=${pitcherId}&season=${season}&gameType=R`;
+  try {
+    const data = await cachedFetch(url);
+    const s = data?.stats?.[0]?.splits?.[0]?.stat || {};
+    const r = { avg: parseFloat(s.avg)||0, ab: s.atBats||0, hits: s.hits||0 };
+    hfCache.set(key, r); return r;
+  } catch { return { avg:0, ab:0, hits:0 }; }
+}
+
+async function fetchBullpenEra(teamId) {
+  if (!teamId) return 0;
+  const key = `bull_${teamId}_${hfDateStr()}`;
+  if (hfCache.has(key)) return hfCache.get(key);
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=byDateRange&group=pitching&startDate=${hfDateStr(7)}&endDate=${hfDateStr(0)}&season=${new Date().getFullYear()}&gameType=R`;
+  try {
+    const data = await cachedFetch(url);
+    const s = data?.stats?.[0]?.splits?.[0]?.stat || {};
+    const v = parseFloat(s.era)||0; hfCache.set(key, v); return v;
+  } catch { return 0; }
+}
+
+async function fetchTeamHitAvg7(teamId) {
+  if (!teamId) return 0;
+  const key = `th7_${teamId}_${hfDateStr()}`;
+  if (hfCache.has(key)) return hfCache.get(key);
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=byDateRange&group=hitting&startDate=${hfDateStr(7)}&endDate=${hfDateStr(0)}&season=${new Date().getFullYear()}&gameType=R`;
+  try {
+    const data = await cachedFetch(url);
+    const s = data?.stats?.[0]?.splits?.[0]?.stat || {};
+    const v = parseFloat(s.avg)||0; hfCache.set(key, v); return v;
+  } catch { return 0; }
+}
+
+async function fetchOppAllowsAvg(teamId) {
+  if (!teamId) return 0;
+  const key = `oaa_${teamId}`;
+  if (hfCache.has(key)) return hfCache.get(key);
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=season&group=pitching&season=${new Date().getFullYear()}&gameType=R`;
+  try {
+    const data = await cachedFetch(url);
+    const s = data?.stats?.[0]?.splits?.[0]?.stat || {};
+    const v = parseFloat(s.avg)||0; hfCache.set(key, v); return v;
+  } catch { return 0; }
+}
+
+function computeHFScore(player, pitcher, gd, bvp, bullpenEra, teamAvg7, oppAllowsAvg, abRatio=1) {
+  let score = 50;
+  const factors = [];
+  const avg     = player.seasonStats?.avg || 0;
+  const obp     = player.seasonStats?.obp || 0;
+  const pa      = player.seasonStats?.plateAppearances || 0;
+  const ks      = player.seasonStats?.strikeOuts || 0;
+  const kPct    = pa > 0 ? ks / pa : 0;
+  const l7avg   = player.last7Stats?.avg || 0;
+  const pos     = player.orderPos || 9;
+  const era     = pitcher?.seasonStats?.era  || 0;
+  const whip    = pitcher?.seasonStats?.whip || 0;
+  const pf      = gd.parkFactor?.overall || 1.0;
+  const ws      = gd.weather?.windSpeed  || 0;
+  const wd      = gd.weather?.windDir    || 0;
+  const windOut = ws >= 10 && wd >= 135 && wd <= 315;
+  const windIn  = ws >= 10 && (wd < 135 || wd > 315);
+
+  // Team AB share — compares player AB to their team's leader AB
+  const abPct = Math.round(abRatio * 100);
+  if (abRatio < 0.25) {
+    score -= 18;
+    factors.push({t:`Only ${abPct}% of team AB leader — rarely starts`,pos:false});
+  } else if (abRatio < 0.50) {
+    score -= 10;
+    factors.push({t:`${abPct}% of team AB leader — part-time`,pos:false});
+  } else if (abRatio < 0.75) {
+    score -= 4;
+    factors.push({t:`${abPct}% of team AB leader — reduced role`,pos:false});
+  }
+  // Recent AB volume — usage/opportunity indicator (MLB weekly context)
+  const recentLog = gameLogCache.get(player.id) || [];
+  const recentAB  = recentLog.slice(0,7).reduce((sum,g) => sum + (g.stat?.atBats||0), 0);
+  if      (recentAB === 0)              { score -= 12; factors.push({t:`0 AB last 7 games — not playing`,pos:false}); }
+  else if (recentAB <= 5)              { score -= 10; factors.push({t:`${recentAB} AB last 7 games — bench/platoon`,pos:false}); }
+  else if (recentAB <= 10)             { score -=  6; factors.push({t:`${recentAB} AB last 7 games — limited role`,pos:false}); }
+  else if (recentAB <= 16)             { score -=  3; factors.push({t:`${recentAB} AB last 7 games — below-avg opportunity`,pos:false}); }
+  else if (recentAB <= 22)             { /* 17–22: acceptable, no adjustment */ }
+  else if (recentAB <= 28)             { score +=  3; factors.push({t:`${recentAB} AB last 7 games — strong everyday usage`,pos:true}); }
+  else                                 { score +=  6; factors.push({t:`${recentAB} AB last 7 games — elite everyday usage`,pos:true}); }
+
+  // ADDS
+  if (avg >= 0.300)      { score+=12; factors.push({t:`AVG ${avg.toFixed(3)} (≥.300)`,pos:true}); }
+  else if (avg >= 0.280) { score+=10; factors.push({t:`AVG ${avg.toFixed(3)} (≥.280)`,pos:true}); }
+  if (obp >= 0.350)      { score+=8;  factors.push({t:`OBP ${obp.toFixed(3)} (≥.350)`,pos:true}); }
+  if (pa > 0 && kPct <= 0.18) { score+=6; factors.push({t:`K% ${(kPct*100).toFixed(0)}% — contact hitter`,pos:true}); }
+  if (bvp.ab >= 10 && bvp.avg >= 0.300) { score+=8; factors.push({t:`${bvp.avg.toFixed(3)} vs pitcher (${bvp.hits}/${bvp.ab} AB)`,pos:true}); }
+  if (whip >= 1.35) { score+=6; factors.push({t:`Opp WHIP ${whip.toFixed(2)} (≥1.35)`,pos:true}); }
+  if (era  >= 4.50) { score+=6; factors.push({t:`Opp ERA ${era.toFixed(2)} (≥4.50)`,pos:true}); }
+  if (bullpenEra >= 4.50) { score+=6; factors.push({t:`Opp bullpen ERA ${bullpenEra.toFixed(2)} (L7d)`,pos:true}); }
+  if (pf >= 1.05)   { score+=5; factors.push({t:`Hitter-friendly park`,pos:true}); }
+  if (windOut)      { score+=5; factors.push({t:`Wind blowing out ${ws}mph`,pos:true}); }
+  if (pos <= 3)     { score+=5; factors.push({t:`Bats ${pos}${pos===1?'st':pos===2?'nd':'rd'} in lineup`,pos:true}); }
+  if (teamAvg7 >= 0.260) { score+=4; factors.push({t:`Team AVG .${Math.round(teamAvg7*1000)} last 7d`,pos:true}); }
+  if (oppAllowsAvg >= 0.250) { score+=4; factors.push({t:`Opp allows .${Math.round(oppAllowsAvg*1000)} AVG`,pos:true}); }
+
+  // SUBS
+  if (era <= 3.00 && whip <= 1.10) { score-=10; factors.push({t:`Elite pitcher ERA ${era.toFixed(2)} WHIP ${whip.toFixed(2)}`,pos:false}); }
+  if (pa > 0 && kPct >= 0.25)      { score-=8;  factors.push({t:`K% ${(kPct*100).toFixed(0)}% — high strikeout risk`,pos:false}); }
+  if (l7avg > 0 && l7avg <= 0.200) { score-=6;  factors.push({t:`Slumping .${Math.round(l7avg*1000)} last 7d`,pos:false}); }
+  if (bvp.ab >= 10 && bvp.avg < 0.200) { score-=6; factors.push({t:`${bvp.avg.toFixed(3)} vs pitcher — dominated`,pos:false}); }
+  if (pf <= 0.95)  { score-=5; factors.push({t:`Pitcher-friendly park`,pos:false}); }
+  if (windIn)      { score-=4; factors.push({t:`Wind blowing in ${ws}mph`,pos:false}); }
+  if (pos >= 7)    { score-=4; factors.push({t:`Bats ${pos}th — low lineup`,pos:false}); }
+
+  return { score: Math.max(0, Math.min(100, Math.round(score))), factors };
+}
+
+function getHFTier(s) {
+  if (s >= 85) return { label:'ELITE',  cls:'hf-elite'  };
+  if (s >= 75) return { label:'STRONG', cls:'hf-strong' };
+  if (s >= 65) return { label:'SOLID',  cls:'hf-solid'  };
+  if (s >= 55) return { label:'RISKY',  cls:'hf-risky'  };
+  return             { label:'AVOID',  cls:'hf-avoid'  };
+}
+
+function getHFTrend(player) {
+  const log = gameLogCache.get(player.id) || [];
+  const l5  = log.slice(0,5).reduce((s,g) => s + (g.stat?.hits||0), 0);
+  const str = player.hitStreak || 0;
+  if (l5 >= 4 || str >= 3) return { label:'HOT 🔥',    cls:'hf-trend-hot',     l5 };
+  if (l5 <= 2)             return { label:'COLD ❄️',   cls:'hf-trend-cold',    l5 };
+  return                          { label:'NEUTRAL ➡️', cls:'hf-trend-neutral', l5 };
+}
+
+function hfValueScore(player) {
+  const a7 = player.last7Stats?.avg || 0;
+  const as = player.seasonStats?.avg || 0;
+  return (as > 0 && a7 > 0) ? (a7 - as) / as : 0;
+}
+
+// ── Hit Forge section toggle ───────────────────────────────────────────────
+function toggleHfSection(bodyId) {
+  const body  = document.getElementById(bodyId);
+  const chev  = document.getElementById('chev-' + bodyId);
+  if (!body) return;
+  const collapsed = body.classList.toggle('hf-section-collapsed');
+  if (chev) chev.classList.toggle('hf-chevron-collapsed', collapsed);
+}
+
+// ── Sub-tab switcher ───────────────────────────────────────────────────────
+function switchOvrSub(tab, btn) {
+  document.querySelectorAll('.ovr-sub-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const subIds = { picks:'ovrSubPicks', hitforge:'ovrSubHitForge', parlays:'ovrSubParlays' };
+  Object.entries(subIds).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = key === tab ? '' : 'none';
+  });
+  if (tab === 'hitforge') renderHitForge();
+  if (tab === 'parlays')  { renderParlaySection(); renderSafestParlay(); renderHitForge(); }
+}
+
+// ── Hit Forge module-level helpers ────────────────────────────────────────
+
+function hfLiveBadge(p) {
+  const ld = (state.allGamesLiveData||{})[p.gamePk];
+  if (!ld) return '';
+  const bs = ld.statsMap?.[p.id];
+  const ab = bs?.atBats || 0;
+  if (!bs || (ab === 0 && (bs.hits||0) === 0)) return '';
+  const pip = ld.isLive
+    ? `<span class="bb-live-pip">● LIVE</span>`
+    : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+  const hitBadge = (bs.hits||0) > 0
+    ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${bs.hits}/${ab})</span>`
+    : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>` : '';
+  const hrBadge = (bs.homeRuns||0) > 0
+    ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+    : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+  return `<div class="bb-achieve-row" style="margin-top:5px;flex-wrap:wrap;">${pip}${hitBadge}${hrBadge}</div>`;
+}
+
+// ── Render Hit Forge ───────────────────────────────────────────────────────
+async function renderHitForge() {
+  const loading = document.getElementById('hfLoading');
+  const empty   = document.getElementById('hfEmpty');
+  if (!loading) return;
+
+  // Check if all lineups are posted — used for locking
+  const allGds = Object.values(state.predictions || {});
+  const allLineupsConfirmed = allGds.length > 0 && allGds.every(gd => gd.lineupPosted);
+
+  let scored;
+
+  if (_hfScoredCache && allLineupsConfirmed) {
+    // Lineups confirmed and already scored — use frozen results, only refresh live badges
+    scored = _hfScoredCache;
+    await fetchAllGamesLiveData();
+    loading.style.display = 'none';
+    empty.style.display   = 'none';
+  } else {
+    loading.style.display = 'block';
+    empty.style.display   = 'none';
+    ['hfBreakdownList','hfTrendContent'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerHTML = '';
+    });
+
+    // Gather all players with their game context
+    let pool = [];
+    for (const [pk, gd] of Object.entries(state.predictions)) {
+      const rawGame  = (state.games||[]).find(g => g.gamePk === Number(pk));
+      const homeTId  = rawGame?.teams?.home?.team?.id || null;
+      const awayTId  = rawGame?.teams?.away?.team?.id || null;
+      for (const p of (gd.players||[])) {
+        // Once lineup is confirmed, only include players with a batting order slot (confirmed starters)
+        if (gd.lineupPosted && !p.orderPos) continue;
+        const pitcher   = p.isAway ? gd.homePitcher : gd.awayPitcher;
+        const oppTeamId = p.isAway ? homeTId : awayTId;
+        pool.push({ ...p, _gd:gd, _pitcher:pitcher, _oppTeamId:oppTeamId });
+      }
+    }
+    // Deduplicate
+    const seen = new Set();
+    pool = pool.filter(p => { if(seen.has(p.id)) return false; seen.add(p.id); return true; });
+
+    if (!pool.length) { loading.style.display='none'; empty.style.display='block'; return; }
+
+    // Collect unique team IDs for batch fetching
+    const myTeamIds  = [...new Set(pool.map(p=>p.teamId).filter(Boolean))];
+    const oppTeamIds = [...new Set(pool.map(p=>p._oppTeamId).filter(Boolean))];
+
+    // Fetch team-level stats in parallel
+    const [bullpenArr, teamHitArr, oppAvgArr] = await Promise.all([
+      Promise.all(oppTeamIds.map(id => fetchBullpenEra(id).then(v=>[id,v]).catch(()=>[id,0]))),
+      Promise.all(myTeamIds.map(id  => fetchTeamHitAvg7(id).then(v=>[id,v]).catch(()=>[id,0]))),
+      Promise.all(oppTeamIds.map(id => fetchOppAllowsAvg(id).then(v=>[id,v]).catch(()=>[id,0]))),
+    ]);
+    const bullpenMap = Object.fromEntries(bullpenArr);
+    const teamHitMap = Object.fromEntries(teamHitArr);
+    const oppAvgMap  = Object.fromEntries(oppAvgArr);
+
+    // Fetch BvP in chunks
+    const CHUNK = 8;
+    for (let i = 0; i < pool.length; i += CHUNK) {
+      await Promise.all(pool.slice(i, i+CHUNK).map(p => {
+        const pid = p._pitcher?.id;
+        return pid ? fetchBvP(p.id, pid).catch(()=>{}) : Promise.resolve();
+      }));
+    }
+
+    // Build per-team max-AB map so we can express each player's AB as a % of their team leader
+    const teamMaxABMap = {};
+    for (const p of pool) {
+      const ab = p.seasonStats?.atBats || 0;
+      if (!teamMaxABMap[p.teamId] || ab > teamMaxABMap[p.teamId]) teamMaxABMap[p.teamId] = ab;
+    }
+
+    // Score every player
+    scored = pool.map(p => {
+      const pid        = p._pitcher?.id;
+      const bvp        = pid ? (hfCache.get(`bvp_${p.id}_${pid}`) || {avg:0,ab:0,hits:0}) : {avg:0,ab:0,hits:0};
+      const bullpenEra = bullpenMap[p._oppTeamId] || 0;
+      const teamAvg7   = teamHitMap[p.teamId]     || 0;
+      const oppAllows  = oppAvgMap[p._oppTeamId]  || 0;
+      const teamMaxAB  = teamMaxABMap[p.teamId]   || 1;
+      const abRatio    = (p.seasonStats?.atBats || 0) / teamMaxAB;
+      const {score, factors} = computeHFScore(p, p._pitcher, p._gd, bvp, bullpenEra, teamAvg7, oppAllows, abRatio);
+      return { p, score, factors, tier:getHFTier(score), trend:getHFTrend(p), val:hfValueScore(p) };
+    }).sort((a,b) => b.score - a.score);
+
+    // Lock scores once all lineups are confirmed — stable across re-renders until next manual refresh
+    if (allLineupsConfirmed) _hfScoredCache = scored;
+
+    // Fetch live game data so badges are current
+    await fetchAllGamesLiveData();
+
+    loading.style.display = 'none';
+  }
+
+  if (!scored.length) { empty.style.display='block'; return; }
+
+  // ── 1. Top Hit Picks (compact grid, max 20, confirmed lineup only) ─────────
+  const top20 = scored.slice(0, 20);
+  document.getElementById('hfBreakdownList').innerHTML = `<div class="hf-compact-grid">${top20.map(({p,score,factors,tier,trend,val},i) => {
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const ti      = TEAM_INFO[p.teamId]||{};
+    const slug    = ti.espn||(p.teamAbbr||'').toLowerCase();
+    const logo    = slug ? `<img class="hf-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const pName   = p._pitcher?.fullName||p._pitcher?.name||'TBD';
+    const pEra    = p._pitcher?.seasonStats?.era != null ? Number(p._pitcher.seasonStats.era) : null;
+    const eraStr  = pEra != null ? ` (${pEra.toFixed(2)})` : '';
+    const eraCls  = pEra == null ? '' : pEra < 3.00 ? 'hf-era-tough' : pEra < 4.50 ? 'hf-era-avg' : 'hf-era-hittable';
+    const sznAvg  = p.seasonStats?.avg ? p.seasonStats.avg.toFixed(3).replace(/^0/,'') : '---';
+    const l7Avg   = p.last7Stats?.avg  ? p.last7Stats.avg.toFixed(3).replace(/^0/,'')  : '---';
+    const valDir  = val > 0.05 ? '↑' : val < -0.05 ? '↓' : '→';
+    const valCls  = val > 0.05 ? 'hf-val-up' : val < -0.05 ? 'hf-val-down' : 'hf-val-flat';
+    const top3    = factors.filter(f=>f.pos).slice(0,3);
+    // Last 7 oldest→newest (left→right): log is newest-first so we reverse
+    const log     = gameLogCache.get(p.id) || [];
+    const last7   = [...log.slice(0,7)].reverse();
+    const l7HTML  = last7.length ? `
+      <div class="hf-l7-wrap" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div class="hf-l7-label">LAST 7 GAMES</div>
+        <div class="hf-l7-row">
+          ${last7.map(g => {
+            const s  = g.stat||{};
+            const h  = s.hits||0; const ab = s.atBats||0; const hr = s.homeRuns||0;
+            const dt = (g.date||'').slice(5);
+            const cls = h>0?'hf-l7-hit':ab>0?'hf-l7-no':'hf-l7-na';
+            const lbl = ab>0?`${h}/${ab}${hr>0?'🔴':''}`:'—';
+            return `<div class="hf-l7-game ${cls}"><div class="hf-l7-date">${dt}</div><div class="hf-l7-stat">${lbl}</div></div>`;
+          }).join('')}
+        </div>
+      </div>` : '';
+    return `<div class="hf-compact-card${i===0?' hf-compact-card-top':''}">
+      <div class="hf-compact-header">
+        <div class="hf-compact-photo-wrap">
+          <img class="hf-compact-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="">
+          <span class="hf-compact-rank">${i+1}</span>
+        </div>
+        <div class="hf-compact-info">
+          <div class="hf-compact-name-row">
+            ${logo}
+            <span class="hf-compact-name hf-clickable" onclick="openPlayerModal(${p.id})">${p.name}</span>
+          </div>
+          <div class="hf-compact-meta">${p.team} · ${p.position||''} · Bats ${p.orderPos||'?'}</div>
+          <div class="hf-compact-meta">vs <span class="${eraCls}">${pName}${eraStr}</span></div>
+        </div>
+        <div class="hf-compact-scores">
+          <div class="hf-score-ring" style="width:34px;height:34px;font-size:13px;">${score}</div>
+          <div class="hf-tier-badge ${tier.cls}">${tier.label}</div>
+          <div class="hf-trend-badge ${trend.cls}">${trend.label}</div>
+        </div>
+      </div>
+      ${hfLiveBadge(p)}
+      <div class="hf-bd-stats" style="margin-top:6px;">
+        <div class="hf-stat-chip">SZN ${sznAvg}</div>
+        <div class="hf-stat-chip">L7 ${l7Avg}</div>
+        <div class="hf-stat-chip">🔥${p.hitStreak||0}G</div>
+        <div class="${valCls} hf-stat-chip">${valDir}</div>
+      </div>
+      ${top3.length ? `<ul class="hf-bd-factors" style="margin-top:6px;">${top3.map(f=>`<li class="hf-factor-pos">${f.t}</li>`).join('')}</ul>` : ''}
+      ${l7HTML}
+    </div>`;
+  }).join('')}</div>`;
+
+  // ── 3. Trend Insights ────────────────────────────────────────────────────
+  const hot   = scored.filter(s=>s.trend.label.startsWith('HOT'));
+  const cold  = scored.filter(s=>s.trend.label.startsWith('COLD'));
+  const elite = scored.filter(s=>s.tier.label==='ELITE');
+  document.getElementById('hfTrendContent').innerHTML = `
+    <div class="hf-trend-grid">
+      <div class="hf-trend-card hf-trend-hot-card">
+        <div class="hf-trend-label">🔥 HOT HITTERS</div>
+        <div class="hf-trend-count">${hot.length}</div>
+        <div class="hf-trend-names">${hot.slice(0,5).map(s=>s.p.name.split(' ').pop()).join(', ')||'—'}</div>
+      </div>
+      <div class="hf-trend-card hf-trend-cold-card">
+        <div class="hf-trend-label">❄️ COLD HITTERS</div>
+        <div class="hf-trend-count">${cold.length}</div>
+        <div class="hf-trend-names">${cold.slice(0,5).map(s=>s.p.name.split(' ').pop()).join(', ')||'—'}</div>
+      </div>
+      <div class="hf-trend-card hf-trend-elite-card">
+        <div class="hf-trend-label">💎 ELITE PICKS</div>
+        <div class="hf-trend-count">${elite.length}</div>
+        <div class="hf-trend-names">${elite.slice(0,5).map(s=>s.p.name.split(' ').pop()).join(', ')||'—'}</div>
+      </div>
+    </div>`;
+
+  // ── 4. Sneaky Picks ───────────────────────────────────────────────────────
+  const sneaky = scored.filter(s => s.score >= 65 && s.score < 75 && s.val > 0.08);
+  document.getElementById('hfSneakyContent').innerHTML = sneaky.length
+    ? sneaky.map(({p,score,tier,factors,val}) => {
+        const pct   = (val*100).toFixed(0);
+        const pName = p._pitcher?.fullName||p._pitcher?.name||'TBD';
+
+        // Last 7 games mini-log
+        const log  = gameLogCache.get(p.id) || [];
+        const last7 = log.slice(0,7);
+        const l7HTML = last7.length ? `
+          <div class="hf-l7-wrap">
+            <div class="hf-l7-label">LAST 7 GAMES</div>
+            <div class="hf-l7-row">
+              ${last7.map(g => {
+                const s   = g.stat || {};
+                const h   = s.hits   || 0;
+                const ab  = s.atBats || 0;
+                const hr  = s.homeRuns || 0;
+                const dt  = (g.date||'').slice(5); // MM-DD
+                const cls = h > 0 ? 'hf-l7-hit' : ab > 0 ? 'hf-l7-no' : 'hf-l7-na';
+                const lbl = ab > 0 ? `${h}/${ab}${hr>0?' HR':''}` : '—';
+                return `<div class="hf-l7-game ${cls}">
+                  <div class="hf-l7-date">${dt}</div>
+                  <div class="hf-l7-stat">${lbl}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>` : '';
+
+        const safeName = (p.name||'').replace(/'/g,"\\'");
+        return `<div class="hf-sneaky-card">
+          <div class="hf-sneaky-header">
+            <span class="hf-sneaky-name hf-clickable" onclick="openPlayerModal(${p.id})">🎯 ${p.name}</span>
+            <span class="hf-tier-badge ${tier.cls}">${tier.label}</span>
+            <span class="hf-val-up">↑ +${pct}% vs season avg</span>
+            <button class="hf-copy-btn" style="margin-left:auto;font-size:10px;" onclick="copyPlayerName('${safeName}',this)">📋</button>
+          </div>
+          <div class="hf-bd-stats">
+            <div class="hf-stat-chip">SCORE ${score}</div>
+            <div class="hf-stat-chip">vs ${pName}</div>
+            ${p.seasonStats?.avg?`<div class="hf-stat-chip">SZN ${p.seasonStats.avg.toFixed(3)}</div>`:''}
+            ${p.last7Stats?.avg ?`<div class="hf-stat-chip">L7 ${p.last7Stats.avg.toFixed(3)}</div>`:''}
+            <div class="hf-stat-chip">STREAK ${p.hitStreak||0}G</div>
+          </div>
+          ${hfLiveBadge(p)}
+          ${l7HTML}
+          <ul class="hf-bd-factors" style="margin-top:8px">${factors.filter(f=>f.pos).slice(0,3).map(f=>`<li class="hf-factor-pos">${f.t}</li>`).join('')}</ul>
+        </div>`;
+      }).join('')
+    : '<div class="leaders-loading">No sneaky picks today — edge players are fairly valued.</div>';
+}
+
+function copyHFParlay(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  navigator.clipboard.writeText(el.dataset.names||'').then(() => {
+    const btn = el.parentElement?.querySelector('.hf-copy-btn');
+    if (btn) { const orig=btn.textContent; btn.textContent='✅ Copied!'; setTimeout(()=>btn.textContent=orig,2000); }
+  });
+}
+
+function copyPlayerName(name, btn) {
+  navigator.clipboard.writeText(name).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+// ── Render Parlays Section ─────────────────────────────────────────────────
+// ── SAFEST OF ALL ─────────────────────────────────────────────────────────
+// Criteria (mirrors thresholds used elsewhere in the model):
+//   Good AVG  : season BA ≥ .270  (baseline used in confidence + due-for-hit safe tier)
+//   Bad ERA   : opposing pitcher ERA ≥ 4.80  (threshold used in _prlRiskScore / high-risk picks)
+//   Losing opp: opposing team win% < .500  (mirrors beat-the-streak opponent penalty)
+function renderSafestParlay(isReroll = false) {
+  const el = document.getElementById('soaContent');
+  if (!el) return;
+
+  if (!isReroll) _soaRerollExcluded.clear();
+
+  // Build pool from all loaded games (attach _gd reference)
+  let pool = [];
+  for (const gd of Object.values(state.predictions)) {
+    pool.push(...(gd.players || []).map(p => ({ ...p, _gd: gd })));
+  }
+  const seen = new Set();
+  pool = pool.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+
+  // Exclude reroll players
+  if (_soaRerollExcluded.size > 0) pool = pool.filter(p => !_soaRerollExcluded.has(p.id));
+
+  // Score + filter each candidate
+  const candidates = pool.map(p => {
+    const gd         = p._gd;
+    const sznAvg     = p.seasonStats?.avg || 0;
+
+    // Opposing pitcher: away batters face home pitcher and vice versa
+    const pitcher    = p.isAway ? gd.homePitcher : gd.awayPitcher;
+    const pEra       = pitcher?.seasonStats?.era || 0;
+    const pName      = pitcher?.fullName || pitcher?.name || '?';
+
+    // Opposing team abbr (display)
+    const oppAbbr    = p.isAway ? (gd.homeAbbr || '') : (gd.awayAbbr || '');
+
+    // Opposing team record — pull from state.games by gamePk
+    const rawGame    = (state.games || []).find(g => g.gamePk === gd.gamePk);
+    const homeTeamId = gd.homeTeam?.id ?? rawGame?.teams?.home?.team?.id;
+    const oppRec     = p.teamId === homeTeamId
+      ? (rawGame?.teams?.away?.leagueRecord || null)
+      : (rawGame?.teams?.home?.leagueRecord || null);
+    const oppWins    = oppRec?.wins    || 0;
+    const oppLosses  = oppRec?.losses  || 0;
+    const oppTotal   = oppWins + oppLosses;
+    const oppWinPct  = oppTotal > 0 ? oppWins / oppTotal : 0.5;
+
+    // All three criteria must be met
+    if (sznAvg < 0.270)     return null;  // good avg threshold
+    if (pEra   === 0)       return null;  // no ERA data available
+    if (pEra   < 4.80)      return null;  // bad ERA threshold
+    if (oppTotal === 0)      return null;  // no record data available
+    if (oppWinPct >= 0.500)  return null;  // must be a losing opponent
+
+    // Composite safety score: higher = safer pick
+    // ERA severity (0–40) + avg quality (0–30) + opponent weakness (0–30)
+    const eraScore  = Math.min(40, (pEra  - 4.80) * 12);          // 4.80→0, 6.0→14.4, 7.0→26.4
+    const avgScore  = Math.min(30, (sznAvg - 0.270) * 300);       // .270→0, .300→9, .370→30
+    const oppScore  = Math.min(30, (0.500 - oppWinPct) * 100);    // .499→0.1, .380→12, .300→20
+    const composite = eraScore + avgScore + oppScore;
+
+    return { p, sznAvg, pEra, pName, oppAbbr, oppWins, oppLosses, oppWinPct, composite };
+  }).filter(Boolean);
+
+  // Sort by composite desc, then spread 1 per game
+  candidates.sort((a, b) => b.composite - a.composite);
+  const result = []; const usedGames = new Set();
+  for (const c of candidates) {
+    if (result.length >= 5) break;
+    if (usedGames.has(c.p.gamePk)) continue;
+    result.push(c);
+    usedGames.add(c.p.gamePk);
+  }
+
+  // If reroll exhausted options, reset and retry
+  if (!result.length && isReroll && _soaRerollExcluded.size > 0) {
+    _soaRerollExcluded.clear();
+    return renderSafestParlay(true);
+  }
+
+  if (!result.length) {
+    // Count how many passed each individual filter to help diagnose
+    const allPool2 = [];
+    for (const gd of Object.values(state.predictions)) allPool2.push(...(gd.players||[]).map(p=>({...p,_gd:gd})));
+    const deduped2 = [...new Map(allPool2.map(p=>[p.id,p])).values()];
+    const avgPass  = deduped2.filter(p => (p.seasonStats?.avg||0) >= 0.270).length;
+    const rawGame2 = gd => (state.games||[]).find(g => g.gamePk === gd.gamePk);
+    const eraPass  = deduped2.filter(p => {
+      const pit = p.isAway ? p._gd.homePitcher : p._gd.awayPitcher;
+      return (pit?.seasonStats?.era||0) >= 4.80;
+    }).length;
+    el.innerHTML = `<div class="soa-empty">No players meet all three criteria today.<br><span style="font-size:10px;opacity:.6">AVG ≥.270: ${avgPass} players · Pitcher ERA ≥4.80: ${eraPass} players · Both + losing opp: 0</span></div>`;
+    return;
+  }
+
+  // Track for next reroll
+  result.forEach(c => _soaRerollExcluded.add(c.p.id));
+
+  const fmt   = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
+  const fmtE  = v => v ? v.toFixed(2) : '---';
+  const picks = result.map((c, i) => {
+    const ti   = TEAM_INFO[c.p.teamId] || {};
+    const slug = ti.espn || (c.p.teamAbbr || '').toLowerCase();
+    const logo = slug ? `<img style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff1;padding:1px;flex-shrink:0" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const recStr = c.oppWins + c.oppLosses > 0 ? `vs ${c.oppAbbr} (${c.oppWins}-${c.oppLosses})` : `vs ${c.oppAbbr}`;
+    return `
+      <div class="soa-pick">
+        <span class="soa-num">${i + 1}</span>
+        ${logo}
+        <span class="soa-name" onclick="openPlayerModal(${c.p.id})">${c.p.name}</span>
+        <span class="soa-avg">.AVG ${fmt(c.sznAvg)}</span>
+        <span class="soa-era">ERA ${fmtE(c.pEra)}</span>
+        <span class="soa-opp">${recStr}</span>
+        <button class="hf-copy-btn" style="padding:2px 6px;font-size:10px;" onclick="copyPlayerName('${(c.p.name||'').replace(/'/g,"\\'")}',this)">📋</button>
+      </div>`;
+  }).join('');
+
+  const names = result.map(c => c.p.name).join(' + ');
+  el.innerHTML = `
+    <div class="soa-card">
+      <div class="soa-header">
+        <div>
+          <div class="soa-title">🛡️ Safest of All</div>
+          <div class="soa-sub">Good avg hitters facing high-ERA pitchers on losing teams</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="prl-reset-btn" onclick="_soaRerollExcluded.clear();renderSafestParlay(true)" title="Reset and regenerate">↺ Reset</button>
+          <button class="prl-reroll-btn" onclick="renderSafestParlay(true)">🎲 Reroll</button>
+          <button class="hf-copy-btn" onclick="navigator.clipboard.writeText('${names.replace(/'/g,"\\'")}')">📋 Copy</button>
+        </div>
+      </div>
+      <div class="soa-criteria">
+        <span class="soa-tag soa-tag-avg">✅ AVG ≥ .270</span>
+        <span class="soa-tag soa-tag-era">⚠ Pitcher ERA ≥ 4.80</span>
+        <span class="soa-tag soa-tag-opp">📉 Opp Win% &lt; .500</span>
+      </div>
+      <div id="soaList">${picks}</div>
+    </div>`;
+}
+
+function renderParlaySection() {
+  let pool = [];
+  for (const gd of Object.values(state.predictions)) {
+    pool.push(...(gd.players||[]).map(p => ({...p, _gd:gd})));
+  }
+  const seen = new Set();
+  pool = pool.filter(p => { if(seen.has(p.id)) return false; seen.add(p.id); return true; });
+
+  function spread(sorted, max=5) {
+    const res=[]; const used=new Map();
+    for (const p of sorted) {
+      if (res.length >= max) break;
+      const gk = p.gamePk;
+      if ((used.get(gk)||0) >= 2) continue;
+      res.push(p); used.set(gk, (used.get(gk)||0)+1);
+    }
+    return res;
+  }
+
+  _prlHitPicks = spread([...pool].sort((a,b) => b.hitScore - a.hitScore));
+  _prlHrPicks  = spread([...pool].sort((a,b) => b.hrScore  - a.hrScore));
+  _prlOvrPicks = spread([...pool].sort((a,b) => (b.hitScore+b.hrScore) - (a.hitScore+a.hrScore)));
+
+  populatePrlTeamChips(pool);
+  renderParlayTab(_prlActiveTab);
+}
+
+function switchParlayTab(type, btn) {
+  document.querySelectorAll('.prl-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _prlActiveTab = type;
+  renderParlayTab(type);
+}
+
+function renderParlayTab(type) {
+  const el = document.getElementById('prlTabContent');
+  if (!el) return;
+  const picks    = type === 'hits' ? _prlHitPicks : type === 'hr' ? _prlHrPicks : _prlOvrPicks;
+  const scoreKey = type === 'hits' ? 'hitScore' : type === 'hr' ? 'hrScore' : null;
+
+  if (!picks.length) { el.innerHTML = '<div class="leaders-loading">No data yet — load today\'s schedule.</div>'; return; }
+
+  const listId = 'prlTabList';
+  const names  = picks.map(p => p.name).join(' + ');
+  const rows   = picks.map((p, i) => {
+    const score = scoreKey ? p[scoreKey] : Math.round((p.hitScore + p.hrScore) / 2);
+    const tier  = getHFTier(score);
+    const ti    = TEAM_INFO[p.teamId] || {};
+    const slug  = ti.espn || (p.teamAbbr||'').toLowerCase();
+    const logo  = slug ? `<img style="width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff1;padding:2px" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const safe  = (p.name||'').replace(/'/g,"\\'");
+    return `<div class="hf-parlay-pick">
+      <span class="hf-parlay-num">${i+1}</span>${logo}
+      <span class="hf-parlay-name hf-clickable" onclick="openPlayerModal(${p.id})">${p.name}</span>
+      <span class="hf-parlay-team">${p.teamAbbr||''}</span>
+      <span class="hf-parlay-score">${score}</span>
+      <span class="hf-tier-badge ${tier.cls}">${tier.label}</span>
+      <button class="hf-copy-btn" style="padding:2px 7px;font-size:10px;" onclick="copyPlayerName('${safe}',this)">📋</button>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="hf-parlay-list" id="${listId}" data-names="${names}">${rows}</div>
+    <div style="padding:8px 12px 4px;">
+      <button class="hf-copy-btn" onclick="copyHFParlay('${listId}')">📋 Copy All</button>
+    </div>`;
+}
+
+function selectPrlFilter(btn) {
+  const row = btn.closest('[data-filter]');
+  if (!row) return;
+  row.querySelectorAll('.prl-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Show/hide custom legs input
+  const customInput = document.getElementById('prlCustomLegs');
+  if (customInput) {
+    customInput.style.display = btn.dataset.val === 'custom' ? 'inline-block' : 'none';
+    if (btn.dataset.val === 'custom') customInput.focus();
+  }
+}
+
+function togglePrlFocus(btn) {
+  const row = btn.closest('[data-filter="focus"]');
+  if (!row) return;
+  const val = btn.dataset.val;
+  if (val === 'all') {
+    // All clears everything else
+    row.querySelectorAll('.prl-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    // Deactivate "All" when picking a specific focus
+    row.querySelector('[data-val="all"]')?.classList.remove('active');
+    btn.classList.toggle('active');
+    // If nothing left active, fall back to All
+    const anyActive = [...row.querySelectorAll('.prl-filter-btn')].some(b => b.classList.contains('active'));
+    if (!anyActive) row.querySelector('[data-val="all"]')?.classList.add('active');
+  }
+}
+
+function _applyFocusFilter(pool, focus, risk) {
+  if (focus === 'hotstreak') {
+    return pool.filter(p => {
+      const log = gameLogCache.get(p.id) || [];
+      const l5  = log.slice(0,5).reduce((s,g) => s + (g.stat?.hits||0), 0);
+      const str = p.hitStreak || 0;
+      if (risk === 'safe')     return (l5 >= 4 || str >= 5) && (p.hitScore||0) >= 68;
+      if (risk === 'balanced') return l5 >= 4 || str >= 3;
+      return l5 >= 2 || str >= 1;
+    });
+  } else if (focus === 'dueforhit') {
+    // Mirror the Due for a Hit tab exactly: consecutive hitless ABs from most recent game
+    return pool.filter(p => {
+      const log = gameLogCache.get(p.id) || [];
+      let hitlessABs = 0;
+      for (const g of log) {
+        const ab = g.stat?.atBats || 0;
+        const h  = g.stat?.hits   || 0;
+        if (ab === 0) continue;   // no AB (walk/HBP) — don't break streak
+        if (h === 0) hitlessABs += ab;
+        else break;               // had a hit — streak ends
+      }
+      const sznAvg = p.seasonStats?.avg || 0;
+      if (risk === 'safe')     return hitlessABs >= 7  && sznAvg >= 0.265;
+      if (risk === 'balanced') return hitlessABs >= 5  && sznAvg >= 0.240;
+      return                          hitlessABs >= 3  || (sznAvg >= 0.210 && hitlessABs >= 3);
+    });
+  } else if (focus === 'rising') {
+    return pool.filter(p => {
+      const log    = gameLogCache.get(p.id) || [];
+      const l5     = log.slice(0,5).reduce((s,g) => s + (g.stat?.hits||0), 0);
+      const str    = p.hitStreak || 0;
+      const sznAvg = p.seasonStats?.avg || 0;
+      const l7Avg  = p.last7Stats?.avg  || 0;
+      const improving = l7Avg > sznAvg || l5 >= 3;
+      if (risk === 'safe')     return improving && (p.hitScore||0) >= 68 && l5 >= 4;
+      if (risk === 'balanced') return improving && (p.hitScore||0) >= 58 && (l5 >= 3 || str >= 2);
+      return improving || l5 >= 2 || str >= 1;
+    });
+  } else if (focus === 'sneaky') {
+    if (_hfScoredCache?.length) {
+      const snkMap = { safe:[70,0.10], balanced:[65,0.07], risky:[58,0.02] };
+      const [minS, minV] = snkMap[risk] || snkMap.balanced;
+      const ids = new Set(_hfScoredCache.filter(s => s.score >= minS && s.val > minV).map(s => s.p.id));
+      return pool.filter(p => ids.has(p.id));
+    } else {
+      const proxyFloor = { safe:68, balanced:60, risky:50 }[risk] || 60;
+      return pool.filter(p => (p.hitScore||0) >= proxyFloor && (p.hitScore||0) < 80);
+    }
+  } else if (focus === 'safest') {
+    // Good AVG batter vs bad pitcher (high ERA) — mirrors Safest of All section
+    // Good AVG: ≥ .270 (safe), ≥ .255 (balanced), ≥ .240 (risky)
+    // Bad ERA:  ≥ 4.80 (safe), ≥ 4.50 (balanced), ≥ 4.20 (risky)
+    const avgFloor = { safe: 0.270, balanced: 0.255, risky: 0.240 }[risk] ?? 0.255;
+    const eraFloor = { safe: 4.80,  balanced: 4.50,  risky: 4.20  }[risk] ?? 4.50;
+    return pool.filter(p => {
+      const sznAvg = p.seasonStats?.avg || 0;
+      const era    = _prlERA(p);
+      return sznAvg >= avgFloor && era !== null && era >= eraFloor;
+    });
+  }
+  return pool;
+}
+
+function populatePrlTeamChips(pool) {
+  const el = document.getElementById('prlTeamChips');
+  if (!el) return;
+  const teams = [...new Map(pool.map(p => [p.teamId, { id:p.teamId, abbr:p.teamAbbr||'' }])).values()]
+    .sort((a,b) => a.abbr.localeCompare(b.abbr));
+  el.innerHTML = teams.map(t => {
+    const active = _prlTeamFilter.has(t.id) ? ' active' : '';
+    return `<button class="prl-filter-btn prl-team-chip${active}" onclick="togglePrlTeam(${t.id},this)">${t.abbr}</button>`;
+  }).join('');
+}
+
+function togglePrlTeam(id, btn) {
+  if (_prlTeamFilter.has(id)) { _prlTeamFilter.delete(id); btn.classList.remove('active'); }
+  else                         { _prlTeamFilter.add(id);    btn.classList.add('active'); }
+}
+
+// Parse ERA from "vs PitcherName (ERA 5.42)" matchup string
+function _prlERA(p) {
+  const m = (p.matchup||'').match(/ERA\s*([\d.]+)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+// High Risk composite edge score: recent form + bad pitcher + contrarian signal
+// These three signals together = data-backed high-risk-high-reward play
+function _prlRiskScore(p, base) {
+  const log     = gameLogCache.get(p.id) || [];
+  const l5hits  = log.slice(0,5).reduce((s,g) => s + (g.stat?.hits||0), 0);
+  const l7hits  = log.slice(0,7).reduce((s,g) => s + (g.stat?.hits||0), 0);
+  const sznAvg  = p.seasonStats?.avg || 0;
+  const l7Avg   = p.last7Stats?.avg  || 0;
+
+  // Signal 1 — Recent form: how many hits in last 5/7 games (0–60 pts)
+  const recentFormPts = l5hits * 10 + (l7hits >= 5 ? 8 : 0);
+
+  // Signal 2 — L7 improvement over season: rising pace regardless of past slump
+  const l7Improvement = sznAvg > 0 && l7Avg > sznAvg
+    ? Math.min(40, Math.round((l7Avg - sznAvg) * 400))  // up to +40 pts
+    : 0;
+
+  // Signal 3 — Bad pitcher matchup: ERA ≥ 4.50 (the pitcher can be hit)
+  const era = _prlERA(p);
+  const eraPts = era
+    ? (era >= 5.50 ? 28 : era >= 4.80 ? 18 : era >= 4.50 ? 10 : 0)
+    : 0;
+
+  // Signal 4 — Contrarian bonus: modest season but now trending (room to surprise)
+  const contrarianPts = (sznAvg > 0 && sznAvg <= 0.265 && l7Avg > sznAvg) ? 12 : 0;
+
+  // Final edge score (ranked independently of hitScore — different algorithm)
+  return base * 0.4 + recentFormPts + l7Improvement + eraPts + contrarianPts;
+}
+
+function buildCustomParlay(isReroll = false) {
+  if (!isReroll) _prlRerollExcluded.clear(); // fresh build resets the reroll cycle
+  const el = document.getElementById('prlBuilderResult');
+  if (!el) return;
+
+  const bettype   = document.querySelector('[data-filter="bettype"] .prl-filter-btn.active')?.dataset.val || 'hits';
+  const risk      = document.querySelector('[data-filter="risk"] .prl-filter-btn.active')?.dataset.val || 'safe';
+  const legsVal   = document.querySelector('[data-filter="legs"] .prl-filter-btn.active')?.dataset.val || '3';
+  const legs      = legsVal === 'custom'
+    ? Math.min(20, Math.max(2, parseInt(document.getElementById('prlCustomLegs')?.value) || 3))
+    : parseInt(legsVal);
+  const focusActive = [...document.querySelectorAll('[data-filter="focus"] .prl-filter-btn.active')].map(b => b.dataset.val);
+  const focuses   = focusActive.length === 0 || focusActive.includes('all') ? ['all'] : focusActive;
+
+  // base score helper (bettype-aware)
+  const getBase = p => bettype === 'hits' ? (p.hitScore||0)
+                     : bettype === 'hr'   ? (p.hrScore||0)
+                     : Math.round(((p.hitScore||0) + (p.hrScore||0)) / 2);
+
+  // Build full pool (deduped, team filter applied)
+  let allPool = [];
+  for (const gd of Object.values(state.predictions)) {
+    allPool.push(...(gd.players||[]).map(p => ({...p, _gd:gd})));
+  }
+  const seen = new Set();
+  allPool = allPool.filter(p => { if(seen.has(p.id)) return false; seen.add(p.id); return true; });
+  if (_prlTeamFilter.size > 0) allPool = allPool.filter(p => _prlTeamFilter.has(p.teamId));
+
+  let pool;
+
+  // ── Focus admission — multi-select union ──────────────────────────────────
+  if (focuses.includes('all')) {
+    pool = [...allPool];
+  } else {
+    // Union of all selected focus pools (deduplicated)
+    const combined = focuses.flatMap(f => _applyFocusFilter([...allPool], f, risk));
+    pool = [...new Map(combined.map(p => [p.id, p])).values()];
+  }
+
+  // ── Score + sort — each risk level uses a different algorithm ─────────────
+
+  let scored;
+
+  if (risk === 'safe') {
+    // Safe: pure model score — only trust established, high-confidence picks
+    scored = pool
+      .filter(p => {
+        const trend = getHFTrend(p);
+        return (getBase(p) >= 72) && !trend.label.startsWith('COLD');
+      })
+      .map(p => ({ p, score: getBase(p), _sortScore: getBase(p) }))
+      .sort((a,b) => b._sortScore - a._sortScore);
+
+  } else if (risk === 'balanced') {
+    // Balanced: model score + HOT trend bonus + mild ERA bonus
+    // Produces a different ranking than Safe — rewards recent form and favorable matchup
+    scored = pool
+      .filter(p => getBase(p) >= 58)
+      .map(p => {
+        const base  = getBase(p);
+        const trend = getHFTrend(p);
+        const era   = _prlERA(p);
+        const hotB  = trend.label.startsWith('HOT') ? 8 : 0;
+        const eraB  = era ? (era >= 5.50 ? 6 : era >= 4.50 ? 3 : 0) : 0;
+        return { p, score: base, _sortScore: base + hotB + eraB };
+      })
+      .sort((a,b) => b._sortScore - a._sortScore);
+
+    // Also inject sneaky-cache picks (mixed in)
+    if (!focuses.includes('sneaky') && _hfScoredCache?.length) {
+      const existIds = new Set(scored.map(s => s.p.id));
+      const balSneaky = _hfScoredCache
+        .filter(s => s.score >= 65 && s.val > 0.08 && !existIds.has(s.p.id) &&
+          (_prlTeamFilter.size === 0 || _prlTeamFilter.has(s.p.teamId)))
+        .map(s => ({ p:s.p, score:s.score, _sortScore:s.score + 3, _isSneaky:true }));
+      scored = [...scored, ...balSneaky].sort((a,b) => b._sortScore - a._sortScore);
+    }
+
+  } else {
+    // ── HIGH RISK: completely different scoring algorithm ─────────────────
+    // Ranks players by composite edge score: recent form + ERA matchup + contrarian signal
+    // A player trending up vs a bad pitcher ranks HIGHER than a star vs a good pitcher
+    // No hard score floor — instead require at least one meaningful signal
+
+    scored = pool
+      .map(p => {
+        const base      = getBase(p);
+        const era       = _prlERA(p);
+        const log       = gameLogCache.get(p.id) || [];
+        const l5hits    = log.slice(0,5).reduce((s,g) => s + (g.stat?.hits||0), 0);
+        const sznAvg    = p.seasonStats?.avg || 0;
+        const l7Avg     = p.last7Stats?.avg  || 0;
+        const improving = l7Avg > sznAvg;
+        const hasBadPitcher = era && era >= 4.50;
+        const hasRecentForm = l5hits >= 2;
+
+        // Must have at least one positive signal to qualify
+        if (!improving && !hasBadPitcher && !hasRecentForm && (p.hitStreak||0) === 0) return null;
+
+        const edgeScore = _prlRiskScore(p, base);
+        const isRiskyMatchup = hasBadPitcher && (l5hits <= 2 || sznAvg <= 0.255);
+        const isTrending     = improving && !isRiskyMatchup;
+
+        return { p, score: base, _sortScore: edgeScore, _era: era,
+                 _isRiskyMatchup: isRiskyMatchup, _isTrending: isTrending };
+      })
+      .filter(Boolean)
+      .sort((a,b) => b._sortScore - a._sortScore);
+
+    // Also inject sneaky picks from HF cache at front
+    if (!focuses.includes('sneaky') && _hfScoredCache?.length) {
+      const existIds = new Set(scored.map(s => s.p.id));
+      const sneakyInject = _hfScoredCache
+        .filter(s => s.score >= 60 && s.val > 0.03 && !existIds.has(s.p.id) &&
+          (_prlTeamFilter.size === 0 || _prlTeamFilter.has(s.p.teamId)))
+        .map(s => {
+          const era = _prlERA(s.p);
+          const edgeScore = _prlRiskScore(s.p, s.score);
+          return { p:s.p, score:s.score, _sortScore:edgeScore + 8, _isSneaky:true, _era:era };
+        });
+      scored = [...sneakyInject, ...scored].sort((a,b) => b._sortScore - a._sortScore);
+    }
+  }
+
+  // ── Exclude players already shown in a previous reroll cycle ────────────
+  if (_prlRerollExcluded.size > 0) {
+    scored = scored.filter(s => !_prlRerollExcluded.has(s.p.id));
+  }
+
+  // ── Spread across games — scale maxPerGame so requested legs can always be filled ──
+  const gamesCount  = Math.max(1, Object.keys(state.predictions).length);
+  const basePerGame = risk === 'safe' ? 1 : 2;
+  const maxPerGame  = Math.max(basePerGame, Math.ceil(legs / gamesCount));
+  const result = []; const used = new Map();
+  for (const s of scored) {
+    if (result.length >= legs) break;
+    const gk = s.p.gamePk;
+    if ((used.get(gk)||0) >= maxPerGame) continue;
+    result.push(s); used.set(gk, (used.get(gk)||0)+1);
+  }
+
+  // Track these players so the next reroll skips them
+  result.forEach(s => _prlRerollExcluded.add(s.p.id));
+
+  if (!result.length) {
+    if (isReroll && _prlRerollExcluded.size > 0) {
+      // Exhausted all options — reset and try from the top
+      _prlRerollExcluded.clear();
+      return buildCustomParlay(true);
+    }
+    const hint = focuses.includes('all')
+      ? 'No players match — try adjusting risk or clearing team filters.'
+      : `No players found for the selected focus(es) at ${risk} level — try adding more focuses or lowering risk.`;
+    el.innerHTML = `<div class="leaders-loading" style="margin-top:10px;">${hint}</div>`;
+    return;
+  }
+
+  // ── Render result card ────────────────────────────────────────────────────
+  const listId = 'prlCustomResult';
+  const names  = result.map(s => s.p.name).join(' + ');
+  const focusLabels = { all:'🌐 All', hotstreak:'🔥 Hot Streak', dueforhit:'📈 Due for Hit', rising:'⭐ Rising Stars', sneaky:'🎯 Sneaky Picks', safest:'🛡️ Safest of All' };
+  const riskLabels  = { safe:'🔒 SAFE', balanced:'⚖️ BALANCED', risky:'⚡ HIGH RISK' };
+  const focusParts  = focuses.includes('all') ? '' : focuses.map(f => focusLabels[f] || f).join(' + ');
+
+  const rows = result.map((s,i) => {
+    const tier = getHFTier(s.score);
+    const ti   = TEAM_INFO[s.p.teamId] || {};
+    const slug = ti.espn || (s.p.teamAbbr||'').toLowerCase();
+    const logo = slug ? `<img style="width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff1;padding:2px" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const safeName = (s.p.name||'').replace(/'/g,"\\'");
+    const tag = s._isSneaky
+      ? `<span style="font-size:9px;color:#f59e0b;font-weight:700;padding:1px 5px;border:1px solid #f59e0b60;border-radius:6px;white-space:nowrap;">🎯 SNEAKY</span>`
+      : s._isRiskyMatchup && s._era
+      ? `<span style="font-size:9px;color:#f87171;font-weight:700;padding:1px 5px;border:1px solid #f8717160;border-radius:6px;white-space:nowrap;">🎲 ERA ${s._era.toFixed(2)}</span>`
+      : s._isTrending
+      ? `<span style="font-size:9px;color:#34d399;font-weight:700;padding:1px 5px;border:1px solid #34d39960;border-radius:6px;white-space:nowrap;">📈 TRENDING</span>`
+      : '';
+    return `<div class="hf-parlay-pick">
+      <span class="hf-parlay-num">${i+1}</span>${logo}
+      <span class="hf-parlay-name hf-clickable" onclick="openPlayerModal(${s.p.id})">${s.p.name}</span>
+      ${tag}
+      <span class="hf-parlay-team">${s.p.teamAbbr||''}</span>
+      <span class="hf-parlay-score">${s.score}</span>
+      <span class="hf-tier-badge ${tier.cls}">${tier.label}</span>
+      <button class="hf-copy-btn" style="padding:2px 7px;font-size:10px;" onclick="copyPlayerName('${safeName}',this)">📋</button>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="prl-result-card">
+      <div class="prl-result-header">
+        <span>${legs} Legs · ${bettype.toUpperCase()} · ${riskLabels[risk]||risk.toUpperCase()}${focusParts ? ` · ${focusParts}` : ''}</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="prl-reset-btn" onclick="_prlRerollExcluded.clear();buildCustomParlay(true)" title="Clear reroll history and regenerate">↺ Reset</button>
+          <button class="prl-reroll-btn" onclick="buildCustomParlay(true)">🎲 Reroll</button>
+          <button class="hf-copy-btn" onclick="copyHFParlay('${listId}')">📋 Copy All</button>
+        </div>
+      </div>
+      <div class="hf-parlay-list" id="${listId}" data-names="${names}">${rows}</div>
+    </div>`;
 }
 
 // ─── AUTO REFRESH ─────────────────────────────────────────────────────────
@@ -5821,35 +7224,28 @@ async function openPlayerAnalyzer(playerId) {
   const otherEnvLabel = isHomeToday ? 'Away' : 'Home';
   const todayStronger = todayEnvAgg && otherEnvAgg ? (todayEnvAgg.avg||0) >= (otherEnvAgg.avg||0) : true;
 
-  // L10 overall
   const l10 = aggLog(log.slice(0,10));
-  // Batting order trend
   const recentOrders = log.slice(0,10).map(g=>g.battingOrder ? Math.ceil(parseInt(g.battingOrder)/100) : null).filter(Boolean);
   const avgOrder = recentOrders.length ? (recentOrders.reduce((a,b)=>a+b,0)/recentOrders.length).toFixed(1) : null;
-  // Usage trend
   const l5Starts = log.slice(0,5).filter(g=>(g.stat?.plateAppearances||0)>=2).length;
   const prev5Starts = log.slice(5,10).filter(g=>(g.stat?.plateAppearances||0)>=2).length;
   const usageTrend = l5Starts > prev5Starts ? 'Rising ↑' : l5Starts < prev5Starts ? 'Falling ↓' : 'Stable →';
   const usageTrendCls = l5Starts > prev5Starts ? 'pa-sig-pos' : l5Starts < prev5Starts ? 'pa-sig-neg' : 'pa-sig-neu';
 
-  // Bullpen ERA
   const oppTeamId = p.isAway ? gd.homeTeamId : gd.awayTeamId;
   let bullpenEra = null;
   try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
 
-  // Park
   const pf = gd.parkFactor || {};
   const parkNote = pf.overall >= 1.10 ? `${gd.venueName} — hitter-friendly (${pf.overall.toFixed(2)})` :
                    pf.overall <= 0.93 ? `${gd.venueName} — pitcher-friendly (${pf.overall.toFixed(2)})` :
                    `${gd.venueName} — neutral park`;
 
-  // Weather
   const wx = gd.weather || {};
   const windLabels = ['N','NE','E','SE','S','SW','W','NW'];
   const windDir = wx.windDir != null ? windLabels[Math.round(wx.windDir/45)%8] : null;
   const wxNote = wx.temp != null ? `${Math.round(wx.temp)}°F · ${wx.windSpeed||0} mph ${windDir||''}` : 'Not available';
 
-  // Verdict scoring
   const splitVsToday = pitcherHand === 'L' ? p.vsLHP : p.vsRHP;
   let vPoints = 0, vReasons = [], vRisks = [], bestSplit = null;
 
@@ -5882,7 +7278,6 @@ async function openPlayerAnalyzer(playerId) {
   else                   { verdictLabel = 'Poor Setup';    verdictCls = 'pa-verdict-poor'; }
 
   const _fmt = v => v != null ? (typeof v==='number' && v<1 && v>0 ? v.toFixed(3).replace(/^0/,'') : v) : '—';
-  const _fmtEra = v => v != null ? v.toFixed(2) : '—';
   const _sig = (val, good, bad) => {
     if (val == null) return '';
     const cls = val >= good ? 'pa-sig-pos' : val <= bad ? 'pa-sig-neg' : 'pa-sig-neu';
@@ -5913,7 +7308,6 @@ async function openPlayerAnalyzer(playerId) {
   const confLabel = conf ? `${conf.icon} ${conf.label}` : '—';
 
   document.getElementById('paContent').innerHTML = `
-    <!-- 1. Matchup Snapshot -->
     <div class="pa-section">
       <div class="pa-section-title">🎯 <span>Matchup Snapshot</span></div>
       <div class="pa-snap-grid">
@@ -5928,8 +7322,6 @@ async function openPlayerAnalyzer(playerId) {
         <div class="pa-snap-item"><div class="pa-snap-lbl">Confidence</div><div class="pa-snap-val">${confLabel}</div></div>
       </div>
     </div>
-
-    <!-- 2. Split Profile -->
     <div class="pa-section">
       <div class="pa-section-title">📊 <span>Split Profile</span></div>
       ${paRow(`AVG vs LHP`, p.vsLHP?.avg!=null?p.vsLHP.avg.toFixed(3).replace(/^0/,''):null, pitcherHand==='L'?'<span class="pa-row-sig pa-sig-pos">← Today</span>':'')}
@@ -5940,8 +7332,6 @@ async function openPlayerAnalyzer(playerId) {
       ${paRow(`L10 ${todayEnvLabel} AVG (today's env)`, todayEnvAgg?.avg!=null?todayEnvAgg.avg.toFixed(3).replace(/^0/,''):null, _sig(todayEnvAgg?.avg,0.285,0.230))}
       ${paRow(`L10 ${otherEnvLabel} AVG`, otherEnvAgg?.avg!=null?otherEnvAgg.avg.toFixed(3).replace(/^0/,''):null)}
     </div>
-
-    <!-- 3. Recent Form by Environment -->
     <div class="pa-section">
       <div class="pa-section-title">🏠 <span>Recent Form by Environment</span></div>
       <div class="pa-env-banner${todayStronger?'':' warn'}">
@@ -5952,8 +7342,6 @@ async function openPlayerAnalyzer(playerId) {
         ${splitCard(`Last ${l10Away.length} Away Games`, awayAgg, !isHomeToday)}
       </div>
     </div>
-
-    <!-- 4. Opportunity & Consistency -->
     <div class="pa-section">
       <div class="pa-section-title">📅 <span>Opportunity &amp; Consistency</span></div>
       ${paRow('AB / game (L10)', l10?.ab&&l10?.games?(l10.ab/l10.games).toFixed(1):null)}
@@ -5966,8 +7354,6 @@ async function openPlayerAnalyzer(playerId) {
       ${paRow('Active hit streak', p.hitStreak||0, (p.hitStreak||0)>=3?'<span class="pa-row-sig pa-sig-pos">🔥 Hot</span>':'')}
       <div class="pa-row"><span class="pa-row-lbl">Usage trend</span><span class="pa-row-val"><span class="pa-row-sig ${usageTrendCls}">${usageTrend}</span></span></div>
     </div>
-
-    <!-- 5. Matchup Lens -->
     <div class="pa-section">
       <div class="pa-section-title">🔬 <span>Matchup Lens</span></div>
       ${paRow(`Batter AVG vs ${pitcherHand}HP`, splitVsToday?.avg!=null?splitVsToday.avg.toFixed(3).replace(/^0/,''):null, _sig(splitVsToday?.avg,0.285,0.235))}
@@ -5979,8 +7365,6 @@ async function openPlayerAnalyzer(playerId) {
       <div class="pa-row"><span class="pa-row-lbl">Park</span><span class="pa-row-val" style="font-size:11px;font-family:inherit">${parkNote}</span></div>
       <div class="pa-row"><span class="pa-row-lbl">Weather</span><span class="pa-row-val" style="font-size:11px;font-family:inherit">${wxNote}</span></div>
     </div>
-
-    <!-- 6. Final Verdict -->
     <div class="pa-section pa-verdict">
       <div class="pa-verdict-badge ${verdictCls}">${verdictLabel}</div>
       <div class="pa-verdict-row">
