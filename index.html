@@ -2120,43 +2120,43 @@ const PA_CFG = {
     { min: 0.10, score: -2 },
     { min: 0,    score: -4 },
   ],
-  recentUsage: [
-    { min: 6, score:  2 },
-    { min: 4, score:  1 },
-    { min: 2, score: -1 },
-    { min: 0, score: -3 },
+  recentAB: [
+    { min: 29, score:   6 },
+    { min: 23, score:   3 },
+    { min: 17, score:   0 },
+    { min: 11, score:  -3 },
+    { min: 6,  score:  -6 },
+    { min: 1,  score: -10 },
+    { min: 0,  score: -12 },
   ],
-  clampMin: -4,
-  clampMax:  4,
 };
 
-// Unified 3-part PA scoring — replaces old computePAIndex entirely
-// pa            : player's season plate appearances
-// teamPAList    : array of season PAs for all batters on the same team (used for team-share calc)
-// recentStarts  : games started in last 7 (PA >= 2); pass null if unknown
-// Returns { total, roleScore, recentScore, shareStr, factors[] }
-// Returns { total, roleScore, recentScore, shareStr, factors[] }
-function computePAScore(pa, teamPAList, recentStarts) {
+// Usage Score: Season PA role + Recent AB (last 7 game log) — not capped
+// pa         : player's season plate appearances
+// teamPAList : array of season PAs for all batters on the same team
+// recentAB   : total AB in last 7 game log entries; pass null if unknown
+// Returns { total, roleScore, recentScore, sharePct, factors[] }
+function computePAScore(pa, teamPAList, recentAB) {
   const teamTotal = (teamPAList || []).reduce((a, b) => a + b, 0);
   const share     = teamTotal > 0 ? pa / teamTotal : 0;
 
-  // 1. Role score — how much of the team's PA this player owns
+  // 1. Role score — season PA share vs team
   const roleScore = (PA_CFG.role.find(r => share >= r.min) ?? PA_CFG.role.at(-1)).score;
 
-  // 2. Recent usage modifier — is he actually starting now?
+  // 2. Recent AB — total at-bats in last 7 game log entries
   let recentScore = 0;
-  if (recentStarts != null) {
-    recentScore = (PA_CFG.recentUsage.find(r => recentStarts >= r.min) ?? PA_CFG.recentUsage.at(-1)).score;
+  if (recentAB != null) {
+    recentScore = (PA_CFG.recentAB.find(r => recentAB >= r.min) ?? PA_CFG.recentAB.at(-1)).score;
   }
 
-  const total    = clamp(roleScore + recentScore, PA_CFG.clampMin, PA_CFG.clampMax);
+  const total    = roleScore + recentScore;   // not capped
   const sharePct = Math.round(share * 100);
   const sign     = v => v > 0 ? `+${v}` : `${v}`;
 
   const factors = [];
   if (total !== 0) {
     factors.push({
-      label: `PA role ${sharePct}% (role ${sign(roleScore)}, usage ${sign(recentScore)})`,
+      label: `Usage: L7 ${recentAB ?? '?'} AB (${sign(recentScore)}) · Role ${sharePct}% (${sign(roleScore)})`,
       type:  total > 0 ? 'pos' : 'neg',
       score: total,
     });
@@ -2242,11 +2242,11 @@ function _hitOpportunityScore(batter, orderPos, factors) {
   if (pb < 0)  factors.push({ label: `Bats ${orderPos}th (lineup−)`, type:'neg', score: pb });
   s += pb;
 
-  // PA score (3-part system)
+  // PA score (role + recent AB)
   const paScore = computePAScore(
     batter.seasonStats?.plateAppearances || 0,
     batter.teamPAList || [],
-    batter.recentStarts ?? null
+    batter.last7Stats?.atBats ?? null
   );
   if (paScore.total !== 0) { s += paScore.total; factors.push(...paScore.factors); }
 
@@ -2400,8 +2400,8 @@ function _hrOpportunityScore(batter, orderPos, factors) {
     rateLabel = tier.label ? ` (${tier.label})` : '';
   }
 
-  // PA role score (3-part system)
-  const paScore = computePAScore(pa, batter.teamPAList || [], batter.recentStarts ?? null);
+  // PA score (role + recent AB)
+  const paScore = computePAScore(pa, batter.teamPAList || [], batter.last7Stats?.atBats ?? null);
 
   const total = posScore + rateScore + paScore.total;
   const sign = v => v > 0 ? `+${v}` : `${v}`;
@@ -4353,12 +4353,13 @@ async function openPlayerModal(playerId) {
       <div class="modal-season-stat"><div class="sv">${ss.plateAppearances ?? '—'}</div><div class="sl">PA</div></div>
       ${(() => {
         const pa  = ss?.plateAppearances || 0;
-        const ps  = computePAScore(pa, p.teamPAList || [], p.recentStarts ?? null);
+        const l7ab = p.last7Stats?.atBats ?? null;
+        const ps  = computePAScore(pa, p.teamPAList || [], l7ab);
         const sg  = v => v > 0 ? `+${v}` : `${v}`;
-        return `<div class="modal-season-stat" title="Role ${sg(ps.roleScore)} · Recent usage ${sg(ps.recentScore)}">
+        return `<div class="modal-season-stat" title="Role ${sg(ps.roleScore)} · L7 AB ${l7ab ?? '?'} (${sg(ps.recentScore)})">
           <div class="sv" style="color:${ps.total>0?'var(--accent-green)':ps.total<0?'var(--accent-red)':'var(--text-muted)'}">${ps.total>0?'+':''}${ps.total}</div>
-          <div class="sl">PA Score</div>
-          <div style="font-size:9px;color:var(--text-muted);margin-top:2px">Role ${sg(ps.roleScore)} · Use ${sg(ps.recentScore)}</div>
+          <div class="sl">Usage</div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px">Role ${sg(ps.roleScore)} · AB ${sg(ps.recentScore)}</div>
         </div>`;
       })()}
       <div class="modal-season-stat"><div class="sv">${ss.plateAppearances >= 50 ? (ss.homeRuns/ss.plateAppearances*100).toFixed(1)+'%' : '—'}</div><div class="sl">HR/PA</div></div>
