@@ -3026,12 +3026,16 @@ async function fetchPlayerLastNGames(personId, group='hitting', n=7) {
 }
 
 async function fetchPitcherStats(personId, season=2026) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=season&season=${season}&group=pitching&gameType=R`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${personId}?hydrate=stats(group=[pitching],type=[season],season=${season})`;
   try {
     const data = await cachedFetch(url);
-    const splits = data.stats?.[0]?.splits;
-    return splits?.[0]?.stat || null;
-  } catch { return null; }
+    const person = data.people?.[0];
+    const splits = person?.stats?.[0]?.splits;
+    return {
+      stat: splits?.[0]?.stat || null,
+      pitchHand: person?.pitchHand?.code || null,
+    };
+  } catch { return { stat: null, pitchHand: null }; }
 }
 
 async function fetchPlayerInfo(personId) {
@@ -3184,8 +3188,8 @@ async function processGame(game) {
     if (!batter.id) continue;
     const stats = batchedStats[batter.id] || {};
     const pitcher = batter.isAway
-      ? { seasonStats: mapPitcherStats(homePitcherStats), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherRaw?.pitchHand?.code || null }
-      : { seasonStats: mapPitcherStats(awayPitcherStats), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherRaw?.pitchHand?.code || null };
+      ? { seasonStats: mapPitcherStats(homePitcherStats?.stat), name: homePitcherRaw?.fullName || '', pitchHand: homePitcherStats?.pitchHand || null }
+      : { seasonStats: mapPitcherStats(awayPitcherStats?.stat), name: awayPitcherRaw?.fullName || '', pitchHand: awayPitcherStats?.pitchHand || null };
 
     const seasonStats = mapHitterStats(stats.season);
     const last7Stats  = mapHitterStats(stats.last7);
@@ -3222,8 +3226,8 @@ async function processGame(game) {
   let lockedBestBetHit = null;
   let lockedBestBetHR  = null;
   // Build processed pitcher objects with seasonStats before confidence loop
-  const processedAwayPitcher = { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats), pitchHand: awayPitcherRaw?.pitchHand?.code || null };
-  const processedHomePitcher = { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats), pitchHand: homePitcherRaw?.pitchHand?.code || null };
+  const processedAwayPitcher = { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats?.stat), pitchHand: awayPitcherStats?.pitchHand || null };
+  const processedHomePitcher = { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats?.stat), pitchHand: homePitcherStats?.pitchHand || null };
 
   // Attach confidence to every player (uses gameLogCache if already populated)
   for (const p of players) {
