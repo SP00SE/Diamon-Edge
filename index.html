@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6001,6 +6001,7 @@ let _prlOvrPicks   = [];         // stored overall picks
 let _prlTeamFilter      = new Set();  // team IDs selected in builder (empty = all)
 let _prlRerollExcluded  = new Set();  // player IDs excluded from reroll cycles
 let _soaRerollExcluded  = new Set();  // reroll exclusion for Safest of All
+let _soaLegs = 5;
 
 function hfDateStr(daysAgo = 0) {
   const base = state.date || new Date().toISOString().slice(0,10);
@@ -6517,7 +6518,7 @@ function renderSafestParlay(isReroll = false) {
   candidates.sort((a, b) => b.composite - a.composite);
   const result = []; const usedGames = new Set();
   for (const c of candidates) {
-    if (result.length >= 5) break;
+    if (result.length >= _soaLegs) break;
     if (usedGames.has(c.p.gamePk)) continue;
     result.push(c);
     usedGames.add(c.p.gamePk);
@@ -6575,6 +6576,7 @@ function renderSafestParlay(isReroll = false) {
           <div class="soa-sub">Good avg hitters facing high-ERA pitchers on losing teams</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);font-weight:600;">Legs <input id="soaLegsInput" type="number" min="2" max="15" value="${_soaLegs}" style="width:42px;padding:3px 5px;border-radius:6px;border:1px solid var(--border-accent);background:var(--bg-card);color:var(--text-primary);font-size:12px;text-align:center;" oninput="_soaLegs=Math.max(2,Math.min(15,parseInt(this.value)||5));renderSafestParlay(false)"></label>
           <button class="prl-reset-btn" onclick="_soaRerollExcluded.clear();renderSafestParlay(true)" title="Reset and regenerate">↺ Reset</button>
           <button class="prl-reroll-btn" onclick="renderSafestParlay(true)">🎲 Reroll</button>
           <button class="hf-copy-btn" onclick="navigator.clipboard.writeText('${names.replace(/'/g,"\\'")}')">📋 Copy</button>
@@ -6997,6 +6999,7 @@ function buildCustomParlay(isReroll = false) {
       <div class="prl-result-header">
         <span>${legs} Legs · ${bettype.toUpperCase()} · ${riskLabels[risk]||risk.toUpperCase()}${focusParts ? ` · ${focusParts}` : ''}</span>
         <div style="display:flex;gap:6px;align-items:center;">
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);font-weight:600;">Legs <input id="soaLegsInput" type="number" min="2" max="15" value="${_soaLegs}" style="width:42px;padding:3px 5px;border-radius:6px;border:1px solid var(--border-accent);background:var(--bg-card);color:var(--text-primary);font-size:12px;text-align:center;" oninput="_soaLegs=Math.max(2,Math.min(15,parseInt(this.value)||5));renderSafestParlay(false)"></label>
           <button class="prl-reset-btn" onclick="_prlRerollExcluded.clear();buildCustomParlay(true)" title="Clear reroll history and regenerate">↺ Reset</button>
           <button class="prl-reroll-btn" onclick="buildCustomParlay(true)">🎲 Reroll</button>
           <button class="hf-copy-btn" onclick="copyHFParlay('${listId}')">📋 Copy All</button>
