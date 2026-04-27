@@ -6514,15 +6514,9 @@ function renderSafestParlay(isReroll = false) {
     return { p, sznAvg, pEra, pName, oppAbbr, oppWins, oppLosses, oppWinPct, composite };
   }).filter(Boolean);
 
-  // Sort by composite desc, then spread 1 per game
+  // Sort by composite desc, take top N
   candidates.sort((a, b) => b.composite - a.composite);
-  const result = []; const usedGames = new Set();
-  for (const c of candidates) {
-    if (result.length >= _soaLegs) break;
-    if (usedGames.has(c.p.gamePk)) continue;
-    result.push(c);
-    usedGames.add(c.p.gamePk);
-  }
+  const result = candidates.slice(0, _soaLegs);
 
   // If reroll exhausted options, reset and retry
   if (!result.length && isReroll && _soaRerollExcluded.size > 0) {
