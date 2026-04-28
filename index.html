@@ -2383,7 +2383,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ─── GLOBAL REQUEST THROTTLE ─────────────────────────────────────────────
 // Limits total simultaneous MLB API requests to prevent ECONNRESET errors.
-const MAX_CONCURRENT_REQUESTS = 3;
+const MAX_CONCURRENT_REQUESTS = 2;
 let _activeRequests = 0;
 const _requestQueue = [];
 function _throttledFetch(url, opts) {
@@ -2391,7 +2391,7 @@ function _throttledFetch(url, opts) {
     const execute = () => {
       _activeRequests++;
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 15000); // 15s timeout
+      const timer = setTimeout(() => ctrl.abort(), 20000); // 20s timeout
       fetch(url, { ...opts, signal: ctrl.signal })
         .then(resolve, reject)
         .finally(() => {
@@ -2416,9 +2416,9 @@ async function cachedFetch(url, opts={}) {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       if (attempt > 0) {
-        // Exponential backoff with jitter: 1s → 2s → 4s
-        const base = 1000 * Math.pow(2, attempt - 1);
-        const jitter = Math.floor(Math.random() * 400) - 200;
+        // Exponential backoff with jitter: 2s → 4s → 8s
+        const base = 2000 * Math.pow(2, attempt - 1);
+        const jitter = Math.floor(Math.random() * 600) - 300;
         await new Promise(r => setTimeout(r, base + jitter));
       }
       const res = await _throttledFetch(url, opts);
@@ -3351,8 +3351,8 @@ async function batchFetchBatterStats(batters) {
         vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
       };
     }));
-    // Small pause between chunks to avoid overwhelming the MLB Stats API
-    if (i + CHUNK < batters.length) await new Promise(r => setTimeout(r, 300));
+    // Pause between chunks to avoid overwhelming the MLB Stats API
+    if (i + CHUNK < batters.length) await new Promise(r => setTimeout(r, 500));
   }
   return result;
 }
@@ -6497,18 +6497,15 @@ function renderSafestParlay(isReroll = false) {
     const oppTotal   = oppWins + oppLosses;
     const oppWinPct  = oppTotal > 0 ? oppWins / oppTotal : 0.5;
 
-    // All three criteria must be met
-    if (sznAvg < 0.270)     return null;  // good avg threshold
-    if (pEra   === 0)       return null;  // no ERA data available
-    if (pEra   < 4.80)      return null;  // bad ERA threshold
-    if (oppTotal === 0)      return null;  // no record data available
-    if (oppWinPct >= 0.500)  return null;  // must be a losing opponent
+    // Filter: batter must hit decently, pitcher must not be elite, opponent must not be strong
+    if (sznAvg < 0.250)                   return null;  // below .250 → not a safe pick
+    if (pEra > 0 && pEra < 4.00)          return null;  // known good pitcher → skip (ERA=0 = unknown, allowed)
+    if (oppWinPct > 0.530)                return null;  // clearly winning team → skip
 
     // Composite safety score: higher = safer pick
-    // ERA severity (0–40) + avg quality (0–30) + opponent weakness (0–30)
-    const eraScore  = Math.min(40, (pEra  - 4.80) * 12);          // 4.80→0, 6.0→14.4, 7.0→26.4
-    const avgScore  = Math.min(30, (sznAvg - 0.270) * 300);       // .270→0, .300→9, .370→30
-    const oppScore  = Math.min(30, (0.500 - oppWinPct) * 100);    // .499→0.1, .380→12, .300→20
+    const eraScore  = pEra > 0 ? Math.min(40, (pEra - 4.00) * 10) : 5;  // unknown ERA gets small neutral bonus
+    const avgScore  = Math.min(30, (sznAvg - 0.250) * 300);
+    const oppScore  = Math.min(30, (0.530 - oppWinPct) * 100);
     const composite = eraScore + avgScore + oppScore;
 
     return { p, sznAvg, pEra, pName, oppAbbr, oppWins, oppLosses, oppWinPct, composite };
@@ -6529,18 +6526,22 @@ function renderSafestParlay(isReroll = false) {
     const allPool2 = [];
     for (const gd of Object.values(state.predictions)) allPool2.push(...(gd.players||[]).map(p=>({...p,_gd:gd})));
     const deduped2 = [...new Map(allPool2.map(p=>[p.id,p])).values()];
-    const avgPass  = deduped2.filter(p => (p.seasonStats?.avg||0) >= 0.270).length;
-    const rawGame2 = gd => (state.games||[]).find(g => g.gamePk === gd.gamePk);
+    const avgPass  = deduped2.filter(p => (p.seasonStats?.avg||0) >= 0.250).length;
     const eraPass  = deduped2.filter(p => {
       const pit = p.isAway ? p._gd.homePitcher : p._gd.awayPitcher;
-      return (pit?.seasonStats?.era||0) >= 4.80;
+      const era = pit?.seasonStats?.era || 0;
+      return era === 0 || era >= 4.00;
     }).length;
-    el.innerHTML = `<div class="soa-empty">No players meet all three criteria today.<br><span style="font-size:10px;opacity:.6">AVG ≥.270: ${avgPass} players · Pitcher ERA ≥4.80: ${eraPass} players · Both + losing opp: 0</span></div>`;
+    el.innerHTML = `<div class="soa-empty">No players meet all criteria today.<br><span style="font-size:10px;opacity:.6">AVG ≥.250: ${avgPass} players · Pitcher ERA ≥4.00: ${eraPass} players · Both + weak opp: 0</span></div>`;
     return;
   }
 
   // Track for next reroll
   result.forEach(c => _soaRerollExcluded.add(c.p.id));
+
+  const availNote = result.length < _soaLegs
+    ? `<span style="font-size:10px;color:var(--accent-orange,#f97316);margin-top:3px;display:block;">${result.length} of ${_soaLegs} requested — only ${result.length} player${result.length===1?'':'s'} meet today's criteria</span>`
+    : '';
 
   const fmt   = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
   const fmtE  = v => v ? v.toFixed(2) : '---';
@@ -6568,6 +6569,7 @@ function renderSafestParlay(isReroll = false) {
         <div>
           <div class="soa-title">🛡️ Safest of All</div>
           <div class="soa-sub">Good avg hitters facing high-ERA pitchers on losing teams</div>
+          ${availNote}
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);font-weight:600;">Legs <input id="soaLegsInput" type="number" min="2" max="15" value="${_soaLegs}" style="width:42px;padding:3px 5px;border-radius:6px;border:1px solid var(--border-accent);background:var(--bg-card);color:var(--text-primary);font-size:12px;text-align:center;" oninput="_soaLegs=Math.max(2,Math.min(15,parseInt(this.value)||5));renderSafestParlay(false)"></label>
@@ -6577,9 +6579,9 @@ function renderSafestParlay(isReroll = false) {
         </div>
       </div>
       <div class="soa-criteria">
-        <span class="soa-tag soa-tag-avg">✅ AVG ≥ .270</span>
-        <span class="soa-tag soa-tag-era">⚠ Pitcher ERA ≥ 4.80</span>
-        <span class="soa-tag soa-tag-opp">📉 Opp Win% &lt; .500</span>
+        <span class="soa-tag soa-tag-avg">✅ AVG ≥ .250</span>
+        <span class="soa-tag soa-tag-era">⚠ Pitcher ERA ≥ 4.00</span>
+        <span class="soa-tag soa-tag-opp">📉 Opp Win% ≤ .530</span>
       </div>
       <div id="soaList">${picks}</div>
     </div>`;
