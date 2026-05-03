@@ -2179,7 +2179,7 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">OBP &lt; .320</span></div>
           <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Batter K% &lt; 18%</span></div>
           <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Batter K% &gt; 30%</span></div>
-          <div class="formula-divider">Recent Form <span class="formula-divider-sub">weighted higher than season skill · form+streak capped at +12</span></div>
+          <div class="formula-divider">Recent Form <span class="formula-divider-sub">signal capped at +8 to prevent hot-week overrides of season stats</span></div>
           <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">L7 AVG &gt; .350 🔥</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">L7 AVG .300–.349</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">L7 AVG .250–.299</span></div>
@@ -2187,7 +2187,7 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Hit in 6–7 of last 7 games</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Hit in 4–5 of last 7 games</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Hit in 0–1 of last 7 games</span></div>
-          <div class="formula-divider">Consecutive Hit Streak 🔥 <span class="formula-divider-sub">bonus only · max +3 (7+ game streak) · total form+streak capped +12</span></div>
+          <div class="formula-divider">Consecutive Hit Streak 🔥 <span class="formula-divider-sub">bonus only · max +3 (7+ game streak) · total form+streak capped +8</span></div>
           <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">3-game streak</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">5-game streak</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">7+ game streak (max)</span></div>
@@ -2198,11 +2198,11 @@ main { padding: 28px 0 60px; }
           <div class="formula-divider">Matchup <span class="formula-divider-sub">vs opposing pitcher</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher WHIP ≥ 1.40</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher WHIP &lt; 1.10</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher K% &lt; 18% (contact-prone)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% &gt; 30% (elite K)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher contact allowed &gt; 75%</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter AVG vs pitcher hand &gt; .300</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter AVG vs pitcher hand &lt; .240</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher K% &lt; 18% (contact-prone) — requires pitcher IP data</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% &gt; 30% (elite K) — requires pitcher IP data</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher contact allowed &gt; 75% — requires pitcher IP data</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter AVG vs pitcher hand &gt; .300 (min 25 AB sample)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter AVG vs pitcher hand &lt; .240 (min 25 AB sample)</span></div>
           <div class="formula-divider">Usage Score <span class="formula-divider-sub">Season PA role + Recent AB (last 7 game log) — not capped</span></div>
           <div class="formula-row"><span class="fr-sign" style="font-size:10px">Season Role</span><span class="fr-text">Season PA share vs team — how much of the team's at-bats this player owns</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">≥ 80% of team PA (full-time starter)</span></div>
@@ -2602,9 +2602,9 @@ function _hitRecentFormScore(batter, factors) {
   else if (hitStreak >= 5) { streakScore = 2; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', pts: 2 }); }
   else if (hitStreak >= 3) { streakScore = 1; factors.push({ label: `${hitStreak}-game hit streak 🔥`, type:'pos', pts: 1 }); }
 
-  // Cap: combined form + consistency + streak ≤ +12
+  // Cap: combined form + consistency + streak ≤ +8 (recent form is a signal, not a season substitute)
   const rawForm = formScore + consistScore + streakScore;
-  s += rawForm > 12 ? 12 : rawForm;
+  s += rawForm > 8 ? 8 : rawForm;
   return s;
 }
 
@@ -2642,34 +2642,46 @@ function _hitMatchupScore(batter, pitcher, factors) {
   const pKpct = pIP > 0 ? pK / (pIP * 4.3) : 0;
   const pKp   = Math.round(pKpct * 100);
 
-  // Pitcher WHIP
-  if      (pWhip >= 1.40) { s += 6; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,   type:'pos', pts:  6 }); }
-  else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,           type:'pos', pts:  4 }); }
-  else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,           type:'pos', pts:  2 }); }
-  else if (pWhip >= 1.10) {         /* neutral */ }
-  else if (pWhip > 0)     { s -= 3; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,  type:'neg', pts: -3 }); }
+  // Pitcher WHIP/K%/contact — only scored when pitcher has real IP data
+  // (avoids +8 free bonus for openers/rookies with no 2026 stats)
+  if (pIP > 0) {
+    // WHIP
+    if      (pWhip >= 1.40) { s += 6; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (weak)`,   type:'pos', pts:  6 }); }
+    else if (pWhip >= 1.30) { s += 4; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,           type:'pos', pts:  4 }); }
+    else if (pWhip >= 1.20) { s += 2; factors.push({ label: `P-WHIP ${safe(pWhip,2)}`,           type:'pos', pts:  2 }); }
+    else if (pWhip >= 1.10) {         /* neutral */ }
+    else if (pWhip > 0)     { s -= 3; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,  type:'neg', pts: -3 }); }
 
-  // Pitcher K%
-  if      (pKpct < .18)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,     type:'pos', pts:  5 }); }
-  else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                      type:'pos', pts:  2 }); }
-  else if (pKpct < .27)   {         /* neutral */ }
-  else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts: -2 }); }
-  else if (pKpct > 0)     { s -= 5; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -5 }); }
+    // K%
+    if      (pKpct < .18)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,     type:'pos', pts:  5 }); }
+    else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                      type:'pos', pts:  2 }); }
+    else if (pKpct < .27)   {         /* neutral */ }
+    else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts: -2 }); }
+    else if (pKpct > 0)     { s -= 5; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -5 }); }
 
-  // Pitcher contact allowed proxy
-  const contactAllowed = 1 - pKpct;
-  if (contactAllowed > .75) { s += 3; factors.push({ label: `P allows contact ${Math.round(contactAllowed*100)}%`, type:'pos', pts: 3 }); }
+    // Contact allowed proxy
+    const contactAllowed = 1 - pKpct;
+    if (contactAllowed > .75) { s += 3; factors.push({ label: `P allows contact ${Math.round(contactAllowed*100)}%`, type:'pos', pts: 3 }); }
+  }
 
-  // Handedness split advantage
+  // Handedness split — require min 25 AB to trust the sample
   const pitcherHand  = pitcher?.pitchHand || pitcher?.seasonStats?.pitchHand || null;
   const vsHandStats  = pitcherHand === 'L' ? batter.vsLHP : pitcherHand === 'R' ? batter.vsRHP : null;
   const vsAvg        = vsHandStats?.avg || 0;
-  if (vsAvg > 0) {
-    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  4 }); }
-    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  3 }); }
-    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  2 }); }
-    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)}`,        type:'pos', pts:  1 }); }
-    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (poor)`, type:'neg', pts: -2 }); }
+  const vsAB         = vsHandStats?.atBats || 0;
+  if (vsAvg > 0 && vsAB >= 25) {
+    if      (vsAvg > .300)  { s += 4; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (${vsAB} AB)`,        type:'pos', pts:  4 }); }
+    else if (vsAvg >= .280) { s += 3; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (${vsAB} AB)`,        type:'pos', pts:  3 }); }
+    else if (vsAvg >= .260) { s += 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (${vsAB} AB)`,        type:'pos', pts:  2 }); }
+    else if (vsAvg >= .240) { s += 1; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (${vsAB} AB)`,        type:'pos', pts:  1 }); }
+    else                    { s -= 2; factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} poor (${vsAB} AB)`,   type:'neg', pts: -2 }); }
+  } else if (vsAvg > 0 && vsAB > 0) {
+    // Small sample: max ±1
+    const rawBonus = vsAvg > .285 ? 1 : vsAvg < .220 ? -1 : 0;
+    if (rawBonus !== 0) {
+      s += rawBonus;
+      factors.push({ label: `vs ${pitcherHand}HP AVG ${safe(vsAvg)} (small sample, ${vsAB} AB)`, type: rawBonus > 0 ? 'pos' : 'neg', pts: rawBonus });
+    }
   }
 
   return s;
