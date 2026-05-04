@@ -6223,7 +6223,7 @@ function computeHFScore(player, pitcher, gd, bvp, bullpenEra, teamAvg7, oppAllow
   if (bvp.ab >= 10 && bvp.avg >= 0.300) { score+=8; factors.push({t:`${bvp.avg.toFixed(3)} vs pitcher (${bvp.hits}/${bvp.ab} AB)`,pos:true}); }
   if (whip >= 1.35) { score+=6; factors.push({t:`Opp WHIP ${whip.toFixed(2)} (≥1.35)`,pos:true}); }
   if (era  >= 4.50) { score+=6; factors.push({t:`Opp ERA ${era.toFixed(2)} (≥4.50)`,pos:true}); }
-  if (bullpenEra >= 4.50) { score+=6; factors.push({t:`Opp bullpen ERA ${bullpenEra.toFixed(2)} (L7d)`,pos:true}); }
+  if (bullpenEra >= 4.50) { score+=6; factors.push({t:`Opp Team ERA ${bullpenEra.toFixed(2)} (season YTD)`,pos:true}); }
   if (pf >= 1.05)   { score+=5; factors.push({t:`Hitter-friendly park`,pos:true}); }
   if (windOut)      { score+=5; factors.push({t:`Wind blowing out ${ws}mph`,pos:true}); }
   if (pos <= 3)     { score+=5; factors.push({t:`Bats ${pos}${pos===1?'st':pos===2?'nd':'rd'} in lineup`,pos:true}); }
@@ -7500,7 +7500,7 @@ async function openPlayerAnalyzer(playerId) {
       ${paRow('Pitcher ERA', pEra!=null?pEra.toFixed(2):null, _sigEra(pEra))}
       ${paRow('Pitcher WHIP', pWhip!=null?pWhip.toFixed(2):null, pWhip!=null?_sig(1/pWhip,1/1.10,1/1.50):'')}
       ${paRow('Pitcher K/9', pK9)}
-      ${paRow('Opp Bullpen ERA (L7)', bullpenEra!=null?bullpenEra.toFixed(2):null, bullpenEra!=null?_sigEra(bullpenEra):'')}
+      ${paRow('Opp Team ERA (Season YTD)', bullpenEra!=null?bullpenEra.toFixed(2):null, bullpenEra!=null?_sigEra(bullpenEra):'')}
       <div class="pa-row"><span class="pa-row-lbl">Park</span><span class="pa-row-val" style="font-size:11px;font-family:inherit">${parkNote}</span></div>
       <div class="pa-row"><span class="pa-row-lbl">Weather</span><span class="pa-row-val" style="font-size:11px;font-family:inherit">${wxNote}</span></div>
     </div>
