@@ -2146,13 +2146,13 @@ main { padding: 28px 0 60px; }
           <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Example: Season AVG .280, L7 AVG .220 → difference = −60 pts → ❄️ Cold Streak</p>
 
           <div class="formula-divider" style="margin-top:16px">Hot Streaks Tab — Flame Intensity <span class="formula-divider-sub">shown on streak cards</span></div>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">The number of 🔥 flames on a streak card shows how hot the streak is.</p>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">The number of 🔥 (hits) or 💥 (HRs) on a streak card shows how hot the streak is.</p>
           <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥🔥 Hit</span><span class="fr-text">L7 AVG is <strong>80+ points above</strong> season AVG — elite recent form</span></div>
           <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥 Hit</span><span class="fr-text">L7 AVG is <strong>50–79 points above</strong> season AVG — very hot</span></div>
           <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥 Hit</span><span class="fr-text">L7 AVG is <strong>up to 49 points above</strong> season AVG — on a streak</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥🔥 HR</span><span class="fr-text"><strong>3+ home runs</strong> in the last 7 games</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥🔥 HR</span><span class="fr-text"><strong>2 home runs</strong> in the last 7 games</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:#f97316">🔥 HR</span><span class="fr-text"><strong>1 home run</strong> in the last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">💥💥💥 HR</span><span class="fr-text"><strong>3+ home runs</strong> in the last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">💥💥 HR</span><span class="fr-text"><strong>2 home runs</strong> in the last 7 games</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:#f97316">💥 HR</span><span class="fr-text"><strong>1 home run</strong> in the last 7 games</span></div>
 
           <div class="formula-divider" style="margin-top:16px">Live Game Badges <span class="formula-divider-sub">shown once a game starts</span></div>
           <div class="formula-row"><span class="fr-sign" style="color:var(--accent-red)">● LIVE</span><span class="fr-text">Game is currently in progress — stats update in real time</span></div>
@@ -4094,7 +4094,10 @@ async function renderHotStreaks() {
 
   const fmt    = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
   const fmtI   = v => (v != null && v !== 0) ? v : 0;
-  const fireIcons = pts => pts >= 80 ? '🔥🔥🔥' : pts >= 50 ? '🔥🔥' : '🔥';
+  const fireIcons = (pts, type = 'hit') => {
+    const emoji = type === 'hr' ? '💥' : '🔥';
+    return pts >= 80 ? `${emoji}${emoji}${emoji}` : pts >= 50 ? `${emoji}${emoji}` : emoji;
+  };
 
   function streakCardHTML(p, type, consecCount = null) {
     const ss  = p.seasonStats || {};
@@ -4119,7 +4122,7 @@ async function renderHotStreaks() {
       const lAvg = l7.avg || 0;
       const diff = Math.round((lAvg - sAvg) * 1000);
       const diffStr = diff >= 0 ? `+${diff} pts` : `${diff} pts`;
-      const fire = fireIcons(diff);
+      const fire = fireIcons(diff, 'hit');
       return `
         <div class="streak-card streak-card-hit" onclick="openPlayerModal(${p.id})">
           <div class="streak-card-top">
@@ -4144,7 +4147,7 @@ async function renderHotStreaks() {
       const l7HR  = fmtI(l7.homeRuns);
       const ssHR  = fmtI(ss.homeRuns);
       const l7Slg = l7.slg || 0;
-      const fire  = fireIcons(l7HR >= 3 ? 80 : l7HR === 2 ? 50 : 20);
+      const fire  = fireIcons(l7HR >= 3 ? 80 : l7HR === 2 ? 50 : 20, 'hr');
       return `
         <div class="streak-card streak-card-hr" onclick="openPlayerModal(${p.id})">
           <div class="streak-card-top">
@@ -5048,7 +5051,7 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
   // ERA 4.21–4.79 / WHIP 1.25–1.34 = true neutral (0)
 
   // ── 3. LINEUP CONFIRMATION ────────────────────────────────────────────────
-  if (lineupPosted) score += 12; else score -= 8;
+  if (lineupPosted) score += 12; else score -= 12;
 
   // ── 4. OPPORTUNITY RISK ───────────────────────────────────────────────────
   const log = gameLogCache.get(player.id) || [];
@@ -5130,7 +5133,7 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
     else if (envEdge <  0)     score -= 1;
   }
 
-  // ── 11. OPPOSING BULLPEN ERA (L7 rolling) ────────────────────────────────
+  // ── 11. OPPOSING BULLPEN ERA (season YTD) ────────────────────────────────
   const oppBullpenEra = player.teamId === gameData?.homeTeamId
     ? (gameData?.awayBullpenEra || 0)
     : (gameData?.homeBullpenEra || 0);
@@ -6084,7 +6087,7 @@ async function fetchBullpenEra(teamId) {
   if (!teamId) return 0;
   const key = `bull_${teamId}_${hfDateStr()}`;
   if (hfCache.has(key)) return hfCache.get(key);
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=byDateRange&group=pitching&startDate=${hfDateStr(7)}&endDate=${hfDateStr(0)}&season=${new Date().getFullYear()}&gameType=R`;
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=season&group=pitching&season=${new Date().getFullYear()}&gameType=R`;
   try {
     const data = await cachedFetch(url);
     const s = data?.stats?.[0]?.splits?.[0]?.stat || {};
