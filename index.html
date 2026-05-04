@@ -5299,6 +5299,23 @@ function renderBeatTheStreak() {
     if (hitStreak >= 2) streakPills.push(`${hitStreak}-game hit streak 🔥`);
     if (hg7 >= 5)       streakPills.push(`Hit in ${hg7}/7 games`);
 
+    // Live / Final achievement badge (same pattern as predCardHTML)
+    const _btsLd = (state.allGamesLiveData || {})[player.gamePk];
+    let btsAchieveHTML = '';
+    if (_btsLd) {
+      const _bs = _btsLd.statsMap?.[player.id];
+      const _ab = _bs?.atBats || 0;
+      if (_bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+        const _pip = _btsLd.isLive
+          ? `<span class="bb-live-pip">● LIVE</span>`
+          : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+        const _hitBadge = (_bs.hits || 0) > 0
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
+          : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
+        btsAchieveHTML = `<div class="bb-achieve-row" style="margin-top:6px">${_pip}${_hitBadge}</div>`;
+      }
+    }
+
     return `
       <div class="bts-card">
         <div class="bts-card-rank">${rankLabel}</div>
@@ -5312,6 +5329,7 @@ function renderBeatTheStreak() {
             </div>
           </div>
         </div>
+        ${btsAchieveHTML}
         <div class="bts-score-bar-wrap">
           <div class="bts-score-bar-track"><div class="bts-score-bar-fill" style="width:${pcts}%"></div></div>
           <div class="bts-score-label"><span>Hit Likelihood</span><span>${score}/100</span></div>
