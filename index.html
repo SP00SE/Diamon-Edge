@@ -2214,6 +2214,13 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher contact allowed &gt; 75% — requires pitcher IP data</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter AVG vs pitcher hand &gt; .300 (min 25 AB sample)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter AVG vs pitcher hand &lt; .240 (min 25 AB sample)</span></div>
+          <div class="formula-divider">Opp Team ERA (season YTD) <span class="formula-divider-sub">secondary pitcher quality — full team ERA as pitching staff proxy</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Team ERA ≤ 3.00 — elite (Braves/Rays-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Team ERA ≤ 3.50 — strong pen</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">Team ERA ≤ 4.00 — above average</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Team ERA ≥ 4.51 — weak pen</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Team ERA ≥ 5.01 — poor (Nationals-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Team ERA &gt; 5.50 — terrible</span></div>
           <div class="formula-divider">Usage Score <span class="formula-divider-sub">Season PA role + Recent AB (last 7 game log) — not capped</span></div>
           <div class="formula-row"><span class="fr-sign" style="font-size:10px">Season Role</span><span class="fr-text">Season PA share vs team — how much of the team's at-bats this player owns</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">≥ 80% of team PA (full-time starter)</span></div>
@@ -2281,6 +2288,13 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+1/+2</span><span class="fr-text">Temp &gt; 75°F / &gt; 85°F</span></div>
           <div class="formula-row"><span class="fr-sign neg">−1/−2</span><span class="fr-text">Temp &lt; 55°F / &lt; 45°F</span></div>
           <div class="formula-row"><span class="fr-sign pos/neg">±4</span><span class="fr-text">Handedness ISO split vs pitcher hand</span></div>
+          <div class="formula-divider">Opp Team ERA (season YTD) <span class="formula-divider-sub">secondary pitcher quality — full team ERA as pitching staff proxy</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Team ERA ≤ 3.00 — elite (Braves/Rays-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Team ERA ≤ 3.50 — strong pen</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">Team ERA ≤ 4.00 — above average</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Team ERA ≥ 4.51 — weak pen</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Team ERA ≥ 5.01 — poor (Nationals-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Team ERA &gt; 5.50 — terrible</span></div>
         </div>
       </div>
     </div>
@@ -2644,7 +2658,7 @@ function _hitOpportunityScore(batter, orderPos, factors) {
   return s;
 }
 
-function _hitMatchupScore(batter, pitcher, factors) {
+function _hitMatchupScore(batter, pitcher, factors, bullpenEra = 0) {
   let s = 0;
   const pWhip = pitcher?.seasonStats?.whip || 0;
   const pK    = pitcher?.seasonStats?.strikeOuts || 0;
@@ -2695,15 +2709,26 @@ function _hitMatchupScore(batter, pitcher, factors) {
     }
   }
 
+  // Opposing team ERA (season YTD) — bullpen/pitching staff quality signal
+  if (bullpenEra > 0) {
+    if      (bullpenEra <= 3.00) { s -= 5; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (elite pen)`,    type:'neg', pts: -5 }); }
+    else if (bullpenEra <= 3.50) { s -= 3; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (strong pen)`,   type:'neg', pts: -3 }); }
+    else if (bullpenEra <= 4.00) { s -= 1; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (above avg)`,    type:'neg', pts: -1 }); }
+    else if (bullpenEra <= 4.50) { /* league average — neutral */ }
+    else if (bullpenEra <= 5.00) { s += 2; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (weak pen)`,     type:'pos', pts:  2 }); }
+    else if (bullpenEra <= 5.50) { s += 4; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (poor pen)`,     type:'pos', pts:  4 }); }
+    else                         { s += 5; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (terrible pen)`, type:'pos', pts:  5 }); }
+  }
+
   return s;
 }
 
-function computeHitScore(batter, pitcher, orderPos, weather, parkFactor) {
+function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0) {
   const factors = [];
   const skill     = _hitSkillScore(batter, factors);
   const form      = _hitRecentFormScore(batter, factors);
   const opp       = _hitOpportunityScore(batter, orderPos, factors);
-  const matchup   = _hitMatchupScore(batter, pitcher, factors);
+  const matchup   = _hitMatchupScore(batter, pitcher, factors, bullpenEra);
   const raw       = 50 + skill + form + opp + matchup;
   return { score: clamp(Math.round(raw), 0, 100), factors };
 }
@@ -2823,7 +2848,7 @@ function _hrOpportunityScore(batter, orderPos, factors) {
 }
 
 // ─── HR SCORE MODULE 4: Matchup & Environment ────────────────────────────────
-function _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors) {
+function _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors, bullpenEra = 0) {
   const batSide = batter.batSide || 'R';
   const pfHR    = batSide === 'L' ? parkFactor.hrL : parkFactor.hrR;
   const temp    = weather?.temp     || 70;
@@ -2881,16 +2906,28 @@ function _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors) {
     factors.push({ label: parts.join(' · '), type: posType, pts: total });
   }
 
-  return total;
+  // Opposing team ERA (season YTD) — bullpen/pitching staff quality signal
+  let bullpenScore = 0;
+  if (bullpenEra > 0) {
+    if      (bullpenEra <= 3.00) { bullpenScore = -5; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (elite pen)`,    type:'neg', pts: -5 }); }
+    else if (bullpenEra <= 3.50) { bullpenScore = -3; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (strong pen)`,   type:'neg', pts: -3 }); }
+    else if (bullpenEra <= 4.00) { bullpenScore = -1; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (above avg)`,    type:'neg', pts: -1 }); }
+    else if (bullpenEra <= 4.50) { /* league average — neutral */ }
+    else if (bullpenEra <= 5.00) { bullpenScore =  2; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (weak pen)`,     type:'pos', pts:  2 }); }
+    else if (bullpenEra <= 5.50) { bullpenScore =  4; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (poor pen)`,     type:'pos', pts:  4 }); }
+    else                         { bullpenScore =  5; factors.push({ label: `Opp Team ERA ${bullpenEra.toFixed(2)} (terrible pen)`, type:'pos', pts:  5 }); }
+  }
+
+  return total + bullpenScore;
 }
 
 // ─── HR SCORE ORCHESTRATOR ────────────────────────────────────────────────────
-function computeHRScore(batter, pitcher, orderPos, weather, parkFactor) {
+function computeHRScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0) {
   const factors = [];
   const powerScore   = _hrPowerSkillScore(batter, factors);
   const formScore    = _hrRecentFormScore(batter, factors);
   const oppScore     = _hrOpportunityScore(batter, orderPos, factors);
-  const matchupScore = _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors);
+  const matchupScore = _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors, bullpenEra);
   const raw = 40 + powerScore + formScore + oppScore + matchupScore;
   return { score: clamp(Math.round(raw), 0, 100), factors };
 }
@@ -3229,8 +3266,9 @@ async function processGame(game) {
     const teamPAs      = batter.isAway ? awayPAList : homePAList;
 
     const batterObj = { ...batter, seasonStats, last7Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
-    const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor);
-    const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor);
+    const oppBullpenEra = batter.isAway ? homeBullpenEra : awayBullpenEra;
+    const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra);
+    const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra);
 
     const playerObj = {
       ...batter,
