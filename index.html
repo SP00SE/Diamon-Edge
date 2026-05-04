@@ -2217,8 +2217,12 @@ main { padding: 28px 0 60px; }
           <div class="formula-divider">Matchup <span class="formula-divider-sub">vs opposing pitcher</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher WHIP ≥ 1.40</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher WHIP &lt; 1.10</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher K% &lt; 18% (contact-prone) — requires pitcher IP data</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% &gt; 30% (elite K) — requires pitcher IP data</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher K% &lt; 16% — contact-prone (requires pitcher IP data)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher K% 16–20% — low K rate</span></div>
+          <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Pitcher K% 21–24% — league average (neutral)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher K% 25–28% — above average K rate</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% 29–32% — high K rate (strikeout threat)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−7</span><span class="fr-text">Pitcher K% &gt; 32% — elite K (Cole/deGrom-tier)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher contact allowed &gt; 75% — requires pitcher IP data</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter AVG vs pitcher hand &gt; .300 (min 25 AB sample)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter AVG vs pitcher hand &lt; .240 (min 25 AB sample)</span></div>
@@ -2686,11 +2690,12 @@ function _hitMatchupScore(batter, pitcher, factors, bullpenEra = 0) {
     else if (pWhip > 0)     { s -= 3; factors.push({ label: `P-WHIP ${safe(pWhip,2)} (sharp)`,  type:'neg', pts: -3 }); }
 
     // K%
-    if      (pKpct < .18)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,     type:'pos', pts:  5 }); }
-    else if (pKpct < .22)   { s += 2; factors.push({ label: `P K% ${pKp}%`,                      type:'pos', pts:  2 }); }
-    else if (pKpct < .27)   {         /* neutral */ }
-    else if (pKpct < .31)   { s -= 2; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts: -2 }); }
-    else if (pKpct > 0)     { s -= 5; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -5 }); }
+    if      (pKpct < .16)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,     type:'pos', pts:  5 }); }
+    else if (pKpct < .21)   { s += 3; factors.push({ label: `P K% ${pKp}% (low K)`,             type:'pos', pts:  3 }); }
+    else if (pKpct < .25)   {         /* neutral — league average */ }
+    else if (pKpct < .29)   { s -= 3; factors.push({ label: `P K% ${pKp}% (above avg K)`,       type:'neg', pts: -3 }); }
+    else if (pKpct < .33)   { s -= 5; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts: -5 }); }
+    else if (pKpct > 0)     { s -= 7; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -7 }); }
 
     // Contact allowed proxy
     const contactAllowed = 1 - pKpct;
