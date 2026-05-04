@@ -2188,8 +2188,14 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">AVG &lt; .250</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">OBP &gt; .370</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">OBP &lt; .320</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Batter K% &lt; 18%</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Batter K% &gt; 30%</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+7</span><span class="fr-text">Batter K% &lt; 10% — elite contact (Arraez-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Batter K% 10–13% — excellent contact</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Batter K% 14–17% — good contact</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Batter K% 18–22% — above average</span></div>
+          <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Batter K% 23–26% — league average (neutral)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Batter K% 27–30% — high strikeout rate</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Batter K% 31–34% — very high strikeout rate</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−7</span><span class="fr-text">Batter K% &gt; 34% — free swinger (elite K risk)</span></div>
           <div class="formula-divider">Recent Form <span class="formula-divider-sub">signal capped at +8 to prevent hot-week overrides of season stats</span></div>
           <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">L7 AVG &gt; .350 🔥</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">L7 AVG .300–.349</span></div>
@@ -2587,11 +2593,14 @@ function _hitSkillScore(batter, factors) {
 
   // Batter K%
   const kp = Math.round(kPct * 100);
-  if      (kPct < .18)  { s += 5; factors.push({ label: `K% ${kp}% (low)`,            type:'pos', pts:  5 }); }
-  else if (kPct < .22)  { s += 2; factors.push({ label: `K% ${kp}%`,                  type:'pos', pts:  2 }); }
-  else if (kPct < .27)  {         /* neutral — no factor */                                                    }
-  else if (kPct < .31)  { s -= 2; factors.push({ label: `K% ${kp}% (high)`,           type:'neg', pts: -2 }); }
-  else if (kPct > 0)    { s -= 4; factors.push({ label: `K% ${kp}% (very high)`,      type:'neg', pts: -4 }); }
+  if      (kPct < .10)  { s += 7; factors.push({ label: `K% ${kp}% (elite contact)`,     type:'pos', pts:  7 }); }
+  else if (kPct < .14)  { s += 5; factors.push({ label: `K% ${kp}% (excellent contact)`, type:'pos', pts:  5 }); }
+  else if (kPct < .18)  { s += 3; factors.push({ label: `K% ${kp}% (good contact)`,      type:'pos', pts:  3 }); }
+  else if (kPct < .23)  { s += 1; factors.push({ label: `K% ${kp}% (above avg)`,         type:'pos', pts:  1 }); }
+  else if (kPct < .27)  {         /* neutral — league average */                                                  }
+  else if (kPct < .31)  { s -= 3; factors.push({ label: `K% ${kp}% (high K)`,            type:'neg', pts: -3 }); }
+  else if (kPct < .35)  { s -= 5; factors.push({ label: `K% ${kp}% (very high K)`,       type:'neg', pts: -5 }); }
+  else if (kPct > 0)    { s -= 7; factors.push({ label: `K% ${kp}% (elite K risk)`,      type:'neg', pts: -7 }); }
 
   return s;
 }
