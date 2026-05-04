@@ -1112,6 +1112,11 @@ main { padding: 28px 0 60px; }
 .conf-med   { background: var(--accent-amber-dim); color: var(--accent-amber); border: 1px solid #fbbf2440; }
 .conf-low   { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border-accent); }
 .conf-risk  { background: #dc262620; color: #dc2626; border: 1px solid #dc262640; }
+.confidence-badge.bb-conf-very      { background:#22c55e20; color:#22c55e; border:1px solid #22c55e40; }
+.confidence-badge.bb-conf-confident { background:#f59e0b20; color:#f59e0b; border:1px solid #f59e0b40; }
+.confidence-badge.bb-conf-neutral   { background:#f9731620; color:#f97316; border:1px solid #f9731640; }
+.confidence-badge.bb-conf-low       { background:#ef444420; color:#ef4444; border:1px solid #ef444440; }
+.confidence-badge.bb-conf-highrisk  { background:#dc262620; color:#dc2626; border:1px solid #dc262640; }
 
 .card-reason {
   font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;
@@ -2980,7 +2985,7 @@ function scoreRingHTML(score, type) {
 function predCardHTML(player, type, delay=0, prefix='c') {
   const score = type === 'hit' ? player.hitScore : player.hrScore;
   const factors = type === 'hit' ? player.hitFactors : player.hrFactors;
-  const conf = type === 'hit' ? getHitConfidence(score) : getHRConfidence(score);
+  const conf = (type === 'hit' ? player.hitConfidence : player.hrConfidence) || (type === 'hit' ? getHitConfidence(score) : getHRConfidence(score));
   const reason = buildReason(factors, type);
 
   const chipsHTML = factors.slice(0,5).map(f =>
@@ -3025,7 +3030,7 @@ function predCardHTML(player, type, delay=0, prefix='c') {
           <div class="card-matchup">${player.matchup}</div>
           <div class="card-order">Bats ${player.orderPos || '?'}${ordinal(player.orderPos)} · ${player.position || ''}</div>
         </div>
-        <span class="confidence-badge ${conf.cls}">${conf.label}</span>
+        <span class="confidence-badge ${conf.cls}">${conf.icon ? conf.icon + ' ' : ''}${conf.label}</span>
       </div>
       ${achieveBadgeHTML}
       ${statsHTML}
@@ -4182,6 +4187,7 @@ async function renderHotStreaks() {
           </div>
           <span class="streak-delta ${diff >= 0 ? 'pos' : 'neg'}">${diffStr} vs season</span>
           ${consecBadge}
+          ${p.hitConfidence ? `<span class="confidence-badge ${p.hitConfidence.cls}" style="font-size:10px;padding:2px 8px;margin-top:6px;display:inline-block">${p.hitConfidence.icon} ${p.hitConfidence.label}</span>` : ''}
           ${expandBtn}
         </div>`;
     } else {
@@ -4206,6 +4212,7 @@ async function renderHotStreaks() {
             <div class="streak-stat"><div class="sv">${fmt(ss.slg)}</div><div class="sl">Season SLG</div></div>
           </div>
           ${consecBadge}
+          ${p.hrConfidence ? `<span class="confidence-badge ${p.hrConfidence.cls}" style="font-size:10px;padding:2px 8px;margin-top:6px;display:inline-block">${p.hrConfidence.icon} ${p.hrConfidence.label}</span>` : ''}
           ${expandBtn}
         </div>`;
     }
@@ -4682,6 +4689,7 @@ function renderBreakdownTable() {
       ${state.bdHasActual ? buildActualCell(bs) : ''}
       <td class="td-score hit-color">${p.hitScore}</td>
       <td class="td-score hr-color">${p.hrScore}</td>
+      <td style="white-space:nowrap">${p.hitConfidence ? `<span class="confidence-badge ${p.hitConfidence.cls}" style="font-size:10px;padding:2px 7px">${p.hitConfidence.icon} ${p.hitConfidence.label}</span>` : '—'}</td>
       <td style="font-size:11px">${safe(p.seasonStats?.avg)}</td>
       <td style="font-size:11px;color:var(--text-muted)">${p.team}</td>
     </tr>`;
@@ -4738,6 +4746,7 @@ function renderBreakdownTable() {
               ${actualHeaders}
               ${th('HIT ⬆', 'hitScore', 'color:var(--accent-green)')}
               ${th('HR ⬆', 'hrScore', 'color:var(--accent-orange)')}
+              <th style="font-size:11px;color:var(--text-muted)">Confidence</th>
               ${th('AVG', 'avg')}
               ${th('Team', 'team')}
             </tr>
