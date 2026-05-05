@@ -1822,6 +1822,11 @@ main { padding: 28px 0 60px; }
         <button class="bts-filter-btn" data-era="4.0" onclick="setBtsFilter(this,'era')">4.00+</button>
         <button class="bts-filter-btn" data-era="5.0" onclick="setBtsFilter(this,'era')">5.00+</button>
         <span class="bts-filter-sep"></span>
+        <span class="bts-filter-label">Opp Bullpen ERA:</span>
+        <button class="bts-filter-btn active" data-bullpen="0" onclick="setBtsFilter(this,'bullpen')">Any</button>
+        <button class="bts-filter-btn" data-bullpen="4.5" onclick="setBtsFilter(this,'bullpen')">4.50+</button>
+        <button class="bts-filter-btn" data-bullpen="5.0" onclick="setBtsFilter(this,'bullpen')">5.00+</button>
+        <span class="bts-filter-sep"></span>
         <span class="bts-filter-label">Park:</span>
         <button class="bts-filter-btn active" data-park="0" onclick="setBtsFilter(this,'park')">Any Park</button>
         <button class="bts-filter-btn" data-park="1.03" onclick="setBtsFilter(this,'park')">Hitter's (1.03+)</button>
@@ -1836,6 +1841,11 @@ main { padding: 28px 0 60px; }
         <button class="bts-filter-btn active" data-streak="0" onclick="setBtsFilter(this,'streak')">Any</button>
         <button class="bts-filter-btn" data-streak="2" onclick="setBtsFilter(this,'streak')">Streak 2+</button>
         <button class="bts-filter-btn" data-streak="5" onclick="setBtsFilter(this,'streak')">Hot 5+</button>
+        <span class="bts-filter-sep"></span>
+        <span class="bts-filter-label">Batter K%:</span>
+        <button class="bts-filter-btn active" data-kpct="1" onclick="setBtsFilter(this,'kpct')">Any</button>
+        <button class="bts-filter-btn" data-kpct="0.20" onclick="setBtsFilter(this,'kpct')">K% &lt; 20%</button>
+        <button class="bts-filter-btn" data-kpct="0.15" onclick="setBtsFilter(this,'kpct')">K% &lt; 15%</button>
       </div>
       <div id="btsGrid" class="bts-grid"></div>
       <div id="btsEmpty" style="display:none;" class="leaders-loading">No qualifying players found for today's games. Check back once lineups are posted.</div>
@@ -4995,11 +5005,11 @@ async function renderLeaderboard() {
 }
 
 // ─── BEAT THE STREAK ──────────────────────────────────────────────────────
-const _btsState = { minAvg: 0.250, minEra: 0, minPark: 0, homeAway: 'any', minStreak: 0 };
+const _btsState = { minAvg: 0.250, minEra: 0, minBullpenEra: 0, minPark: 0, homeAway: 'any', minStreak: 0, maxKpct: 1 };
 
 function setBtsFilter(btn, type) {
-  const attrMap  = { avg: 'avg', era: 'era', park: 'park', homeAway: 'homeaway', streak: 'streak' };
-  const stateKey = { avg: 'minAvg', era: 'minEra', park: 'minPark', homeAway: 'homeAway', streak: 'minStreak' };
+  const attrMap  = { avg: 'avg', era: 'era', bullpen: 'bullpen', park: 'park', homeAway: 'homeaway', streak: 'streak', kpct: 'kpct' };
+  const stateKey = { avg: 'minAvg', era: 'minEra', bullpen: 'minBullpenEra', park: 'minPark', homeAway: 'homeAway', streak: 'minStreak', kpct: 'maxKpct' };
   const attr = attrMap[type];
   const raw  = btn.dataset[attr];
   _btsState[stateKey[type]] = type === 'homeAway' ? raw : parseFloat(raw);
@@ -5324,13 +5334,23 @@ function renderBeatTheStreak() {
         return pitcher?.seasonStats?.era || 0;
       })();
 
+      // Opponent bullpen ERA (home team players face away bullpen, away players face home bullpen)
+      const oppBullpenEra = player.isAway ? (gd.homeBullpenEra || 0) : (gd.awayBullpenEra || 0);
+
+      // Player K% from season stats
+      const playerSO = player.seasonStats?.strikeOuts || 0;
+      const playerPA = player.seasonStats?.plateAppearances || 0;
+      const playerKpct = playerPA > 0 ? playerSO / playerPA : 0;
+
       // Apply filters
       if (avg < _btsState.minAvg) continue;
       if (_btsState.minEra > 0 && era < _btsState.minEra) continue;
+      if (_btsState.minBullpenEra > 0 && oppBullpenEra < _btsState.minBullpenEra) continue;
       if (_btsState.minPark > 0 && (gd.parkFactor?.overall || 1.0) < _btsState.minPark) continue;
       if (_btsState.homeAway === 'home' && player.isAway) continue;
       if (_btsState.homeAway === 'away' && !player.isAway) continue;
       if (_btsState.minStreak > 0 && (player.hitStreak || 0) < _btsState.minStreak) continue;
+      if (_btsState.maxKpct < 1 && playerKpct > _btsState.maxKpct) continue;
 
       const { score, reasons } = computeBtsScore(player, gd);
       candidates.push({ player, gameData: gd, score, reasons });
