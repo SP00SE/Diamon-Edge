@@ -309,7 +309,8 @@ main { padding: 28px 0 60px; }
 .streak-card-hit  { border-left: 3px solid var(--accent-green); }
 .streak-card-hr   { border-left: 3px solid var(--accent-orange); }
 .streak-card-top  { display: flex; align-items: center; gap: 10px; }
-.streak-card-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+.streak-card-logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
+.streak-card-photo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); flex-shrink: 0; }
 .streak-card-name { font-family: 'Bebas Neue', cursive; font-size: 17px; color: var(--text-primary); line-height: 1.1; }
 .streak-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 .streak-fire      { font-size: 13px; margin-left: auto; letter-spacing: 1px; }
@@ -3295,6 +3296,7 @@ async function processGame(game) {
 
     const seasonStats = mapHitterStats(stats.season);
     const last7Stats  = mapHitterStats(stats.last7);
+    const last10Stats = mapHitterStats(stats.last10);
     const hitStreak    = stats.hitStreak    || 0;
     const hrStreak     = stats.hrStreak     || 0;
     const recentStarts = stats.recentStarts ?? null;
@@ -3303,7 +3305,7 @@ async function processGame(game) {
     const vsLHP        = stats.vsLHP        || null;
     const teamPAs      = batter.isAway ? awayPAList : homePAList;
 
-    const batterObj = { ...batter, seasonStats, last7Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
+    const batterObj = { ...batter, seasonStats, last7Stats, last10Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
     const oppBullpenEra = batter.isAway ? homeBullpenEra : awayBullpenEra;
     const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra);
     const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra);
@@ -3311,7 +3313,7 @@ async function processGame(game) {
     const playerObj = {
       ...batter,
       gamePk,
-      seasonStats, last7Stats,
+      seasonStats, last7Stats, last10Stats,
       hitStreak, hrStreak, recentStarts, hitGames7,
       vsRHP, vsLHP,
       teamPAList: teamPAs,
@@ -3393,30 +3395,36 @@ async function fetchStreaks(playerId) {
     // Games with ≥1 hit in last 7
     const hitGames7    = last7Games.filter(g => (g.stat?.hits || 0) >= 1).length;
 
-    // Aggregate last-7 stats (excluding today) — used instead of lastXGames API
-    const last7Agg = last7Games.reduce((acc, g) => {
-      const st = g.stat || {};
-      acc.atBats           += st.atBats           || 0;
-      acc.hits             += st.hits             || 0;
-      acc.doubles          += st.doubles          || 0;
-      acc.triples          += st.triples          || 0;
-      acc.homeRuns         += st.homeRuns         || 0;
-      acc.strikeOuts       += st.strikeOuts       || 0;
-      acc.baseOnBalls      += st.baseOnBalls      || 0;
-      acc.plateAppearances += st.plateAppearances || 0;
-      return acc;
-    }, { atBats:0, hits:0, doubles:0, triples:0, homeRuns:0, strikeOuts:0, baseOnBalls:0, plateAppearances:0 });
-    if (last7Agg.atBats > 0) {
-      last7Agg.avg = last7Agg.hits / last7Agg.atBats;
-      last7Agg.obp = (last7Agg.hits + last7Agg.baseOnBalls) / last7Agg.plateAppearances;
-      const tb = last7Agg.hits + last7Agg.doubles + last7Agg.triples * 2 + last7Agg.homeRuns * 3;
-      last7Agg.slg = tb / last7Agg.atBats;
-      last7Agg.ops = last7Agg.obp + last7Agg.slg;
+    function aggGames(games) {
+      const agg = games.reduce((acc, g) => {
+        const st = g.stat || {};
+        acc.atBats           += st.atBats           || 0;
+        acc.hits             += st.hits             || 0;
+        acc.doubles          += st.doubles          || 0;
+        acc.triples          += st.triples          || 0;
+        acc.homeRuns         += st.homeRuns         || 0;
+        acc.strikeOuts       += st.strikeOuts       || 0;
+        acc.baseOnBalls      += st.baseOnBalls      || 0;
+        acc.plateAppearances += st.plateAppearances || 0;
+        return acc;
+      }, { atBats:0, hits:0, doubles:0, triples:0, homeRuns:0, strikeOuts:0, baseOnBalls:0, plateAppearances:0 });
+      if (agg.atBats > 0) {
+        agg.avg = agg.hits / agg.atBats;
+        agg.obp = (agg.hits + agg.baseOnBalls) / (agg.plateAppearances || 1);
+        const tb = agg.hits + agg.doubles + agg.triples * 2 + agg.homeRuns * 3;
+        agg.slg = tb / agg.atBats;
+        agg.ops = agg.obp + agg.slg;
+      }
+      return agg;
     }
 
-    // Always update so display reflects the correct viewing date's excluded games
-    gameLogCache.set(playerId, splits.slice(-7).reverse());
-    return { hitStreak, hrStreak, recentStarts, hitGames7, last7Agg };
+    const last7Agg  = aggGames(last7Games);
+    const last10Games = splits.slice(-10);
+    const last10Agg = aggGames(last10Games);
+
+    // Store 10 games in cache for the game log expand panel
+    gameLogCache.set(playerId, splits.slice(-10).reverse());
+    return { hitStreak, hrStreak, recentStarts, hitGames7, last7Agg, last10Agg };
   } catch { return { hitStreak: 0, hrStreak: 0, recentStarts: null, hitGames7: null }; }
 }
 
@@ -3444,12 +3452,13 @@ async function batchFetchBatterStats(batters) {
       if (!b.id) return;
       const [season, streaks, splits] = await Promise.all([
         fetchPlayerHittingStats(b.id).catch(()=>null),
-        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null, last7Agg:null })),
+        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null, last7Agg:null, last10Agg:null })),
         fetchHandednessSplits(b.id).catch(()=>({ vsRHP:null, vsLHP:null })),
       ]);
       result[b.id] = {
         season,
-        last7: streaks.last7Agg || null,
+        last7:  streaks.last7Agg  || null,
+        last10: streaks.last10Agg || null,
         hitStreak: streaks.hitStreak, hrStreak: streaks.hrStreak,
         recentStarts: streaks.recentStarts, hitGames7: streaks.hitGames7,
         vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
@@ -4180,44 +4189,63 @@ async function renderHotStreaks() {
 
   function streakCardHTML(p, type, consecCount = null) {
     const ss  = p.seasonStats || {};
-    const l7  = p.last7Stats  || {};
+    const l10 = p.last10Stats || p.last7Stats || {};
     const ti  = TEAM_INFO[p.teamId] || {};
     const slug = ti.espn || (p.teamAbbr || '').toLowerCase();
     const logoHTML = slug
       ? `<img class="streak-card-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">`
       : '';
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
 
     const consecBadge = consecCount !== null
       ? `<div class="consec-badge">🔵 ${consecCount}-game consecutive streak</div>` : '';
 
+    // Live / Final game badge
+    const _ld = (state.allGamesLiveData || {})[p.gamePk];
+    let achieveHTML = '';
+    if (_ld) {
+      const _bs = _ld.statsMap?.[p.id];
+      const _ab = _bs?.atBats || 0;
+      if (_bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+        const _pip = _ld.isLive
+          ? `<span class="bb-live-pip">● LIVE</span>`
+          : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+        const _hitBadge = (_bs.hits || 0) > 0
+          ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
+          : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
+        achieveHTML = `<div class="bb-achieve-row" style="margin-top:6px">${_pip}${_hitBadge}</div>`;
+      }
+    }
+
     const glId = `hs-${type}-gl-${p.id}`;
     const expandBtn = `
       <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'${glId}')">
-        <span>Last 7 Games</span><span class="chevron">▼</span>
+        <span>Last 10 Games</span><span class="chevron">▼</span>
       </div>
       <div class="streak-gamelog" id="${glId}"></div>`;
 
     if (type === 'hit') {
       const sAvg = ss.avg || 0;
-      const lAvg = l7.avg || 0;
+      const lAvg = l10.avg || 0;
       const diff = Math.round((lAvg - sAvg) * 1000);
       const diffStr = diff >= 0 ? `+${diff} pts` : `${diff} pts`;
       const fire = fireIcons(diff, 'hit');
       return `
         <div class="streak-card streak-card-hit" onclick="openPlayerModal(${p.id})">
           <div class="streak-card-top">
-            ${logoHTML}
-            <div>
+            <img class="streak-card-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="${p.name}">
+            <div style="flex:1;min-width:0">
               <div class="streak-card-name">${p.name}</div>
-              <div class="streak-card-meta">${p.team} · ${p.position || ''} · Bats ${p.orderPos || '?'}</div>
+              <div class="streak-card-meta">${logoHTML} ${p.team} · ${p.position || ''} · Bats ${p.orderPos || '?'}</div>
             </div>
             <div class="streak-fire">${fire}</div>
           </div>
+          ${achieveHTML}
           <div class="streak-stats">
-            <div class="streak-stat"><div class="sv hot">${fmt(lAvg)}</div><div class="sl">L7 AVG</div></div>
+            <div class="streak-stat"><div class="sv hot">${fmt(lAvg)}</div><div class="sl">L10 AVG</div></div>
             <div class="streak-stat"><div class="sv">${fmt(sAvg)}</div><div class="sl">Season AVG</div></div>
-            <div class="streak-stat"><div class="sv hot">${fmtI(l7.hits)}</div><div class="sl">L7 Hits</div></div>
-            <div class="streak-stat"><div class="sv">${fmt(l7.obp)}</div><div class="sl">L7 OBP</div></div>
+            <div class="streak-stat"><div class="sv hot">${fmtI(l10.hits)}</div><div class="sl">L10 Hits</div></div>
+            <div class="streak-stat"><div class="sv">${fmt(l10.obp)}</div><div class="sl">L10 OBP</div></div>
           </div>
           <span class="streak-delta ${diff >= 0 ? 'pos' : 'neg'}">${diffStr} vs season</span>
           ${consecBadge}
@@ -4225,24 +4253,25 @@ async function renderHotStreaks() {
           ${expandBtn}
         </div>`;
     } else {
-      const l7HR  = fmtI(l7.homeRuns);
-      const ssHR  = fmtI(ss.homeRuns);
-      const l7Slg = l7.slg || 0;
-      const fire  = fireIcons(l7HR >= 3 ? 80 : l7HR === 2 ? 50 : 20, 'hr');
+      const l10HR  = fmtI(l10.homeRuns);
+      const ssHR   = fmtI(ss.homeRuns);
+      const l10Slg = l10.slg || 0;
+      const fire   = fireIcons(l10HR >= 4 ? 80 : l10HR >= 2 ? 50 : 20, 'hr');
       return `
         <div class="streak-card streak-card-hr" onclick="openPlayerModal(${p.id})">
           <div class="streak-card-top">
-            ${logoHTML}
-            <div>
+            <img class="streak-card-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="${p.name}">
+            <div style="flex:1;min-width:0">
               <div class="streak-card-name">${p.name}</div>
-              <div class="streak-card-meta">${p.team} · ${p.position || ''} · Bats ${p.orderPos || '?'}</div>
+              <div class="streak-card-meta">${logoHTML} ${p.team} · ${p.position || ''} · Bats ${p.orderPos || '?'}</div>
             </div>
             <div class="streak-fire">${fire}</div>
           </div>
+          ${achieveHTML}
           <div class="streak-stats">
-            <div class="streak-stat"><div class="sv fire">${l7HR}</div><div class="sl">L7 HR</div></div>
+            <div class="streak-stat"><div class="sv fire">${l10HR}</div><div class="sl">L10 HR</div></div>
             <div class="streak-stat"><div class="sv">${ssHR}</div><div class="sl">Season HR</div></div>
-            <div class="streak-stat"><div class="sv fire">${fmt(l7Slg)}</div><div class="sl">L7 SLG</div></div>
+            <div class="streak-stat"><div class="sv fire">${fmt(l10Slg)}</div><div class="sl">L10 SLG</div></div>
             <div class="streak-stat"><div class="sv">${fmt(ss.slg)}</div><div class="sl">Season SLG</div></div>
           </div>
           ${consecBadge}
@@ -4252,26 +4281,26 @@ async function renderHotStreaks() {
     }
   }
 
-  // Hit streaks: L7 AVG ≥ .300 AND 20+ pts above season avg, OR 7+ hits in last 7
+  // Hit streaks: L10 AVG ≥ .300 AND 20+ pts above season avg, OR 8+ hits in last 10
   const hitStreakersA = allPlayers.filter(p => {
-    const l7avg = p.last7Stats?.avg  || 0;
-    const savg  = p.seasonStats?.avg || 0;
-    return l7avg >= 0.300 && (l7avg - savg) >= 0.020;
+    const l10avg = (p.last10Stats || p.last7Stats)?.avg || 0;
+    const savg   = p.seasonStats?.avg || 0;
+    return l10avg >= 0.300 && (l10avg - savg) >= 0.020;
   });
-  const hitStreakersB = allPlayers.filter(p => (p.last7Stats?.hits || 0) >= 7);
+  const hitStreakersB = allPlayers.filter(p => ((p.last10Stats || p.last7Stats)?.hits || 0) >= 8);
   const hitStreakers = [...new Map(
     [...hitStreakersA, ...hitStreakersB].map(p => [p.id, p])
   ).values()].sort((a,b) => {
-    const hitDiff = (b.last7Stats?.hits || 0) - (a.last7Stats?.hits || 0);
-    return hitDiff !== 0 ? hitDiff : (b.last7Stats?.avg || 0) - (a.last7Stats?.avg || 0);
+    const hitDiff = ((b.last10Stats || b.last7Stats)?.hits || 0) - ((a.last10Stats || a.last7Stats)?.hits || 0);
+    return hitDiff !== 0 ? hitDiff : ((b.last10Stats || b.last7Stats)?.avg || 0) - ((a.last10Stats || a.last7Stats)?.avg || 0);
   });
 
-  // HR streaks: at least 3 HRs in last 7 days
+  // HR streaks: at least 4 HRs in last 10 days
   const hrStreakers = allPlayers
-    .filter(p => (p.last7Stats?.homeRuns || 0) >= 3)
+    .filter(p => ((p.last10Stats || p.last7Stats)?.homeRuns || 0) >= 4)
     .sort((a,b) => {
-      const diff = (b.last7Stats?.homeRuns || 0) - (a.last7Stats?.homeRuns || 0);
-      return diff !== 0 ? diff : (b.last7Stats?.slg || 0) - (a.last7Stats?.slg || 0);
+      const diff = ((b.last10Stats || b.last7Stats)?.homeRuns || 0) - ((a.last10Stats || a.last7Stats)?.homeRuns || 0);
+      return diff !== 0 ? diff : ((b.last10Stats || b.last7Stats)?.slg || 0) - ((a.last10Stats || a.last7Stats)?.slg || 0);
     });
 
   const showHit   = state.streakFilter === 'both' || state.streakFilter === 'hit';
