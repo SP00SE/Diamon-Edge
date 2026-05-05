@@ -1709,11 +1709,11 @@ main { padding: 28px 0 60px; }
       <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
       <div class="main-tabs" id="mainTabs" style="display:none;">
         <button class="main-tab" data-tab="overall" onclick="switchTab('overall',this)">Overall Top Picks</button>
+        <button class="main-tab" data-tab="bts" onclick="switchTab('bts',this)">⚡ Beat the Streak</button>
         <button class="main-tab" data-tab="streaks" onclick="switchTab('streaks',this)">🔥 Hot Streaks</button>
         <button class="main-tab" data-tab="dueforhit" onclick="switchTab('dueforhit',this)">💧⚾ Due for a Hit</button>
-        <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
-        <button class="main-tab" data-tab="bts" onclick="switchTab('bts',this)">⚡ Beat the Streak</button>
         <button class="main-tab" data-tab="dominators" onclick="switchTab('dominators',this)">🔥 Daily Dominators</button>
+        <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
       </div>
     </div>
 
@@ -3965,11 +3965,14 @@ function renderTopPlays() {
 
   document.getElementById('mainTabs').style.display = 'flex';
 
-  // Default to Overall Top Picks on very first load only
+  // Default to Beat the Streak on very first load only
   if (!state._tabInitialized) {
     state._tabInitialized = true;
-    const overallBtn = document.querySelector('.main-tab[data-tab="overall"]');
-    if (overallBtn) switchTab('overall', overallBtn);
+    const btsBtn = document.querySelector('.main-tab[data-tab="bts"]');
+    if (btsBtn) {
+      switchTab('bts', btsBtn);
+      setTimeout(() => document.getElementById('tabBts')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+    }
   }
 }
 
