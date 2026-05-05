@@ -4208,7 +4208,7 @@ async function renderHotStreaks() {
           </div>
           <span class="streak-delta ${diff >= 0 ? 'pos' : 'neg'}">${diffStr} vs season</span>
           ${consecBadge}
-          ${p.hitConfidence ? `<span class="confidence-badge ${p.hitConfidence.cls}" style="padding:2px 8px;display:inline-block;margin-top:4px;">${p.hitConfidence.icon} ${p.hitConfidence.label}</span>` : ''}
+          ${p.hitConfidence ? `<span class="confidence-badge ${p.hitConfidence.cls}" style="padding:2px 8px;align-self:flex-start;">${p.hitConfidence.icon} ${p.hitConfidence.label}</span>` : ''}
           ${expandBtn}
         </div>`;
     } else {
@@ -4233,7 +4233,7 @@ async function renderHotStreaks() {
             <div class="streak-stat"><div class="sv">${fmt(ss.slg)}</div><div class="sl">Season SLG</div></div>
           </div>
           ${consecBadge}
-          ${p.hrConfidence ? `<span class="confidence-badge ${p.hrConfidence.cls}" style="padding:2px 8px;display:inline-block;margin-top:4px;">${p.hrConfidence.icon} ${p.hrConfidence.label}</span>` : ''}
+          ${p.hrConfidence ? `<span class="confidence-badge ${p.hrConfidence.cls}" style="padding:2px 8px;align-self:flex-start;">${p.hrConfidence.icon} ${p.hrConfidence.label}</span>` : ''}
           ${expandBtn}
         </div>`;
     }
