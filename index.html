@@ -297,7 +297,7 @@ main { padding: 28px 0 60px; }
 .chip-score-sep { font-size: 11px; color: var(--text-muted); }
 
 /* ── HOT STREAK CARDS ─────────────────────────────── */
-.streak-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 14px; margin-top: 12px; }
+.streak-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 14px; margin-top: 12px; align-items: start; }
 .streak-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 14px 16px;
@@ -431,7 +431,7 @@ main { padding: 28px 0 60px; }
 .dom-cat-btn.active { background: #f9731620; border-color: #f97316; color: #f97316; }
 .dom-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 14px;
+  gap: 14px; align-items: start;
 }
 .dom-card {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -629,7 +629,7 @@ main { padding: 28px 0 60px; }
 .bts-filter-btn.active { background: var(--accent-blue-dim); border-color: var(--accent-blue); color: var(--accent-blue); }
 .bts-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 14px;
+  gap: 14px; align-items: start;
 }
 .bts-card {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -4177,11 +4177,12 @@ async function renderHotStreaks() {
     const consecBadge = consecCount !== null
       ? `<div class="consec-badge">🔵 ${consecCount}-game consecutive streak</div>` : '';
 
+    const glId = `hs-${type}-gl-${p.id}`;
     const expandBtn = `
-      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this)">
+      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'${glId}')">
         <span>Last 7 Games</span><span class="chevron">▼</span>
       </div>
-      <div class="streak-gamelog" id="gamelog-${p.id}"></div>`;
+      <div class="streak-gamelog" id="${glId}"></div>`;
 
     if (type === 'hit') {
       const sAvg = ss.avg || 0;
