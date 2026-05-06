@@ -3445,7 +3445,7 @@ async function fetchHandednessSplits(playerId) {
 
 async function batchFetchBatterStats(batters) {
   const result = {};
-  const CHUNK = 5; // reduced from 10 — fewer concurrent requests prevents ECONNRESET
+  const CHUNK = 3; // smaller chunks reduce concurrent MLB API connections (ECONNRESET prevention)
   for (let i = 0; i < batters.length; i += CHUNK) {
     const chunk = batters.slice(i, i+CHUNK);
     await Promise.all(chunk.map(async b => {
@@ -3464,8 +3464,8 @@ async function batchFetchBatterStats(batters) {
         vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
       };
     }));
-    // Pause between chunks to avoid overwhelming the MLB Stats API
-    if (i + CHUNK < batters.length) await new Promise(r => setTimeout(r, 500));
+    // Pause between chunks to let the MLB API breathe — longer delay reduces ECONNRESET
+    if (i + CHUNK < batters.length) await new Promise(r => setTimeout(r, 1000));
   }
   return result;
 }
@@ -5468,7 +5468,7 @@ function renderBeatTheStreak() {
           ⚾ vs ${pName} (ERA ${pEra}) · ${player.teamId === gd.homeTeamId ? 'HOME' : 'AWAY'} vs ${oppAbbr}
         </div>
         ${reasons.length ? `<div class="bts-card-reasons" style="margin-top:8px">+ ${reasons.slice(0,4).join(' · ')}</div>` : ''}
-        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${player.id},this,'bts-gl-${player.id}')">
+        <div class="streak-expand-btn" onclick="toggleStreakGameLog(${player.id},this,'bts-gl-${player.id}',false,7)">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
         <div class="streak-gamelog" id="bts-gl-${player.id}"></div>
@@ -6239,7 +6239,7 @@ async function startFetch() {
 
   } catch (err) {
     console.error('Fetch error:', err);
-    showError('Could not reach the MLB Stats API. Check your connection and tap Retry.');
+    showError('MLB Stats API connection error (ECONNRESET). This is usually temporary — wait a few seconds and tap Retry.');
   } finally {
     state.loading = false;
     document.getElementById('refreshBtn').disabled = false;
