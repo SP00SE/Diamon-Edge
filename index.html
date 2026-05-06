@@ -2445,10 +2445,11 @@ const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ─── GLOBAL REQUEST THROTTLE ─────────────────────────────────────────────
-// Limits total simultaneous MLB API requests to prevent ECONNRESET errors.
-const MAX_CONCURRENT_REQUESTS = 2;
+// Fully serialized MLB API requests — one at a time prevents ECONNRESET entirely.
+const MAX_CONCURRENT_REQUESTS = 1;
 let _activeRequests = 0;
 const _requestQueue = [];
+let _lastRequestEnd = 0;
 function _throttledFetch(url, opts) {
   return new Promise((resolve, reject) => {
     const execute = () => {
@@ -2460,11 +2461,21 @@ function _throttledFetch(url, opts) {
         .finally(() => {
           clearTimeout(timer);
           _activeRequests--;
-          if (_requestQueue.length) _requestQueue.shift()();
+          _lastRequestEnd = Date.now();
+          if (_requestQueue.length) {
+            // 120ms gap between requests — prevents burst-firing on queue drain
+            setTimeout(() => _requestQueue.shift()(), 120);
+          }
         });
     };
-    if (_activeRequests < MAX_CONCURRENT_REQUESTS) execute();
-    else _requestQueue.push(execute);
+    if (_activeRequests < MAX_CONCURRENT_REQUESTS) {
+      // Enforce minimum gap even when queue is empty
+      const gap = 120 - (Date.now() - _lastRequestEnd);
+      if (gap > 0) setTimeout(execute, gap);
+      else execute();
+    } else {
+      _requestQueue.push(execute);
+    }
   });
 }
 
