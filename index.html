@@ -3422,8 +3422,8 @@ async function fetchStreaks(playerId) {
     const last10Games = splits.slice(-10);
     const last10Agg = aggGames(last10Games);
 
-    // Store 10 games in cache for the game log expand panel
-    gameLogCache.set(playerId, splits.slice(-10).reverse());
+    // Store 7 games in shared cache — sections needing more pass limit directly to fetchGameLog
+    gameLogCache.set(playerId, splits.slice(-7).reverse());
     return { hitStreak, hrStreak, recentStarts, hitGames7, last7Agg, last10Agg };
   } catch { return { hitStreak: 0, hrStreak: 0, recentStarts: null, hitGames7: null }; }
 }
@@ -4219,7 +4219,7 @@ async function renderHotStreaks() {
 
     const glId = `hs-${type}-gl-${p.id}`;
     const expandBtn = `
-      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'${glId}')">
+      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'${glId}',false,10)">
         <span>Last 10 Games</span><span class="chevron">▼</span>
       </div>
       <div class="streak-gamelog" id="${glId}"></div>`;
@@ -4394,7 +4394,7 @@ async function fetchGameLog(playerId, includeToday = false, limit = 7) {
   } catch { return []; }
 }
 
-async function toggleStreakGameLog(playerId, btnEl, logId, includeToday = false) {
+async function toggleStreakGameLog(playerId, btnEl, logId, includeToday = false, limit = 7) {
   // Use DOM traversal to find the gamelog — avoids ID-collision issues
   // when the same player appears in multiple sections of the page.
   let logEl = btnEl.nextElementSibling;
@@ -4419,7 +4419,7 @@ async function toggleStreakGameLog(playerId, btnEl, logId, includeToday = false)
   if (logEl.dataset.loaded) return; // already loaded, just show
 
   logEl.innerHTML = `<div class="streak-gamelog-loading">Loading...</div>`;
-  const games = await fetchGameLog(playerId, includeToday);
+  const games = await fetchGameLog(playerId, includeToday, limit);
 
   if (!games.length) {
     logEl.innerHTML = `<div class="streak-gamelog-loading">No recent game data available.</div>`;
