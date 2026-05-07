@@ -467,19 +467,44 @@ main { padding: 28px 0 60px; }
 .lab-compare-btn  { background:var(--accent-blue); color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; }
 .lab-compare-btn:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
 .lab-compare-clear { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; padding:0 4px; }
+/* Cross-team player search */
+.lab-search-row    { position:relative; margin-bottom:10px; }
+.lab-player-search { width:100%; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text-primary); font-size:13px; box-sizing:border-box; }
+.lab-player-search:focus { outline:none; border-color:var(--accent-blue); }
+.lab-search-drop   { position:absolute; top:calc(100% + 3px); left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; z-index:200; box-shadow:0 4px 16px rgba(0,0,0,.35); overflow:hidden; }
+.lab-search-item   { padding:9px 12px; cursor:pointer; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); }
+.lab-search-item:last-child { border-bottom:none; }
+.lab-search-item:hover { background:var(--bg-hover); }
+.lab-search-item.selected { opacity:.5; cursor:default; pointer-events:none; }
+.lab-si-name   { font-size:13px; font-weight:600; flex-shrink:0; }
+.lab-si-team   { font-size:11px; color:var(--text-muted); margin-left:auto; text-align:right; }
+.lab-si-badge  { font-size:10px; background:var(--accent-blue-dim); color:var(--accent-blue); border-radius:4px; padding:1px 6px; flex-shrink:0; }
+.lab-search-empty { padding:9px 12px; font-size:12px; color:var(--text-muted); }
+/* Game status badges */
+.lab-game-status         { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:6px; margin-top:6px; letter-spacing:.5px; text-transform:uppercase; }
+.lab-game-status.live    { background:#ef444420; color:#ef4444; border:1px solid #ef444440; }
+.lab-game-status.final   { background:#94a3b820; color:#94a3b8; border:1px solid #94a3b840; }
+.lab-game-status.pregame { background:#f59e0b20; color:#f59e0b; border:1px solid #f59e0b40; }
 /* Comparison result */
 .lab-compare-verdict { border:2px solid #f59e0b; border-radius:12px; padding:16px 20px; text-align:center; margin-bottom:16px; background:var(--bg-card); }
 .lcv-trophy { font-size:28px; line-height:1; }
 .lcv-name   { font-family:'Bebas Neue',cursive; font-size:22px; color:#f59e0b; margin:6px 0 4px; }
 .lcv-sub    { font-size:12px; color:var(--text-muted); }
-.lab-compare-table { width:100%; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
-.lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); }
-.lab-compare-table td { padding:9px 12px; font-size:13px; font-weight:600; border-top:1px solid var(--border); text-align:center; }
-.lab-compare-table td.lct-label { font-size:10px; font-weight:400; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
-.lab-compare-table td.lct-win   { color:#22c55e; }
-.lab-compare-table td.lct-lose  { color:var(--text-muted); font-weight:400; }
+.lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
+.lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lab-compare-table th:first-child  { text-align:right; width:40%; }
+.lab-compare-table th:nth-child(2) { text-align:center; width:20%; }
+.lab-compare-table th:last-child   { text-align:left;  width:40%; }
+.lab-compare-table td { padding:9px 12px; font-size:13px; font-weight:600; border-top:1px solid var(--border); word-break:break-word; }
+.lab-compare-table td:first-child  { text-align:right; }
+.lab-compare-table td:nth-child(2) { text-align:center; }
+.lab-compare-table td:last-child   { text-align:left; }
+.lab-compare-table td.lct-label    { font-size:10px; font-weight:400; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+.lab-compare-table td.lct-win      { color:#22c55e; }
+.lab-compare-table td.lct-lose     { color:var(--text-muted); font-weight:400; }
 .lab-compare-table tr.lct-score-row td { font-family:'Bebas Neue',cursive; font-size:22px; padding:12px; }
 .lab-compare-table tr.lct-score-row td.lct-win { color:#22c55e; }
+.lct-photo { width:22px; height:22px; border-radius:50%; object-fit:cover; vertical-align:middle; margin:0 4px; }
 .lab-loading-wrap { max-width:400px; margin:50px auto; text-align:left; }
 .lab-loading-title { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--accent-blue); letter-spacing:2px; margin-bottom:24px; text-align:center; }
 .lab-loading-step { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-muted); transition:color .2s; }
@@ -2121,6 +2146,12 @@ main { padding: 28px 0 60px; }
           <span class="lab-back-crumb" id="labGameCrumb"></span>
         </div>
         <div class="lab-step-label">Select a Hitter — or check 2 players to compare</div>
+        <div class="lab-search-row" id="labSearchRow">
+          <input class="lab-player-search" id="labPlayerSearch" type="text"
+            placeholder="🔍 Search any player or team to add to compare…"
+            oninput="labSearchInput()" autocomplete="off">
+          <div class="lab-search-drop" id="labPlayerSearchDrop" style="display:none;"></div>
+        </div>
         <div class="lab-compare-bar" id="labCompareBar" style="display:none;">
           <span id="labCompareCount">0 of 2 selected</span>
           <button class="lab-compare-btn" id="labCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
@@ -8021,14 +8052,28 @@ function labInit() {
     const hmTi   = TEAM_INFO[gd.homeTeamId] || {};
     const awSlug = awTi.espn || (gd.awayAbbr||'').toLowerCase();
     const hmSlug = hmTi.espn || (gd.homeAbbr||'').toLowerCase();
-    const rawGame = (state.games||[]).find(g => String(g.gamePk) === String(gd.gamePk));
-    const awRec  = rawGame?.teams?.away?.leagueRecord;
-    const hmRec  = rawGame?.teams?.home?.leagueRecord;
+    const rawGame  = (state.games||[]).find(g => String(g.gamePk) === String(gd.gamePk));
+    const awRec    = rawGame?.teams?.away?.leagueRecord;
+    const hmRec    = rawGame?.teams?.home?.leagueRecord;
     const awRecStr = awRec ? `${awRec.wins}-${awRec.losses}` : '';
     const hmRecStr = hmRec ? `${hmRec.wins}-${hmRec.losses}` : '';
-    const awP    = gd.awayPitcher?.fullName || 'TBD';
-    const hmP    = gd.homePitcher?.fullName || 'TBD';
-    const vn     = gd.venueName || '';
+    const awP      = gd.awayPitcher?.fullName || 'TBD';
+    const hmP      = gd.homePitcher?.fullName || 'TBD';
+    const vn       = gd.venueName || '';
+    // Game status badge
+    const abstract  = rawGame?.status?.abstractGameState || 'Preview';
+    const detailed  = rawGame?.status?.detailedState || '';
+    const awScore   = rawGame?.teams?.away?.score;
+    const hmScore   = rawGame?.teams?.home?.score;
+    const scoreStr  = (awScore != null && hmScore != null) ? `${awScore}–${hmScore}` : '';
+    let statusBadge = '';
+    if (abstract === 'Live') {
+      statusBadge = `<span class="lab-game-status live">🔴 LIVE${scoreStr?' · '+scoreStr:''}</span>`;
+    } else if (abstract === 'Final') {
+      statusBadge = `<span class="lab-game-status final">FINAL${scoreStr?' · '+scoreStr:''}</span>`;
+    } else if (detailed.includes('Pre-Game') || detailed.includes('Warmup')) {
+      statusBadge = `<span class="lab-game-status pregame">⚾ PRE-GAME</span>`;
+    }
     return `<div class="lab-game-card" onclick="labSelectGame('${gd.gamePk}')">
       <div class="lab-game-matchup">
         <div class="lab-game-team">
@@ -8045,6 +8090,7 @@ function labInit() {
       </div>
       ${vn?`<div class="lab-game-venue">📍 ${escHtml(vn)}</div>`:''}
       <div class="lab-game-pitchers">⚾ ${escHtml(awP)} vs ${escHtml(hmP)}</div>
+      ${statusBadge}
     </div>`;
   }).join('');
 }
@@ -8117,6 +8163,13 @@ function labGoGames() {
   _labShow('labScreenGame');
 }
 
+document.addEventListener('click', e => {
+  if (!e.target.closest('#labSearchRow')) {
+    const d = document.getElementById('labPlayerSearchDrop');
+    if (d) d.style.display = 'none';
+  }
+});
+
 function labGoRoster() {
   if (_labState.gamePk) labSelectGame(_labState.gamePk);
 }
@@ -8153,6 +8206,56 @@ function clearCompareSelection() {
   _labCompareSet.clear();
   document.querySelectorAll('.lab-player-check').forEach(cb => { cb.checked = false; cb.disabled = false; });
   updateCompareBar();
+  const si = document.getElementById('labPlayerSearch');
+  const sd = document.getElementById('labPlayerSearchDrop');
+  if (si) si.value = '';
+  if (sd) { sd.innerHTML = ''; sd.style.display = 'none'; }
+}
+
+function labSearchInput() {
+  const q    = document.getElementById('labPlayerSearch').value.trim().toLowerCase();
+  const drop = document.getElementById('labPlayerSearchDrop');
+  if (q.length < 2) { drop.innerHTML = ''; drop.style.display = 'none'; return; }
+
+  const seen = new Set(), results = [];
+  for (const p of Object.values(state.playerMap || {})) {
+    if (seen.has(p.id)) continue;
+    seen.add(p.id);
+    const ti = TEAM_INFO[p.teamId] || {};
+    if (`${p.name} ${ti.city||''} ${ti.nick||''} ${p.teamAbbr||''}`.toLowerCase().includes(q))
+      results.push(p);
+    if (results.length >= 10) break;
+  }
+
+  if (!results.length) {
+    drop.innerHTML = '<div class="lab-search-empty">No players found</div>';
+    drop.style.display = 'block';
+    return;
+  }
+
+  drop.innerHTML = results.map(p => {
+    const ti    = TEAM_INFO[p.teamId] || {};
+    const added = _labCompareSet.has(p.id);
+    const avg   = p.seasonStats?.avg ? p.seasonStats.avg.toFixed(3) : '—';
+    return `<div class="lab-search-item${added?' selected':''}" onclick="labSearchSelect(${p.id})">
+      <span class="lab-si-name">${escHtml(p.name)}</span>
+      <span class="lab-si-team">${escHtml((ti.city||'')+' '+(ti.nick||''))} · ${p.position||''} · ${avg}</span>
+      ${added ? '<span class="lab-si-badge">Added ✓</span>' : ''}
+    </div>`;
+  }).join('');
+  drop.style.display = 'block';
+}
+
+function labSearchSelect(playerId) {
+  if (_labCompareSet.has(playerId) || _labCompareSet.size >= 2) return;
+  _labCompareSet.add(playerId);
+  const cb = document.getElementById(`chk_${playerId}`);
+  if (cb) cb.checked = true;
+  updateCompareBar();
+  const si = document.getElementById('labPlayerSearch');
+  const sd = document.getElementById('labPlayerSearchDrop');
+  if (si) si.value = '';
+  if (sd) { sd.style.display = 'none'; sd.innerHTML = ''; }
 }
 
 async function fetchLabAnalysisData(playerId) {
@@ -8325,6 +8428,8 @@ function buildCompareHTML(dataA, dataB) {
   }).join('');
 
   const scoreCls = s => s>=80?'#22c55e':s>=65?'#f59e0b':s>=45?'#94a3b8':'#ef4444';
+  const photoA = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pA.id}/headshot/67/current`;
+  const photoB = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pB.id}/headshot/67/current`;
 
   return `
     <div class="lab-compare-verdict">
@@ -8335,16 +8440,17 @@ function buildCompareHTML(dataA, dataB) {
         : `Score ${winnerIsA?scoreA:scoreB} vs ${winnerIsA?scoreB:scoreA} · Won ${winPts} of ${pts.total} categories`}</div>
     </div>
     <table class="lab-compare-table">
+      <colgroup><col style="width:40%"><col style="width:20%"><col style="width:40%"></colgroup>
       <tr>
-        <th style="text-align:right">${escHtml(pA.name)}</th>
-        <th style="text-align:center">Stat</th>
-        <th style="text-align:left">${escHtml(pB.name)}</th>
+        <th><img class="lct-photo" src="${photoA}" onerror="this.style.display='none'">${escHtml(pA.name)}</th>
+        <th>Stat</th>
+        <th>${escHtml(pB.name)}<img class="lct-photo" src="${photoB}" onerror="this.style.display='none'"></th>
       </tr>
       ${rowHTML}
       <tr class="lct-score-row">
-        <td class="${scoreA>scoreB?'lct-win':scoreA<scoreB?'lct-lose':''}" style="text-align:right;color:${scoreCls(scoreA)}">${scoreA}</td>
+        <td class="${scoreA>scoreB?'lct-win':scoreA<scoreB?'lct-lose':''}" style="color:${scoreCls(scoreA)}">${scoreA}</td>
         <td class="lct-label">Lab Score</td>
-        <td class="${scoreB>scoreA?'lct-win':scoreB<scoreA?'lct-lose':''}" style="text-align:left;color:${scoreCls(scoreB)}">${scoreB}</td>
+        <td class="${scoreB>scoreA?'lct-win':scoreB<scoreA?'lct-lose':''}" style="color:${scoreCls(scoreB)}">${scoreB}</td>
       </tr>
     </table>`;
 }
