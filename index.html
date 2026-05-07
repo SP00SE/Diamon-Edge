@@ -615,15 +615,18 @@ main { padding: 28px 0 60px; }
 .bts-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--accent-blue); letter-spacing: 1.5px; }
 .bts-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .bts-filters {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  margin-bottom: 20px; padding: 10px 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px 20px;
+  margin-bottom: 20px; padding: 14px 16px;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
-.bts-filter-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
-.bts-filter-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
+.bts-filter-group { display: flex; flex-direction: column; gap: 6px; }
+.bts-filter-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.bts-filter-btns { display: flex; flex-wrap: wrap; gap: 4px; }
 .bts-filter-btn {
-  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
   background: var(--bg-input); border: 1px solid var(--border);
   color: var(--text-secondary); cursor: pointer; transition: all .15s;
 }
@@ -1813,40 +1816,62 @@ main { padding: 28px 0 60px; }
         </div>
       </div>
       <div id="btsFilters" class="bts-filters">
-        <span class="bts-filter-label">Min AVG:</span>
-        <button class="bts-filter-btn active" data-avg="0.250" onclick="setBtsFilter(this,'avg')">Any (.250+)</button>
-        <button class="bts-filter-btn" data-avg="0.270" onclick="setBtsFilter(this,'avg')">.270+</button>
-        <button class="bts-filter-btn" data-avg="0.290" onclick="setBtsFilter(this,'avg')">.290+</button>
-        <span class="bts-filter-sep"></span>
-        <span class="bts-filter-label">Pitcher ERA:</span>
-        <button class="bts-filter-btn active" data-era="0" onclick="setBtsFilter(this,'era')">Any</button>
-        <button class="bts-filter-btn" data-era="4.0" onclick="setBtsFilter(this,'era')">4.00+</button>
-        <button class="bts-filter-btn" data-era="5.0" onclick="setBtsFilter(this,'era')">5.00+</button>
-        <span class="bts-filter-sep"></span>
-        <span class="bts-filter-label">Opp Bullpen ERA:</span>
-        <button class="bts-filter-btn active" data-bullpen="0" onclick="setBtsFilter(this,'bullpen')">Any</button>
-        <button class="bts-filter-btn" data-bullpen="4.5" onclick="setBtsFilter(this,'bullpen')">4.50+</button>
-        <button class="bts-filter-btn" data-bullpen="5.0" onclick="setBtsFilter(this,'bullpen')">5.00+</button>
-        <span class="bts-filter-sep"></span>
-        <span class="bts-filter-label">Park:</span>
-        <button class="bts-filter-btn active" data-park="0" onclick="setBtsFilter(this,'park')">Any Park</button>
-        <button class="bts-filter-btn" data-park="1.03" onclick="setBtsFilter(this,'park')">Hitter's (1.03+)</button>
-        <button class="bts-filter-btn" data-park="1.10" onclick="setBtsFilter(this,'park')">Strong (1.10+)</button>
-        <span class="bts-filter-sep"></span>
-        <span class="bts-filter-label">Game:</span>
-        <button class="bts-filter-btn active" data-homeaway="any" onclick="setBtsFilter(this,'homeAway')">Any</button>
-        <button class="bts-filter-btn" data-homeaway="home" onclick="setBtsFilter(this,'homeAway')">Home Only</button>
-        <button class="bts-filter-btn" data-homeaway="away" onclick="setBtsFilter(this,'homeAway')">Away Only</button>
-        <span class="bts-filter-sep"></span>
-        <span class="bts-filter-label">Streak:</span>
-        <button class="bts-filter-btn active" data-streak="0" onclick="setBtsFilter(this,'streak')">Any</button>
-        <button class="bts-filter-btn" data-streak="2" onclick="setBtsFilter(this,'streak')">Streak 2+</button>
-        <button class="bts-filter-btn" data-streak="5" onclick="setBtsFilter(this,'streak')">Hot 5+</button>
-        <span class="bts-filter-sep"></span>
-        <span class="bts-filter-label">Batter K%:</span>
-        <button class="bts-filter-btn active" data-kpct="1" onclick="setBtsFilter(this,'kpct')">Any</button>
-        <button class="bts-filter-btn" data-kpct="0.20" onclick="setBtsFilter(this,'kpct')">K% &lt; 20%</button>
-        <button class="bts-filter-btn" data-kpct="0.15" onclick="setBtsFilter(this,'kpct')">K% &lt; 15%</button>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Min AVG</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-avg="0.250" onclick="setBtsFilter(this,'avg')">Any</button>
+            <button class="bts-filter-btn" data-avg="0.270" onclick="setBtsFilter(this,'avg')">.270+</button>
+            <button class="bts-filter-btn" data-avg="0.290" onclick="setBtsFilter(this,'avg')">.290+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Pitcher ERA</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-era="0" onclick="setBtsFilter(this,'era')">Any</button>
+            <button class="bts-filter-btn" data-era="4.0" onclick="setBtsFilter(this,'era')">4.00+</button>
+            <button class="bts-filter-btn" data-era="5.0" onclick="setBtsFilter(this,'era')">5.00+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Opp Bullpen ERA</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-bullpen="0" onclick="setBtsFilter(this,'bullpen')">Any</button>
+            <button class="bts-filter-btn" data-bullpen="4.5" onclick="setBtsFilter(this,'bullpen')">4.50+</button>
+            <button class="bts-filter-btn" data-bullpen="5.0" onclick="setBtsFilter(this,'bullpen')">5.00+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Park</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-park="0" onclick="setBtsFilter(this,'park')">Any</button>
+            <button class="bts-filter-btn" data-park="1.03" onclick="setBtsFilter(this,'park')">Hitter's</button>
+            <button class="bts-filter-btn" data-park="1.10" onclick="setBtsFilter(this,'park')">Strong</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Game</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-homeaway="any" onclick="setBtsFilter(this,'homeAway')">Any</button>
+            <button class="bts-filter-btn" data-homeaway="home" onclick="setBtsFilter(this,'homeAway')">Home</button>
+            <button class="bts-filter-btn" data-homeaway="away" onclick="setBtsFilter(this,'homeAway')">Away</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Streak</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-streak="0" onclick="setBtsFilter(this,'streak')">Any</button>
+            <button class="bts-filter-btn" data-streak="2" onclick="setBtsFilter(this,'streak')">2+</button>
+            <button class="bts-filter-btn" data-streak="5" onclick="setBtsFilter(this,'streak')">5+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Batter K%</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-kpct="1" onclick="setBtsFilter(this,'kpct')">Any</button>
+            <button class="bts-filter-btn" data-kpct="0.20" onclick="setBtsFilter(this,'kpct')">&lt;20%</button>
+            <button class="bts-filter-btn" data-kpct="0.15" onclick="setBtsFilter(this,'kpct')">&lt;15%</button>
+          </div>
+        </div>
       </div>
       <div id="btsGrid" class="bts-grid"></div>
       <div id="btsEmpty" style="display:none;" class="leaders-loading">No qualifying players found for today's games. Check back once lineups are posted.</div>
