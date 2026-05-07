@@ -2354,6 +2354,8 @@ main { padding: 28px 0 60px; }
    Single-file, no frameworks, async/await, request caching
    ===================================================================== */
 
+const escHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
 // ─── TEAM INFO (id → city, nickname, ESPN logo slug) ────────────────────────
 const TEAM_INFO = {
   108: { city:'Los Angeles', nick:'Angels',    espn:'laa' },
@@ -2930,7 +2932,7 @@ function _hrMatchupEnvScore(batter, pitcher, weather, parkFactor, factors, bullp
   let handScore = 0;
   if (pitchHand && (batter.vsRHP || batter.vsLHP)) {
     const splits = pitchHand === 'R' ? batter.vsRHP : batter.vsLHP;
-    if (splits) {
+    if (splits && (splits.atBats || 0) >= 20) {
       const splitISO = splits.slg - splits.avg;
       const careerISO = (batter.seasonStats?.slg || 0) - (batter.seasonStats?.avg || 0);
       const delta = splitISO - careerISO;
@@ -3421,7 +3423,7 @@ async function fetchStreaks(playerId) {
       }, { atBats:0, hits:0, doubles:0, triples:0, homeRuns:0, strikeOuts:0, baseOnBalls:0, plateAppearances:0 });
       if (agg.atBats > 0) {
         agg.avg = agg.hits / agg.atBats;
-        agg.obp = (agg.hits + agg.baseOnBalls) / (agg.plateAppearances || 1);
+        agg.obp = agg.plateAppearances > 0 ? (agg.hits + agg.baseOnBalls) / agg.plateAppearances : 0;
         const tb = agg.hits + agg.doubles + agg.triples * 2 + agg.homeRuns * 3;
         agg.slg = tb / agg.atBats;
         agg.ops = agg.obp + agg.slg;
@@ -3448,7 +3450,7 @@ async function fetchHandednessSplits(playerId) {
     const pick = code => {
       const s = splits.find(x => x.split?.code === code)?.stat;
       if (!s) return null;
-      return { avg: parseFloat(s.avg)||0, obp: parseFloat(s.obp)||0, slg: parseFloat(s.slg)||0 };
+      return { avg: parseFloat(s.avg)||0, obp: parseFloat(s.obp)||0, slg: parseFloat(s.slg)||0, atBats: parseInt(s.atBats)||0 };
     };
     return { vsRHP: pick('vr'), vsLHP: pick('vl') };
   } catch { return { vsRHP: null, vsLHP: null }; }
@@ -3575,14 +3577,14 @@ function renderWeatherBar(gameData) {
     <div class="weather-item">
       <span class="wi">⚾</span>
       <span style="font-size:12px">
-        <span style="color:var(--text-muted)">${gameData.awayAbbr} SP:</span> ${gameData.awayPitcher.fullName || '—'}
+        <span style="color:var(--text-muted)">${escHtml(gameData.awayAbbr)} SP:</span> ${escHtml(gameData.awayPitcher.fullName || '—')}
         ${gameData.awayPitcher.seasonStats ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">ERA ${safe(gameData.awayPitcher.seasonStats.era,2)} / WHIP ${safe(gameData.awayPitcher.seasonStats.whip,2)}</span>` : ''}
       </span>
     </div>
     <div class="weather-item">
       <span class="wi">⚾</span>
       <span style="font-size:12px">
-        <span style="color:var(--text-muted)">${gameData.homeAbbr} SP:</span> ${gameData.homePitcher?.fullName || '—'}
+        <span style="color:var(--text-muted)">${escHtml(gameData.homeAbbr)} SP:</span> ${escHtml(gameData.homePitcher?.fullName || '—')}
         ${gameData.homePitcher?.seasonStats ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">ERA ${safe(gameData.homePitcher.seasonStats.era,2)} / WHIP ${safe(gameData.homePitcher.seasonStats.whip,2)}</span>` : ''}
       </span>
     </div>` : ''}
@@ -5590,9 +5592,9 @@ async function renderDailyDominators() {
       <div class="dom-card">
         <div class="dom-card-rank">${rankLabel}</div>
         <div class="dom-card-header">
-          <img class="dom-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${p.name}">
+          <img class="dom-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${escHtml(p.name)}">
           <div>
-            <div class="dom-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${p.name}</div>
+            <div class="dom-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="dom-card-meta">
               ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position}
@@ -5754,14 +5756,14 @@ async function renderRisingStars() {
       <div class="rising-card">
         <div class="rising-card-rank">${rankLabel}</div>
         <div class="rising-card-header">
-          <img class="rising-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${p.name}">
+          <img class="rising-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${escHtml(p.name)}">
           <div style="min-width:0">
-            <div class="rising-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${p.name}</div>
+            <div class="rising-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="rising-card-meta">
               ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position || ''} · Bats ${p.orderPos || '?'}
             </div>
-            <div class="rising-card-meta" style="margin-top:3px">vs ${oppAbbr}${pitcherName ? ` · SP: ${pitcherName}` : ''}</div>
+            <div class="rising-card-meta" style="margin-top:3px">vs ${escHtml(oppAbbr)}${pitcherName ? ` · SP: ${escHtml(pitcherName)}` : ''}</div>
           </div>
         </div>
         <div class="rising-dom-badge">⭐ ${domCount}/5 games dominated · ${totalQualHits}H ${totalQualHR}HR in qualifying games</div>
@@ -5914,14 +5916,14 @@ async function renderDueForHit() {
       <div class="dfh-card">
         <div class="dfh-card-rank">${rankLabel}</div>
         <div class="dfh-card-header">
-          <img class="dfh-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${p.name}">
+          <img class="dfh-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${escHtml(p.name)}">
           <div style="min-width:0">
-            <div class="dfh-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${p.name}</div>
+            <div class="dfh-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="dfh-card-meta">
               ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position || ''} · Bats ${p.orderPos || '?'}
             </div>
-            <div class="dfh-card-meta" style="margin-top:3px">vs ${oppAbbr}${pitcherName ? ` · SP: ${pitcherName}` : ''}</div>
+            <div class="dfh-card-meta" style="margin-top:3px">vs ${escHtml(oppAbbr)}${pitcherName ? ` · SP: ${escHtml(pitcherName)}` : ''}</div>
           </div>
         </div>
         <div style="margin-bottom:8px">
