@@ -2447,8 +2447,9 @@ const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ─── GLOBAL REQUEST THROTTLE ─────────────────────────────────────────────
-// Fully serialized MLB API requests — one at a time prevents ECONNRESET entirely.
-const MAX_CONCURRENT_REQUESTS = 1;
+// 2 concurrent MLB API requests with 100ms inter-request gap.
+// Gives ~2× throughput vs fully serial while staying within MLB API limits.
+const MAX_CONCURRENT_REQUESTS = 2;
 let _activeRequests = 0;
 const _requestQueue = [];
 let _lastRequestEnd = 0;
@@ -2465,14 +2466,12 @@ function _throttledFetch(url, opts) {
           _activeRequests--;
           _lastRequestEnd = Date.now();
           if (_requestQueue.length) {
-            // 120ms gap between requests — prevents burst-firing on queue drain
-            setTimeout(() => _requestQueue.shift()(), 120);
+            setTimeout(() => _requestQueue.shift()(), 100);
           }
         });
     };
     if (_activeRequests < MAX_CONCURRENT_REQUESTS) {
-      // Enforce minimum gap even when queue is empty
-      const gap = 120 - (Date.now() - _lastRequestEnd);
+      const gap = 100 - (Date.now() - _lastRequestEnd);
       if (gap > 0) setTimeout(execute, gap);
       else execute();
     } else {
@@ -2492,9 +2491,9 @@ async function cachedFetch(url, opts={}) {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       if (attempt > 0) {
-        // Exponential backoff with jitter: 2s → 4s → 8s
-        const base = 2000 * Math.pow(2, attempt - 1);
-        const jitter = Math.floor(Math.random() * 600) - 300;
+        // First retry fast (600ms) for transient ECONNRESET; then exponential: 2s → 4s
+        const base = attempt === 1 ? 600 : 2000 * Math.pow(2, attempt - 2);
+        const jitter = Math.floor(Math.random() * 300) - 150;
         await new Promise(r => setTimeout(r, base + jitter));
       }
       const res = await _throttledFetch(url, opts);
