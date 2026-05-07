@@ -380,68 +380,91 @@ main { padding: 28px 0 60px; }
 .consec-loading { font-size: 11px; color: var(--text-muted); padding: 20px; text-align: center; }
 
 /* ── THE LAB ─────────────────────────────────────── */
-.lab-header { text-align:center; padding:20px 0 16px; }
-.lab-title { font-family:'Bebas Neue',cursive; font-size:32px; color:var(--accent-blue); letter-spacing:2px; }
-.lab-subtitle { font-size:13px; color:var(--text-muted); margin-top:4px; }
-.lab-step { margin-bottom:24px; }
-.lab-step-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; margin-bottom:10px; }
-.lab-game-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; }
-.lab-game-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; cursor:pointer; transition:all .15s; }
-.lab-game-card:hover { border-color:var(--accent-blue); }
-.lab-game-card.active { border-color:var(--accent-blue); background:var(--accent-blue-dim); }
-.lab-game-matchup { font-weight:700; font-size:14px; }
-.lab-game-meta { font-size:11px; color:var(--text-muted); margin-top:3px; }
-.lab-search-input { width:100%; max-width:480px; display:block; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; margin-bottom:4px; }
-.lab-search-input:focus { outline:none; border-color:var(--accent-blue); }
-.lab-search-results { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; max-width:480px; overflow:hidden; }
-.lab-result-item { padding:10px 14px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-bottom:1px solid var(--border); }
-.lab-result-item:last-child { border-bottom:none; }
-.lab-result-item:hover { background:var(--bg-hover); }
-.lab-result-name { font-weight:600; font-size:14px; }
-.lab-result-meta { font-size:11px; color:var(--text-muted); }
-.lab-selected-bar { display:flex; align-items:center; gap:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 16px; margin-bottom:20px; }
-.lab-selected-photo { width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
-.lab-selected-name { font-weight:700; font-size:16px; }
-.lab-selected-meta { font-size:12px; color:var(--text-muted); margin-top:2px; }
-.lab-change-btn { margin-left:auto; font-size:11px; background:none; border:1px solid var(--border); border-radius:6px; color:var(--text-muted); padding:4px 10px; cursor:pointer; flex-shrink:0; }
-.lab-change-btn:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
-.lab-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:16px; overflow:hidden; }
-.lab-card-header { padding:12px 16px; background:var(--bg-hover); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
-.lab-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
-.lab-card-body { padding:16px; }
-.lab-park-headline { font-size:15px; font-weight:600; margin-bottom:10px; color:var(--text-primary); line-height:1.4; }
-.lab-park-bullets { list-style:none; padding:0; margin:0 0 14px; display:flex; flex-direction:column; gap:6px; }
-.lab-park-bullets li { font-size:13px; color:var(--text-secondary); padding-left:16px; position:relative; line-height:1.4; }
+.lab-header { text-align:center; padding:24px 0 18px; }
+.lab-title { font-family:'Bebas Neue',cursive; font-size:36px; color:var(--accent-blue); letter-spacing:3px; }
+.lab-subtitle { font-size:13px; color:var(--text-muted); margin-top:6px; }
+.lab-screen { animation:labFadeIn .25s ease; }
+@keyframes labFadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.lab-back-bar { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+.lab-back-btn { background:none; border:1px solid var(--border); border-radius:8px; color:var(--text-muted); font-size:12px; padding:5px 12px; cursor:pointer; }
+.lab-back-btn:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
+.lab-back-crumb { font-size:12px; color:var(--text-muted); }
+.lab-back-crumb strong { color:var(--text-primary); }
+.lab-step-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:14px; }
+.lab-team-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; }
+.lab-team-card { background:var(--bg-card); border:2px solid var(--border); border-radius:12px; padding:16px 10px; cursor:pointer; transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.lab-team-card:hover { border-color:var(--accent-blue); transform:translateY(-2px); }
+.lab-team-logo { width:52px; height:52px; object-fit:contain; }
+.lab-team-name { font-size:11px; font-weight:700; text-align:center; color:var(--text-secondary); }
+.lab-team-badge { font-size:10px; background:var(--bg-hover); border-radius:10px; padding:2px 8px; color:var(--text-muted); }
+.lab-player-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+.lab-player-card { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:10px; }
+.lab-player-card:hover { border-color:var(--accent-blue); background:var(--accent-blue-dim); }
+.lab-player-photo { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
+.lab-player-name { font-size:13px; font-weight:700; }
+.lab-player-meta { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.lab-loading-wrap { max-width:400px; margin:50px auto; text-align:left; }
+.lab-loading-title { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--accent-blue); letter-spacing:2px; margin-bottom:24px; text-align:center; }
+.lab-loading-step { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-muted); transition:color .2s; }
+.lab-loading-step:last-child { border-bottom:none; }
+.lab-loading-step .ls-icon { width:20px; text-align:center; flex-shrink:0; font-size:14px; }
+.lab-loading-step.done { color:var(--text-primary); }
+.lab-loading-step.active { color:var(--text-primary); }
+.lab-loading-step.active .ls-icon { display:inline-block; animation:labSpin .7s linear infinite; }
+@keyframes labSpin { to{transform:rotate(360deg)} }
+.lab-faceoff { display:grid; grid-template-columns:1fr 36px 1fr; gap:0; margin-bottom:16px; align-items:start; }
+.lab-faceoff-divider { display:flex; align-items:center; justify-content:center; padding-top:60px; }
+.lab-vs-text { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--accent-orange); writing-mode:vertical-lr; }
+.lab-faceoff-side { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+.lab-side-header { padding:10px 14px; border-bottom:1px solid var(--border); background:var(--bg-hover); }
+.lab-side-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); font-weight:700; }
+.lab-side-body { padding:14px; }
+.lab-player-hero { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.lab-hero-photo { width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
+.lab-hero-name { font-size:15px; font-weight:700; line-height:1.2; }
+.lab-hero-meta { font-size:11px; color:var(--text-muted); margin-top:3px; }
+.lab-chips-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:10px 0 5px; }
+.lab-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+.lab-chip { font-size:11px; padding:3px 9px; border-radius:20px; font-weight:600; line-height:1.4; }
+.lab-chip.str { background:#22c55e18; color:#22c55e; border:1px solid #22c55e30; }
+.lab-chip.wk  { background:#ef444418; color:#ef4444; border:1px solid #ef444430; }
+.lab-chip.neu { background:var(--bg-hover); color:var(--text-muted); border:1px solid var(--border); }
+.lab-stat-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); }
+.lab-stat-row:last-child { border-bottom:none; }
+.lab-stat-label { font-size:11px; color:var(--text-muted); }
+.lab-stat-val { font-size:13px; font-weight:700; }
+.lab-stat-val.good { color:#22c55e; }
+.lab-stat-val.bad  { color:#ef4444; }
+.lab-park-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:16px; overflow:hidden; }
+.lab-park-header { padding:12px 16px; background:var(--bg-hover); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.lab-park-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+.lab-park-body { padding:16px; }
+.lab-park-headline { font-size:14px; font-weight:600; margin-bottom:10px; color:var(--text-primary); line-height:1.4; }
+.lab-park-bullets { list-style:none; padding:0; margin:0 0 12px; display:flex; flex-direction:column; gap:5px; }
+.lab-park-bullets li { font-size:12px; color:var(--text-secondary); padding-left:14px; position:relative; line-height:1.4; }
 .lab-park-bullets li::before { content:'·'; position:absolute; left:4px; color:var(--text-muted); }
-.lab-edge-row { display:flex; gap:8px; flex-wrap:wrap; }
-.lab-edge-chip { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:600; }
-.lab-edge-hitter  { background:#22c55e20; color:#22c55e; }
-.lab-edge-pitcher { background:var(--accent-blue-dim); color:var(--accent-blue); }
-.lab-edge-neutral { background:var(--bg-hover); color:var(--text-muted); }
-.lab-pitcher-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px; }
-.lab-pitcher-stat { display:flex; flex-direction:column; gap:3px; }
-.lab-pitcher-stat-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
-.lab-pitcher-stat-val { font-size:22px; font-weight:700; font-family:'Bebas Neue',cursive; line-height:1; }
-.lab-pitcher-stat-tier { font-size:11px; color:var(--text-muted); }
-.lab-pitcher-desc { font-size:13px; color:var(--text-secondary); line-height:1.6; margin-top:4px; }
-.lab-split-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
-.lab-split-row:last-child { border-bottom:none; }
-.lab-split-label { font-size:12px; color:var(--text-muted); }
-.lab-split-val { font-size:14px; font-weight:700; }
-.lab-split-val.good { color:#22c55e; }
-.lab-split-val.bad  { color:#ef4444; }
-.lab-score-wrap { text-align:center; padding:8px 0 16px; }
-.lab-score-num { font-family:'Bebas Neue',cursive; font-size:80px; line-height:1; }
-.lab-score-num.score-great  { color:#22c55e; }
-.lab-score-num.score-good   { color:#86efac; }
+.lab-park-chips { display:flex; gap:8px; flex-wrap:wrap; }
+.lab-score-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px; }
+.lab-score-header { padding:12px 16px; background:var(--bg-hover); border-bottom:1px solid var(--border); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+.lab-score-body { padding:20px 24px; }
+.lab-score-display { display:flex; align-items:center; gap:24px; margin-bottom:16px; }
+.lab-score-num { font-family:'Bebas Neue',cursive; font-size:88px; line-height:1; }
+.lab-score-num.score-great   { color:#22c55e; }
+.lab-score-num.score-good    { color:#86efac; }
 .lab-score-num.score-neutral { color:var(--text-muted); }
-.lab-score-num.score-bad    { color:#f97316; }
-.lab-score-num.score-poor   { color:#ef4444; }
-.lab-score-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-top:4px; }
-.lab-score-bar-track { height:10px; border-radius:5px; background:var(--bg-hover); margin:14px 0; overflow:hidden; }
-.lab-score-bar-fill { height:100%; border-radius:5px; }
-.lab-narrative { font-size:14px; line-height:1.7; color:var(--text-secondary); }
-.lab-loading { text-align:center; padding:40px; color:var(--text-muted); font-size:14px; }
+.lab-score-num.score-bad     { color:#f97316; }
+.lab-score-num.score-poor    { color:#ef4444; }
+.lab-score-right { flex:1; }
+.lab-score-label { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px; }
+.lab-score-bar-track { height:12px; border-radius:6px; background:var(--bg-hover); overflow:hidden; }
+.lab-score-bar-fill { height:100%; border-radius:6px; }
+.lab-narrative { font-size:13px; line-height:1.7; color:var(--text-secondary); margin-top:14px; }
+@media(max-width:700px){
+  .lab-faceoff { grid-template-columns:1fr; }
+  .lab-faceoff-divider { padding:8px 0; }
+  .lab-vs-text { writing-mode:horizontal-tb; }
+  .lab-team-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); }
+}
 
 /* ── LEADERBOARD ──────────────────────────────────── */
 .leaders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -2006,21 +2029,42 @@ main { padding: 28px 0 60px; }
     <div id="tabLab" style="display:none;">
       <div class="lab-header">
         <div class="lab-title">🔬 The Lab</div>
-        <div class="lab-subtitle">Select a game and hitter for deep matchup intelligence</div>
+        <div class="lab-subtitle">Pick a team · Pick a hitter · Get the full matchup breakdown</div>
       </div>
-      <div class="lab-step" id="labStepGame">
-        <div class="lab-step-label">Step 1 — Select a Game</div>
-        <div class="lab-game-grid" id="labGameGrid"></div>
+      <!-- Screen 1: Team Picker -->
+      <div id="labScreenTeam" class="lab-screen">
+        <div class="lab-step-label">Select a Team Playing Today</div>
+        <div class="lab-team-grid" id="labTeamGrid"></div>
       </div>
-      <div class="lab-step" id="labStepPlayer" style="display:none;">
-        <div class="lab-step-label">Step 2 — Select a Hitter</div>
-        <input class="lab-search-input" id="labSearchInput" type="text"
-               placeholder="Search by name or team…" oninput="labSearch()" autocomplete="off">
-        <div class="lab-search-results" id="labSearchResults"></div>
+      <!-- Screen 2: Player Picker -->
+      <div id="labScreenPlayer" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="labGoTeams()">← Teams</button>
+          <span class="lab-back-crumb">Select a hitter from <strong id="labSelectedTeamName"></strong></span>
+        </div>
+        <div class="lab-step-label">Select a Hitter</div>
+        <div class="lab-player-grid" id="labPlayerGrid"></div>
       </div>
-      <div id="labAnalysis" style="display:none;">
-        <div class="lab-selected-bar" id="labSelectedBar"></div>
-        <div id="labCards"></div>
+      <!-- Screen 3: Loading -->
+      <div id="labScreenLoading" class="lab-screen" style="display:none;">
+        <div class="lab-loading-wrap">
+          <div class="lab-loading-title">⚙️ Running Analysis</div>
+          <div id="labLoadingSteps"></div>
+        </div>
+      </div>
+      <!-- Screen 4: Analysis -->
+      <div id="labScreenAnalysis" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="labGoTeams()">← New Analysis</button>
+          <span class="lab-back-crumb" id="labAnalysisCrumb"></span>
+        </div>
+        <div class="lab-faceoff">
+          <div class="lab-faceoff-side" id="labHitterSide"></div>
+          <div class="lab-faceoff-divider"><div class="lab-vs-text">VS</div></div>
+          <div class="lab-faceoff-side" id="labPitcherSide"></div>
+        </div>
+        <div id="labParkCard"></div>
+        <div id="labScoreCard"></div>
       </div>
     </div>
 
@@ -7867,85 +7911,96 @@ async function openPlayerAnalyzer(playerId) {
 }
 
 // ─── THE LAB ──────────────────────────────────────────────────────────────
-let _labState = { gamePk: null, playerId: null };
+let _labState = { teamId: null, teamName: null, playerId: null };
+
+function _labShow(screenId) {
+  ['labScreenTeam','labScreenPlayer','labScreenLoading','labScreenAnalysis']
+    .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
+}
 
 function labInit() {
-  _labState = { gamePk: null, playerId: null };
-  document.getElementById('labStepPlayer').style.display = 'none';
-  document.getElementById('labAnalysis').style.display   = 'none';
-  document.getElementById('labSearchInput').value = '';
-  document.getElementById('labSearchResults').innerHTML = '';
+  _labState = { teamId: null, teamName: null, playerId: null };
+  _labShow('labScreenTeam');
+  const grid = document.getElementById('labTeamGrid');
 
-  const grid = document.getElementById('labGameGrid');
-  const games = state.games || [];
-  if (!games.length) {
-    grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No games loaded yet. Return to the dashboard first.</div>';
+  // Collect unique teams from today's games
+  const teams = new Map();
+  for (const gd of Object.values(state.predictions)) {
+    for (const p of (gd.players || [])) {
+      if (p.teamId && !teams.has(p.teamId)) {
+        const ti = TEAM_INFO[p.teamId] || {};
+        const slug = ti.espn || (p.teamAbbr || '').toLowerCase();
+        teams.set(p.teamId, { teamId: p.teamId, name: `${ti.city||''} ${ti.nick||p.teamAbbr||''}`.trim(), abbr: p.teamAbbr || '', slug });
+      }
+    }
+  }
+
+  if (!teams.size) {
+    grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px 0">No games loaded yet. Go to the main page first to load today\'s slate.</div>';
     return;
   }
-  grid.innerHTML = games.map(g => {
-    const awayAbbr = g.teams?.away?.team?.abbreviation || g.awayAbbr || '???';
-    const homeAbbr = g.teams?.home?.team?.abbreviation || g.homeAbbr || '???';
-    const awayName = g.teams?.away?.team?.name || awayAbbr;
-    const homeName = g.teams?.home?.team?.name || homeAbbr;
-    const venue    = g.venue?.name || '';
-    const gameTime = g.gameDate ? new Date(g.gameDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
-    return `<div class="lab-game-card" onclick="labSelectGame(${g.gamePk},this)">
-      <div class="lab-game-matchup">${escHtml(awayAbbr)} @ ${escHtml(homeAbbr)}</div>
-      <div class="lab-game-meta">${escHtml(venue)}${gameTime ? ' · ' + gameTime : ''}</div>
+
+  const sorted = [...teams.values()].sort((a,b) => a.name.localeCompare(b.name));
+  grid.innerHTML = sorted.map(t => `
+    <div class="lab-team-card" onclick="labSelectTeam(${t.teamId},this)">
+      <img class="lab-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${escHtml(t.slug)}.png"
+           onerror="this.style.display='none'" alt="">
+      <div class="lab-team-name">${escHtml(t.name)}</div>
+      <div class="lab-team-badge">${escHtml(t.abbr)}</div>
+    </div>`).join('');
+}
+
+function labSelectTeam(teamId, cardEl) {
+  const ti = TEAM_INFO[teamId] || {};
+  const slug = ti.espn || '';
+  // find name from card
+  _labState.teamId = teamId;
+  _labState.teamName = cardEl.querySelector('.lab-team-name')?.textContent || '';
+
+  document.getElementById('labSelectedTeamName').textContent = _labState.teamName;
+  _labShow('labScreenPlayer');
+
+  // Collect players for this team across all games
+  const players = [];
+  const seen = new Set();
+  for (const gd of Object.values(state.predictions)) {
+    for (const p of (gd.players || [])) {
+      if (p.teamId === teamId && !seen.has(p.id)) {
+        seen.add(p.id);
+        players.push({ ...p, _gamePk: gd.gamePk || Object.keys(state.predictions).find(k => state.predictions[k] === gd) });
+      }
+    }
+  }
+
+  players.sort((a,b) => (a.orderPos||99) - (b.orderPos||99));
+
+  const grid = document.getElementById('labPlayerGrid');
+  if (!players.length) {
+    grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No lineup data found for this team yet.</div>';
+    return;
+  }
+
+  grid.innerHTML = players.map(p => {
+    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    return `<div class="lab-player-card" onclick="labSelectPlayer(${p.id})">
+      <img class="lab-player-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="">
+      <div>
+        <div class="lab-player-name">${escHtml(p.name)}</div>
+        <div class="lab-player-meta">${p.position||''} · ${p.orderPos ? '#'+p.orderPos+' in order' : 'Order TBD'}</div>
+      </div>
     </div>`;
   }).join('');
 }
 
-function labSelectGame(gamePk, cardEl) {
-  _labState.gamePk = gamePk;
-  _labState.playerId = null;
-  document.querySelectorAll('.lab-game-card').forEach(c => c.classList.remove('active'));
-  cardEl.classList.add('active');
-  document.getElementById('labStepPlayer').style.display = 'block';
-  document.getElementById('labAnalysis').style.display   = 'none';
-  document.getElementById('labSearchInput').value = '';
-  document.getElementById('labSearchResults').innerHTML = '';
-}
-
-function labSearch() {
-  const q = document.getElementById('labSearchInput').value.trim().toLowerCase();
-  const results = document.getElementById('labSearchResults');
-  if (!_labState.gamePk || q.length < 2) { results.innerHTML = ''; return; }
-
-  const gd = state.predictions[_labState.gamePk];
-  if (!gd) { results.innerHTML = ''; return; }
-  const players = (gd.players || []).filter(p => {
-    const ti = TEAM_INFO[p.teamId] || {};
-    const s = `${p.name} ${ti.city||''} ${ti.nick||''} ${p.teamAbbr||''} ${p.team||''}`.toLowerCase();
-    return s.includes(q);
-  }).slice(0, 12);
-
-  results.innerHTML = players.length === 0
-    ? '<div class="lab-result-item"><span class="lab-result-name" style="color:var(--text-muted)">No players found</span></div>'
-    : players.map(p => {
-        const ti = TEAM_INFO[p.teamId] || {};
-        return `<div class="lab-result-item" onclick="labSelectPlayer(${p.id})">
-          <span class="lab-result-name">${escHtml(p.name)}</span>
-          <span class="lab-result-meta">${escHtml(ti.city||'')} ${escHtml(ti.nick||p.teamAbbr||'')} · ${p.position||''} · Bats ${p.orderPos||'?'}</span>
-        </div>`;
-      }).join('');
+function labGoTeams() {
+  _labState = { teamId: null, teamName: null, playerId: null };
+  _labShow('labScreenTeam');
 }
 
 function labSelectPlayer(playerId) {
   _labState.playerId = playerId;
-  document.getElementById('labSearchResults').innerHTML = '';
-  document.getElementById('labSearchInput').value = '';
-  const el = document.getElementById('labAnalysis');
-  el.style.display = 'block';
-  document.getElementById('labCards').innerHTML = '<div class="lab-loading">⏳ Running analysis…</div>';
-  renderLabAnalysis();
-}
-
-function labChangePlayer() {
-  _labState.playerId = null;
-  document.getElementById('labAnalysis').style.display = 'none';
-  document.getElementById('labSearchInput').value = '';
-  document.getElementById('labSearchResults').innerHTML = '';
+  _labShow('labScreenLoading');
+  runLabAnalysis();
 }
 
 function buildPitcherProfile(pitcher) {
@@ -8022,166 +8077,249 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra) {
   return clamp(Math.round(score), 0, 100);
 }
 
-async function renderLabAnalysis() {
-  const { gamePk, playerId } = _labState;
+// Loading step helper
+function _labStep(id, state) { // state: 'pending'|'active'|'done'
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'lab-loading-step ' + state;
+  el.querySelector('.ls-icon').textContent = state === 'done' ? '✅' : state === 'active' ? '⏳' : '○';
+}
+
+async function runLabAnalysis() {
+  const { playerId } = _labState;
   const player = state.playerMap?.[playerId];
-  if (!player) { document.getElementById('labCards').innerHTML = '<div class="lab-loading">Player data not found.</div>'; return; }
+  if (!player) { _labShow('labScreenTeam'); return; }
 
-  const gd      = state.predictions[player.gamePk || gamePk];
-  const pitcher = player.isAway ? gd?.homePitcher : gd?.awayPitcher;
-  const oppTeamId = player.isAway ? gd?.homeTeamId : gd?.awayTeamId;
-  const venue   = gd?.venue || '';
-  const pf      = getParkFactor(venue);
-  const parkCtx = PARK_CONTEXT[venue] || null;
-  const ti      = TEAM_INFO[player.teamId] || {};
-  const slug    = ti.espn || (player.teamAbbr || '').toLowerCase();
-  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  // Build loading steps UI
+  const steps = [
+    { id:'ls1', label:'Loading hitter splits & season stats' },
+    { id:'ls2', label:'Fetching pitcher profile' },
+    { id:'ls3', label:'Pulling career stats vs this team' },
+    { id:'ls4', label:'Analyzing bullpen strength' },
+    { id:'ls5', label:'Computing matchup score & narrative' },
+  ];
+  document.getElementById('labLoadingSteps').innerHTML = steps.map(s =>
+    `<div class="lab-loading-step pending" id="${s.id}"><span class="ls-icon">○</span>${s.label}</div>`
+  ).join('');
 
-  // Selected player bar
-  document.getElementById('labSelectedBar').innerHTML = `
-    <img class="lab-selected-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="">
-    <div>
-      <div class="lab-selected-name">${escHtml(player.name)}</div>
-      <div class="lab-selected-meta">
-        ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
-        ${escHtml(ti.city||'')} ${escHtml(ti.nick||player.teamAbbr||'')} · ${player.position||''} · Bats ${player.orderPos||'?'}
-      </div>
-    </div>
-    <button class="lab-change-btn" onclick="labChangePlayer()">↩ Change Hitter</button>`;
+  const fmt3 = v => (v && v > 0) ? v.toFixed(3).replace(/^0/,'') : '—';
 
-  // Fetch bullpen ERA
+  // Step 1: Hitter data (already loaded on player object)
+  _labStep('ls1','active');
+  await new Promise(r => setTimeout(r,300));
+  const hand      = '';  // will set after pitcher loads
+  const ti        = TEAM_INFO[player.teamId] || {};
+  const slug      = ti.espn || (player.teamAbbr||'').toLowerCase();
+  const photoUrl  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  _labStep('ls1','done');
+
+  // Step 2: Pitcher
+  _labStep('ls2','active');
+  const gd        = Object.values(state.predictions).find(g => (g.players||[]).some(p=>p.id===player.id));
+  const pitcher   = player.isAway ? gd?.homePitcher : gd?.awayPitcher;
+  const oppTeamId = player.isAway ? gd?.homeTeamId  : gd?.awayTeamId;
+  const venue     = gd?.venue || '';
+  const pf        = getParkFactor(venue);
+  const parkCtx   = PARK_CONTEXT[venue] || null;
+  const pitcherHand = pitcher?.pitchHand || '?';
+  await new Promise(r => setTimeout(r,300));
+  _labStep('ls2','done');
+
+  // Step 3: Career vs this team (MLB Stats API vsTeam endpoint)
+  _labStep('ls3','active');
+  let vsTeamStats = null;
+  if (oppTeamId && player.id) {
+    try {
+      const vsUrl = `https://statsapi.mlb.com/api/v1/people/${player.id}/stats?stats=vsTeam&opposingTeamId=${oppTeamId}&group=hitting&season=2026`;
+      const vsData = await cachedFetch(vsUrl);
+      const splits = vsData?.stats?.[0]?.splits || [];
+      if (splits.length) {
+        const s = splits[0]?.stat || {};
+        vsTeamStats = {
+          avg: parseFloat(s.avg)||0, ops: parseFloat(s.ops)||0,
+          atBats: parseInt(s.atBats)||0, hits: parseInt(s.hits)||0,
+          homeRuns: parseInt(s.homeRuns)||0,
+        };
+      }
+    } catch {}
+  }
+  _labStep('ls3','done');
+
+  // Step 4: Bullpen ERA
+  _labStep('ls4','active');
   let bullpenEra = 0;
-  if (oppTeamId) {
-    try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-  }
+  if (oppTeamId) { try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {} }
+  _labStep('ls4','done');
 
-  const profile = buildPitcherProfile(pitcher);
-  const score   = computeLabMatchupScore(player, pitcher, pf, bullpenEra);
+  // Step 5: Compute and render
+  _labStep('ls5','active');
+  const profile  = buildPitcherProfile(pitcher);
+  const score    = computeLabMatchupScore(player, pitcher, pf, bullpenEra);
+  const scoreCls = score>=80?'score-great':score>=65?'score-good':score>=45?'score-neutral':score>=30?'score-bad':'score-poor';
+  const scoreLbl = score>=80?'Strong Hitter Edge':score>=65?'Hitter Leaning':score>=45?'Neutral Matchup':score>=30?'Pitcher Leaning':'Strong Pitcher Edge';
+  const barColor = score>=65?'#22c55e':score>=45?'#94a3b8':'#ef4444';
 
-  // Score style
-  const scoreCls   = score >= 80 ? 'score-great' : score >= 65 ? 'score-good' : score >= 45 ? 'score-neutral' : score >= 30 ? 'score-bad' : 'score-poor';
-  const scoreLabel = score >= 80 ? 'Strong Hitter Edge' : score >= 65 ? 'Hitter Leaning' : score >= 45 ? 'Neutral Matchup' : score >= 30 ? 'Pitcher Leaning' : 'Strong Pitcher Edge';
-  const barColor   = score >= 65 ? '#22c55e' : score >= 45 ? '#94a3b8' : '#ef4444';
-
-  // Handedness split data
-  const hand      = pitcher?.pitchHand || '?';
-  const splitKey  = hand === 'L' ? 'vsLHP' : 'vsRHP';
+  // Hitter strengths & weaknesses
+  const splitKey  = pitcherHand==='L'?'vsLHP':'vsRHP';
   const split     = player[splitKey];
-  const seasAvg   = player.seasonStats?.avg || 0;
-  const splitAvg  = split?.avg || 0;
-  const splitAB   = split?.atBats || 0;
+  const seasAvg   = player.seasonStats?.avg||0;
+  const splitAvg  = split?.avg||0;
+  const splitAB   = split?.atBats||0;
   const splitDiff = splitAvg - seasAvg;
-  const splitCls  = splitAB >= 20 ? (splitDiff > 0.015 ? 'good' : splitDiff < -0.015 ? 'bad' : '') : '';
+  const l10       = player.last10Stats||player.last7Stats||{};
 
-  // Bullpen label
-  const bullpenLabel = !bullpenEra ? 'Data unavailable'
-    : bullpenEra > 5.00 ? `${bullpenEra.toFixed(2)} ERA — Poor bullpen, late-inning opportunities remain strong`
-    : bullpenEra > 4.50 ? `${bullpenEra.toFixed(2)} ERA — Below average pen, hitter can stay aggressive late`
-    : bullpenEra > 4.00 ? `${bullpenEra.toFixed(2)} ERA — League average, neutral continuation`
-    : bullpenEra > 3.50 ? `${bullpenEra.toFixed(2)} ERA — Solid pen, expect tougher late-game looks`
-    :                     `${bullpenEra.toFixed(2)} ERA — Elite pen, late-inning hits become more difficult`;
-  const bullpenAdvice = !bullpenEra ? ''
-    : bullpenEra > 4.50 ? 'Even if the starter settles in, this bullpen remains an exploitable late-game weakness.'
-    : bullpenEra < 3.50 ? 'The bullpen behind this starter is elite — even favorable early-inning matchups may tighten later.'
-    :                     'The bullpen is within the league average range and unlikely to dramatically shift the matchup.';
-
-  // Build narrative
-  const narrativeParts = [];
-  if (parkCtx) narrativeParts.push(`At ${venue}, ${parkCtx.headline.toLowerCase()}. ${parkCtx.hitterEdge !== 'Minimal edge for either side — consistent neutral environment' ? 'This benefits ' + parkCtx.hitterEdge.toLowerCase() + '.' : 'Conditions are neutral for both sides.'}`);
-  if (pitcher?.fullName) {
-    narrativeParts.push(`Facing ${escHtml(pitcher.fullName)} (${hand}HP, ERA ${profile.era ? profile.era.toFixed(2) : '—'}): ${profile.eraTier.desc}`);
+  const hStrengths=[], hWeaknesses=[];
+  if (splitAB>=20 && splitDiff>0.020)  hStrengths.push(`Hits ${splitAvg.toFixed(3)} vs ${pitcherHand}HP (+${Math.round(splitDiff*1000)} pts above avg)`);
+  if (splitAB>=20 && splitDiff<-0.020) hWeaknesses.push(`Struggles vs ${pitcherHand}HP (.${Math.round(splitAvg*1000).toString().padStart(3,'0')} below avg)`);
+  if ((l10.avg||0)>0.300) hStrengths.push(`Hot recent form — ${l10.avg.toFixed(3)} L10 AVG`);
+  if ((l10.avg||0)>0&&(l10.avg||0)<0.200) hWeaknesses.push(`Cold stretch — only ${l10.avg.toFixed(3)} L10 AVG`);
+  if (player.hitStreak>=5) hStrengths.push(`${player.hitStreak}-game hit streak 🔥`);
+  if (seasAvg>0.300) hStrengths.push(`Elite season AVG (.${Math.round(seasAvg*1000)})`);
+  if (seasAvg>0&&seasAvg<0.220) hWeaknesses.push(`Low season AVG (.${Math.round(seasAvg*1000)})`);
+  if ((player.seasonStats?.ops||0)>0.850) hStrengths.push(`Strong OPS ${(player.seasonStats.ops).toFixed(3)}`);
+  if (pf.overall>=1.05) hStrengths.push(`Hitter-friendly park (${pf.overall.toFixed(2)}× factor)`);
+  if (pf.overall<=0.95) hWeaknesses.push(`Pitcher-friendly park (${pf.overall.toFixed(2)}× factor)`);
+  if (vsTeamStats?.atBats>=10) {
+    if (vsTeamStats.avg>0.290) hStrengths.push(`Career .${Math.round(vsTeamStats.avg*1000)} vs this franchise (${vsTeamStats.atBats} AB)`);
+    if (vsTeamStats.avg>0&&vsTeamStats.avg<0.200) hWeaknesses.push(`Only .${Math.round(vsTeamStats.avg*1000)} career vs this franchise (${vsTeamStats.atBats} AB)`);
   }
-  if (splitAB >= 20 && splitAvg) {
-    const vsLabel = hand === 'L' ? 'vs LHP' : 'vs RHP';
-    if (Math.abs(splitDiff) > 0.015) {
-      narrativeParts.push(`${escHtml(player.name)} hits ${splitDiff > 0 ? 'significantly better' : 'worse'} ${vsLabel} (.${Math.round(splitAvg*1000).toString().padStart(3,'0')} vs .${Math.round(seasAvg*1000).toString().padStart(3,'0')} season) — the handedness matchup ${splitDiff > 0 ? 'is a clear edge' : 'works against the hitter'} today.`);
-    }
+  if (player.orderPos&&player.orderPos<=3) hStrengths.push(`Batting ${player.orderPos} — premium lineup spot`);
+  if (player.orderPos&&player.orderPos>=7) hWeaknesses.push(`Batting ${player.orderPos} — limited plate appearances`);
+  if (!hStrengths.length&&!hWeaknesses.length) hStrengths.push('Profile within league average range');
+
+  // Pitcher strengths & weaknesses
+  const pStrengths=[], pWeaknesses=[];
+  const era=profile.era, whip=profile.whip, k9=parseFloat(profile.k9);
+  if (!era) { pWeaknesses.push('No 2026 stats — unknown pitcher'); }
+  else {
+    if (era<=2.50) pStrengths.push(`Elite ERA ${era.toFixed(2)}`);
+    else if (era<=3.30) pStrengths.push(`Strong ERA ${era.toFixed(2)}`);
+    else if (era>=5.00) pWeaknesses.push(`Weak ERA ${era.toFixed(2)} — frequent mistakes`);
+    else if (era>=4.20) pWeaknesses.push(`Below-average ERA ${era.toFixed(2)}`);
   }
-  if (bullpenAdvice) narrativeParts.push(bullpenAdvice);
+  if (whip) {
+    if (whip<=1.05) pStrengths.push(`Elite command — WHIP ${whip.toFixed(2)}`);
+    else if (whip>=1.35) pWeaknesses.push(`Hittable command — WHIP ${whip.toFixed(2)}`);
+  }
+  if (k9>=9) pStrengths.push(`High-K arsenal — ${k9.toFixed(1)} K/9`);
+  else if (k9>0&&k9<6) pWeaknesses.push(`Contact-prone — ${k9.toFixed(1)} K/9`);
+  if (bullpenEra>5.00) pWeaknesses.push(`Poor bullpen (ERA ${bullpenEra.toFixed(2)}) — late-inning liability`);
+  else if (bullpenEra>4.50) pWeaknesses.push(`Below-avg bullpen (ERA ${bullpenEra.toFixed(2)})`);
+  else if (bullpenEra>0&&bullpenEra<3.00) pStrengths.push(`Elite bullpen (ERA ${bullpenEra.toFixed(2)}) — late innings locked down`);
+  else if (bullpenEra>0&&bullpenEra<3.50) pStrengths.push(`Strong bullpen (ERA ${bullpenEra.toFixed(2)})`);
+  if (!pStrengths.length&&!pWeaknesses.length) pStrengths.push('Pitcher profile within average range');
 
-  const fmt3 = v => v ? v.toFixed(3).replace(/^0/,'') : '—';
+  // Pitcher photo (MLB headshots)
+  const pitcherPhoto = pitcher?.id ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current` : '';
+  const oppTi = TEAM_INFO[oppTeamId] || {};
+  const oppSlug = oppTi.espn || '';
 
-  document.getElementById('labCards').innerHTML = `
-    ${parkCtx ? `
-    <div class="lab-card">
-      <div class="lab-card-header"><span class="lab-card-title">🏟️ Park Intelligence — ${escHtml(venue)}</span>
-        <span style="margin-left:auto;font-size:11px;font-weight:700;color:${pf.overall>=1.05?'#22c55e':pf.overall<=0.95?'var(--accent-blue)':'var(--text-muted)'}">${pf.overall.toFixed(2)}× Park Factor</span>
-      </div>
-      <div class="lab-card-body">
-        <div class="lab-park-headline">${escHtml(parkCtx.headline)}</div>
-        <ul class="lab-park-bullets">${parkCtx.bullets.map(b=>`<li>${escHtml(b)}</li>`).join('')}</ul>
-        <div class="lab-edge-row">
-          <span class="lab-edge-chip lab-edge-hitter">⚾ Hitter edge: ${escHtml(parkCtx.hitterEdge)}</span>
-          <span class="lab-edge-chip lab-edge-pitcher">🔵 Pitcher risk: ${escHtml(parkCtx.pitcherRisk)}</span>
-        </div>
-      </div>
-    </div>` : ''}
+  // Narrative
+  const narrative = [];
+  if (parkCtx) narrative.push(`At ${venue}, ${parkCtx.headline.toLowerCase()}.`);
+  if (pitcher?.fullName) narrative.push(`Facing ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}): ${profile.eraTier.desc}`);
+  if (splitAB>=20&&Math.abs(splitDiff)>0.015) narrative.push(`${player.name} hits ${splitDiff>0?'significantly better':'notably worse'} vs ${pitcherHand}HP (.${Math.round(splitAvg*1000).toString().padStart(3,'0')} vs .${Math.round(seasAvg*1000).toString().padStart(3,'0')} season avg).`);
+  if (vsTeamStats?.atBats>=10) narrative.push(`Career vs this franchise: .${Math.round(vsTeamStats.avg*1000).toString().padStart(3,'0')} over ${vsTeamStats.atBats} at-bats.`);
+  if (bullpenEra>4.50) narrative.push(`The bullpen (ERA ${bullpenEra.toFixed(2)}) is exploitable late in the game.`);
+  else if (bullpenEra>0&&bullpenEra<3.50) narrative.push(`The elite bullpen (ERA ${bullpenEra.toFixed(2)}) could neutralize any hitter advantage late.`);
 
-    <div class="lab-card">
-      <div class="lab-card-header"><span class="lab-card-title">⚾ Pitcher Profile — ${pitcher?.fullName ? escHtml(pitcher.fullName) : 'Unknown Pitcher'} (${hand}HP)</span></div>
-      <div class="lab-card-body">
-        <div class="lab-pitcher-grid">
-          <div class="lab-pitcher-stat">
-            <div class="lab-pitcher-stat-label">ERA</div>
-            <div class="lab-pitcher-stat-val ${profile.eraTier.cls}">${profile.era ? profile.era.toFixed(2) : '—'}</div>
-            <div class="lab-pitcher-stat-tier">${profile.eraTier.label}</div>
+  await new Promise(r => setTimeout(r,250));
+  _labStep('ls5','done');
+
+  // Set crumb
+  document.getElementById('labAnalysisCrumb').innerHTML =
+    `<strong>${escHtml(player.name)}</strong> vs <strong>${pitcher?.fullName?escHtml(pitcher.fullName):'TBD'}</strong>`;
+
+  // Render hitter side
+  document.getElementById('labHitterSide').innerHTML = `
+    <div class="lab-side-header"><span class="lab-side-label">🎯 The Hitter</span></div>
+    <div class="lab-side-body">
+      <div class="lab-player-hero">
+        <img class="lab-hero-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="">
+        <div>
+          <div class="lab-hero-name">${escHtml(player.name)}</div>
+          <div class="lab-hero-meta">
+            ${slug?`<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">`:''}
+            ${escHtml(ti.city||'')} ${escHtml(ti.nick||player.teamAbbr||'')} · ${player.position||''} · Bats ${player.orderPos?'#'+player.orderPos:'?'}
           </div>
-          <div class="lab-pitcher-stat">
-            <div class="lab-pitcher-stat-label">WHIP</div>
-            <div class="lab-pitcher-stat-val">${profile.whip ? profile.whip.toFixed(2) : '—'}</div>
-            <div class="lab-pitcher-stat-tier">${profile.whipTend ? (profile.whip <= 1.15 ? 'Sharp command' : profile.whip <= 1.30 ? 'Average command' : 'Hittable') : '—'}</div>
-          </div>
-          <div class="lab-pitcher-stat">
-            <div class="lab-pitcher-stat-label">K/9</div>
-            <div class="lab-pitcher-stat-val">${profile.k9 !== '0.0' ? profile.k9 : '—'}</div>
-            <div class="lab-pitcher-stat-tier">${parseFloat(profile.k9) >= 8 ? 'High-K' : parseFloat(profile.k9) >= 6 ? 'Average' : parseFloat(profile.k9) > 0 ? 'Contact-prone' : '—'}</div>
-          </div>
         </div>
-        <div class="lab-pitcher-desc">${profile.eraTier.desc}${profile.kTend ? ' ' + profile.kTend : ''}${profile.whipTend ? ' ' + profile.whipTend : ''}</div>
       </div>
-    </div>
-
-    <div class="lab-card">
-      <div class="lab-card-header"><span class="lab-card-title">🔄 Bullpen Continuation</span></div>
-      <div class="lab-card-body">
-        <div class="lab-split-row">
-          <span class="lab-split-label">Opp Team ERA (bullpen proxy)</span>
-          <span class="lab-split-val ${bullpenEra>4.5?'good':bullpenEra>0&&bullpenEra<3.5?'bad':''}">${bullpenLabel.split(' — ')[0]}</span>
-        </div>
-        <div class="lab-pitcher-desc" style="margin-top:10px">${bullpenEra ? bullpenLabel.split(' — ').slice(1).join(' — ') + (bullpenAdvice ? ' ' + bullpenAdvice : '') : 'Bullpen data unavailable.'}</div>
-      </div>
-    </div>
-
-    <div class="lab-card">
-      <div class="lab-card-header"><span class="lab-card-title">🎯 Hitter Profile</span></div>
-      <div class="lab-card-body">
-        <div class="lab-split-row"><span class="lab-split-label">Season AVG</span><span class="lab-split-val">${fmt3(player.seasonStats?.avg)}</span></div>
-        <div class="lab-split-row"><span class="lab-split-label">Season OBP</span><span class="lab-split-val">${fmt3(player.seasonStats?.obp)}</span></div>
-        <div class="lab-split-row"><span class="lab-split-label">Season SLG</span><span class="lab-split-val">${fmt3(player.seasonStats?.slg)}</span></div>
-        <div class="lab-split-row">
-          <span class="lab-split-label">AVG vs ${hand}HP today${splitAB >= 20 ? ` (${splitAB} AB)` : splitAB > 0 ? ` (${splitAB} AB — small sample)` : ' (no data)'}</span>
-          <span class="lab-split-val ${splitCls}">${splitAB > 0 ? fmt3(splitAvg) : '—'}</span>
-        </div>
-        <div class="lab-split-row"><span class="lab-split-label">L10 AVG</span><span class="lab-split-val ${((player.last10Stats||player.last7Stats)?.avg||0)>=0.300?'good':((player.last10Stats||player.last7Stats)?.avg||0)<0.220&&((player.last10Stats||player.last7Stats)?.avg||0)>0?'bad':''}">${fmt3((player.last10Stats||player.last7Stats)?.avg)}</span></div>
-        <div class="lab-split-row"><span class="lab-split-label">L10 Hits</span><span class="lab-split-val">${(player.last10Stats||player.last7Stats)?.hits ?? '—'}</span></div>
-        <div class="lab-split-row"><span class="lab-split-label">Active Hit Streak</span><span class="lab-split-val">${player.hitStreak ? player.hitStreak + ' games 🔥' : '—'}</span></div>
-        <div class="lab-split-row"><span class="lab-split-label">Batting Order</span><span class="lab-split-val">${player.orderPos || '?'}</span></div>
-      </div>
-    </div>
-
-    <div class="lab-card">
-      <div class="lab-card-header"><span class="lab-card-title">📊 Matchup Score</span></div>
-      <div class="lab-card-body">
-        <div class="lab-score-wrap">
-          <div class="lab-score-num ${scoreCls}">${score}</div>
-          <div class="lab-score-label" style="color:${barColor}">${scoreLabel}</div>
-        </div>
-        <div class="lab-score-bar-track">
-          <div class="lab-score-bar-fill" style="width:${score}%;background:${barColor}"></div>
-        </div>
-        <div class="lab-narrative">${narrativeParts.join(' ')}</div>
+      <div class="lab-chips-label">✅ Strengths</div>
+      <div class="lab-chips">${hStrengths.map(s=>`<span class="lab-chip str">${escHtml(s)}</span>`).join('')||'<span class="lab-chip neu">None identified</span>'}</div>
+      <div class="lab-chips-label">⚠️ Weaknesses</div>
+      <div class="lab-chips">${hWeaknesses.map(w=>`<span class="lab-chip wk">${escHtml(w)}</span>`).join('')||'<span class="lab-chip neu">None identified</span>'}</div>
+      <div style="margin-top:12px">
+        <div class="lab-stat-row"><span class="lab-stat-label">Season AVG / OBP / SLG</span><span class="lab-stat-val">${fmt3(seasAvg)} / ${fmt3(player.seasonStats?.obp)} / ${fmt3(player.seasonStats?.slg)}</span></div>
+        <div class="lab-stat-row"><span class="lab-stat-label">vs ${pitcherHand}HP today${splitAB>=20?` (${splitAB} AB)`:splitAB>0?` (${splitAB} AB small)`:''}:</span><span class="lab-stat-val ${splitAB>=20?(splitDiff>0.015?'good':splitDiff<-0.015?'bad':''):''}"> ${splitAB>0?fmt3(splitAvg):'No data'}</span></div>
+        <div class="lab-stat-row"><span class="lab-stat-label">L10 AVG / Hits</span><span class="lab-stat-val ${(l10.avg||0)>=0.300?'good':(l10.avg||0)>0&&(l10.avg||0)<0.220?'bad':''}">${fmt3(l10.avg)} / ${l10.hits??'—'}</span></div>
+        ${vsTeamStats?.atBats>=10?`<div class="lab-stat-row"><span class="lab-stat-label">Career vs this team</span><span class="lab-stat-val ${vsTeamStats.avg>0.290?'good':vsTeamStats.avg>0&&vsTeamStats.avg<0.200?'bad':''}">${fmt3(vsTeamStats.avg)} (${vsTeamStats.atBats} AB)</span></div>`:''}
+        <div class="lab-stat-row"><span class="lab-stat-label">Hit Streak</span><span class="lab-stat-val">${player.hitStreak?player.hitStreak+'g 🔥':'—'}</span></div>
       </div>
     </div>`;
+
+  // Render pitcher side
+  document.getElementById('labPitcherSide').innerHTML = `
+    <div class="lab-side-header"><span class="lab-side-label">⚾ The Opposition</span></div>
+    <div class="lab-side-body">
+      <div class="lab-player-hero">
+        ${pitcherPhoto?`<img class="lab-hero-photo" src="${pitcherPhoto}" onerror="this.style.display='none'" alt="">`:''}
+        <div>
+          <div class="lab-hero-name">${pitcher?.fullName?escHtml(pitcher.fullName):'TBD'}</div>
+          <div class="lab-hero-meta">
+            ${oppSlug?`<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${oppSlug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">`:''}
+            ${escHtml(oppTi.city||'')} ${escHtml(oppTi.nick||'')} · ${pitcherHand}HP · Starter
+          </div>
+        </div>
+      </div>
+      <div class="lab-chips-label">✅ Pitcher Strengths</div>
+      <div class="lab-chips">${pStrengths.map(s=>`<span class="lab-chip str">${escHtml(s)}</span>`).join('')||'<span class="lab-chip neu">None identified</span>'}</div>
+      <div class="lab-chips-label">⚠️ Pitcher Weaknesses</div>
+      <div class="lab-chips">${pWeaknesses.map(w=>`<span class="lab-chip wk">${escHtml(w)}</span>`).join('')||'<span class="lab-chip neu">None identified</span>'}</div>
+      <div style="margin-top:12px">
+        <div class="lab-stat-row"><span class="lab-stat-label">ERA</span><span class="lab-stat-val ${profile.eraTier.cls}">${era?era.toFixed(2):'—'} — ${profile.eraTier.label}</span></div>
+        <div class="lab-stat-row"><span class="lab-stat-label">WHIP</span><span class="lab-stat-val">${whip?whip.toFixed(2):'—'}</span></div>
+        <div class="lab-stat-row"><span class="lab-stat-label">K/9</span><span class="lab-stat-val">${k9>0?k9.toFixed(1):'—'}</span></div>
+        <div class="lab-stat-row"><span class="lab-stat-label">Bullpen ERA</span><span class="lab-stat-val ${bullpenEra>4.5?'bad':bullpenEra>0&&bullpenEra<3.5?'good':''}">${bullpenEra?bullpenEra.toFixed(2):'—'}</span></div>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:8px">${profile.eraTier.desc}${profile.kTend?' '+profile.kTend:''}</div>
+      </div>
+    </div>`;
+
+  // Park card
+  document.getElementById('labParkCard').innerHTML = parkCtx ? `
+    <div class="lab-park-card">
+      <div class="lab-park-header">
+        <span class="lab-park-title">🏟️ ${escHtml(venue)}</span>
+        <span style="font-size:11px;font-weight:700;color:${pf.overall>=1.05?'#22c55e':pf.overall<=0.95?'var(--accent-blue)':'var(--text-muted)'}">${pf.overall.toFixed(2)}× Park Factor</span>
+      </div>
+      <div class="lab-park-body">
+        <div class="lab-park-headline">${escHtml(parkCtx.headline)}</div>
+        <ul class="lab-park-bullets">${parkCtx.bullets.map(b=>`<li>${escHtml(b)}</li>`).join('')}</ul>
+        <div class="lab-park-chips">
+          <span class="lab-chip str">⚾ ${escHtml(parkCtx.hitterEdge)}</span>
+          <span class="lab-chip neu">🔵 ${escHtml(parkCtx.pitcherRisk)}</span>
+        </div>
+      </div>
+    </div>` : '';
+
+  // Score card
+  document.getElementById('labScoreCard').innerHTML = `
+    <div class="lab-score-card">
+      <div class="lab-score-header">📊 Matchup Score</div>
+      <div class="lab-score-body">
+        <div class="lab-score-display">
+          <div class="lab-score-num ${scoreCls}">${score}</div>
+          <div class="lab-score-right">
+            <div class="lab-score-label" style="color:${barColor}">${scoreLbl}</div>
+            <div class="lab-score-bar-track">
+              <div class="lab-score-bar-fill" style="width:${score}%;background:${barColor}"></div>
+            </div>
+          </div>
+        </div>
+        <div class="lab-narrative">${narrative.join(' ')}</div>
+      </div>
+    </div>`;
+
+  _labShow('labScreenAnalysis');
 }
 </script>
 
