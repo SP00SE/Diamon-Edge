@@ -362,6 +362,14 @@ main { padding: 28px 0 60px; }
 }
 .consec-filter-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
 .consec-filter-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+.hs-pts-filter-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  padding: 4px 12px; border-radius: var(--radius-md); cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg-secondary);
+  color: var(--text-muted); letter-spacing: .5px; transition: all .15s;
+}
+.hs-pts-filter-btn:hover { border-color: #22c55e; color: var(--text-primary); }
+.hs-pts-filter-btn.active { background: #22c55e; border-color: #22c55e; color: #000; }
 .consec-badge {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 11px; font-weight: 700; padding: 2px 10px;
@@ -1738,7 +1746,7 @@ main { padding: 28px 0 60px; }
         <button class="streak-filter-btn" onclick="setStreakFilter('hit',this)">Hits</button>
         <button class="streak-filter-btn" onclick="setStreakFilter('hr',this)">HR</button>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
         <span style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">Consecutive:</span>
         <button class="consec-filter-btn active" onclick="setConsecFilter(0,this)">Any</button>
         <button class="consec-filter-btn" onclick="setConsecFilter(3,this)">3+</button>
@@ -1746,6 +1754,13 @@ main { padding: 28px 0 60px; }
         <button class="consec-filter-btn" onclick="setConsecFilter(5,this)">5+</button>
         <button class="consec-filter-btn" onclick="setConsecFilter(6,this)">6+</button>
         <button class="consec-filter-btn" onclick="setConsecFilter(7,this)">7</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;">Pts vs Season:</span>
+        <button class="hs-pts-filter-btn active" onclick="setHsPtsFilter(0,this)">Any</button>
+        <button class="hs-pts-filter-btn" onclick="setHsPtsFilter(20,this)">+20 pts</button>
+        <button class="hs-pts-filter-btn" onclick="setHsPtsFilter(40,this)">+40 pts</button>
+        <button class="hs-pts-filter-btn" onclick="setHsPtsFilter(60,this)">+60 pts</button>
       </div>
       <div id="streakHitSection" style="display:none;">
         <div class="section-header">
@@ -2556,6 +2571,7 @@ let state = {
   playerMap: {},   // id -> { ...player, gamePk }
   streakFilter: 'both',
   streakConsecMin: 0,
+  streakPtsDiffMin: 0,
   allGamesLiveData: {}, // gamePk -> { statsMap, isLive, isFinal }
 };
 
@@ -4199,6 +4215,13 @@ function setConsecFilter(min, btn) {
   renderHotStreaks();
 }
 
+function setHsPtsFilter(min, btn) {
+  state.streakPtsDiffMin = min;
+  document.querySelectorAll('.hs-pts-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHotStreaks();
+}
+
 function calcConsecutiveStreak(gamelog, type) {
   // gamelog is sorted newest first; count consecutive games with a hit/HR
   let streak = 0;
@@ -4340,6 +4363,23 @@ async function renderHotStreaks() {
       return diff !== 0 ? diff : ((b.last10Stats || b.last7Stats)?.slg || 0) - ((a.last10Stats || a.last7Stats)?.slg || 0);
     });
 
+  // Points-vs-season filter
+  const ptsDiffMin = state.streakPtsDiffMin || 0;
+  const ptsFilteredHit = ptsDiffMin > 0
+    ? hitStreakers.filter(p => {
+        const l10avg = (p.last10Stats || p.last7Stats)?.avg || 0;
+        const savg   = p.seasonStats?.avg || 0;
+        return Math.round((l10avg - savg) * 1000) >= ptsDiffMin;
+      })
+    : hitStreakers;
+  const ptsFilteredHR = ptsDiffMin > 0
+    ? hrStreakers.filter(p => {
+        const l10slg = (p.last10Stats || p.last7Stats)?.slg || 0;
+        const sslg   = p.seasonStats?.slg || 0;
+        return Math.round((l10slg - sslg) * 1000) >= ptsDiffMin;
+      })
+    : hrStreakers;
+
   const showHit   = state.streakFilter === 'both' || state.streakFilter === 'hit';
   const showHR    = state.streakFilter === 'both' || state.streakFilter === 'hr';
   const consecMin = state.streakConsecMin;
@@ -4360,7 +4400,7 @@ async function renderHotStreaks() {
 
     // Fetch game logs for all candidate players in parallel
     const candidates = [...new Map(
-      [...hitStreakers, ...hrStreakers].map(p => [p.id, p])
+      [...ptsFilteredHit, ...ptsFilteredHR].map(p => [p.id, p])
     ).values()];
     await Promise.all(candidates.map(p => fetchGameLog(p.id).catch(() => [])));
 
@@ -4383,7 +4423,7 @@ async function renderHotStreaks() {
 
   // Hit streaks (combined)
   const hitSection = document.getElementById('streakHitSection');
-  const filteredHit = applyConsec(hitStreakers, 'hit');
+  const filteredHit = applyConsec(ptsFilteredHit, 'hit');
   if (showHit && filteredHit.length) {
     hitSection.style.display = 'block';
     document.getElementById('streakHitCount').textContent = `${filteredHit.length} players`;
@@ -4394,7 +4434,7 @@ async function renderHotStreaks() {
 
   // HR streaks
   const hrSection = document.getElementById('streakHRSection');
-  const filteredHR = applyConsec(hrStreakers, 'hr');
+  const filteredHR = applyConsec(ptsFilteredHR, 'hr');
   if (showHR && filteredHR.length) {
     hrSection.style.display = 'block';
     document.getElementById('streakHRCount').textContent = `${filteredHR.length} players`;
