@@ -449,11 +449,37 @@ main { padding: 28px 0 60px; }
   .lab-pitcher-stat-grid { grid-template-columns:repeat(3,1fr); }
   .lab-stat-grid { grid-template-columns:repeat(2,1fr); }
 }
-.lab-player-card { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:12px; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:10px; }
-.lab-player-card:hover { border-color:var(--accent-blue); background:var(--accent-blue-dim); }
-.lab-player-photo { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
+.lab-player-card { background:var(--bg-card); border-bottom:1px solid var(--border); padding:10px 12px; cursor:pointer; transition:background .12s; display:flex; align-items:flex-start; gap:8px; }
+.lab-player-card:hover { background:var(--bg-hover); }
+.lab-player-check-wrap { display:flex; align-items:center; padding-top:12px; flex-shrink:0; }
+.lab-player-check { width:16px; height:16px; cursor:pointer; accent-color:var(--accent-blue); }
+.lab-player-photo { width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; margin-top:2px; }
+.lab-player-info { flex:1; min-width:0; }
 .lab-player-name { font-size:13px; font-weight:700; }
 .lab-player-meta { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.lab-player-stats { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:5px; }
+.lps-cell  { display:flex; flex-direction:column; align-items:center; min-width:28px; }
+.lps-label { font-size:9px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); }
+.lps-val   { font-size:11px; font-weight:700; }
+/* Compare bar */
+.lab-compare-bar  { display:flex; align-items:center; gap:10px; background:var(--bg-hover); border:1px solid var(--accent-blue); border-radius:8px; padding:8px 12px; margin-bottom:10px; }
+#labCompareCount  { font-size:12px; color:var(--text-muted); flex:1; }
+.lab-compare-btn  { background:var(--accent-blue); color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; }
+.lab-compare-btn:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
+.lab-compare-clear { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px; padding:0 4px; }
+/* Comparison result */
+.lab-compare-verdict { border:2px solid #f59e0b; border-radius:12px; padding:16px 20px; text-align:center; margin-bottom:16px; background:var(--bg-card); }
+.lcv-trophy { font-size:28px; line-height:1; }
+.lcv-name   { font-family:'Bebas Neue',cursive; font-size:22px; color:#f59e0b; margin:6px 0 4px; }
+.lcv-sub    { font-size:12px; color:var(--text-muted); }
+.lab-compare-table { width:100%; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
+.lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); }
+.lab-compare-table td { padding:9px 12px; font-size:13px; font-weight:600; border-top:1px solid var(--border); text-align:center; }
+.lab-compare-table td.lct-label { font-size:10px; font-weight:400; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+.lab-compare-table td.lct-win   { color:#22c55e; }
+.lab-compare-table td.lct-lose  { color:var(--text-muted); font-weight:400; }
+.lab-compare-table tr.lct-score-row td { font-family:'Bebas Neue',cursive; font-size:22px; padding:12px; }
+.lab-compare-table tr.lct-score-row td.lct-win { color:#22c55e; }
 .lab-loading-wrap { max-width:400px; margin:50px auto; text-align:left; }
 .lab-loading-title { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--accent-blue); letter-spacing:2px; margin-bottom:24px; text-align:center; }
 .lab-loading-step { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-muted); transition:color .2s; }
@@ -2094,7 +2120,12 @@ main { padding: 28px 0 60px; }
           <button class="lab-back-btn" onclick="labGoGames()">← Games</button>
           <span class="lab-back-crumb" id="labGameCrumb"></span>
         </div>
-        <div class="lab-step-label">Select a Hitter</div>
+        <div class="lab-step-label">Select a Hitter — or check 2 players to compare</div>
+        <div class="lab-compare-bar" id="labCompareBar" style="display:none;">
+          <span id="labCompareCount">0 of 2 selected</span>
+          <button class="lab-compare-btn" id="labCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
+          <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
+        </div>
         <div class="lab-player-columns" id="labPlayerColumns"></div>
       </div>
       <!-- Screen 3: Loading -->
@@ -2107,13 +2138,21 @@ main { padding: 28px 0 60px; }
       <!-- Screen 4: Analysis -->
       <div id="labScreenAnalysis" class="lab-screen" style="display:none;">
         <div class="lab-back-bar">
-          <button class="lab-back-btn" onclick="labGoGames()">← New Analysis</button>
+          <button class="lab-back-btn" onclick="labGoRoster()">← Roster</button>
           <span class="lab-back-crumb" id="labAnalysisCrumb"></span>
         </div>
         <div id="labHitterCard"></div>
         <div id="labPitcherCard"></div>
         <div id="labParkCard"></div>
         <div id="labScoreCard"></div>
+      </div>
+      <!-- Screen 5: Comparison -->
+      <div id="labScreenCompare" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="labGoRoster()">← Roster</button>
+          <span class="lab-back-crumb" id="labCompareCrumb"></span>
+        </div>
+        <div id="labCompareContent"></div>
       </div>
     </div>
 
@@ -7961,9 +8000,10 @@ async function openPlayerAnalyzer(playerId) {
 
 // ─── THE LAB ──────────────────────────────────────────────────────────────
 let _labState = { gamePk: null, playerId: null };
+let _labCompareSet = new Set();
 
 function _labShow(screenId) {
-  ['labScreenGame','labScreenPlayer','labScreenLoading','labScreenAnalysis']
+  ['labScreenGame','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
 }
 
@@ -8022,13 +8062,30 @@ function labSelectGame(gamePk) {
     `<strong>${escHtml(gd.awayAbbr||'')} @ ${escHtml(gd.homeAbbr||'')}</strong>`;
 
   const playerCard = p => {
-    const photo = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
-    const avg   = p.seasonStats?.avg ? p.seasonStats.avg.toFixed(3) : '—';
-    return `<div class="lab-player-card" onclick="labSelectPlayer(${p.id})">
-      <img class="lab-player-photo" src="${photo}" onerror="this.style.display='none'">
-      <div>
+    const photo  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const avg    = p.seasonStats?.avg  ? p.seasonStats.avg.toFixed(3)  : '—';
+    const obp    = p.seasonStats?.obp  ? p.seasonStats.obp.toFixed(3)  : '—';
+    const slg    = p.seasonStats?.slg  ? p.seasonStats.slg.toFixed(3)  : '—';
+    const hr     = p.seasonStats?.homeRuns ?? '—';
+    const hits   = p.seasonStats?.hits ?? (p.seasonStats?.atBats && p.seasonStats?.avg ? Math.round(p.seasonStats.atBats * p.seasonStats.avg) : '—');
+    const hs     = p.hitScore != null ? p.hitScore : null;
+    const hsCol  = hs >= 75 ? '#22c55e' : hs >= 60 ? '#f59e0b' : hs >= 45 ? '#94a3b8' : '#ef4444';
+    return `<div class="lab-player-card" id="lpc_${p.id}">
+      <label class="lab-player-check-wrap" onclick="event.stopPropagation()">
+        <input type="checkbox" class="lab-player-check" id="chk_${p.id}" value="${p.id}" onchange="toggleComparePlayer(${p.id},this.checked)">
+      </label>
+      <img class="lab-player-photo" src="${photo}" onerror="this.style.display='none'" onclick="labSelectPlayer(${p.id})">
+      <div class="lab-player-info" onclick="labSelectPlayer(${p.id})">
         <div class="lab-player-name">${escHtml(p.name)}</div>
-        <div class="lab-player-meta">${p.position||''} · ${p.orderPos?'#'+p.orderPos:'TBD'} · ${avg}</div>
+        <div class="lab-player-meta">${p.position||''} · ${p.orderPos?'#'+p.orderPos:'TBD'}</div>
+        <div class="lab-player-stats">
+          <span class="lps-cell"><span class="lps-label">AVG</span><span class="lps-val">${avg}</span></span>
+          <span class="lps-cell"><span class="lps-label">OBP</span><span class="lps-val">${obp}</span></span>
+          <span class="lps-cell"><span class="lps-label">SLG</span><span class="lps-val">${slg}</span></span>
+          <span class="lps-cell"><span class="lps-label">HR</span><span class="lps-val">${hr}</span></span>
+          <span class="lps-cell"><span class="lps-label">H</span><span class="lps-val">${hits}</span></span>
+          ${hs != null ? `<span class="lps-cell"><span class="lps-label">Score</span><span class="lps-val" style="color:${hsCol}">${hs}</span></span>` : ''}
+        </div>
       </div>
     </div>`;
   };
@@ -8056,7 +8113,240 @@ function labSelectGame(gamePk) {
 
 function labGoGames() {
   _labState = { gamePk: null, playerId: null };
+  _labCompareSet = new Set();
   _labShow('labScreenGame');
+}
+
+function labGoRoster() {
+  if (_labState.gamePk) labSelectGame(_labState.gamePk);
+}
+
+function toggleComparePlayer(playerId, checked) {
+  if (checked) {
+    if (_labCompareSet.size >= 2) {
+      const el = document.getElementById(`chk_${playerId}`);
+      if (el) el.checked = false;
+      return;
+    }
+    _labCompareSet.add(playerId);
+  } else {
+    _labCompareSet.delete(playerId);
+  }
+  updateCompareBar();
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById('labCompareBar');
+  const btn = document.getElementById('labCompareBtn');
+  const cnt = document.getElementById('labCompareCount');
+  if (!bar) return;
+  const n = _labCompareSet.size;
+  bar.style.display = n > 0 ? 'flex' : 'none';
+  cnt.textContent   = `${n} of 2 selected`;
+  btn.disabled      = n !== 2;
+  document.querySelectorAll('.lab-player-check').forEach(cb => {
+    if (!cb.checked) cb.disabled = n >= 2;
+  });
+}
+
+function clearCompareSelection() {
+  _labCompareSet.clear();
+  document.querySelectorAll('.lab-player-check').forEach(cb => { cb.checked = false; cb.disabled = false; });
+  updateCompareBar();
+}
+
+async function fetchLabAnalysisData(playerId) {
+  const player = state.playerMap?.[playerId];
+  if (!player) return null;
+  const gd          = state.predictions[player.gamePk] || Object.values(state.predictions).find(g => (g.players||[]).some(p => p.id === playerId));
+  const pitcher     = player.isAway ? gd?.homePitcher : gd?.awayPitcher;
+  const oppTeamId   = player.isAway ? gd?.homeTeamId  : gd?.awayTeamId;
+  const venue       = gd?.venueName || '';
+  const pf          = getParkFactor(venue);
+  const parkCtx     = PARK_CONTEXT[venue] || null;
+  const profile     = buildPitcherProfile(pitcher);
+  const handHRFactor= player.batSide === 'L' ? (pf.hrL || pf.overall) : (pf.hrR || pf.overall);
+
+  let h2h = null;
+  if (pitcher?.id && player.id) {
+    try {
+      const d   = await cachedFetch(`https://statsapi.mlb.com/api/v1/people/${player.id}/stats?stats=vsPlayerTotal&group=hitting&opposingPlayerId=${pitcher.id}&gameType=R`);
+      const spl = d?.stats?.[0]?.splits?.[0]?.stat || null;
+      if (spl && parseInt(spl.atBats||0) > 0)
+        h2h = { ab:+spl.atBats, h:+spl.hits, hr:+spl.homeRuns, rbi:+spl.rbi,
+                avg:parseFloat(spl.avg)||0, obp:parseFloat(spl.obp)||0,
+                k:+spl.strikeOuts, bb:+spl.baseOnBalls };
+    } catch {}
+  }
+
+  let parkStats = null, bullpenEra = 0;
+  await Promise.all([
+    (async () => {
+      try {
+        const log  = await fetchGameLog(player.id, false, 162);
+        const pg   = log.filter(g => (g.game?.venue?.name || g.venue?.name || '') === venue);
+        if (pg.length > 0) {
+          const agg = pg.reduce((a,g) => ({ ab:a.ab+(+g.stat?.atBats||0), h:a.h+(+g.stat?.hits||0), hr:a.hr+(+g.stat?.homeRuns||0), games:a.games+1 }), { ab:0,h:0,hr:0,games:0 });
+          agg.avg = agg.ab > 0 ? agg.h / agg.ab : null;
+          parkStats = agg;
+        }
+      } catch {}
+    })(),
+    (async () => { if (oppTeamId) { try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {} } })(),
+  ]);
+
+  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats);
+  return { player, pitcher, gd, pf, parkCtx, profile, h2h, parkStats, bullpenEra, handHRFactor, score, venue };
+}
+
+async function runLabCompare() {
+  const [idA, idB] = [..._labCompareSet];
+  const pA = state.playerMap?.[idA], pB = state.playerMap?.[idB];
+  if (!pA || !pB) return;
+
+  document.getElementById('labLoadingSteps').innerHTML = `
+    <div class="lab-loading-step pending" id="lc1"><span class="ls-icon">○</span>Analyzing ${escHtml(pA.name)}…</div>
+    <div class="lab-loading-step pending" id="lc2"><span class="ls-icon">○</span>Analyzing ${escHtml(pB.name)}…</div>
+    <div class="lab-loading-step pending" id="lc3"><span class="ls-icon">○</span>Building comparison…</div>`;
+  _labShow('labScreenLoading');
+
+  _labStep('lc1','active');
+  const dataA = await fetchLabAnalysisData(idA);
+  _labStep('lc1','done');
+  _labStep('lc2','active');
+  const dataB = await fetchLabAnalysisData(idB);
+  _labStep('lc2','done');
+  _labStep('lc3','active');
+  await new Promise(r => setTimeout(r, 200));
+  _labStep('lc3','done');
+
+  document.getElementById('labCompareCrumb').textContent = `${pA.name} vs ${pB.name}`;
+  document.getElementById('labCompareContent').innerHTML = buildCompareHTML(dataA, dataB);
+  _labShow('labScreenCompare');
+}
+
+function buildCompareHTML(dataA, dataB) {
+  if (!dataA || !dataB) return '<div style="color:var(--text-muted);padding:20px">Could not load data for one or both players.</div>';
+  const pA = dataA.player, pB = dataB.player;
+  const fmt3 = v => (v != null && v > 0) ? v.toFixed(3).replace(/^0/,'') : '—';
+  const fmtE = v => (v != null && v > 0) ? v.toFixed(2) : '—';
+
+  // Build comparison rows: { label, a, b, aDisp, bDisp, aWins }
+  // aWins: true = A wins, false = B wins, null = tie/no data
+  const rows = [];
+
+  const addRow = (label, aVal, bVal, fmtFn, higherWins) => {
+    const aDisp = fmtFn(aVal), bDisp = fmtFn(bVal);
+    let aWins = null;
+    if (aVal != null && bVal != null && aVal !== bVal) {
+      aWins = higherWins ? aVal > bVal : aVal < bVal;
+    }
+    rows.push({ label, aDisp, bDisp, aWins });
+    return aWins;
+  };
+
+  let pts = { A:0, B:0, total:0 };
+  const score = (w) => { if (w === true) pts.A++; else if (w === false) pts.B++; pts.total++; };
+
+  score(addRow('AVG',   pA.seasonStats?.avg,      pB.seasonStats?.avg,      fmt3, true));
+  score(addRow('OBP',   pA.seasonStats?.obp,       pB.seasonStats?.obp,      fmt3, true));
+  score(addRow('SLG',   pA.seasonStats?.slg,       pB.seasonStats?.slg,      fmt3, true));
+  score(addRow('HR',    pA.seasonStats?.homeRuns,  pB.seasonStats?.homeRuns, v => v ?? '—', true));
+
+  // Opp pitcher ERA: higher ERA = better for batter
+  const eraA = dataA.pitcher?.seasonStats?.era || 0;
+  const eraB = dataB.pitcher?.seasonStats?.era || 0;
+  if (eraA > 0 || eraB > 0) {
+    score(addRow('Opp ERA', eraA||null, eraB||null, fmtE, true));
+  } else {
+    rows.push({ label:'Opp ERA', aDisp:'TBD', bDisp:'TBD', aWins:null });
+  }
+
+  // H2H (if either has data)
+  const h2hA = dataA.h2h?.ab >= 3 ? dataA.h2h.avg : null;
+  const h2hB = dataB.h2h?.ab >= 3 ? dataB.h2h.avg : null;
+  rows.push({
+    label: 'H2H vs Pitcher',
+    aDisp: h2hA != null ? `${fmt3(h2hA)} (${dataA.h2h.ab} AB)` : '—',
+    bDisp: h2hB != null ? `${fmt3(h2hB)} (${dataB.h2h.ab} AB)` : '—',
+    aWins: h2hA != null && h2hB != null && h2hA !== h2hB ? h2hA > h2hB : null,
+  });
+  if (h2hA != null || h2hB != null) {
+    if (h2hA != null && h2hB != null) score(h2hA > h2hB ? true : false);
+    else if (h2hA != null) { pts.A++; pts.total++; }
+    else { pts.B++; pts.total++; }
+  }
+
+  // Park AVG
+  const pkA = dataA.parkStats?.ab >= 3 ? dataA.parkStats.avg : null;
+  const pkB = dataB.parkStats?.ab >= 3 ? dataB.parkStats.avg : null;
+  rows.push({
+    label: 'Park AVG 2026',
+    aDisp: pkA != null ? `${fmt3(pkA)} (${dataA.parkStats.games}G)` : '—',
+    bDisp: pkB != null ? `${fmt3(pkB)} (${dataB.parkStats.games}G)` : '—',
+    aWins: pkA != null && pkB != null && pkA !== pkB ? pkA > pkB : null,
+  });
+  if (pkA != null || pkB != null) {
+    if (pkA != null && pkB != null) score(pkA > pkB ? true : false);
+    else if (pkA != null) { pts.A++; pts.total++; }
+    else { pts.B++; pts.total++; }
+  }
+
+  // Bullpen ERA: higher = weaker pen = better for batter
+  if (dataA.bullpenEra > 0 || dataB.bullpenEra > 0) {
+    score(addRow('Opp Bullpen ERA', dataA.bullpenEra||null, dataB.bullpenEra||null, fmtE, true));
+  } else {
+    rows.push({ label:'Opp Bullpen ERA', aDisp:'—', bDisp:'—', aWins:null });
+  }
+
+  // Lab Score — 2pt weight
+  const scoreA = dataA.score, scoreB = dataB.score;
+  if (scoreA !== scoreB) {
+    const aWinsScore = scoreA > scoreB;
+    if (aWinsScore) { pts.A += 2; } else { pts.B += 2; }
+    pts.total += 2;
+  }
+
+  // Verdict
+  const winnerIsA = pts.A > pts.B;
+  const winnerIsB = pts.B > pts.A;
+  const tied      = pts.A === pts.B;
+  const winName   = tied ? 'Too Close to Call' : winnerIsA ? pA.name : pB.name;
+  const winPts    = tied ? null : winnerIsA ? pts.A : pts.B;
+
+  const rowHTML = rows.map(r => {
+    const aCls = r.aWins === true ? 'lct-win' : r.aWins === false ? 'lct-lose' : '';
+    const bCls = r.aWins === false ? 'lct-win' : r.aWins === true ? 'lct-lose' : '';
+    return `<tr>
+      <td class="${aCls}">${r.aDisp}${r.aWins===true?' 🏆':''}</td>
+      <td class="lct-label">${r.label}</td>
+      <td class="${bCls}">${r.bDisp}${r.aWins===false?' 🏆':''}</td>
+    </tr>`;
+  }).join('');
+
+  const scoreCls = s => s>=80?'#22c55e':s>=65?'#f59e0b':s>=45?'#94a3b8':'#ef4444';
+
+  return `
+    <div class="lab-compare-verdict">
+      <div class="lcv-trophy">${tied ? '🤝' : '🏆'}</div>
+      <div class="lcv-name">${escHtml(winName)}</div>
+      <div class="lcv-sub">${tied
+        ? `Scores tied ${scoreA} vs ${scoreB} — too close to call`
+        : `Score ${winnerIsA?scoreA:scoreB} vs ${winnerIsA?scoreB:scoreA} · Won ${winPts} of ${pts.total} categories`}</div>
+    </div>
+    <table class="lab-compare-table">
+      <tr>
+        <th style="text-align:right">${escHtml(pA.name)}</th>
+        <th style="text-align:center">Stat</th>
+        <th style="text-align:left">${escHtml(pB.name)}</th>
+      </tr>
+      ${rowHTML}
+      <tr class="lct-score-row">
+        <td class="${scoreA>scoreB?'lct-win':scoreA<scoreB?'lct-lose':''}" style="text-align:right;color:${scoreCls(scoreA)}">${scoreA}</td>
+        <td class="lct-label">Lab Score</td>
+        <td class="${scoreB>scoreA?'lct-win':scoreB<scoreA?'lct-lose':''}" style="text-align:left;color:${scoreCls(scoreB)}">${scoreB}</td>
+      </tr>
+    </table>`;
 }
 
 function labSelectPlayer(playerId) {
