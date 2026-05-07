@@ -379,6 +379,70 @@ main { padding: 28px 0 60px; }
 }
 .consec-loading { font-size: 11px; color: var(--text-muted); padding: 20px; text-align: center; }
 
+/* ── THE LAB ─────────────────────────────────────── */
+.lab-header { text-align:center; padding:20px 0 16px; }
+.lab-title { font-family:'Bebas Neue',cursive; font-size:32px; color:var(--accent-blue); letter-spacing:2px; }
+.lab-subtitle { font-size:13px; color:var(--text-muted); margin-top:4px; }
+.lab-step { margin-bottom:24px; }
+.lab-step-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; margin-bottom:10px; }
+.lab-game-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px; }
+.lab-game-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; cursor:pointer; transition:all .15s; }
+.lab-game-card:hover { border-color:var(--accent-blue); }
+.lab-game-card.active { border-color:var(--accent-blue); background:var(--accent-blue-dim); }
+.lab-game-matchup { font-weight:700; font-size:14px; }
+.lab-game-meta { font-size:11px; color:var(--text-muted); margin-top:3px; }
+.lab-search-input { width:100%; max-width:480px; display:block; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:14px; margin-bottom:4px; }
+.lab-search-input:focus { outline:none; border-color:var(--accent-blue); }
+.lab-search-results { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; max-width:480px; overflow:hidden; }
+.lab-result-item { padding:10px 14px; cursor:pointer; display:flex; flex-direction:column; gap:2px; border-bottom:1px solid var(--border); }
+.lab-result-item:last-child { border-bottom:none; }
+.lab-result-item:hover { background:var(--bg-hover); }
+.lab-result-name { font-weight:600; font-size:14px; }
+.lab-result-meta { font-size:11px; color:var(--text-muted); }
+.lab-selected-bar { display:flex; align-items:center; gap:12px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 16px; margin-bottom:20px; }
+.lab-selected-photo { width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
+.lab-selected-name { font-weight:700; font-size:16px; }
+.lab-selected-meta { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.lab-change-btn { margin-left:auto; font-size:11px; background:none; border:1px solid var(--border); border-radius:6px; color:var(--text-muted); padding:4px 10px; cursor:pointer; flex-shrink:0; }
+.lab-change-btn:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
+.lab-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); margin-bottom:16px; overflow:hidden; }
+.lab-card-header { padding:12px 16px; background:var(--bg-hover); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+.lab-card-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+.lab-card-body { padding:16px; }
+.lab-park-headline { font-size:15px; font-weight:600; margin-bottom:10px; color:var(--text-primary); line-height:1.4; }
+.lab-park-bullets { list-style:none; padding:0; margin:0 0 14px; display:flex; flex-direction:column; gap:6px; }
+.lab-park-bullets li { font-size:13px; color:var(--text-secondary); padding-left:16px; position:relative; line-height:1.4; }
+.lab-park-bullets li::before { content:'·'; position:absolute; left:4px; color:var(--text-muted); }
+.lab-edge-row { display:flex; gap:8px; flex-wrap:wrap; }
+.lab-edge-chip { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:600; }
+.lab-edge-hitter  { background:#22c55e20; color:#22c55e; }
+.lab-edge-pitcher { background:var(--accent-blue-dim); color:var(--accent-blue); }
+.lab-edge-neutral { background:var(--bg-hover); color:var(--text-muted); }
+.lab-pitcher-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px; }
+.lab-pitcher-stat { display:flex; flex-direction:column; gap:3px; }
+.lab-pitcher-stat-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+.lab-pitcher-stat-val { font-size:22px; font-weight:700; font-family:'Bebas Neue',cursive; line-height:1; }
+.lab-pitcher-stat-tier { font-size:11px; color:var(--text-muted); }
+.lab-pitcher-desc { font-size:13px; color:var(--text-secondary); line-height:1.6; margin-top:4px; }
+.lab-split-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+.lab-split-row:last-child { border-bottom:none; }
+.lab-split-label { font-size:12px; color:var(--text-muted); }
+.lab-split-val { font-size:14px; font-weight:700; }
+.lab-split-val.good { color:#22c55e; }
+.lab-split-val.bad  { color:#ef4444; }
+.lab-score-wrap { text-align:center; padding:8px 0 16px; }
+.lab-score-num { font-family:'Bebas Neue',cursive; font-size:80px; line-height:1; }
+.lab-score-num.score-great  { color:#22c55e; }
+.lab-score-num.score-good   { color:#86efac; }
+.lab-score-num.score-neutral { color:var(--text-muted); }
+.lab-score-num.score-bad    { color:#f97316; }
+.lab-score-num.score-poor   { color:#ef4444; }
+.lab-score-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-top:4px; }
+.lab-score-bar-track { height:10px; border-radius:5px; background:var(--bg-hover); margin:14px 0; overflow:hidden; }
+.lab-score-bar-fill { height:100%; border-radius:5px; }
+.lab-narrative { font-size:14px; line-height:1.7; color:var(--text-secondary); }
+.lab-loading { text-align:center; padding:40px; color:var(--text-muted); font-size:14px; }
+
 /* ── LEADERBOARD ──────────────────────────────────── */
 .leaders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media(max-width:700px) { .leaders-grid { grid-template-columns: 1fr; } }
@@ -1725,6 +1789,7 @@ main { padding: 28px 0 60px; }
         <button class="main-tab" data-tab="streaks" onclick="switchTab('streaks',this)">🔥 Hot Streaks</button>
         <button class="main-tab" data-tab="dueforhit" onclick="switchTab('dueforhit',this)">💧⚾ Due for a Hit</button>
         <button class="main-tab" data-tab="dominators" onclick="switchTab('dominators',this)">🔥 Daily Dominators</button>
+        <button class="main-tab" data-tab="lab" onclick="switchTab('lab',this)">🔬 The Lab</button>
         <button class="main-tab" data-tab="leaders" onclick="switchTab('leaders',this)">🏆 Leaderboard</button>
       </div>
     </div>
@@ -1934,6 +1999,28 @@ main { padding: 28px 0 60px; }
         <div id="domRisingGrid" class="rising-grid"></div>
         <div id="domRisingEmpty" class="leaders-loading" style="display:none;">No rising stars identified yet. Check back once more recent game data is available.</div>
         <div id="domRisingLoading" class="leaders-loading" style="display:none;">Analyzing recent game logs...</div>
+      </div>
+    </div>
+
+    <!-- TAB: THE LAB -->
+    <div id="tabLab" style="display:none;">
+      <div class="lab-header">
+        <div class="lab-title">🔬 The Lab</div>
+        <div class="lab-subtitle">Select a game and hitter for deep matchup intelligence</div>
+      </div>
+      <div class="lab-step" id="labStepGame">
+        <div class="lab-step-label">Step 1 — Select a Game</div>
+        <div class="lab-game-grid" id="labGameGrid"></div>
+      </div>
+      <div class="lab-step" id="labStepPlayer" style="display:none;">
+        <div class="lab-step-label">Step 2 — Select a Hitter</div>
+        <input class="lab-search-input" id="labSearchInput" type="text"
+               placeholder="Search by name or team…" oninput="labSearch()" autocomplete="off">
+        <div class="lab-search-results" id="labSearchResults"></div>
+      </div>
+      <div id="labAnalysis" style="display:none;">
+        <div class="lab-selected-bar" id="labSelectedBar"></div>
+        <div id="labCards"></div>
       </div>
     </div>
 
@@ -2471,6 +2558,41 @@ const PARK_FACTORS = {
   'Tropicana Field':                { overall:0.95, hrL:0.93, hrR:0.94, isHitter:false, isHR:false },
   'Comerica Park':                  { overall:0.95, hrL:0.92, hrR:0.94, isHitter:false, isHR:false },
   'Sahlen Field':                   { overall:0.97, hrL:0.96, hrR:0.96, isHitter:false, isHR:false },
+};
+
+// ─── PARK CONTEXT (geometry + environment explanations) ───────────────────
+const PARK_CONTEXT = {
+  'Coors Field':              { headline:'High altitude suppresses pitch movement — fly balls carry farther', bullets:['At 5,280 ft, air is 18% less dense — breaking balls lose 15–20% of their bite','Fly balls carry ~5% farther than sea level; routine outs become doubles','Curveball/slider-heavy pitchers are at a significant disadvantage','Contact hitters benefit — weak contact still finds gaps','Power alleys (LF 347, CF 415) are large but altitude compensates'], hitterEdge:'All hitter types benefit, especially contact and gap power hitters', pitcherRisk:'Breaking-ball dependent pitchers are most exposed' },
+  'Great American Ball Park': { headline:'Compact dimensions and warm air turn mistakes into home runs', bullets:['Short power alleys (LF 328, CF 404, RF 325) maximize HR opportunity','Warm Ohio River valley air aids carry in summer months','Mistake pitches become home runs at one of the highest rates in MLB','Pull hitters on both sides benefit from the short corners'], hitterEdge:'Pull power hitters, especially RHB to short LF porch', pitcherRisk:'Any pitcher prone to fly balls or occasional command lapses' },
+  'Fenway Park':              { headline:'The Green Monster creates doubles; short RF is a left-handed hitter\'s dream', bullets:['37-ft Green Monster (310 ft) turns LF fly balls into singles/doubles for RHB','Short RF (302 ft) dramatically boosts LHB pull-side HR','Deep CF (420 ft) suppresses all-fields power hitters','Ground-ball pitchers can use the Monster to their advantage'], hitterEdge:'LHB pull hitters for HR; RHB line-drive hitters for Monster doubles', pitcherRisk:'Fly-ball pitchers — RF is dangerously short for LHB pull power' },
+  'Yankee Stadium':           { headline:'Short right-field porch is a left-handed power hitter\'s best friend', bullets:['RF porch sits at 314 ft — LHB pull hitters see significant HR inflation','Deep CF (408 ft) keeps it neutral for all-fields hitters','RHB HR rate also elevated vs league average despite deeper LF','One of the most HR-friendly environments in the AL'], hitterEdge:'LHB pull power hitters gain the most; RF porch is among MLB\'s shortest', pitcherRisk:'Pitchers who allow elevated fly balls to left-handed hitters' },
+  'Citizens Bank Park':       { headline:'Hitter-friendly dimensions with warm summers boost HR for pull hitters on both sides', bullets:['Slightly short corners (LF 329, RF 330) boost HR rates for pull hitters','Warm Philadelphia summer air supports fly-ball carry','Balanced hitter-friendly park — no single extreme dimension'], hitterEdge:'Pull power hitters on both sides; balanced park advantage', pitcherRisk:'Fly-ball pitchers in summer months' },
+  'Camden Yards':             { headline:'Asymmetric layout with short RF favors left-handed pull power', bullets:['Short RF line (318 ft) gives LHB a clear HR advantage','Warehouse wall in RF prevents triples but keeps balls in play','Inner harbor proximity adds occasional wind variation'], hitterEdge:'LHB pull power hitters', pitcherRisk:'Fly-ball pitchers vs left-handed lineups' },
+  'Globe Life Field':         { headline:'Retractable dome controls environment; moderate hitter advantage on turf', bullets:['Climate-controlled interior eliminates weather variables','Moderate dimensions (LF 332, CF 407, RF 326) provide balanced conditions','Artificial turf speeds up ground balls — benefits contact hitters'], hitterEdge:'Pull hitters and contact hitters who benefit from turf speed', pitcherRisk:'Moderate — turf slightly elevates BABIP on ground balls' },
+  'Guaranteed Rate Field':    { headline:'Wind-variable open-air park — Lake Michigan creates unpredictable carry', bullets:['Standard dimensions (LF 330, CF 400, RF 335)','Open-air park in Chicago — wind from Lake Michigan creates variable carry','Cold spring games suppress offense; warm summer games slightly elevate it'], hitterEdge:'Power hitters on wind-out days; minimal edge otherwise', pitcherRisk:'Wind-out conditions can turn routine fly balls into HR' },
+  'Wrigley Field':            { headline:'Famous wind-driven park — the same park can play wildly differently by day', bullets:['Wind blowing in from Lake Michigan is among the most suppressive effects in MLB','Wind blowing out to RF creates one of the most hitter-friendly conditions in baseball','Ivy walls create unique ground-rule doubles','Always check wind direction — it defines the matchup at Wrigley'], hitterEdge:'All power hitters on strong wind-out days', pitcherRisk:'Wind-out conditions elevate HR rates dramatically' },
+  'Minute Maid Park':         { headline:'Crawford Boxes and roof-open Houston heat create left-handed advantage and carry boost', bullets:['Short LF line (315 ft) with 19-ft Crawford Boxes wall — tough HR, easy doubles','Roof-open games in Houston heat add significant fly-ball carry','Ground-ball pitchers limit damage from Crawford Boxes'], hitterEdge:'LHB for Crawford Box doubles; all hitters when roof is open in summer heat', pitcherRisk:'Fly-ball pitchers vs LHB when roof is open' },
+  'Dodger Stadium':           { headline:'Marine air at elevation — neutral to slight pitcher advantage, especially at night', bullets:['Ocean marine air at 412 ft elevation creates moderate fly-ball suppression','Symmetrical dimensions (LF 330, CF 395, RF 330)','Night games intensify the marine layer — reduces carry further'], hitterEdge:'Line-drive gap hitters over pure fly-ball HR hitters', pitcherRisk:'Low — one of the better neutral-to-pitcher parks in the NL' },
+  'Angel Stadium':            { headline:'Neutral symmetrical park; inland location reduces marine air effects', bullets:['Standard symmetrical dimensions (LF 330, CF 400, RF 330)','Hot inland Anaheim air can modestly boost carry in afternoon day games'], hitterEdge:'Slight power boost in afternoon heat', pitcherRisk:'Minimal' },
+  'loanDepot park':           { headline:'Climate-controlled dome with large dimensions — strong pitcher\'s environment', bullets:['Deep dimensions (LF 344, CF 416, RF 335) and wide foul territory','Enclosed dome keeps conditions consistent — no weather help for hitters','One of the most pitcher-friendly environments in the NL'], hitterEdge:'Gap/contact hitters; unfavorable for HR-dependent power hitters', pitcherRisk:'Very low — park suppresses offense broadly' },
+  'Target Field':             { headline:'Cold Minnesota air and deep dimensions slightly favor pitchers, especially early season', bullets:['Deep dimensions (LF 339, CF 404, RF 328)','Cold spring open-air games suppress carry meaningfully','Summer months become more neutral as temperatures rise'], hitterEdge:'Gap hitters over pure power in cold conditions', pitcherRisk:'Low in cold months; neutral in summer' },
+  'American Family Field':    { headline:'Retractable dome offers consistent neutral conditions year-round', bullets:['Dome eliminates weather variability','Standard dimensions (LF 344, CF 400, RF 345)'], hitterEdge:'Minimal edge for either side — consistent neutral environment', pitcherRisk:'Low' },
+  'Progressive Field':        { headline:'Large foul territory and Lake Erie air slightly favor pitchers', bullets:['Extensive foul territory increases pop-out frequency for pitchers','Deep power alleys (LF 325, CF 405, RF 325)','Lake Erie effect produces cool, damp air that suppresses carry'], hitterEdge:'Contact hitters who use the whole field', pitcherRisk:'Low; ground-ball pitchers benefit most from the large foul territory' },
+  'PNC Park':                 { headline:'Deep alleys and Allegheny River air make PNC one of the better pitcher\'s parks', bullets:['Very deep CF (399 ft) and wide power alleys suppress HR significantly','Allegheny River cool air in night games reduces fly-ball carry','Short corners (LF 325, RF 320) create doubles but power alley depth suppresses HR'], hitterEdge:'Doubles/pull singles hitters; unfavorable for HR-reliant power hitters', pitcherRisk:'Low — consistently pitcher-friendly in the NL' },
+  'Rogers Centre':            { headline:'Indoor dome with turf — consistent conditions, turf boosts BABIP', bullets:['Climate-controlled dome eliminates all weather variables','Artificial turf accelerates ground balls — benefits speed and contact hitters','Standard dimensions (LF 328, CF 400, RF 328)'], hitterEdge:'Contact and speed hitters on turf; consistent conditions for power', pitcherRisk:'Moderate — turf elevates BABIP on ground balls' },
+  'Nationals Park':           { headline:'Neutral symmetrical park — DC summer heat provides modest carry boost', bullets:['Symmetrical dimensions (LF 336, CF 402, RF 335)','Hot humid DC summers add a modest fly-ball carry boost'], hitterEdge:'Slight power boost in midsummer heat; otherwise neutral', pitcherRisk:'Low' },
+  'Truist Park':              { headline:'Compact RF and Georgia heat create moderate hitter advantage', bullets:['Compact RF line (325 ft) gives LHB a moderate HR edge','Atlanta heat and humidity add carry in afternoon day games'], hitterEdge:'LHB pull power hitters; modest advantage for all hitters in summer', pitcherRisk:'Fly-ball pitchers in hot afternoon games' },
+  'Chase Field':              { headline:'Retractable roof at elevation — roof status is the defining variable', bullets:['Located at 1,100 ft altitude — mild carry boost even with roof closed','Roof-open in Phoenix summer heat (100°F+) creates extreme carry conditions','Roof-closed and air-conditioned normalizes conditions to near-neutral','Always check roof status — it defines the offense ceiling at Chase Field'], hitterEdge:'Power hitters significantly when roof is open in summer heat', pitcherRisk:'High on roof-open summer days; low when roof is closed' },
+  'Busch Stadium':            { headline:'Deep alleys and cool Missouri nights make Busch a consistent pitcher\'s park', bullets:['Deep power alleys (LF 336, CF 400, RF 335) suppress HR','Cool Mississippi River air in night games reduces carry','Consistently one of the more spacious layouts in the NL'], hitterEdge:'Contact/gap hitters; unfavorable for pure HR power hitters', pitcherRisk:'Low — reliably pitcher-friendly' },
+  'T-Mobile Park':            { headline:'Dense Pacific marine air — the most pitch-suppressive environment in MLB', bullets:['Dense marine air from Puget Sound suppresses HR carry more than any other park','HR park factor consistently among the lowest in MLB (0.85–0.88)','Deep dimensions (LF 331, CF 401, RF 326) compound the suppression','Fly-ball hitters are at their worst possible environment here'], hitterEdge:'Ground-ball and contact/gap hitters; pure power hitters severely hurt', pitcherRisk:'Very low — one of the best environments for fly-ball pitchers in MLB' },
+  'Oracle Park':              { headline:'Cold Bay Area marine air and quirky dimensions — one of baseball\'s best pitcher\'s parks', bullets:['Dense San Francisco Bay air suppresses fly-ball carry significantly','Night game marine layer intensifies suppression dramatically','Quirky RF arcade and deep gaps suppress power despite the short RF fence (309 ft)','Tricky ball-in-play situations near RF arcade wall'], hitterEdge:'Contact hitters; LHB can target the short RF fence but carry is suppressed', pitcherRisk:'Very low — elite environment for fly-ball pitchers' },
+  'Petco Park':               { headline:'Ocean marine air and deep dimensions create a strong pitcher\'s park', bullets:['Dense ocean air from San Diego Bay suppresses fly-ball carry','Deep power alleys (LF 336, CF 396, RF 322) compound suppression','Consistently among the lowest HR rates in the NL'], hitterEdge:'Contact/gap hitters; HR-dependent power hitters are at a disadvantage', pitcherRisk:'Very low — elite environment for pitchers' },
+  'Citi Field':               { headline:'Very deep CF and Atlantic marine air make Citi one of the most HR-suppressive parks', bullets:['Very deep CF (408 ft) and large dimensions kill HR rates','Atlantic marine air from Jamaica Bay suppresses carry','Deliberately designed to suppress HR after the Shea Stadium era'], hitterEdge:'Contact/doubles hitters; not favorable for HR-reliant power', pitcherRisk:'Very low — consistently pitcher-friendly' },
+  'Kauffman Stadium':         { headline:'Spacious open-air layout and wide alleys favor pitchers', bullets:['Large foul territory and deep dimensions (LF 330, CF 410, RF 330)','Ground-ball pitchers particularly effective with expansive foul territory','Midwest wind patterns add variability but alleys remain deep'], hitterEdge:'Contact hitters; gap power over pure HR sluggers', pitcherRisk:'Low — favorable for ground-ball and fly-ball pitchers alike' },
+  'Oakland Coliseum':         { headline:'Massive foul territory and Bay Area marine air — historically MLB\'s best pitcher\'s park', bullets:['One of the largest foul territories in MLB — major pop-out advantage for pitchers','Dense Oakland Bay Area air further reduces fly-ball carry','Cavernous dimensions (LF 330, CF 400, RF 330 with very deep alleys)'], hitterEdge:'Minimal — one of the most pitcher-friendly environments in baseball', pitcherRisk:'Very low — historically elite for pitchers' },
+  'Tropicana Field':          { headline:'Indoor dome with catwalks and turf — controlled but unique environment', bullets:['Fully enclosed dome eliminates all weather variables','Catwalks in play — balls hitting them remain in play per ground rules','Artificial turf boosts BABIP for ground-ball contact hitters'], hitterEdge:'Contact/speed hitters on turf; catwalks create unpredictable ball-in-play situations', pitcherRisk:'Low; turf slightly helps ground-ball defense' },
+  'Comerica Park':            { headline:'Very deep CF and Great Lakes air suppress power significantly', bullets:['Very deep CF (420 ft) is among the deepest in MLB','Great Lakes cool air suppresses fly-ball carry','LF (345) and RF (330) are deeper than most parks'], hitterEdge:'Doubles/gap hitters; HR-reliant hitters face significant suppression', pitcherRisk:'Low — particularly suppressive for fly-ball-prone pitchers' },
+  'Sahlen Field':             { headline:'Cold Buffalo air and Lake Erie proximity suppress power, especially early season', bullets:['Cold Lake Erie air extends deep into spring — suppresses carry throughout early months','Standard dimensions but cold air meaningfully reduces HR output'], hitterEdge:'Contact hitters; power production suppressed especially early season', pitcherRisk:'Low in cold conditions; neutral in summer' },
 };
 
 function getParkFactor(venueName) {
@@ -6135,6 +6257,7 @@ function switchTab(tab, btn) {
   document.getElementById('tabLeaders').style.display    = tab==='leaders'    ? 'block' : 'none';
   document.getElementById('tabBts').style.display        = tab==='bts'        ? 'block' : 'none';
   document.getElementById('tabDominators').style.display = tab==='dominators' ? 'block' : 'none';
+  document.getElementById('tabLab').style.display        = tab==='lab'        ? 'block' : 'none';
   if (tab === 'breakdown' && state.selectedGamePk) {
     const gd = state.predictions[state.selectedGamePk];
     if (gd) renderBreakdown(gd);
@@ -6145,6 +6268,7 @@ function switchTab(tab, btn) {
   if (tab === 'leaders') renderLeaderboard();
   if (tab === 'bts') renderBeatTheStreak();
   if (tab === 'dominators') renderDailyDominators();
+  if (tab === 'lab') labInit();
 
   // On mobile, scroll the tab bar into view so content appears immediately below
   if (window.innerWidth <= 900) {
@@ -7738,6 +7862,324 @@ async function openPlayerAnalyzer(playerId) {
       <div class="pa-verdict-row">
         <div class="pa-verdict-row-lbl">Best split:</div>
         <div class="pa-verdict-row-val">${bestSplit||(splitVsToday?.avg!=null?`AVG vs ${pitcherHand}HP: ${splitVsToday.avg.toFixed(3).replace(/^0/,'')}`:l10?.gamesWithHit!=null?`Hit in ${l10.gamesWithHit} of last 10`:'—')}</div>
+      </div>
+    </div>`;
+}
+
+// ─── THE LAB ──────────────────────────────────────────────────────────────
+let _labState = { gamePk: null, playerId: null };
+
+function labInit() {
+  _labState = { gamePk: null, playerId: null };
+  document.getElementById('labStepPlayer').style.display = 'none';
+  document.getElementById('labAnalysis').style.display   = 'none';
+  document.getElementById('labSearchInput').value = '';
+  document.getElementById('labSearchResults').innerHTML = '';
+
+  const grid = document.getElementById('labGameGrid');
+  const games = state.games || [];
+  if (!games.length) {
+    grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No games loaded yet. Return to the dashboard first.</div>';
+    return;
+  }
+  grid.innerHTML = games.map(g => {
+    const awayAbbr = g.teams?.away?.team?.abbreviation || g.awayAbbr || '???';
+    const homeAbbr = g.teams?.home?.team?.abbreviation || g.homeAbbr || '???';
+    const awayName = g.teams?.away?.team?.name || awayAbbr;
+    const homeName = g.teams?.home?.team?.name || homeAbbr;
+    const venue    = g.venue?.name || '';
+    const gameTime = g.gameDate ? new Date(g.gameDate).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="lab-game-card" onclick="labSelectGame(${g.gamePk},this)">
+      <div class="lab-game-matchup">${escHtml(awayAbbr)} @ ${escHtml(homeAbbr)}</div>
+      <div class="lab-game-meta">${escHtml(venue)}${gameTime ? ' · ' + gameTime : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function labSelectGame(gamePk, cardEl) {
+  _labState.gamePk = gamePk;
+  _labState.playerId = null;
+  document.querySelectorAll('.lab-game-card').forEach(c => c.classList.remove('active'));
+  cardEl.classList.add('active');
+  document.getElementById('labStepPlayer').style.display = 'block';
+  document.getElementById('labAnalysis').style.display   = 'none';
+  document.getElementById('labSearchInput').value = '';
+  document.getElementById('labSearchResults').innerHTML = '';
+}
+
+function labSearch() {
+  const q = document.getElementById('labSearchInput').value.trim().toLowerCase();
+  const results = document.getElementById('labSearchResults');
+  if (!_labState.gamePk || q.length < 2) { results.innerHTML = ''; return; }
+
+  const gd = state.predictions[_labState.gamePk];
+  if (!gd) { results.innerHTML = ''; return; }
+  const players = (gd.players || []).filter(p => {
+    const ti = TEAM_INFO[p.teamId] || {};
+    const s = `${p.name} ${ti.city||''} ${ti.nick||''} ${p.teamAbbr||''} ${p.team||''}`.toLowerCase();
+    return s.includes(q);
+  }).slice(0, 12);
+
+  results.innerHTML = players.length === 0
+    ? '<div class="lab-result-item"><span class="lab-result-name" style="color:var(--text-muted)">No players found</span></div>'
+    : players.map(p => {
+        const ti = TEAM_INFO[p.teamId] || {};
+        return `<div class="lab-result-item" onclick="labSelectPlayer(${p.id})">
+          <span class="lab-result-name">${escHtml(p.name)}</span>
+          <span class="lab-result-meta">${escHtml(ti.city||'')} ${escHtml(ti.nick||p.teamAbbr||'')} · ${p.position||''} · Bats ${p.orderPos||'?'}</span>
+        </div>`;
+      }).join('');
+}
+
+function labSelectPlayer(playerId) {
+  _labState.playerId = playerId;
+  document.getElementById('labSearchResults').innerHTML = '';
+  document.getElementById('labSearchInput').value = '';
+  const el = document.getElementById('labAnalysis');
+  el.style.display = 'block';
+  document.getElementById('labCards').innerHTML = '<div class="lab-loading">⏳ Running analysis…</div>';
+  renderLabAnalysis();
+}
+
+function labChangePlayer() {
+  _labState.playerId = null;
+  document.getElementById('labAnalysis').style.display = 'none';
+  document.getElementById('labSearchInput').value = '';
+  document.getElementById('labSearchResults').innerHTML = '';
+}
+
+function buildPitcherProfile(pitcher) {
+  const ss  = pitcher?.seasonStats || {};
+  const era  = ss.era  || 0;
+  const whip = ss.whip || 0;
+  const ip   = ss.inningsPitched || 0;
+  const k    = ss.strikeOuts || 0;
+  const hr   = ss.homeRuns || 0;
+  const k9   = ip > 0 ? (k / ip * 9) : 0;
+  const hr9  = ip > 0 ? (hr / ip * 9) : 0;
+
+  const eraTier = !era ? { label:'Unknown', cls:'', desc:'No 2026 stats available — treat as a neutral matchup.' }
+    : era <= 2.50 ? { label:'Elite Ace',     cls:'score-great',   desc:'Commands multiple pitches with elite precision. Mistake pitches are rare and hitters must be perfect to do damage.' }
+    : era <= 3.30 ? { label:'Strong',        cls:'score-good',    desc:'Above-average effectiveness with solid command. Keeps hitters off-balance — patience is required.' }
+    : era <= 4.20 ? { label:'Average',       cls:'score-neutral', desc:'Serviceable but attackable when behind in counts. Disciplined hitters who work deep counts find opportunities.' }
+    : era <= 5.00 ? { label:'Below Average', cls:'score-bad',     desc:'Prone to leaving pitches in the zone. Patient hitters can exploit count leverage and expect mistakes.' }
+    :               { label:'Weak',          cls:'score-poor',    desc:'Significant source of run production. Mistake pitches are frequent — aggressive, disciplined hitters thrive.' };
+
+  const kTend = !k9 ? null
+    : k9 >= 10.0 ? 'Elite strikeout rate — swing-and-miss arsenal. Contact is difficult to generate consistently.'
+    : k9 >= 8.0  ? 'Above-average strikeout rate. Hitters must be selective and hunt pitches they can drive.'
+    : k9 >= 6.0  ? 'Average strikeout rate — balanced approach between Ks and contact.'
+    :              'Low strikeout pitcher. Contact-oriented — hitters can put the ball in play regularly.';
+
+  const whipTend = !whip ? null
+    : whip <= 1.00 ? 'Elite command — rarely misses spots. Very few free bases granted.'
+    : whip <= 1.15 ? 'Good command with occasional lapses — limited base-on-balls opportunities.'
+    : whip <= 1.30 ? 'Average walk and hit rates — standard traffic.'
+    :                'Hittable command — allows significant traffic. High-contact hitters thrive on this pitcher\'s counts.';
+
+  const hrTend = !hr9 ? null
+    : hr9 >= 1.50 ? 'Fly-ball prone — allows HR at a high rate. Power hitters have elevated upside today.'
+    : hr9 >= 1.00 ? 'Average HR rate — fly balls carry some risk against power hitters.'
+    :               'Ground-ball / contact-suppression style. HR risk is limited even for power hitters.';
+
+  return { era, whip, k9: k9.toFixed(1), eraTier, kTend, whipTend, hrTend };
+}
+
+function computeLabMatchupScore(player, pitcher, pf, bullpenEra) {
+  let score = 50;
+  score += clamp(Math.round((pf.overall - 1.0) * 60), -15, 15);
+  const era = pitcher?.seasonStats?.era || 0;
+  if      (!era)       score += 0;
+  else if (era > 5.00) score += 20;
+  else if (era > 4.20) score += 10;
+  else if (era > 3.30) score += 0;
+  else if (era > 2.50) score -= 10;
+  else                 score -= 20;
+
+  const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
+  const split = player[splitKey];
+  if (split && (split.atBats || 0) >= 20) {
+    const diff = (split.avg || 0) - (player.seasonStats?.avg || 0);
+    if      (diff >  0.040) score += 15;
+    else if (diff >  0.020) score += 8;
+    else if (diff < -0.040) score -= 15;
+    else if (diff < -0.020) score -= 8;
+  }
+
+  if (bullpenEra > 0) {
+    if      (bullpenEra > 5.00) score += 10;
+    else if (bullpenEra > 4.50) score += 5;
+    else if (bullpenEra < 3.00) score -= 10;
+    else if (bullpenEra < 3.50) score -= 5;
+  }
+
+  const l10avg = (player.last10Stats || player.last7Stats)?.avg || 0;
+  if      (l10avg > 0.350) score += 10;
+  else if (l10avg > 0.300) score += 5;
+  else if (l10avg < 0.200) score -= 10;
+  else if (l10avg < 0.240) score -= 5;
+
+  return clamp(Math.round(score), 0, 100);
+}
+
+async function renderLabAnalysis() {
+  const { gamePk, playerId } = _labState;
+  const player = state.playerMap?.[playerId];
+  if (!player) { document.getElementById('labCards').innerHTML = '<div class="lab-loading">Player data not found.</div>'; return; }
+
+  const gd      = state.predictions[player.gamePk || gamePk];
+  const pitcher = player.isAway ? gd?.homePitcher : gd?.awayPitcher;
+  const oppTeamId = player.isAway ? gd?.homeTeamId : gd?.awayTeamId;
+  const venue   = gd?.venue || '';
+  const pf      = getParkFactor(venue);
+  const parkCtx = PARK_CONTEXT[venue] || null;
+  const ti      = TEAM_INFO[player.teamId] || {};
+  const slug    = ti.espn || (player.teamAbbr || '').toLowerCase();
+  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+
+  // Selected player bar
+  document.getElementById('labSelectedBar').innerHTML = `
+    <img class="lab-selected-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="">
+    <div>
+      <div class="lab-selected-name">${escHtml(player.name)}</div>
+      <div class="lab-selected-meta">
+        ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
+        ${escHtml(ti.city||'')} ${escHtml(ti.nick||player.teamAbbr||'')} · ${player.position||''} · Bats ${player.orderPos||'?'}
+      </div>
+    </div>
+    <button class="lab-change-btn" onclick="labChangePlayer()">↩ Change Hitter</button>`;
+
+  // Fetch bullpen ERA
+  let bullpenEra = 0;
+  if (oppTeamId) {
+    try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
+  }
+
+  const profile = buildPitcherProfile(pitcher);
+  const score   = computeLabMatchupScore(player, pitcher, pf, bullpenEra);
+
+  // Score style
+  const scoreCls   = score >= 80 ? 'score-great' : score >= 65 ? 'score-good' : score >= 45 ? 'score-neutral' : score >= 30 ? 'score-bad' : 'score-poor';
+  const scoreLabel = score >= 80 ? 'Strong Hitter Edge' : score >= 65 ? 'Hitter Leaning' : score >= 45 ? 'Neutral Matchup' : score >= 30 ? 'Pitcher Leaning' : 'Strong Pitcher Edge';
+  const barColor   = score >= 65 ? '#22c55e' : score >= 45 ? '#94a3b8' : '#ef4444';
+
+  // Handedness split data
+  const hand      = pitcher?.pitchHand || '?';
+  const splitKey  = hand === 'L' ? 'vsLHP' : 'vsRHP';
+  const split     = player[splitKey];
+  const seasAvg   = player.seasonStats?.avg || 0;
+  const splitAvg  = split?.avg || 0;
+  const splitAB   = split?.atBats || 0;
+  const splitDiff = splitAvg - seasAvg;
+  const splitCls  = splitAB >= 20 ? (splitDiff > 0.015 ? 'good' : splitDiff < -0.015 ? 'bad' : '') : '';
+
+  // Bullpen label
+  const bullpenLabel = !bullpenEra ? 'Data unavailable'
+    : bullpenEra > 5.00 ? `${bullpenEra.toFixed(2)} ERA — Poor bullpen, late-inning opportunities remain strong`
+    : bullpenEra > 4.50 ? `${bullpenEra.toFixed(2)} ERA — Below average pen, hitter can stay aggressive late`
+    : bullpenEra > 4.00 ? `${bullpenEra.toFixed(2)} ERA — League average, neutral continuation`
+    : bullpenEra > 3.50 ? `${bullpenEra.toFixed(2)} ERA — Solid pen, expect tougher late-game looks`
+    :                     `${bullpenEra.toFixed(2)} ERA — Elite pen, late-inning hits become more difficult`;
+  const bullpenAdvice = !bullpenEra ? ''
+    : bullpenEra > 4.50 ? 'Even if the starter settles in, this bullpen remains an exploitable late-game weakness.'
+    : bullpenEra < 3.50 ? 'The bullpen behind this starter is elite — even favorable early-inning matchups may tighten later.'
+    :                     'The bullpen is within the league average range and unlikely to dramatically shift the matchup.';
+
+  // Build narrative
+  const narrativeParts = [];
+  if (parkCtx) narrativeParts.push(`At ${venue}, ${parkCtx.headline.toLowerCase()}. ${parkCtx.hitterEdge !== 'Minimal edge for either side — consistent neutral environment' ? 'This benefits ' + parkCtx.hitterEdge.toLowerCase() + '.' : 'Conditions are neutral for both sides.'}`);
+  if (pitcher?.fullName) {
+    narrativeParts.push(`Facing ${escHtml(pitcher.fullName)} (${hand}HP, ERA ${profile.era ? profile.era.toFixed(2) : '—'}): ${profile.eraTier.desc}`);
+  }
+  if (splitAB >= 20 && splitAvg) {
+    const vsLabel = hand === 'L' ? 'vs LHP' : 'vs RHP';
+    if (Math.abs(splitDiff) > 0.015) {
+      narrativeParts.push(`${escHtml(player.name)} hits ${splitDiff > 0 ? 'significantly better' : 'worse'} ${vsLabel} (.${Math.round(splitAvg*1000).toString().padStart(3,'0')} vs .${Math.round(seasAvg*1000).toString().padStart(3,'0')} season) — the handedness matchup ${splitDiff > 0 ? 'is a clear edge' : 'works against the hitter'} today.`);
+    }
+  }
+  if (bullpenAdvice) narrativeParts.push(bullpenAdvice);
+
+  const fmt3 = v => v ? v.toFixed(3).replace(/^0/,'') : '—';
+
+  document.getElementById('labCards').innerHTML = `
+    ${parkCtx ? `
+    <div class="lab-card">
+      <div class="lab-card-header"><span class="lab-card-title">🏟️ Park Intelligence — ${escHtml(venue)}</span>
+        <span style="margin-left:auto;font-size:11px;font-weight:700;color:${pf.overall>=1.05?'#22c55e':pf.overall<=0.95?'var(--accent-blue)':'var(--text-muted)'}">${pf.overall.toFixed(2)}× Park Factor</span>
+      </div>
+      <div class="lab-card-body">
+        <div class="lab-park-headline">${escHtml(parkCtx.headline)}</div>
+        <ul class="lab-park-bullets">${parkCtx.bullets.map(b=>`<li>${escHtml(b)}</li>`).join('')}</ul>
+        <div class="lab-edge-row">
+          <span class="lab-edge-chip lab-edge-hitter">⚾ Hitter edge: ${escHtml(parkCtx.hitterEdge)}</span>
+          <span class="lab-edge-chip lab-edge-pitcher">🔵 Pitcher risk: ${escHtml(parkCtx.pitcherRisk)}</span>
+        </div>
+      </div>
+    </div>` : ''}
+
+    <div class="lab-card">
+      <div class="lab-card-header"><span class="lab-card-title">⚾ Pitcher Profile — ${pitcher?.fullName ? escHtml(pitcher.fullName) : 'Unknown Pitcher'} (${hand}HP)</span></div>
+      <div class="lab-card-body">
+        <div class="lab-pitcher-grid">
+          <div class="lab-pitcher-stat">
+            <div class="lab-pitcher-stat-label">ERA</div>
+            <div class="lab-pitcher-stat-val ${profile.eraTier.cls}">${profile.era ? profile.era.toFixed(2) : '—'}</div>
+            <div class="lab-pitcher-stat-tier">${profile.eraTier.label}</div>
+          </div>
+          <div class="lab-pitcher-stat">
+            <div class="lab-pitcher-stat-label">WHIP</div>
+            <div class="lab-pitcher-stat-val">${profile.whip ? profile.whip.toFixed(2) : '—'}</div>
+            <div class="lab-pitcher-stat-tier">${profile.whipTend ? (profile.whip <= 1.15 ? 'Sharp command' : profile.whip <= 1.30 ? 'Average command' : 'Hittable') : '—'}</div>
+          </div>
+          <div class="lab-pitcher-stat">
+            <div class="lab-pitcher-stat-label">K/9</div>
+            <div class="lab-pitcher-stat-val">${profile.k9 !== '0.0' ? profile.k9 : '—'}</div>
+            <div class="lab-pitcher-stat-tier">${parseFloat(profile.k9) >= 8 ? 'High-K' : parseFloat(profile.k9) >= 6 ? 'Average' : parseFloat(profile.k9) > 0 ? 'Contact-prone' : '—'}</div>
+          </div>
+        </div>
+        <div class="lab-pitcher-desc">${profile.eraTier.desc}${profile.kTend ? ' ' + profile.kTend : ''}${profile.whipTend ? ' ' + profile.whipTend : ''}</div>
+      </div>
+    </div>
+
+    <div class="lab-card">
+      <div class="lab-card-header"><span class="lab-card-title">🔄 Bullpen Continuation</span></div>
+      <div class="lab-card-body">
+        <div class="lab-split-row">
+          <span class="lab-split-label">Opp Team ERA (bullpen proxy)</span>
+          <span class="lab-split-val ${bullpenEra>4.5?'good':bullpenEra>0&&bullpenEra<3.5?'bad':''}">${bullpenLabel.split(' — ')[0]}</span>
+        </div>
+        <div class="lab-pitcher-desc" style="margin-top:10px">${bullpenEra ? bullpenLabel.split(' — ').slice(1).join(' — ') + (bullpenAdvice ? ' ' + bullpenAdvice : '') : 'Bullpen data unavailable.'}</div>
+      </div>
+    </div>
+
+    <div class="lab-card">
+      <div class="lab-card-header"><span class="lab-card-title">🎯 Hitter Profile</span></div>
+      <div class="lab-card-body">
+        <div class="lab-split-row"><span class="lab-split-label">Season AVG</span><span class="lab-split-val">${fmt3(player.seasonStats?.avg)}</span></div>
+        <div class="lab-split-row"><span class="lab-split-label">Season OBP</span><span class="lab-split-val">${fmt3(player.seasonStats?.obp)}</span></div>
+        <div class="lab-split-row"><span class="lab-split-label">Season SLG</span><span class="lab-split-val">${fmt3(player.seasonStats?.slg)}</span></div>
+        <div class="lab-split-row">
+          <span class="lab-split-label">AVG vs ${hand}HP today${splitAB >= 20 ? ` (${splitAB} AB)` : splitAB > 0 ? ` (${splitAB} AB — small sample)` : ' (no data)'}</span>
+          <span class="lab-split-val ${splitCls}">${splitAB > 0 ? fmt3(splitAvg) : '—'}</span>
+        </div>
+        <div class="lab-split-row"><span class="lab-split-label">L10 AVG</span><span class="lab-split-val ${((player.last10Stats||player.last7Stats)?.avg||0)>=0.300?'good':((player.last10Stats||player.last7Stats)?.avg||0)<0.220&&((player.last10Stats||player.last7Stats)?.avg||0)>0?'bad':''}">${fmt3((player.last10Stats||player.last7Stats)?.avg)}</span></div>
+        <div class="lab-split-row"><span class="lab-split-label">L10 Hits</span><span class="lab-split-val">${(player.last10Stats||player.last7Stats)?.hits ?? '—'}</span></div>
+        <div class="lab-split-row"><span class="lab-split-label">Active Hit Streak</span><span class="lab-split-val">${player.hitStreak ? player.hitStreak + ' games 🔥' : '—'}</span></div>
+        <div class="lab-split-row"><span class="lab-split-label">Batting Order</span><span class="lab-split-val">${player.orderPos || '?'}</span></div>
+      </div>
+    </div>
+
+    <div class="lab-card">
+      <div class="lab-card-header"><span class="lab-card-title">📊 Matchup Score</span></div>
+      <div class="lab-card-body">
+        <div class="lab-score-wrap">
+          <div class="lab-score-num ${scoreCls}">${score}</div>
+          <div class="lab-score-label" style="color:${barColor}">${scoreLabel}</div>
+        </div>
+        <div class="lab-score-bar-track">
+          <div class="lab-score-bar-fill" style="width:${score}%;background:${barColor}"></div>
+        </div>
+        <div class="lab-narrative">${narrativeParts.join(' ')}</div>
       </div>
     </div>`;
 }
