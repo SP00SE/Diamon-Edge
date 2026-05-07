@@ -710,14 +710,15 @@ main { padding: 28px 0 60px; }
 .bts-intro-title { font-family: 'Bebas Neue', cursive; font-size: 20px; color: var(--accent-blue); letter-spacing: 1.5px; }
 .bts-intro-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
 .bts-filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 14px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px 24px;
   margin-bottom: 20px; padding: 14px 16px;
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
-.bts-filter-group { display: flex; flex-direction: column; gap: 6px; }
+.bts-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 110px; }
 .bts-filter-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 .bts-filter-btns { display: flex; flex-wrap: wrap; gap: 4px; }
 .bts-filter-btn {
