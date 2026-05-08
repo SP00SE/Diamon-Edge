@@ -380,10 +380,10 @@ main { padding: 28px 0 60px; }
 .consec-loading { font-size: 11px; color: var(--text-muted); padding: 20px; text-align: center; }
 
 /* ── THE LAB ─────────────────────────────────────── */
-.lab-header { text-align:center; padding:24px 0 18px; }
+.lab-header { text-align:center; padding:24px 0 18px; max-width:900px; margin:0 auto; }
 .lab-title { font-family:'Bebas Neue',cursive; font-size:36px; color:var(--accent-blue); letter-spacing:3px; }
 .lab-subtitle { font-size:13px; color:var(--text-muted); margin-top:6px; }
-.lab-screen { animation:labFadeIn .25s ease; }
+.lab-screen { animation:labFadeIn .25s ease; max-width:900px; margin:0 auto; }
 @keyframes labFadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 .lab-back-bar { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
 .lab-back-btn { background:none; border:1px solid var(--border); border-radius:8px; color:var(--text-muted); font-size:12px; padding:5px 12px; cursor:pointer; }
@@ -435,7 +435,7 @@ main { padding: 28px 0 60px; }
 .lab-pstat { display:flex; flex-direction:column; gap:2px; text-align:center; }
 .lab-pstat-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
 .lab-pstat-val { font-size:15px; font-weight:700; }
-.lab-pstat-tier { font-size:9px; color:var(--text-muted); }
+.lab-pstat-tier { font-size:9px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lab-narrative { font-size:13px; color:var(--text-secondary); line-height:1.7; margin-top:14px; }
 .lab-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:14px 0 6px; font-weight:700; }
 .lab-stat-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
@@ -8480,9 +8480,9 @@ function buildPitcherProfile(pitcher) {
     : era <= 5.00 ? { label:'Below Average',      cls:'score-bad',     desc:'Prone to leaving pitches in the zone. Patient hitters can exploit count leverage.' }
     :               { label:'Weak',               cls:'score-poor',    desc:'Significant source of run production. Mistake pitches are frequent.' };
 
-  const kTend   = !k9   ? null : k9   >= 10 ? 'Elite K rate — swing-and-miss arsenal' : k9   >= 8 ? 'Above-avg K rate' : k9   >= 6 ? 'Average K rate' : 'Contact-prone — low K rate';
-  const whipTend= !whip ? null : whip <= 1.00 ? 'Elite command' : whip <= 1.15 ? 'Good command' : whip <= 1.30 ? 'Average walk/hit rates' : 'Hittable command — allows heavy traffic';
-  const hrTend  = !hr9  ? null : hr9  >= 1.50 ? 'Fly-ball prone — high HR allowed rate' : hr9  >= 1.00 ? 'Average HR rate' : 'Ground-ball style — HR risk suppressed';
+  const kTend   = !k9   ? null : k9   >= 10 ? 'Elite K rate' : k9   >= 8 ? 'High K rate' : k9   >= 6 ? 'Average K' : 'Low K (contact)';
+  const whipTend= !whip ? null : whip <= 1.00 ? 'Elite command' : whip <= 1.15 ? 'Good command' : whip <= 1.30 ? 'Average WHIP' : 'Hittable';
+  const hrTend  = !hr9  ? null : hr9  >= 1.50 ? 'HR-prone' : hr9  >= 1.00 ? 'Average HR rate' : 'Low HR rate';
 
   return { era, whip, ip: Math.floor(ip), k9: k9.toFixed(1), bb9: bb9.toFixed(1), hr9: hr9.toFixed(2), eraTier, kTend, whipTend, hrTend };
 }
@@ -8666,10 +8666,14 @@ async function runLabAnalysis() {
   const splitOBP  = split?.obp || 0;
   const splitDiff = splitAvg - seasAvg;
   const splitCls  = splitAB>=20 ? (splitDiff>0.020?'good':splitDiff<-0.020?'bad':'') : '';
-  const splitBannerCls = splitAB>=20 ? (splitDiff>0.020?'good':splitDiff<-0.020?'bad':'neu') : 'neu';
+  // "Unfavorable" only fires when the split is BOTH relatively low AND absolutely poor
+  const isSplitFav = splitAB>=20 && splitDiff > 0.020;
+  const isSplitBad = splitAB>=20 && splitDiff < -0.020 && splitAvg < 0.265;
+  const splitBannerCls = isSplitFav ? 'good' : isSplitBad ? 'bad' : 'neu';
   const splitBannerTxt = splitAB>=20
-    ? (splitDiff>0.020 ? `✅ Favorable — hits ${fmt3(splitAvg)} vs ${pitcherHand}HP (+${Math.round(splitDiff*1000)} pts above season avg, ${splitAB} AB)`
-     : splitDiff<-0.020 ? `⚠️ Unfavorable — only ${fmt3(splitAvg)} vs ${pitcherHand}HP (${Math.round(splitDiff*1000)} pts below avg, ${splitAB} AB)`
+    ? (isSplitFav ? `✅ Favorable — hits ${fmt3(splitAvg)} vs ${pitcherHand}HP (+${Math.round(splitDiff*1000)} pts above season avg, ${splitAB} AB)`
+     : isSplitBad ? `⚠️ Unfavorable — only ${fmt3(splitAvg)} vs ${pitcherHand}HP (${Math.round(splitDiff*1000)} pts below avg, ${splitAB} AB)`
+     : splitDiff < -0.020 ? `➡️ Solid — hits ${fmt3(splitAvg)} vs ${pitcherHand}HP (${Math.round(Math.abs(splitDiff)*1000)} pts below season avg but still a productive number, ${splitAB} AB)`
      : `➡️ Neutral — ${fmt3(splitAvg)} vs ${pitcherHand}HP (within range of ${fmt3(seasAvg)} season avg, ${splitAB} AB)`)
     : `vs ${pitcherHand}HP — insufficient split sample (<20 AB)`;
 
@@ -8683,15 +8687,16 @@ async function runLabAnalysis() {
 
   // Chips
   const hStrengths=[], hWeaknesses=[];
-  if (splitAB>=20 && splitDiff>0.020)  hStrengths.push(`${fmt3(splitAvg)} vs ${pitcherHand}HP (+${Math.round(splitDiff*1000)} pts)`);
-  if (splitAB>=20 && splitDiff<-0.020) hWeaknesses.push(`Struggles vs ${pitcherHand}HP (${Math.round(splitDiff*1000)} pts below avg)`);
-  if (h2h?.ab>=5 && h2h.avg>=0.300)    hStrengths.push(`${fmt3(h2h.avg)} career vs this pitcher (${h2h.ab} AB)`);
+  if (splitAB>=20 && splitDiff>0.020)                       hStrengths.push(`${fmt3(splitAvg)} vs ${pitcherHand}HP (+${Math.round(splitDiff*1000)} pts)`);
+  if (splitAB>=20 && splitDiff<-0.020 && splitAvg<0.260)   hWeaknesses.push(`Struggles vs ${pitcherHand}HP (${fmt3(splitAvg)}, ${Math.round(splitDiff*1000)} pts below avg)`);
+  if (h2h?.ab>=5 && h2h.avg>=0.280)    hStrengths.push(`${fmt3(h2h.avg)} career vs this pitcher (${h2h.ab} AB)`);
   if (h2h?.ab>=5 && h2h.avg<=0.180)    hWeaknesses.push(`Only ${fmt3(h2h.avg)} vs this pitcher (${h2h.ab} AB)`);
-  if ((l10.avg||0)>0.310)               hStrengths.push(`Hot form — ${l10.avg.toFixed(3)} L10 AVG`);
-  if ((l10.avg||0)>0&&(l10.avg||0)<0.190) hWeaknesses.push(`Cold stretch — ${l10.avg.toFixed(3)} L10 AVG`);
+  if ((l10.avg||0)>=0.290)              hStrengths.push(`Hot form — ${l10.avg.toFixed(3)} L10 AVG`);
+  if ((l10.avg||0)>0&&(l10.avg||0)<0.200) hWeaknesses.push(`Cold stretch — ${l10.avg.toFixed(3)} L10 AVG`);
   if (player.hitStreak>=4)              hStrengths.push(`${player.hitStreak}-game hit streak 🔥`);
-  if (seasAvg>0.295)                    hStrengths.push(`Elite season AVG (${fmt3(seasAvg)})`);
-  if (seasAvg>0&&seasAvg<0.215)         hWeaknesses.push(`Low season AVG (${fmt3(seasAvg)})`);
+  if (seasAvg>=0.295)                   hStrengths.push(`Elite season AVG (${fmt3(seasAvg)})`);
+  else if (seasAvg>=0.268)              hStrengths.push(`Solid season AVG (${fmt3(seasAvg)})`);
+  if (seasAvg>0&&seasAvg<0.220)         hWeaknesses.push(`Low season AVG (${fmt3(seasAvg)})`);
   if (seasOPS>0.870)                    hStrengths.push(`Strong OPS ${fmtX(seasOPS,3)}`);
   if (parkStats?.ab>=5 && parkStats.avg>=0.320) hStrengths.push(`Hits ${fmtX(parkStats.avg,3)} at this park in 2026`);
   if (parkStats?.ab>=5 && parkStats.avg!=null && parkStats.avg<=0.180) hWeaknesses.push(`Struggles at this park (${fmtX(parkStats.avg,3)} in 2026)`);
@@ -8737,7 +8742,7 @@ async function runLabAnalysis() {
       <!-- Season stats grid -->
       <div class="lab-section-label">2026 Season Stats</div>
       <div class="lab-stat-grid">
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val">${fmt3(seasAvg)}</div><div class="lab-stat-cell-sub">${seasAB} AB</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${seasAvg>=0.285?'good':seasAvg>0&&seasAvg<0.225?'bad':''}">${fmt3(seasAvg)}</div><div class="lab-stat-cell-sub">${seasAB} AB</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val">${fmt3(seasOBP)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val">${fmt3(seasSLG)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OPS</div><div class="lab-stat-cell-val">${fmt3(seasOPS)}</div></div>
@@ -8749,7 +8754,7 @@ async function runLabAnalysis() {
       <!-- L10 form -->
       <div class="lab-section-label">Last 10 Games</div>
       <div class="lab-stat-grid">
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(l10.avg||0)>=0.310?'good':(l10.avg||0)>0&&(l10.avg||0)<0.190?'bad':''}">${fmt3(l10.avg)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(l10.avg||0)>=0.285?'good':(l10.avg||0)>0&&(l10.avg||0)<0.200?'bad':''}">${fmt3(l10.avg)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val">${fmt3(l10.obp)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">Hits</div><div class="lab-stat-cell-val">${l10.hits??'—'}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${l10.homeRuns??'—'}</div></div>
