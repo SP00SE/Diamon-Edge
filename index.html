@@ -8349,7 +8349,8 @@ function buildCompareHTML(dataA, dataB) {
   };
 
   let pts = { A:0, B:0, total:0 };
-  const score = (w) => { if (w === true) pts.A++; else if (w === false) pts.B++; pts.total++; };
+  // Only count categories where there is an actual winner — ties don't inflate the denominator
+  const score = (w) => { if (w === true) { pts.A++; pts.total++; } else if (w === false) { pts.B++; pts.total++; } };
 
   score(addRow('AVG',   pA.seasonStats?.avg,      pB.seasonStats?.avg,      fmt3, true));
   score(addRow('OBP',   pA.seasonStats?.obp,       pB.seasonStats?.obp,      fmt3, true));
@@ -8365,35 +8366,28 @@ function buildCompareHTML(dataA, dataB) {
     rows.push({ label:'Opp ERA', aDisp:'TBD', bDisp:'TBD', aWins:null });
   }
 
-  // H2H (if either has data)
-  const h2hA = dataA.h2h?.ab >= 3 ? dataA.h2h.avg : null;
-  const h2hB = dataB.h2h?.ab >= 3 ? dataB.h2h.avg : null;
+  // H2H — only scored when BOTH players have enough data (≥5 AB)
+  // Having data alone is not a win; a .140 career avg should never beat "no data"
+  const h2hA = dataA.h2h?.ab >= 5 ? dataA.h2h.avg : null;
+  const h2hB = dataB.h2h?.ab >= 5 ? dataB.h2h.avg : null;
   rows.push({
     label: 'H2H vs Pitcher',
-    aDisp: h2hA != null ? `${fmt3(h2hA)} (${dataA.h2h.ab} AB)` : '—',
-    bDisp: h2hB != null ? `${fmt3(h2hB)} (${dataB.h2h.ab} AB)` : '—',
+    aDisp: dataA.h2h?.ab >= 1 ? `${fmt3(dataA.h2h.avg)} (${dataA.h2h.ab} AB)` : '—',
+    bDisp: dataB.h2h?.ab >= 1 ? `${fmt3(dataB.h2h.avg)} (${dataB.h2h.ab} AB)` : '—',
     aWins: h2hA != null && h2hB != null && h2hA !== h2hB ? h2hA > h2hB : null,
   });
-  if (h2hA != null || h2hB != null) {
-    if (h2hA != null && h2hB != null) score(h2hA > h2hB ? true : false);
-    else if (h2hA != null) { pts.A++; pts.total++; }
-    else { pts.B++; pts.total++; }
-  }
+  if (h2hA != null && h2hB != null) score(h2hA > h2hB ? true : h2hA < h2hB ? false : null);
 
-  // Park AVG
-  const pkA = dataA.parkStats?.ab >= 3 ? dataA.parkStats.avg : null;
-  const pkB = dataB.parkStats?.ab >= 3 ? dataB.parkStats.avg : null;
+  // Park AVG — only scored when BOTH players have enough data (≥5 AB)
+  const pkA = dataA.parkStats?.ab >= 5 ? dataA.parkStats.avg : null;
+  const pkB = dataB.parkStats?.ab >= 5 ? dataB.parkStats.avg : null;
   rows.push({
     label: 'Park AVG 2026',
-    aDisp: pkA != null ? `${fmt3(pkA)} (${dataA.parkStats.games}G)` : '—',
-    bDisp: pkB != null ? `${fmt3(pkB)} (${dataB.parkStats.games}G)` : '—',
+    aDisp: dataA.parkStats?.ab >= 1 ? `${fmt3(dataA.parkStats.avg)} (${dataA.parkStats.games}G)` : '—',
+    bDisp: dataB.parkStats?.ab >= 1 ? `${fmt3(dataB.parkStats.avg)} (${dataB.parkStats.games}G)` : '—',
     aWins: pkA != null && pkB != null && pkA !== pkB ? pkA > pkB : null,
   });
-  if (pkA != null || pkB != null) {
-    if (pkA != null && pkB != null) score(pkA > pkB ? true : false);
-    else if (pkA != null) { pts.A++; pts.total++; }
-    else { pts.B++; pts.total++; }
-  }
+  if (pkA != null && pkB != null) score(pkA > pkB ? true : pkA < pkB ? false : null);
 
   // Bullpen ERA: higher = weaker pen = better for batter
   if (dataA.bullpenEra > 0 || dataB.bullpenEra > 0) {
@@ -8402,12 +8396,11 @@ function buildCompareHTML(dataA, dataB) {
     rows.push({ label:'Opp Bullpen ERA', aDisp:'—', bDisp:'—', aWins:null });
   }
 
-  // Lab Score — 2pt weight
+  // Lab Score — 1pt (already incorporates ERA, park, H2H, bullpen — avoid double-weighting)
   const scoreA = dataA.score, scoreB = dataB.score;
   if (scoreA !== scoreB) {
-    const aWinsScore = scoreA > scoreB;
-    if (aWinsScore) { pts.A += 2; } else { pts.B += 2; }
-    pts.total += 2;
+    if (scoreA > scoreB) { pts.A++; } else { pts.B++; }
+    pts.total++;
   }
 
   // Verdict
