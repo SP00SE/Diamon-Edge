@@ -2772,6 +2772,95 @@ function getParkFactor(venueName) {
 // ─── CACHE ────────────────────────────────────────────────────────────────
 const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const DB_NAME = 'BaseballDashboard';
+const DB_STORE = 'apiCache';
+const DB_TTL = 24 * 60 * 60 * 1000; // 24 hours
+let db = null;
+
+// Initialize IndexedDB with fallback for private mode / old browsers
+async function initDB() {
+  if (!window.indexedDB) {
+    console.log('IndexedDB unavailable (private mode or old browser)');
+    return null;
+  }
+  try {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = e => {
+        const store = e.target.result.createObjectStore(DB_STORE);
+        store.createIndex('expiry', 'expiry', { unique: false });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = reject;
+    });
+  } catch (e) {
+    console.log('IndexedDB init failed:', e.message);
+    return null;
+  }
+}
+
+// Retrieve cached data from IndexedDB
+async function getCachedData(url) {
+  if (!db) return null;
+  try {
+    return new Promise((resolve) => {
+      const tx = db.transaction(DB_STORE, 'readonly');
+      const req = tx.objectStore(DB_STORE).get(url);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+// Store cached data in IndexedDB
+async function setCachedData(url, data) {
+  if (!db) return;
+  try {
+    return new Promise((resolve) => {
+      const tx = db.transaction(DB_STORE, 'readwrite');
+      tx.objectStore(DB_STORE).put({
+        url,
+        data,
+        ts: Date.now(),
+        expiry: Date.now() + DB_TTL,
+      });
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
+  } catch (e) {
+    // Silently fail—app still works with RAM cache
+  }
+}
+
+// Show cache consent prompt
+function showCachePrompt() {
+  const dialog = document.createElement('div');
+  dialog.style.cssText = `
+    position: fixed; bottom: 20px; right: 20px; z-index: 10000;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; max-width: 320px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 13px; color: var(--text-primary);
+  `;
+  dialog.innerHTML = `
+    <div style="margin-bottom: 12px; font-weight: 600;">💾 Cache Data Locally?</div>
+    <div style="margin-bottom: 12px; color: var(--text-muted); line-height: 1.5;">
+      Save game data & stats on your device for faster future loads (~50 MB).
+    </div>
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+      <button onclick="this.closest('div').remove(); localStorage.setItem('cacheConsent', 'no')" 
+        style="padding: 6px 12px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 12px;">
+        No
+      </button>
+      <button onclick="this.closest('div').remove(); localStorage.setItem('cacheConsent', 'yes')" 
+        style="padding: 6px 12px; background: var(--accent-blue); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">
+        Enable
+      </button>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+}
 
 // ─── GLOBAL REQUEST THROTTLE ─────────────────────────────────────────────
 // 2 concurrent MLB API requests with 100ms inter-request gap.
@@ -2809,10 +2898,22 @@ function _throttledFetch(url, opts) {
 
 async function cachedFetch(url, opts={}) {
   const now = Date.now();
+  // Check RAM cache first (5 min TTL)
   if (cache.has(url)) {
     const { ts, data } = cache.get(url);
     if (now - ts < CACHE_TTL) return data;
   }
+  // Check IndexedDB (24 hour TTL)
+  try {
+    const cached = await getCachedData(url);
+    if (cached && now < cached.expiry) {
+      cache.set(url, { ts: now, data: cached.data }); // refresh RAM
+      return cached.data;
+    }
+  } catch (e) {
+    // IndexedDB lookup failed, continue to fetch
+  }
+  // Fetch fresh from API
   const MAX_RETRIES = 4;
   let lastErr;
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -2827,6 +2928,12 @@ async function cachedFetch(url, opts={}) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       cache.set(url, { ts: Date.now(), data });
+      // Store in IndexedDB for next session
+      try {
+        await setCachedData(url, data);
+      } catch (e) {
+        // IndexedDB write failed, but data is in RAM cache
+      }
       return data;
     } catch (err) {
       lastErr = err;
@@ -3566,7 +3673,7 @@ async function processGame(game) {
         id: p.person?.id,
         name: p.person?.fullName || 'Unknown',
         position: p.position?.abbreviation || '',
-        orderPos: Math.ceil(parseInt(p.battingOrder) / 100),
+        orderPos: Math.floor(parseInt(p.battingOrder) / 100),
         batSide: p.batSide?.code || 'R',
         team: awayTeam, teamAbbr: awayAbbr, teamId: game.teams?.away?.team?.id,
         isAway: true,
@@ -3579,7 +3686,7 @@ async function processGame(game) {
         id: p.person?.id,
         name: p.person?.fullName || 'Unknown',
         position: p.position?.abbreviation || '',
-        orderPos: Math.ceil(parseInt(p.battingOrder) / 100),
+        orderPos: Math.floor(parseInt(p.battingOrder) / 100),
         batSide: p.batSide?.code || 'R',
         team: homeTeam, teamAbbr: homeAbbr, teamId: game.teams?.home?.team?.id,
         isAway: false,
@@ -3589,15 +3696,20 @@ async function processGame(game) {
     const homePosted = homeLineup.length > 0;
     lineupPosted = awayPosted || homePosted;
 
-    // If only one team has posted, fill the missing team with projected roster
-    // so both sides always have players (avoids blank team in breakdown + Hit Forge)
-    if (lineupPosted && !awayPosted) {
+    // Fill missing or partial lineups with projected roster (supplement up to 9 players)
+    if (awayLineup.length < 9) {
+      const existingIds = new Set(awayLineup.map(p => p.id));
       const proj = await fetchRosterProjected(game.teams?.away?.team?.id).catch(() => []);
-      awayLineup = proj.map((p, i) => ({ ...p, orderPos: i + 1, team: awayTeam, teamAbbr: awayAbbr, teamId: game.teams?.away?.team?.id, isAway: true, _projected: true }));
+      proj.filter(p => !existingIds.has(p.id)).forEach(p => {
+        awayLineup.push({ ...p, orderPos: awayLineup.length + 1, team: awayTeam, teamAbbr: awayAbbr, teamId: game.teams?.away?.team?.id, isAway: true, _projected: true });
+      });
     }
-    if (lineupPosted && !homePosted) {
+    if (homeLineup.length < 9) {
+      const existingIds = new Set(homeLineup.map(p => p.id));
       const proj = await fetchRosterProjected(game.teams?.home?.team?.id).catch(() => []);
-      homeLineup = proj.map((p, i) => ({ ...p, orderPos: i + 1, team: homeTeam, teamAbbr: homeAbbr, teamId: game.teams?.home?.team?.id, isAway: false, _projected: true }));
+      proj.filter(p => !existingIds.has(p.id)).forEach(p => {
+        homeLineup.push({ ...p, orderPos: homeLineup.length + 1, team: homeTeam, teamAbbr: homeAbbr, teamId: game.teams?.home?.team?.id, isAway: false, _projected: true });
+      });
     }
   }
 
@@ -3746,14 +3858,20 @@ async function fetchStreaks(playerId) {
         acc.strikeOuts       += st.strikeOuts       || 0;
         acc.baseOnBalls      += st.baseOnBalls      || 0;
         acc.plateAppearances += st.plateAppearances || 0;
+        acc.sacrificeFlies   += st.sacrificeFlies   || 0;
         return acc;
-      }, { atBats:0, hits:0, doubles:0, triples:0, homeRuns:0, strikeOuts:0, baseOnBalls:0, plateAppearances:0 });
+      }, { atBats:0, hits:0, doubles:0, triples:0, homeRuns:0, strikeOuts:0, baseOnBalls:0, plateAppearances:0, sacrificeFlies:0 });
       if (agg.atBats > 0) {
         agg.avg = agg.hits / agg.atBats;
         agg.obp = agg.plateAppearances > 0 ? (agg.hits + agg.baseOnBalls) / agg.plateAppearances : 0;
         const tb = agg.hits + agg.doubles + agg.triples * 2 + agg.homeRuns * 3;
         agg.slg = tb / agg.atBats;
         agg.ops = agg.obp + agg.slg;
+        // Calculate advanced stats
+        const bip = agg.atBats - agg.strikeOuts - agg.homeRuns + agg.sacrificeFlies;
+        const contact = agg.atBats - agg.strikeOuts;
+        agg.babip = bip > 0 ? (agg.hits - agg.homeRuns) / bip : 0;
+        agg.bacon = contact > 0 ? (agg.hits - agg.homeRuns) / contact : 0;
       }
       return agg;
     }
@@ -3812,7 +3930,7 @@ async function batchFetchBatterStats(batters) {
 
 function mapHitterStats(raw) {
   if (!raw) return null;
-  return {
+  const stats = {
     avg: parseFloat(raw.avg) || 0,
     obp: parseFloat(raw.obp) || 0,
     slg: parseFloat(raw.slg) || 0,
@@ -3825,7 +3943,20 @@ function mapHitterStats(raw) {
     triples: raw.triples || 0,
     homeRuns: raw.homeRuns || 0,
     plateAppearances: raw.plateAppearances || 0,
+    sacrificeFlies: raw.sacrificeFlies || 0,
+    groundIntoDoublePlay: raw.groundIntoDoublePlay || 0,
   };
+  // Calculate advanced stats
+  const ab = stats.atBats;
+  const h = stats.hits;
+  const hr = stats.homeRuns;
+  const k = stats.strikeOuts;
+  const sf = stats.sacrificeFlies;
+  const bip = ab - k - hr + sf; // Balls in play
+  const contact = ab - k; // Contact at-bats
+  stats.babip = bip > 0 ? (h - hr) / bip : 0;
+  stats.bacon = contact > 0 ? (h - hr) / contact : 0;
+  return stats;
 }
 
 function mapPitcherStats(raw) {
@@ -7801,6 +7932,23 @@ async function generateAppIcon() {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 async function init() {
+  // Initialize IndexedDB for persistent caching
+  try {
+    db = await initDB();
+    if (db) {
+      console.log('✅ IndexedDB enabled for 24-hour cache');
+    } else {
+      console.log('ℹ️ Using RAM cache only (IndexedDB unavailable)');
+    }
+  } catch (e) {
+    console.log('IndexedDB init error:', e.message);
+  }
+  
+  // Show cache consent prompt if user hasn't decided
+  if (!localStorage.getItem('cacheConsent')) {
+    showCachePrompt();
+  }
+  
   await generateAppIcon();
   const dateInput = document.getElementById('dateInput');
   dateInput.value = state.date;
@@ -8042,7 +8190,7 @@ function labInit() {
   _labState = { gamePk: null, playerId: null };
   _labShow('labScreenGame');
   const grid = document.getElementById('labGameGrid');
-  const games = Object.values(state.predictions);
+  const games = Object.values(state.predictions).sort((a, b) => new Date(a.gameDate || 0) - new Date(b.gameDate || 0));
   if (!games.length) {
     grid.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:20px 0">No games loaded yet — return here after the main slate loads.</div>';
     return;
@@ -8355,6 +8503,8 @@ function buildCompareHTML(dataA, dataB) {
   score(addRow('AVG',   pA.seasonStats?.avg,      pB.seasonStats?.avg,      fmt3, true));
   score(addRow('OBP',   pA.seasonStats?.obp,       pB.seasonStats?.obp,      fmt3, true));
   score(addRow('SLG',   pA.seasonStats?.slg,       pB.seasonStats?.slg,      fmt3, true));
+  score(addRow('BABIP', pA.seasonStats?.babip,     pB.seasonStats?.babip,    fmt3, true));
+  score(addRow('BACON', pA.seasonStats?.bacon,     pB.seasonStats?.bacon,    fmt3, true));
   score(addRow('HR',    pA.seasonStats?.homeRuns,  pB.seasonStats?.homeRuns, v => v ?? '—', true));
 
   // Opp pitcher ERA: higher ERA = better for batter
@@ -8570,6 +8720,8 @@ async function runLabAnalysis() {
   const seasOPS  = player.seasonStats?.ops || 0;
   const seasHR   = player.seasonStats?.homeRuns || 0;
   const seasAB   = player.seasonStats?.atBats || 0;
+  const seasBABIP = player.seasonStats?.babip || 0;
+  const seasBACON = player.seasonStats?.bacon || 0;
   _labStep('ls1','done');
 
   // Step 2: Pitcher & park context
@@ -8739,6 +8891,8 @@ async function runLabAnalysis() {
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val">${fmt3(seasOBP)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val">${fmt3(seasSLG)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OPS</div><div class="lab-stat-cell-val">${fmt3(seasOPS)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">BABIP</div><div class="lab-stat-cell-val ${seasBABIP>=0.320?'good':seasBABIP>0&&seasBABIP<0.270?'bad':''}">${fmt3(seasBABIP)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">BACON</div><div class="lab-stat-cell-val ${seasBACON>=0.320?'good':seasBACON>0&&seasBACON<0.270?'bad':''}">${fmt3(seasBACON)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${seasHR||'—'}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">Streak</div><div class="lab-stat-cell-val">${player.hitStreak?player.hitStreak+'g 🔥':'—'}</div></div>
       </div>
@@ -8749,6 +8903,8 @@ async function runLabAnalysis() {
       <div class="lab-stat-grid">
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(l10.avg||0)>=0.285?'good':(l10.avg||0)>0&&(l10.avg||0)<0.200?'bad':''}">${fmt3(l10.avg)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val">${fmt3(l10.obp)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">BABIP</div><div class="lab-stat-cell-val ${(l10.babip||0)>=0.320?'good':(l10.babip||0)>0&&(l10.babip||0)<0.270?'bad':''}">${fmt3(l10.babip)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">BACON</div><div class="lab-stat-cell-val ${(l10.bacon||0)>=0.320?'good':(l10.bacon||0)>0&&(l10.bacon||0)<0.270?'bad':''}">${fmt3(l10.bacon)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">Hits</div><div class="lab-stat-cell-val">${l10.hits??'—'}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${l10.homeRuns??'—'}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val">${fmt3(l10.slg)}</div></div>
