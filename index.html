@@ -1922,6 +1922,8 @@ main { padding: 28px 0 60px; }
 /* Action line */
 .pa-action-card { background:var(--bg-secondary); border:1px solid var(--border-accent); border-radius:var(--radius-xl); padding:14px 18px; margin-bottom:14px; }
 .pa-action-lbl { font-size:9px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); margin-bottom:5px; }
+.lab-quick-btn { background:transparent; border:1px solid var(--accent-purple); border-radius:var(--radius-md); padding:2px 8px; color:var(--accent-purple); font-family:'Outfit',sans-serif; font-size:10px; font-weight:700; letter-spacing:.4px; cursor:pointer; white-space:nowrap; }
+.lab-quick-btn:hover { opacity:.82; }
 .pa-action-line { font-size:13px; font-weight:600; color:var(--text-primary); line-height:1.5; }
 /* ── Share Results ── */
 .pa-share-btn { background:var(--bg-secondary); border:1px solid var(--border-accent); border-radius:var(--radius-md); padding:5px 13px; color:var(--accent-blue); font-family:'Outfit',sans-serif; font-size:11px; font-weight:700; letter-spacing:.5px; cursor:pointer; white-space:nowrap; transition:background .15s,border-color .15s; }
@@ -3933,6 +3935,9 @@ function predCardHTML(player, type, delay=0, prefix='c') {
       ${statsHTML}
       <div class="card-reason" style="margin-top:10px">"${reason}"</div>
       <div class="factor-chips">${chipsHTML}</div>
+      <div style="margin-top:8px">
+        <button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},${type==='hit'?"'hitPicks'":"'hrPicks'"})">🔬 Lab Analysis</button>
+      </div>
       <div class="streak-expand-btn" style="margin-top:10px" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${prefix}-gl-${type}-${player.id}')">
         <span>Last 7 Games</span><span class="chevron">▼</span>
       </div>
@@ -5166,6 +5171,7 @@ async function renderHotStreaks() {
           <span class="streak-delta ${diff >= 0 ? 'pos' : 'neg'}">${diffStr} vs season</span>
           ${consecBadge}
           ${p.hitConfidence ? `<span class="confidence-badge ${p.hitConfidence.cls}" style="padding:2px 8px;align-self:flex-start;">${p.hitConfidence.icon} ${p.hitConfidence.label}</span>` : ''}
+          <div style="margin-top:6px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${p.id},'streaks')">🔬 Lab Analysis</button></div>
           ${expandBtn}
         </div>`;
     } else {
@@ -5192,6 +5198,7 @@ async function renderHotStreaks() {
           </div>
           ${consecBadge}
           ${p.hrConfidence ? `<span class="confidence-badge ${p.hrConfidence.cls}" style="padding:2px 8px;align-self:flex-start;">${p.hrConfidence.icon} ${p.hrConfidence.label}</span>` : ''}
+          <div style="margin-top:6px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${p.id},'streaks')">🔬 Lab Analysis</button></div>
           ${expandBtn}
         </div>`;
     }
@@ -5676,6 +5683,7 @@ function renderBreakdownTable() {
       <td class="td-player">
         <span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span>
         <button class="pa-analyze-btn" onclick="openPlayerAnalyzer(${p.id},'bts')" style="padding:2px 8px;font-size:10px;margin-left:6px">🔍</button>
+        <button class="lab-quick-btn" onclick="openLabFor(${p.id},'bts')" style="margin-left:4px">🔬 Lab</button>
         <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'bd-gl-${p.id}')">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -5866,7 +5874,10 @@ async function openPlayerModal(playerId) {
         <div class="modal-player-name">${p.name}</div>
         <div class="modal-meta">${p.team} · ${p.position} · ${p.matchup} · Bats ${p.orderPos || '?'}</div>
       </div>
-      <button class="pa-analyze-btn" onclick="closePlayerModal({target:null});openPlayerAnalyzer(${p.id})" style="margin-top:6px;flex-shrink:0">🔍 Analyze</button>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:6px;flex-shrink:0">
+        <button class="pa-analyze-btn" onclick="closePlayerModal({target:null});openPlayerAnalyzer(${p.id})">🔍 Analyze</button>
+        <button class="lab-quick-btn" onclick="closePlayerModal({target:null});openLabFor(${p.id})">🔬 Lab</button>
+      </div>
     </div>
     ${actualHTML}
     <div class="modal-score-row">
@@ -6640,6 +6651,7 @@ function renderBeatTheStreak() {
           ⚾ vs ${pName} (ERA ${pEra}) · ${player.teamId === gd.homeTeamId ? 'HOME' : 'AWAY'} vs ${oppAbbr}
         </div>
         ${reasons.length ? `<div class="bts-card-reasons" style="margin-top:8px">+ ${reasons.slice(0,4).join(' · ')}</div>` : ''}
+        <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'bts')">🔬 Lab Analysis</button></div>
         <div class="streak-expand-btn" onclick="toggleStreakGameLog(${player.id},this,'bts-gl-${player.id}',false,7)">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -6779,6 +6791,7 @@ async function renderDailyDominators() {
           ${p.triples ? `<span class="dom-stat-pill dom-pill-avg">${p.triples} 3B</span>` : ''}
           ${p.bb  ? `<span class="dom-stat-pill dom-pill-avg">${p.bb} BB</span>` : ''}
         </div>
+        <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${p.id},'dominator')">🔬 Lab Analysis</button></div>
         <div class="streak-expand-btn" onclick="toggleStreakGameLog(${p.id},this,'dom-gl-${p.id}',true)">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -6944,6 +6957,7 @@ async function renderRisingStars() {
         </div>
         ${liveHTML}
         <span class="bb-streak-badge ${streakClass}" style="display:inline-block;margin:4px 0">${streakLabel}</span>
+        <div style="margin-top:6px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${p.id},'dominator')">🔬 Lab Analysis</button></div>
         <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'rising-gl-${p.id}')">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -7109,6 +7123,7 @@ async function renderDueForHit() {
         </div>
         ${liveHTML}
         <span class="bb-streak-badge ${streakClass}" style="display:inline-block;margin:4px 0">${streakLabel}</span>
+        <div style="margin-top:6px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${p.id},'dueForHit')">🔬 Lab Analysis</button></div>
         <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'dfh-gl-${p.id}')">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -8793,8 +8808,15 @@ function buildPlayerAnalysisShareText() {
   const d = _paShareData;
   if (!d) return '';
   const isBts = d.source === 'bts';
-  const isLab = d.source === 'lab';
-  const srcLabel = isBts ? 'Beat the Streak' : isLab ? 'Player Matchup Lab' : 'Diamond Edge';
+  const isLab = ['lab','hitPicks','hrPicks','streaks','dominator','dueForHit'].includes(d.source);
+  const srcLabel = isBts ? 'Beat the Streak'
+    : d.source === 'hitPicks' ? 'Hit Picks (via The Lab)'
+    : d.source === 'hrPicks'  ? 'HR Picks (via The Lab)'
+    : d.source === 'streaks'  ? 'Hot Streaks (via The Lab)'
+    : d.source === 'dominator'? 'Daily Dominators (via The Lab)'
+    : d.source === 'dueForHit'? 'Due for a Hit (via The Lab)'
+    : d.source === 'lab'      ? 'Player Matchup Lab'
+    : 'Diamond Edge';
 
   const pickTerm = isBts
     ? (d.matchupScore >= 70 ? `${d.pickEmoji} Good BTS Pick`
@@ -9541,7 +9563,7 @@ async function openPlayerAnalyzer(playerId, source) {
 }
 
 // ─── THE LAB ──────────────────────────────────────────────────────────────
-let _labState = { gamePk: null, playerId: null };
+let _labState = { gamePk: null, playerId: null, source: null };
 let _labCompareSet = new Set();
 
 function _labShow(screenId) {
@@ -9550,8 +9572,27 @@ function _labShow(screenId) {
   window.scrollTo(0, 0);
 }
 
+function openLabFor(playerId, source) {
+  const p = (state.playerMap || {})[playerId];
+  if (!p) return;
+  _labState.playerId = playerId;
+  _labState.gamePk   = p.gamePk || null;
+  _labState.source   = source || state.activeTab || 'general';
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+  const labBtn = document.querySelector('.main-tab[onclick*="\'lab\'"]');
+  if (labBtn) labBtn.classList.add('active');
+  ['tabTop','tabBreakdown','tabOverall','tabStreaks','tabDueForHit',
+   'tabLeaders','tabBts','tabDominators','tabLab'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === 'tabLab' ? 'block' : 'none';
+  });
+  state.activeTab = 'lab';
+  window.scrollTo(0, 0);
+  labSelectPlayer(playerId);
+}
+
 function labInit() {
-  _labState = { gamePk: null, playerId: null };
+  _labState = { gamePk: null, playerId: null, source: null };
   _labShow('labScreenGame');
   const grid = document.getElementById('labGameGrid');
   const games = Object.values(state.predictions).sort((a, b) => new Date(a.gameDate || 0) - new Date(b.gameDate || 0));
@@ -9670,7 +9711,7 @@ function labSelectGame(gamePk) {
 }
 
 function labGoGames() {
-  _labState = { gamePk: null, playerId: null };
+  _labState = { gamePk: null, playerId: null, source: null };
   _labCompareSet = new Set();
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'none';
@@ -10532,7 +10573,7 @@ async function runLabAnalysis() {
     else if (ghp < 0.45) _lRisk.push(`Hit game % is low (${Math.round(ghp*100)}% of games)`);
   }
   _paShareData = {
-    source: 'lab',
+    source: _labState.source || 'lab',
     playerName: player.name,
     team: player.teamAbbr || (TEAM_INFO[player.teamId]?.nick || ''),
     matchup: gd ? `${gd.awayAbbr} @ ${gd.homeAbbr}` : '—',
