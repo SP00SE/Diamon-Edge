@@ -1923,6 +1923,20 @@ main { padding: 28px 0 60px; }
 .pa-action-card { background:var(--bg-secondary); border:1px solid var(--border-accent); border-radius:var(--radius-xl); padding:14px 18px; margin-bottom:14px; }
 .pa-action-lbl { font-size:9px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); margin-bottom:5px; }
 .pa-action-line { font-size:13px; font-weight:600; color:var(--text-primary); line-height:1.5; }
+/* ── Share Results ── */
+.pa-share-btn { background:var(--bg-secondary); border:1px solid var(--border-accent); border-radius:var(--radius-md); padding:5px 13px; color:var(--accent-blue); font-family:'Outfit',sans-serif; font-size:11px; font-weight:700; letter-spacing:.5px; cursor:pointer; white-space:nowrap; transition:background .15s,border-color .15s; }
+.pa-share-btn:hover { background:var(--accent-blue-dim); border-color:var(--accent-blue); }
+.pa-share-menu-wrap { position:relative; display:inline-block; flex-shrink:0; }
+.pa-share-menu { position:absolute; top:calc(100% + 8px); right:0; z-index:2100; background:var(--bg-card); border:1px solid var(--border-accent); border-radius:var(--radius-lg); box-shadow:var(--shadow-lg); min-width:200px; overflow:hidden; }
+.pa-share-menu-item { display:flex; align-items:center; gap:10px; padding:12px 16px; font-size:13px; cursor:pointer; border-bottom:1px solid var(--border); color:var(--text-primary); transition:background .12s; user-select:none; }
+.pa-share-menu-item:last-child { border-bottom:none; }
+.pa-share-menu-item:hover { background:var(--bg-input); }
+.pa-smi-icon { font-size:15px; flex-shrink:0; }
+.pa-smi-label { font-weight:600; }
+.pa-smi-sub { font-size:10px; color:var(--text-muted); margin-top:1px; }
+/* Toast notification */
+.pa-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--bg-card); border:1px solid var(--border-accent); border-radius:var(--radius-lg); padding:11px 22px; font-size:13px; font-weight:600; color:var(--text-primary); box-shadow:var(--shadow-md); opacity:0; transition:opacity .22s,transform .22s; pointer-events:none; z-index:3100; white-space:nowrap; }
+.pa-toast.pa-toast-show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -5642,7 +5656,7 @@ function renderBreakdownTable() {
       <td class="td-order">${p.orderPos || '?'}</td>
       <td class="td-player">
         <span class="td-player-link" onclick="openPlayerModal(${p.id})">${p.name}</span>
-        <button class="pa-analyze-btn" onclick="openPlayerAnalyzer(${p.id})" style="padding:2px 8px;font-size:10px;margin-left:6px">🔍</button>
+        <button class="pa-analyze-btn" onclick="openPlayerAnalyzer(${p.id},'bts')" style="padding:2px 8px;font-size:10px;margin-left:6px">🔍</button>
         <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${p.id},this,'bd-gl-${p.id}')">
           <span>Last 7 Games</span><span class="chevron">▼</span>
         </div>
@@ -8714,11 +8728,350 @@ async function init() {
 document.addEventListener('DOMContentLoaded', init);
 
 // ─── PLAYER ANALYZER ──────────────────────────────────────────────────────
+let _paShareData = null;
+
 function closePlayerAnalyzer() {
   document.getElementById('playerAnalyzerPanel').style.display = 'none';
+  const sm = document.getElementById('paShareMenu');
+  if (sm) sm.style.display = 'none';
+  const sb = document.getElementById('paShareBtn');
+  if (sb) sb.style.display = 'none';
+  _paShareData = null;
 }
 
-async function openPlayerAnalyzer(playerId) {
+// ── Share: toggle dropdown ─────────────────────────────────────────────────
+function _paToggleShareMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('paShareMenu');
+  if (!menu) return;
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('paShareMenu');
+  if (m && m.style.display !== 'none') m.style.display = 'none';
+});
+
+// ── Share: toast helper ────────────────────────────────────────────────────
+function _paToast(msg) {
+  const t = document.getElementById('paToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('pa-toast-show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('pa-toast-show'), 2600);
+}
+
+// ── Share: build text summary ──────────────────────────────────────────────
+function buildPlayerAnalysisShareText() {
+  const d = _paShareData;
+  if (!d) return '';
+  const isBts = d.source === 'bts';
+  const isLab = d.source === 'lab';
+  const srcLabel = isBts ? 'Beat the Streak' : isLab ? 'Player Matchup Lab' : 'Diamond Edge';
+
+  const pickTerm = isBts
+    ? (d.matchupScore >= 70 ? `${d.pickEmoji} Good BTS Pick`
+      : d.matchupScore >= 55 ? `${d.pickEmoji} Monitor Lineup`
+      : d.matchupScore >= 40 ? `${d.pickEmoji} Risky BTS Pick`
+      : `${d.pickEmoji} Avoid BTS`)
+    : isLab
+      ? (d.matchupScore >= 70 ? `${d.pickEmoji} Strong Matchup Lean`
+        : d.matchupScore >= 55 ? `${d.pickEmoji} Moderate Matchup Lean`
+        : d.matchupScore >= 40 ? `${d.pickEmoji} Weak Matchup`
+        : `${d.pickEmoji} Avoid`)
+      : `${d.pickEmoji} ${d.pickLabel}`;
+
+  const lines = [
+    `${d.playerName} — ${d.team} vs ${d.matchup}`,
+    `Source: ${srcLabel}`,
+    '',
+    `Final Pick: ${pickTerm}`,
+    `Confidence: ${d.confidence}`,
+    d.hitScore != null ? `Hit Score: ${d.hitScore}` : null,
+    (!isBts && d.hrScore != null) ? `HR Score: ${d.hrScore}` : null,
+    `Matchup Score: ${d.matchupScore}`,
+    '',
+  ].filter(l => l !== null);
+
+  if (d.whyBullets?.length) {
+    lines.push(isBts ? 'Why he can get a hit:' : 'Hitter advantages:');
+    d.whyBullets.slice(0, 4).forEach(b => lines.push(`  • ${b}`));
+    lines.push('');
+  }
+
+  if (d.riskBullets?.length && d.riskBullets[0] !== 'No major risk factors identified') {
+    lines.push('Risk factors:');
+    d.riskBullets.slice(0, 3).forEach(b => lines.push(`  • ${b}`));
+    lines.push('');
+  }
+
+  const pitLines = ['Pitcher Matchup:'];
+  if (d.pitcherName && d.pitcherName !== '—') pitLines.push(`  • Opposing Starter: ${d.pitcherName} (${d.pitcherHand}HP)`);
+  if (d.pH9 != null)  pitLines.push(`  • Starter H/9: ${d.pH9.toFixed(1)}`);
+  if (d.pHBF > 0)     pitLines.push(`  • Starter H/BF%: ${(d.pHBF * 100).toFixed(1)}%`);
+  if (d.pKpct > 0)    pitLines.push(`  • Pitcher K%: ${(d.pKpct * 100).toFixed(1)}%`);
+  if (d.pEra != null) pitLines.push(`  • ERA: ${d.pEra.toFixed(2)}`);
+  if (pitLines.length > 1) { lines.push(...pitLines); lines.push(''); }
+
+  lines.push('Platoon Edge:');
+  lines.push(`  ${d.platoonLabel || 'Unknown'}`);
+  lines.push('');
+
+  if (d.venueName || d.wxNote) {
+    lines.push('Park/Weather:');
+    if (d.venueName) lines.push(`  • ${d.venueName}${d.parkFactor ? ` (${d.parkFactor.toFixed(2)}×)` : ''} — ${d.parkImpact?.lbl || 'Neutral'}`);
+    if (d.wxNote && d.wxNote !== 'Not available') lines.push(`  • Weather: ${d.wxNote}`);
+    lines.push('');
+  }
+
+  lines.push('Final Take:');
+  lines.push(`  ${d.actionLine}`);
+  if (d.riskBullets?.some(r => r.toLowerCase().includes('lineup'))) {
+    lines.push('  ⚠️ Verify lineup before locking this pick.');
+  }
+  lines.push('');
+  lines.push('— Diamond Edge MLB Analysis  🔬');
+  return lines.join('\n');
+}
+
+// ── Share: copy to clipboard ───────────────────────────────────────────────
+async function _paCopySummary() {
+  const sm = document.getElementById('paShareMenu');
+  if (sm) sm.style.display = 'none';
+  const text = buildPlayerAnalysisShareText();
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    _paToast('Analysis copied to clipboard.');
+  } catch {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      _paToast('Analysis copied to clipboard.');
+    } catch { _paToast('Copy failed — try again.'); }
+  }
+}
+
+// ── Share: Web Share API ───────────────────────────────────────────────────
+async function _paNativeShare() {
+  const sm = document.getElementById('paShareMenu');
+  if (sm) sm.style.display = 'none';
+  if (!navigator.share) { await _paCopySummary(); return; }
+  const d = _paShareData;
+  const text = buildPlayerAnalysisShareText();
+  try {
+    await navigator.share({ title: `${d?.playerName || 'Player'} — Diamond Edge Analysis`, text });
+    _paToast('Shared successfully.');
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      await _paCopySummary();
+      _paToast('Unable to share. Summary copied instead.');
+    }
+  }
+}
+
+// ── Share: Download image card via Canvas ─────────────────────────────────
+function _paDownloadImage() {
+  const sm = document.getElementById('paShareMenu');
+  if (sm) sm.style.display = 'none';
+  const d = _paShareData;
+  if (!d) { _paToast('No analysis to export.'); return; }
+
+  const W = 1080, H = 1350, PAD = 60;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#06080c';
+  ctx.fillRect(0, 0, W, H);
+  const g1 = ctx.createRadialGradient(W*0.2, H*0.1, 0, W*0.2, H*0.1, W*0.8);
+  g1.addColorStop(0, 'rgba(52,211,153,0.07)'); g1.addColorStop(1, 'transparent');
+  ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
+  const g2 = ctx.createRadialGradient(W*0.85, H*0.85, 0, W*0.85, H*0.85, W*0.65);
+  g2.addColorStop(0, 'rgba(251,146,60,0.06)'); g2.addColorStop(1, 'transparent');
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+
+  function rRect(x, y, w, h, r, fill, stroke, sw2) {
+    ctx.beginPath();
+    ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
+    if (fill)  { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = sw2||2; ctx.stroke(); }
+  }
+  function fitText(text, maxW) {
+    let t = text;
+    while (ctx.measureText(t).width > maxW && t.length > 4) t = t.slice(0,-4)+'…';
+    return t;
+  }
+  function hRule(yp) {
+    ctx.strokeStyle = '#1e2330'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(PAD, yp); ctx.lineTo(W-PAD, yp); ctx.stroke();
+  }
+
+  const isBts = d.source === 'bts';
+  const srcLabel = isBts ? 'Beat the Streak' : d.source === 'lab' ? 'Player Matchup Lab' : 'Diamond Edge';
+  const pickColors = {
+    'pa-verdict-good':  { bg:'rgba(52,211,153,0.14)', border:'#34d399', text:'#34d399' },
+    'pa-verdict-mixed': { bg:'rgba(251,191,36,0.14)',  border:'#fbbf24', text:'#fbbf24' },
+    'pa-verdict-risky': { bg:'rgba(251,146,60,0.14)',  border:'#fb923c', text:'#fb923c' },
+    'pa-verdict-poor':  { bg:'rgba(248,113,113,0.14)', border:'#f87171', text:'#f87171' },
+  };
+  const pc = pickColors[d.pickCls] || pickColors['pa-verdict-mixed'];
+  const platClr = { pos:'#34d399', neg:'#fb923c', neu:'#4a5168' };
+
+  let y = PAD;
+
+  // Branding header
+  ctx.font = 'bold 30px Arial, sans-serif';
+  ctx.fillStyle = '#34d399';
+  ctx.fillText('DIAMOND EDGE', PAD, y+22);
+  ctx.font = '22px Arial, sans-serif';
+  ctx.fillStyle = '#4a5168';
+  ctx.fillText(srcLabel, PAD, y+56);
+  y += 80;
+
+  // Player name
+  ctx.font = 'bold 68px Arial, sans-serif';
+  ctx.fillStyle = '#e8eaf0';
+  ctx.fillText(fitText(d.playerName || '—', W - PAD*2 - 20), PAD, y+62);
+  y += 80;
+
+  // Team / matchup
+  ctx.font = '28px Arial, sans-serif';
+  ctx.fillStyle = '#8b92a5';
+  ctx.fillText(fitText(`${d.team || ''}   ·   ${d.matchup || ''}`, W - PAD*2), PAD, y);
+  y += 42;
+
+  hRule(y); y += 32;
+
+  // Decision card
+  const cardH = 170;
+  rRect(PAD, y, W-PAD*2, cardH, 18, pc.bg, pc.border, 3);
+
+  const pickDisplay = isBts
+    ? (d.matchupScore>=70?`${d.pickEmoji} Good BTS Pick` : d.matchupScore>=55?`${d.pickEmoji} Monitor Lineup` : d.matchupScore>=40?`${d.pickEmoji} Risky BTS Pick` : `${d.pickEmoji} Avoid BTS`)
+    : `${d.pickEmoji} ${d.pickLabel}`;
+
+  ctx.font = 'bold 50px Arial, sans-serif';
+  ctx.fillStyle = pc.text;
+  ctx.fillText(fitText(pickDisplay, W-PAD*2-60), PAD+28, y+56);
+
+  ctx.font = '26px Arial, sans-serif';
+  ctx.fillStyle = '#8b92a5';
+  ctx.fillText(`Score: ${d.matchupScore}   ·   Confidence: ${d.confidence}`, PAD+28, y+100);
+
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillStyle = '#e8eaf0';
+  const scoreRow = [`Hit Score: ${d.hitScore ?? '—'}`, !isBts && d.hrScore != null ? `HR Score: ${d.hrScore}` : null]
+    .filter(Boolean).join('   ·   ');
+  ctx.fillText(scoreRow, PAD+28, y+138);
+  y += cardH + 28;
+
+  // WHY bullets
+  if (d.whyBullets?.length) {
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillStyle = '#34d399';
+    ctx.fillText(isBts ? 'WHY HE CAN GET A HIT' : 'HITTER ADVANTAGES', PAD, y);
+    y += 34;
+    d.whyBullets.slice(0,3).forEach(b => {
+      rRect(PAD, y, W-PAD*2, 46, 8, 'rgba(52,211,153,0.08)', null);
+      ctx.font = '22px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
+      ctx.fillText(fitText(`✓  ${b}`, W-PAD*2-36), PAD+18, y+32);
+      y += 56;
+    });
+    y += 8;
+  }
+
+  // RISK bullets
+  const nonTrivialRisks = (d.riskBullets||[]).filter(r => r !== 'No major risk factors identified');
+  if (nonTrivialRisks.length) {
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillStyle = '#fb923c';
+    ctx.fillText('RISK FACTORS', PAD, y);
+    y += 34;
+    nonTrivialRisks.slice(0,2).forEach(b => {
+      rRect(PAD, y, W-PAD*2, 46, 8, 'rgba(251,146,60,0.08)', null);
+      ctx.font = '22px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
+      ctx.fillText(fitText(`⚠  ${b}`, W-PAD*2-36), PAD+18, y+32);
+      y += 56;
+    });
+    y += 8;
+  }
+
+  // Pitcher card
+  rRect(PAD, y, W-PAD*2, 138, 14, '#12151d', '#1e2330');
+  ctx.font = 'bold 20px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
+  ctx.fillText('PITCHER MATCHUP', PAD+22, y+28);
+  ctx.font = 'bold 30px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
+  ctx.fillText(fitText(`${d.pitcherName||'—'} (${d.pitcherHand||'?'}HP)`, W-PAD*2-44), PAD+22, y+68);
+  ctx.font = '22px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
+  const pitStats = [
+    d.pH9!=null  ? `H/9 ${d.pH9.toFixed(1)}`              : null,
+    d.pHBF>0     ? `H/BF ${(d.pHBF*100).toFixed(1)}%`      : null,
+    d.pKpct>0    ? `K% ${(d.pKpct*100).toFixed(1)}%`        : null,
+    d.pEra!=null ? `ERA ${d.pEra.toFixed(2)}`               : null,
+  ].filter(Boolean);
+  ctx.fillText(fitText(pitStats.join('   ·   '), W-PAD*2-44), PAD+22, y+108);
+  y += 156;
+
+  // Platoon + Park row (side by side)
+  const halfW = (W-PAD*2-16)/2;
+  rRect(PAD,        y, halfW, 92, 14, '#12151d', '#1e2330');
+  rRect(PAD+halfW+16, y, halfW, 92, 14, '#12151d', '#1e2330');
+
+  ctx.font = 'bold 19px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
+  ctx.fillText('PLATOON EDGE', PAD+20, y+26);
+  ctx.font = 'bold 27px Arial, sans-serif';
+  ctx.fillStyle = platClr[d.platoonCls||'neu']||'#8b92a5';
+  ctx.fillText(fitText(d.platoonLabel||'—', halfW-40), PAD+20, y+66);
+
+  ctx.font = 'bold 19px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
+  ctx.fillText('PARK IMPACT', PAD+halfW+36, y+26);
+  ctx.font = 'bold 27px Arial, sans-serif';
+  ctx.fillStyle = platClr[d.parkImpact?.cls||'neu']||'#8b92a5';
+  ctx.fillText(d.parkImpact?.lbl||'Neutral', PAD+halfW+36, y+66);
+  y += 110;
+
+  hRule(y); y += 26;
+
+  // Action line
+  ctx.font = '25px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
+  ctx.fillText(fitText(d.actionLine||'', W-PAD*2), PAD, y+28);
+  y += 54;
+
+  // Lineup warning
+  if ((d.riskBullets||[]).some(r => r.toLowerCase().includes('lineup'))) {
+    ctx.font = 'italic 22px Arial, sans-serif'; ctx.fillStyle = '#fbbf24';
+    ctx.fillText('⚠  Verify lineup before locking this pick.', PAD, y);
+    y += 36;
+  }
+
+  // Footer branding
+  ctx.font = '20px Arial, sans-serif'; ctx.fillStyle = '#1e2330';
+  const dateStr = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  ctx.fillText(`Diamond Edge  ·  ${dateStr}`, PAD, H-32);
+
+  canvas.toBlob(blob => {
+    if (!blob) { _paToast('Image export failed.'); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(d.playerName||'player').replace(/\s+/g,'_')}_analysis.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    _paToast('Share image downloaded.');
+  }, 'image/png');
+}
+
+async function openPlayerAnalyzer(playerId, source) {
   const panel = document.getElementById('playerAnalyzerPanel');
   panel.style.display = 'block';
   panel.scrollTop = 0;
@@ -9123,6 +9476,41 @@ async function openPlayerAnalyzer(playerId) {
       <div class="pa-action-lbl">Action</div>
       <div class="pa-action-line">${actionLine}</div>
     </div>`;
+
+  // ── Save share data & reveal Share button ──────────────────────────────
+  const _src = source || state.activeTab || 'general';
+  _paShareData = {
+    source: _src,
+    playerName: p.name,
+    team: p.team,
+    matchup: p.matchup || (gd.awayAbbr + ' @ ' + gd.homeAbbr),
+    pickEmoji, pickLabel, pickCls, confidence, bestUse, actionLine,
+    matchupScore,
+    hitScore: p.hitScore,
+    hrScore: p.hrScore,
+    whyBullets,
+    riskBullets,
+    pitcherName,
+    pitcherHand,
+    pEra,
+    pH9,
+    pHBF,
+    pKpct,
+    pK9n,
+    platoonLabel,
+    platoonCls,
+    venueName: gd.venueName,
+    parkFactor: pf.overall,
+    parkImpact,
+    wxNote,
+    bullpenEra,
+    bullpenH9,
+    bullpenVerdict,
+  };
+  const _sb = document.getElementById('paShareBtn');
+  if (_sb) _sb.style.display = '';
+  const _ni = document.getElementById('paNativeShareItem');
+  if (_ni) _ni.style.display = navigator.share ? '' : 'none';
 }
 
 // ─── THE LAB ──────────────────────────────────────────────────────────────
@@ -10083,6 +10471,23 @@ async function runLabAnalysis() {
         <div class="pa-topbar-meta" id="paTopMeta"></div>
       </div>
       <div class="pa-topbar-scores" id="paTopScores"></div>
+      <div class="pa-share-menu-wrap">
+        <button class="pa-share-btn" id="paShareBtn" onclick="_paToggleShareMenu(event)" style="display:none">↗ Share</button>
+        <div class="pa-share-menu" id="paShareMenu" style="display:none">
+          <div class="pa-share-menu-item" onclick="_paCopySummary()">
+            <span class="pa-smi-icon">📋</span>
+            <div><div class="pa-smi-label">Copy Summary</div><div class="pa-smi-sub">Plain text to clipboard</div></div>
+          </div>
+          <div class="pa-share-menu-item" id="paNativeShareItem" onclick="_paNativeShare()">
+            <span class="pa-smi-icon">📤</span>
+            <div><div class="pa-smi-label">Share…</div><div class="pa-smi-sub">Open system share sheet</div></div>
+          </div>
+          <div class="pa-share-menu-item" onclick="_paDownloadImage()">
+            <span class="pa-smi-icon">🖼️</span>
+            <div><div class="pa-smi-label">Download Image</div><div class="pa-smi-sub">Save share card as PNG</div></div>
+          </div>
+        </div>
+      </div>
       <button class="pa-close-btn" onclick="closePlayerAnalyzer()">✕</button>
     </div>
   </div>
@@ -10090,6 +10495,7 @@ async function runLabAnalysis() {
     <div style="color:var(--text-muted);text-align:center;padding:40px 0">Loading analysis…</div>
   </div>
 </div>
+<div class="pa-toast" id="paToast"></div>
 
 </body>
 </html>
