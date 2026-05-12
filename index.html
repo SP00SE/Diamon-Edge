@@ -2397,6 +2397,7 @@ main { padding: 28px 0 60px; }
       <div id="labScreenAnalysis" class="lab-screen" style="display:none;">
         <div class="lab-back-bar">
           <button class="lab-back-btn" onclick="labGoRoster()">← Roster</button>
+          <button class="lab-back-btn" id="labBackToSourceBtn" style="display:none;background:var(--accent-purple);border-color:var(--accent-purple);color:#fff" onclick="labGoBack()">← Back</button>
           <span class="lab-back-crumb" id="labAnalysisCrumb"></span>
         </div>
         <div id="labHitterCard"></div>
@@ -9651,6 +9652,15 @@ function openLabFor(playerId, source) {
   });
   state.activeTab = 'lab';
   window.scrollTo(0, 0);
+  // Set up the "back to source" button
+  const _bb = document.getElementById('labBackToSourceBtn');
+  if (_bb) {
+    const lblMap = { bts:'BTS', hitPicks:'Top Picks', hrPicks:'Top Picks',
+                     streaks:'Hot Streaks', dominator:'Dominators', dueForHit:'Due for a Hit' };
+    const lbl = lblMap[_labState.source];
+    if (lbl) { _bb.textContent = `← ${lbl}`; _bb.style.display = ''; }
+    else { _bb.style.display = 'none'; }
+  }
   labSelectPlayer(playerId);
 }
 
@@ -9778,6 +9788,8 @@ function labGoGames() {
   _labCompareSet = new Set();
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'none';
+  const _bb = document.getElementById('labBackToSourceBtn');
+  if (_bb) _bb.style.display = 'none';
   _labShow('labScreenGame');
 }
 
@@ -9792,6 +9804,17 @@ function labGoRoster() {
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'none';
   if (_labState.gamePk) labSelectGame(_labState.gamePk);
+}
+
+function labGoBack() {
+  const tabMap = {
+    bts: 'bts', hitPicks: 'overall', hrPicks: 'overall',
+    streaks: 'streaks', dominator: 'dominators', dueForHit: 'dueforhit',
+  };
+  const tabName = tabMap[_labState.source];
+  const btn = tabName && document.querySelector(`.main-tab[data-tab="${tabName}"]`);
+  if (btn) { switchTab(tabName, btn); }
+  else { labGoGames(); }
 }
 
 function toggleComparePlayer(playerId, checked) {
