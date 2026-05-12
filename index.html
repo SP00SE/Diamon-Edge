@@ -2419,6 +2419,10 @@ main { padding: 28px 0 60px; }
                 <span class="pa-smi-icon">🖼️</span>
                 <div><div class="pa-smi-label">Download Image</div><div class="pa-smi-sub">Save share card as PNG</div></div>
               </div>
+              <div class="pa-share-menu-item" onclick="_paScreenshot('lab')">
+                <span class="pa-smi-icon">📸</span>
+                <div><div class="pa-smi-label">Screenshot</div><div class="pa-smi-sub">Capture this analysis as PNG</div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -9120,6 +9124,65 @@ function _paDownloadImage() {
   }, 'image/png');
 }
 
+// ── Share: Screenshot of live analysis panel ──────────────────────────────
+let _h2cReady = false;
+function _loadH2C() {
+  if (_h2cReady || typeof html2canvas === 'function') { _h2cReady = true; return Promise.resolve(); }
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.onload  = () => { _h2cReady = true; res(); };
+    s.onerror = () => rej(new Error('load failed'));
+    document.head.appendChild(s);
+  });
+}
+
+async function _paScreenshot(source) {
+  const sm1 = document.getElementById('paShareMenu');
+  const sm2 = document.getElementById('labShareMenu');
+  if (sm1) sm1.style.display = 'none';
+  if (sm2) sm2.style.display = 'none';
+
+  _paToast('Capturing screenshot…');
+
+  try { await _loadH2C(); }
+  catch { _paToast('Could not load screenshot library. Try Download Image instead.'); return; }
+
+  const el = source === 'lab'
+    ? document.getElementById('labScreenAnalysis')
+    : document.getElementById('paContent');
+  if (!el) { _paToast('Nothing to capture.'); return; }
+
+  try {
+    const cvs = await html2canvas(el, {
+      useCORS: true, allowTaint: false,
+      backgroundColor: '#06080c',
+      scale: 2, logging: false, removeContainer: true,
+    });
+
+    const name = (_paShareData?.playerName || 'analysis').replace(/\s+/g, '_');
+    const fileName = `diamond-edge-${name}.png`;
+
+    cvs.toBlob(async blob => {
+      if (!blob) { _paToast('Screenshot failed.'); return; }
+      if (navigator.share && navigator.canShare) {
+        try {
+          const file = new File([blob], fileName, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({ files: [file], title: `${_paShareData?.playerName || 'Analysis'} — Diamond Edge` });
+            _paToast('Shared!');
+            return;
+          }
+        } catch(e) { if (e.name === 'AbortError') return; }
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = fileName; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      _paToast('Screenshot saved.');
+    }, 'image/png');
+  } catch { _paToast('Screenshot failed. Try Download Image instead.'); }
+}
+
 async function openPlayerAnalyzer(playerId, source) {
   const panel = document.getElementById('playerAnalyzerPanel');
   panel.style.display = 'block';
@@ -10635,6 +10698,10 @@ async function runLabAnalysis() {
           <div class="pa-share-menu-item" onclick="_paDownloadImage()">
             <span class="pa-smi-icon">🖼️</span>
             <div><div class="pa-smi-label">Download Image</div><div class="pa-smi-sub">Save share card as PNG</div></div>
+          </div>
+          <div class="pa-share-menu-item" onclick="_paScreenshot('panel')">
+            <span class="pa-smi-icon">📸</span>
+            <div><div class="pa-smi-label">Screenshot</div><div class="pa-smi-sub">Capture this analysis as PNG</div></div>
           </div>
         </div>
       </div>
