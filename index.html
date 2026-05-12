@@ -2401,6 +2401,25 @@ main { padding: 28px 0 60px; }
         <div id="labPitcherCard"></div>
         <div id="labParkCard"></div>
         <div id="labScoreCard"></div>
+        <div id="labShareBar" style="display:none;padding:4px 0 20px;text-align:right;position:relative">
+          <div class="pa-share-menu-wrap">
+            <button class="pa-share-btn" id="labShareBtn" onclick="_labToggleShareMenu(event)" style="font-size:12px;padding:7px 16px">↗ Share Results</button>
+            <div class="pa-share-menu" id="labShareMenu" style="display:none;bottom:calc(100% + 8px);top:auto">
+              <div class="pa-share-menu-item" onclick="_paCopySummary()">
+                <span class="pa-smi-icon">📋</span>
+                <div><div class="pa-smi-label">Copy Summary</div><div class="pa-smi-sub">Plain text to clipboard</div></div>
+              </div>
+              <div class="pa-share-menu-item" id="labNativeShareItem" onclick="_paNativeShare()">
+                <span class="pa-smi-icon">📤</span>
+                <div><div class="pa-smi-label">Share…</div><div class="pa-smi-sub">Open system share sheet</div></div>
+              </div>
+              <div class="pa-share-menu-item" onclick="_paDownloadImage()">
+                <span class="pa-smi-icon">🖼️</span>
+                <div><div class="pa-smi-label">Download Image</div><div class="pa-smi-sub">Save share card as PNG</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Screen 5: Comparison -->
       <div id="labScreenCompare" class="lab-screen" style="display:none;">
@@ -8739,16 +8758,24 @@ function closePlayerAnalyzer() {
   _paShareData = null;
 }
 
-// ── Share: toggle dropdown ─────────────────────────────────────────────────
+// ── Share: toggle dropdowns ────────────────────────────────────────────────
 function _paToggleShareMenu(e) {
   e.stopPropagation();
   const menu = document.getElementById('paShareMenu');
   if (!menu) return;
   menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
 }
+function _labToggleShareMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('labShareMenu');
+  if (!menu) return;
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
 document.addEventListener('click', () => {
-  const m = document.getElementById('paShareMenu');
-  if (m && m.style.display !== 'none') m.style.display = 'none';
+  const m1 = document.getElementById('paShareMenu');
+  if (m1 && m1.style.display !== 'none') m1.style.display = 'none';
+  const m2 = document.getElementById('labShareMenu');
+  if (m2 && m2.style.display !== 'none') m2.style.display = 'none';
 });
 
 // ── Share: toast helper ────────────────────────────────────────────────────
@@ -9645,6 +9672,8 @@ function labSelectGame(gamePk) {
 function labGoGames() {
   _labState = { gamePk: null, playerId: null };
   _labCompareSet = new Set();
+  const _lBar = document.getElementById('labShareBar');
+  if (_lBar) _lBar.style.display = 'none';
   _labShow('labScreenGame');
 }
 
@@ -9656,6 +9685,8 @@ document.addEventListener('click', e => {
 });
 
 function labGoRoster() {
+  const _lBar = document.getElementById('labShareBar');
+  if (_lBar) _lBar.style.display = 'none';
   if (_labState.gamePk) labSelectGame(_labState.gamePk);
 }
 
@@ -10457,6 +10488,84 @@ async function runLabAnalysis() {
       <div class="lab-narrative">${narrative.join(' ')}</div>
     </div>
   </div>`;
+
+  // ── Populate share data for Lab ──────────────────────────────────────────
+  const _lSplit   = pitcherHand === 'L' ? player.vsLHP : player.vsRHP;
+  const _lSplitAB = _lSplit?.atBats || 0;
+  const _lSplitAv = _lSplit?.avg || 0;
+  const _lDiff    = _lSplitAv - seasAvg;
+  const _lPlatLbl = _lSplitAB < 20 ? 'Insufficient Data'
+    : _lDiff > 0.040 ? 'Strong Advantage' : _lDiff > 0.015 ? 'Advantage'
+    : _lDiff < -0.040 ? 'Disadvantage' : _lDiff < -0.015 ? 'Slight Disadvantage' : 'Neutral';
+  const _lPlatCls = _lSplitAB < 20 ? 'neu' : _lDiff > 0.015 ? 'pos' : _lDiff < -0.015 ? 'neg' : 'neu';
+  const _lParkImp = (pf.overall||1) >= 1.08 ? {lbl:'Positive',cls:'pos'} : (pf.overall||1) <= 0.93 ? {lbl:'Negative',cls:'neg'} : {lbl:'Neutral',cls:'neu'};
+  const _lWh  = pitcher?.seasonStats?.whip || 0;
+  const _lIP  = pitcher?.seasonStats?.inningsPitched || 0;
+  const _lBB  = pitcher?.seasonStats?.baseOnBalls || 0;
+  const _lK   = pitcher?.seasonStats?.strikeOuts || 0;
+  const _lBF  = _lIP > 0 ? _lIP * (3 + _lWh) : 0;
+  const _lH9  = _lIP > 0 && _lWh > 0 ? Math.max(0, (_lWh * _lIP - _lBB) / _lIP * 9) : null;
+  const _lHBF = _lBF > 0 ? Math.max(0, _lWh * _lIP - _lBB) / _lBF : 0;
+  const _lKpct= _lBF > 0 ? _lK / _lBF : 0;
+  const _lPCls= score>=70?'pa-verdict-good':score>=55?'pa-verdict-mixed':score>=40?'pa-verdict-risky':'pa-verdict-poor';
+  const _lEmoj= score>=70?'✅':score>=55?'🟡':score>=40?'⚠️':'❌';
+  const _lLbl = score>=70?'Strong Matchup Lean':score>=55?'Moderate Matchup Lean':score>=40?'Weak Matchup':'Avoid';
+  const _lAct = score>=70?'Strong matchup lean — good hit candidate today.'
+    : score>=55?'Playable — moderate lean, verify lineup before committing.'
+    : score>=40?'Caution — notable risks in this matchup.'
+    : 'Skip unless matchup or lineup improves.';
+  const _lWx  = (() => {
+    const wx = gd?.weather || {};
+    const wl = ['N','NE','E','SE','S','SW','W','NW'];
+    const wd = wx.windDir != null ? wl[Math.round(wx.windDir/45)%8] : null;
+    return wx.temp != null ? `${Math.round(wx.temp)}°F · ${wx.windSpeed||0} mph ${wd||''}` : 'Not available';
+  })();
+  const _lLineupFlag = (typeof _btsLineupStatus === 'function' && _btsLineupStatus(player, gd) === 'unconfirmed');
+  const _lWhy  = [...hStrengths.slice(0,5)];
+  const _lRisk = hWeaknesses.length
+    ? [...hWeaknesses.slice(0,4), ...(_lLineupFlag ? ['Lineup not confirmed — spot may change'] : [])]
+    : (_lLineupFlag ? ['Lineup not confirmed — spot may change'] : ['No major risk factors identified']);
+  if (h2h?.ab >= 5 && h2h.avg >= 0.280) _lWhy.push(`Career H2H: ${h2h.avg.toFixed(3)} vs this pitcher (${h2h.ab} AB)`);
+  else if (!h2h || h2h.ab < 1) _lRisk.push('No prior H2H history vs this pitcher');
+  if (ghp != null) {
+    if (ghp >= 0.60) _lWhy.push(`Gets a hit in ${Math.round(ghp*100)}% of games (season GHP)`);
+    else if (ghp < 0.45) _lRisk.push(`Hit game % is low (${Math.round(ghp*100)}% of games)`);
+  }
+  _paShareData = {
+    source: 'lab',
+    playerName: player.name,
+    team: player.teamAbbr || (TEAM_INFO[player.teamId]?.nick || ''),
+    matchup: gd ? `${gd.awayAbbr} @ ${gd.homeAbbr}` : '—',
+    pickEmoji: _lEmoj, pickLabel: _lLbl, pickCls: _lPCls,
+    confidence: score >= 65 ? 'Medium' : 'Low',
+    bestUse: score>=70?'Hit Prop / BTS Lean': score>=55?'Monitor Lineup':'Skip',
+    actionLine: _lAct,
+    matchupScore: score,
+    hitScore: player.hitScore,
+    hrScore: player.hrScore,
+    whyBullets: _lWhy,
+    riskBullets: _lRisk,
+    pitcherName: pitcher?.fullName || pitcher?.name || '—',
+    pitcherHand,
+    pEra: profile.era || null,
+    pH9: _lH9,
+    pHBF: _lHBF,
+    pKpct: _lKpct,
+    pK9n: null,
+    platoonLabel: _lPlatLbl,
+    platoonCls: _lPlatCls,
+    venueName: venue,
+    parkFactor: pf.overall,
+    parkImpact: _lParkImp,
+    wxNote: _lWx,
+    bullpenEra: bullpenEra || null,
+    bullpenH9: null,
+    bullpenVerdict: null,
+  };
+  const _lBar = document.getElementById('labShareBar');
+  if (_lBar) _lBar.style.display = 'block';
+  const _lNI = document.getElementById('labNativeShareItem');
+  if (_lNI) _lNI.style.display = navigator.share ? '' : 'none';
 
   _labShow('labScreenAnalysis');
 }
