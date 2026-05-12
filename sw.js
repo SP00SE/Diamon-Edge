@@ -1,4 +1,4 @@
-const CACHE = 'diamond-edge-v1';
+const CACHE = 'diamond-edge-v2';
 
 self.addEventListener('install', e => {
   // Cache the app shell (entire single-file app) on first install
