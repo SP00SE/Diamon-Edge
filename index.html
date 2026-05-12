@@ -911,7 +911,7 @@ main { padding: 28px 0 60px; }
 .bts-advanced-toggle:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
 .bts-show-more-btn { background:transparent; border:1px solid var(--accent-blue); border-radius:6px; padding:6px 18px; color:var(--accent-blue); font-size:13px; cursor:pointer; }
 .bts-show-more-btn:hover { background:var(--accent-blue); color:#000; }
-.bts-filter-section-label { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin:8px 0 4px; display:block; }
+.bts-filter-section-label { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin:8px 0 4px; display:block; width:100%; flex-shrink:0; }
 
 @media (max-width: 768px) {
   .bts-grid { grid-template-columns: 1fr; }
@@ -2043,7 +2043,9 @@ main { padding: 28px 0 60px; }
         </div>
       </div>
       <div id="btsFilters" class="bts-filters">
-        <span class="bts-filter-section-label">Basic Filters</span>
+
+        <!-- BATTER FILTERS -->
+        <span class="bts-filter-section-label">Batter</span>
         <div class="bts-filter-group">
           <span class="bts-filter-label">Min AVG</span>
           <div class="bts-filter-btns">
@@ -2085,6 +2087,57 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
+          <span class="bts-filter-label">Hit Streak</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-streak="0" onclick="setBtsFilter(this,'streak')">Any</button>
+            <button class="bts-filter-btn" data-streak="3" onclick="setBtsFilter(this,'streak')">3+ Games</button>
+            <button class="bts-filter-btn" data-streak="5" onclick="setBtsFilter(this,'streak')">5+ Games</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">AVG vs Pitcher Hand</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-avgvshand="0" onclick="setBtsFilter(this,'avgvshand')">Any</button>
+            <button class="bts-filter-btn" data-avgvshand="0.275" onclick="setBtsFilter(this,'avgvshand')">.275+ (20+ AB)</button>
+            <button class="bts-filter-btn" data-avgvshand="0.300" onclick="setBtsFilter(this,'avgvshand')">.300+ (20+ AB)</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">OBP vs Pitcher Hand</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-obpvshand="0" onclick="setBtsFilter(this,'obpvshand')">Any</button>
+            <button class="bts-filter-btn" data-obpvshand="0.340" onclick="setBtsFilter(this,'obpvshand')">.340+ (20+ AB)</button>
+            <button class="bts-filter-btn" data-obpvshand="0.370" onclick="setBtsFilter(this,'obpvshand')">.370+ (20+ AB)</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Recent AB Volume</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-abvolume="0" onclick="setBtsFilter(this,'abvolume')">Any</button>
+            <button class="bts-filter-btn" data-abvolume="20" onclick="setBtsFilter(this,'abvolume')">20+ AB (L7)</button>
+            <button class="bts-filter-btn" data-abvolume="25" onclick="setBtsFilter(this,'abvolume')">25+ AB (L7)</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">BABIP</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-babip="0" onclick="setBtsFilter(this,'babip')">Any</button>
+            <button class="bts-filter-btn" data-babip="0.300" onclick="setBtsFilter(this,'babip')">.300+</button>
+            <button class="bts-filter-btn" data-babip="0.320" onclick="setBtsFilter(this,'babip')">.320+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">BACON</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-bacon="0" onclick="setBtsFilter(this,'bacon')">Any</button>
+            <button class="bts-filter-btn" data-bacon="0.295" onclick="setBtsFilter(this,'bacon')">.295+</button>
+            <button class="bts-filter-btn" data-bacon="0.320" onclick="setBtsFilter(this,'bacon')">.320+</button>
+          </div>
+        </div>
+
+        <!-- PITCHER & FIELD FILTERS -->
+        <span class="bts-filter-section-label">Pitcher &amp; Field</span>
+        <div class="bts-filter-group">
           <span class="bts-filter-label">Starter H/9</span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-starterh9="0" onclick="setBtsFilter(this,'starterh9')">Any</button>
@@ -2109,11 +2162,59 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Hit Streak</span>
+          <span class="bts-filter-label">Pitcher ERA</span>
           <div class="bts-filter-btns">
-            <button class="bts-filter-btn active" data-active="true" data-streak="0" onclick="setBtsFilter(this,'streak')">Any</button>
-            <button class="bts-filter-btn" data-streak="3" onclick="setBtsFilter(this,'streak')">3+ Games</button>
-            <button class="bts-filter-btn" data-streak="5" onclick="setBtsFilter(this,'streak')">5+ Games</button>
+            <button class="bts-filter-btn active" data-active="true" data-era="0" onclick="setBtsFilter(this,'era')">Any</button>
+            <button class="bts-filter-btn" data-era="4.25" onclick="setBtsFilter(this,'era')">4.25+</button>
+            <button class="bts-filter-btn" data-era="5.00" onclick="setBtsFilter(this,'era')">5.00+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Pitcher Contact %</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-contactpct="0" onclick="setBtsFilter(this,'contactpct')">Any</button>
+            <button class="bts-filter-btn" data-contactpct="0.75" onclick="setBtsFilter(this,'contactpct')">75%+</button>
+            <button class="bts-filter-btn" data-contactpct="0.80" onclick="setBtsFilter(this,'contactpct')">80%+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Pitcher BACON Allowed</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-baconallowed="0" onclick="setBtsFilter(this,'baconallowed')">Any</button>
+            <button class="bts-filter-btn" data-baconallowed="0.290" onclick="setBtsFilter(this,'baconallowed')">.290+</button>
+            <button class="bts-filter-btn" data-baconallowed="0.310" onclick="setBtsFilter(this,'baconallowed')">.310+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Pitcher BABIP Allowed</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-babipallowed="0" onclick="setBtsFilter(this,'babipallowed')">Any</button>
+            <button class="bts-filter-btn" data-babipallowed="0.300" onclick="setBtsFilter(this,'babipallowed')">.300+</button>
+            <button class="bts-filter-btn" data-babipallowed="0.320" onclick="setBtsFilter(this,'babipallowed')">.320+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Pitcher Handedness</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-pitcherhand="any" onclick="setBtsFilter(this,'pitcherhand')">Any</button>
+            <button class="bts-filter-btn" data-pitcherhand="split" onclick="setBtsFilter(this,'pitcherhand')">Split Available</button>
+            <button class="bts-filter-btn" data-pitcherhand="strong" onclick="setBtsFilter(this,'pitcherhand')">Strong Split</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Bullpen ERA</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-bullpen="0" onclick="setBtsFilter(this,'bullpen')">Any</button>
+            <button class="bts-filter-btn" data-bullpen="4.50" onclick="setBtsFilter(this,'bullpen')">4.50+</button>
+            <button class="bts-filter-btn" data-bullpen="5.00" onclick="setBtsFilter(this,'bullpen')">5.00+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Bullpen H/9</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-bullpenh9="0" onclick="setBtsFilter(this,'bullpenh9')">Any</button>
+            <button class="bts-filter-btn" data-bullpenh9="8.5" onclick="setBtsFilter(this,'bullpenh9')">8.5+</button>
+            <button class="bts-filter-btn" data-bullpenh9="9.5" onclick="setBtsFilter(this,'bullpenh9')">9.5+</button>
           </div>
         </div>
         <div class="bts-filter-group">
@@ -2124,113 +2225,12 @@ main { padding: 28px 0 60px; }
             <button class="bts-filter-btn" data-park="1.10" onclick="setBtsFilter(this,'park')">Strong Hitter Park</button>
           </div>
         </div>
-
-        <button id="btsAdvancedToggle" class="bts-advanced-toggle" onclick="toggleBtsAdvanced()">▼ Advanced Filters</button>
-        <div id="btsAdvancedFilters" style="display:none;">
-          <span class="bts-filter-section-label" style="margin-top:4px">Advanced Filters</span>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">AVG vs Pitcher Hand</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-avgvshand="0" onclick="setBtsFilter(this,'avgvshand')">Any</button>
-              <button class="bts-filter-btn" data-avgvshand="0.275" onclick="setBtsFilter(this,'avgvshand')">.275+ (20+ AB)</button>
-              <button class="bts-filter-btn" data-avgvshand="0.300" onclick="setBtsFilter(this,'avgvshand')">.300+ (20+ AB)</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">OBP vs Pitcher Hand</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-obpvshand="0" onclick="setBtsFilter(this,'obpvshand')">Any</button>
-              <button class="bts-filter-btn" data-obpvshand="0.340" onclick="setBtsFilter(this,'obpvshand')">.340+ (20+ AB)</button>
-              <button class="bts-filter-btn" data-obpvshand="0.370" onclick="setBtsFilter(this,'obpvshand')">.370+ (20+ AB)</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Recent AB Volume</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-abvolume="0" onclick="setBtsFilter(this,'abvolume')">Any</button>
-              <button class="bts-filter-btn" data-abvolume="20" onclick="setBtsFilter(this,'abvolume')">20+ AB (L7)</button>
-              <button class="bts-filter-btn" data-abvolume="25" onclick="setBtsFilter(this,'abvolume')">25+ AB (L7)</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Pitcher ERA</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-era="0" onclick="setBtsFilter(this,'era')">Any</button>
-              <button class="bts-filter-btn" data-era="4.25" onclick="setBtsFilter(this,'era')">4.25+</button>
-              <button class="bts-filter-btn" data-era="5.00" onclick="setBtsFilter(this,'era')">5.00+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Pitcher Contact %</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-contactpct="0" onclick="setBtsFilter(this,'contactpct')">Any</button>
-              <button class="bts-filter-btn" data-contactpct="0.75" onclick="setBtsFilter(this,'contactpct')">75%+</button>
-              <button class="bts-filter-btn" data-contactpct="0.80" onclick="setBtsFilter(this,'contactpct')">80%+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Pitcher BACON Allowed</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-baconallowed="0" onclick="setBtsFilter(this,'baconallowed')">Any</button>
-              <button class="bts-filter-btn" data-baconallowed="0.290" onclick="setBtsFilter(this,'baconallowed')">.290+</button>
-              <button class="bts-filter-btn" data-baconallowed="0.310" onclick="setBtsFilter(this,'baconallowed')">.310+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Pitcher BABIP Allowed</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-babipallowed="0" onclick="setBtsFilter(this,'babipallowed')">Any</button>
-              <button class="bts-filter-btn" data-babipallowed="0.300" onclick="setBtsFilter(this,'babipallowed')">.300+</button>
-              <button class="bts-filter-btn" data-babipallowed="0.320" onclick="setBtsFilter(this,'babipallowed')">.320+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Bullpen ERA</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-bullpen="0" onclick="setBtsFilter(this,'bullpen')">Any</button>
-              <button class="bts-filter-btn" data-bullpen="4.50" onclick="setBtsFilter(this,'bullpen')">4.50+</button>
-              <button class="bts-filter-btn" data-bullpen="5.00" onclick="setBtsFilter(this,'bullpen')">5.00+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Bullpen H/9</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-bullpenh9="0" onclick="setBtsFilter(this,'bullpenh9')">Any</button>
-              <button class="bts-filter-btn" data-bullpenh9="8.5" onclick="setBtsFilter(this,'bullpenh9')">8.5+</button>
-              <button class="bts-filter-btn" data-bullpenh9="9.5" onclick="setBtsFilter(this,'bullpenh9')">9.5+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Game Location</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-homeaway="any" onclick="setBtsFilter(this,'homeAway')">Any</button>
-              <button class="bts-filter-btn" data-homeaway="away" onclick="setBtsFilter(this,'homeAway')">Away</button>
-              <button class="bts-filter-btn" data-homeaway="awaytop5" onclick="setBtsFilter(this,'homeAway')">Away + Top 5</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">BABIP</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-babip="0" onclick="setBtsFilter(this,'babip')">Any</button>
-              <button class="bts-filter-btn" data-babip="0.300" onclick="setBtsFilter(this,'babip')">.300+</button>
-              <button class="bts-filter-btn" data-babip="0.320" onclick="setBtsFilter(this,'babip')">.320+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">BACON</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-bacon="0" onclick="setBtsFilter(this,'bacon')">Any</button>
-              <button class="bts-filter-btn" data-bacon="0.295" onclick="setBtsFilter(this,'bacon')">.295+</button>
-              <button class="bts-filter-btn" data-bacon="0.320" onclick="setBtsFilter(this,'bacon')">.320+</button>
-            </div>
-          </div>
-          <div class="bts-filter-group">
-            <span class="bts-filter-label">Pitcher Handedness</span>
-            <div class="bts-filter-btns">
-              <button class="bts-filter-btn active" data-active="true" data-pitcherhand="any" onclick="setBtsFilter(this,'pitcherhand')">Any</button>
-              <button class="bts-filter-btn" data-pitcherhand="split" onclick="setBtsFilter(this,'pitcherhand')">Split Available</button>
-              <button class="bts-filter-btn" data-pitcherhand="strong" onclick="setBtsFilter(this,'pitcherhand')">Strong Split</button>
-            </div>
+        <div class="bts-filter-group">
+          <span class="bts-filter-label">Game Location</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-homeaway="any" onclick="setBtsFilter(this,'homeAway')">Any</button>
+            <button class="bts-filter-btn" data-homeaway="away" onclick="setBtsFilter(this,'homeAway')">Away</button>
+            <button class="bts-filter-btn" data-homeaway="awaytop5" onclick="setBtsFilter(this,'homeAway')">Away + Top 5</button>
           </div>
         </div>
 
@@ -5956,7 +5956,7 @@ function setBtsFilter(btn, type) {
   const raw  = btn.dataset[attr];
   _btsState[stateKey[type]] = stringTypes.has(type) ? raw : parseFloat(raw);
   _btsResultCount = 15;
-  document.querySelectorAll(`#btsFilters .bts-filter-btn[data-${attr}], #btsAdvancedFilters .bts-filter-btn[data-${attr}]`)
+  document.querySelectorAll(`#btsFilters .bts-filter-btn[data-${attr}]`)
     .forEach(b => b.classList.toggle('active', b === btn));
   renderBeatTheStreak();
 }
@@ -5970,7 +5970,7 @@ function resetBtsFilters() {
     homeAway:'any', minBabip:0, minBacon:0, pitcherHand:'any',
   });
   _btsResultCount = 15;
-  document.querySelectorAll('#btsFilters .bts-filter-btn, #btsAdvancedFilters .bts-filter-btn')
+  document.querySelectorAll('#btsFilters .bts-filter-btn')
     .forEach(b => b.classList.toggle('active', b.dataset.active === 'true'));
   renderBeatTheStreak();
 }
