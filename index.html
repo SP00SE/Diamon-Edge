@@ -10217,20 +10217,6 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     else if (pitBBpct <= 0.06) score -= 6;
     else if (pitBBpct <= 0.08) score -= 3;
   }
-  // Pitcher BABIP/BACON — contact quality allowed by starting pitcher
-  const pitBabip = pitcher?.seasonStats?.babip || 0;
-  const pitBacon = pitcher?.seasonStats?.bacon || 0;
-  const pitIP    = pitcher?.seasonStats?.inningsPitched || 0;
-  if (pitIP > 0) {
-    if      (pitBabip >= .330) score += 5;
-    else if (pitBabip >= .310) score += 2;
-    else if (pitBabip > 0 && pitBabip <= .260) score -= 5;
-    else if (pitBabip > 0 && pitBabip <= .280) score -= 2;
-    if      (pitBacon >= .310) score += 4;
-    else if (pitBacon >= .290) score += 2;
-    else if (pitBacon > 0 && pitBacon <= .250) score -= 4;
-    else if (pitBacon > 0 && pitBacon <= .270) score -= 2;
-  }
   // GHP ±7 — high games-with-hit % = elite consistency (very relevant for streak play)
   if (ghp != null) {
     if      (ghp >= 0.72) score += 7;
