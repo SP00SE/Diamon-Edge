@@ -2741,34 +2741,6 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">🏆 #1 HR Leaderboard</span><span class="fr-text">Player ranks in the top 10 for home runs across the entire MLB season</span></div>
           <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Only shown when a player is ranked #1–10. Players ranked #11 or lower are not flagged.</p>
 
-          <div class="formula-divider" style="margin-top:16px">BABIP <span class="formula-divider-sub">Batting Average on Balls In Play</span></div>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Measures how often a batter gets a hit when they put the ball in play — home runs and strikeouts are excluded. League average is typically around <strong>.290–.300</strong>. It's one of the best indicators of whether a batter's results reflect true skill or luck.</p>
-          <div class="formula-row"><span class="fr-sign pos">.330+</span><span class="fr-text">Elite — balls in play are becoming hits at an exceptional rate. Strong contact quality or a hot stretch</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.290–.329</span><span class="fr-text">Average — results are right in line with league norms</span></div>
-          <div class="formula-row"><span class="fr-sign neg">&lt;.265</span><span class="fr-text">Below average — balls in play are turning into outs more than expected. Could signal weak contact or unlucky bounces</span></div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Example: A batter hitting .220 with a BABIP of .340 is likely due for positive regression — they're making solid contact but the balls aren't falling in yet.</p>
-
-          <div class="formula-divider" style="margin-top:16px">BACON <span class="formula-divider-sub">Batting Average on CONtact</span></div>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Similar to BABIP but includes home runs — measures how often a batter gets a hit whenever they make contact (strikeouts excluded). A high BACON means the batter consistently converts contact into hits, which is a strong sign of a dangerous hitter.</p>
-          <div class="formula-row"><span class="fr-sign pos">.320+</span><span class="fr-text">Elite contact hitter — almost every ball put in play is a threat</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.280–.319</span><span class="fr-text">Average — solid contact rate, no major red flags</span></div>
-          <div class="formula-row"><span class="fr-sign neg">&lt;.265</span><span class="fr-text">Below average — making contact but not converting. Weak contact or bad luck</span></div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">For <strong>pitchers</strong>, these stats are flipped — a low BABIP/BACON <em>allowed</em> means batters struggle to get hits even on contact, which signals elite stuff.</p>
-
-          <div class="formula-divider" style="margin-top:16px">BB/BF% <span class="formula-divider-sub">Walk Rate per Batter Faced</span></div>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Measures how often a pitcher walks a batter out of every batter they face. A high BB/BF% means the pitcher struggles with command and gives free passes — a direct advantage for hitters.</p>
-          <div class="formula-row"><span class="fr-sign neg">&lt; 6%</span><span class="fr-text">Elite command — pitcher rarely walks anyone</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">7–11%</span><span class="fr-text">Average to below-average command</span></div>
-          <div class="formula-row"><span class="fr-sign pos">&gt; 12%</span><span class="fr-text">Wild — struggles to throw strikes, hitters benefit from free passes</span></div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Used in The Lab matchup score: high BB/BF% adds up to +6 pts for the hitter; elite command subtracts up to −6 pts.</p>
-
-          <div class="formula-divider" style="margin-top:16px">GHP <span class="formula-divider-sub">Games with Hit Percentage</span></div>
-          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">The percentage of games in which a player records at least one hit. A consistency metric popular in MLB Beat the Streak — a player who hits in 70% of games is far more reliable than one who goes 0-for-4 half the time.</p>
-          <div class="formula-row"><span class="fr-sign pos">≥ 70%</span><span class="fr-text">Elite — gets a hit in 7 out of every 10 games</span></div>
-          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">55–69%</span><span class="fr-text">Average — solid but not fully consistent</span></div>
-          <div class="formula-row"><span class="fr-sign neg">&lt; 55%</span><span class="fr-text">Inconsistent — frequent hitless games, risky for streak play</span></div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Shown on The Lab hitter card and factors into the Lab matchup score (up to ±7 pts).</p>
-
         </div>
       </div>
     </div>
@@ -2963,6 +2935,127 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">Temp &lt; 55°F — cool</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Temp &lt; 45°F — cold, ball suppressed</span></div>
         </div>
+      </div>
+    </div>
+
+    <!-- STATS GLOSSARY CARD -->
+    <div class="formula-section" id="statsSection" style="display:none;">
+      <div class="formula-toggle" onclick="toggleStats()" id="statsToggle">
+        <span>📊</span>
+        <span>Stats Glossary</span>
+        <span class="formula-arrow" id="statsArrow">▶</span>
+      </div>
+      <div class="formula-body" id="statsBody" style="display:none;">
+
+        <!-- Column 1: Batter Stats -->
+        <div class="formula-col">
+          <h3 class="section-title green">BATTER STATS</h3>
+
+          <div class="formula-divider">AVG <span class="formula-divider-sub">Batting Average</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Hits divided by at-bats. The most fundamental measure of hitting ability. MLB average is typically around <strong>.250</strong>.</p>
+          <div class="formula-row"><span class="fr-sign pos">.300+</span><span class="fr-text">Elite hitter</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.270–.299</span><span class="fr-text">Above average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt;.250</span><span class="fr-text">Below average — struggles to convert contact</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">OBP <span class="formula-divider-sub">On-Base Percentage</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">How often a batter reaches base — hits, walks, and hit-by-pitch combined. A better measure of offensive value than AVG alone.</p>
+          <div class="formula-row"><span class="fr-sign pos">.370+</span><span class="fr-text">Elite plate discipline</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.320–.369</span><span class="fr-text">Average to above average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt;.320</span><span class="fr-text">Below average — limited ability to avoid outs</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">SLG <span class="formula-divider-sub">Slugging Percentage</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Total bases divided by at-bats — a single = 1, double = 2, triple = 3, home run = 4. Measures raw power production.</p>
+          <div class="formula-row"><span class="fr-sign pos">.550+</span><span class="fr-text">Elite slugger</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.400–.479</span><span class="fr-text">Average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt;.300</span><span class="fr-text">Weak power profile</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">ISO <span class="formula-divider-sub">Isolated Power (SLG − AVG)</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Pure power metric — strips out singles to isolate extra-base-hit ability. Used in the HR Score to identify true power hitters independent of batting average.</p>
+          <div class="formula-row"><span class="fr-sign pos">.270+</span><span class="fr-text">Elite raw power</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.170–.219</span><span class="fr-text">Average power</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt;.090</span><span class="fr-text">No power — contact/slap hitter profile</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">BABIP <span class="formula-divider-sub">Batting Average on Balls In Play</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">How often a batter gets a hit when they put the ball in play — home runs and strikeouts excluded. League average is around <strong>.290–.300</strong>. One of the best indicators of whether results reflect skill or luck.</p>
+          <div class="formula-row"><span class="fr-sign pos">.330+</span><span class="fr-text">Elite — balls in play becoming hits at an exceptional rate</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.290–.329</span><span class="fr-text">Average — results in line with league norms</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt;.265</span><span class="fr-text">Below average — balls turning into outs more than expected</span></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Example: A batter hitting .220 with a BABIP of .340 is likely due for positive regression — they're making solid contact but the balls aren't falling in yet.</p>
+
+          <div class="formula-divider" style="margin-top:16px">BACON <span class="formula-divider-sub">Batting Average on CONtact</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Similar to BABIP but includes home runs — measures how often a batter gets a hit on any contact (strikeouts excluded). A high BACON means the batter consistently converts contact into hits.</p>
+          <div class="formula-row"><span class="fr-sign pos">.320+</span><span class="fr-text">Elite — almost every ball in play is a threat</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.280–.319</span><span class="fr-text">Average — solid contact, no major red flags</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt;.265</span><span class="fr-text">Below average — contact not converting</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">GHP <span class="formula-divider-sub">Games with Hit Percentage</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">The percentage of games in which a player records at least one hit. A consistency metric popular in Beat the Streak — a player who hits in 70%+ of games is far more reliable than one who goes hitless half the time.</p>
+          <div class="formula-row"><span class="fr-sign pos">≥ 70%</span><span class="fr-text">Elite — hits in 7 out of every 10 games</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">55–69%</span><span class="fr-text">Average — solid but not fully consistent</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt; 55%</span><span class="fr-text">Inconsistent — frequent hitless games, risky for streak play</span></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Shown on The Lab hitter card and factors into the Lab matchup score (up to ±7 pts).</p>
+
+          <div class="formula-divider" style="margin-top:16px">K% (Batter) <span class="formula-divider-sub">Batter Strikeout Rate</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Percentage of plate appearances that end in a strikeout. Lower is better — elite contact hitters rarely strike out.</p>
+          <div class="formula-row"><span class="fr-sign pos">&lt; 10%</span><span class="fr-text">Elite contact hitter (Arraez-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">10–18%</span><span class="fr-text">Good contact rate</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">19–24%</span><span class="fr-text">League average</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&gt; 25%</span><span class="fr-text">High strikeout rate — risky for streak play</span></div>
+        </div>
+
+        <!-- Column 2: Pitcher Stats -->
+        <div class="formula-col">
+          <h3 class="section-title orange">PITCHER STATS</h3>
+
+          <div class="formula-divider">ERA <span class="formula-divider-sub">Earned Run Average</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Earned runs allowed per 9 innings. The most common measure of pitcher quality — lower is better. MLB average is around <strong>4.00–4.20</strong>.</p>
+          <div class="formula-row"><span class="fr-sign neg">≤ 2.50</span><span class="fr-text">Elite ace — extremely tough to score against</span></div>
+          <div class="formula-row"><span class="fr-sign neg">2.51–3.30</span><span class="fr-text">Strong — above-average run prevention</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">3.31–4.20</span><span class="fr-text">Average</span></div>
+          <div class="formula-row"><span class="fr-sign pos">≥ 5.00</span><span class="fr-text">Weak — prone to giving up runs</span></div>
+          <div class="formula-row"><span class="fr-sign pos">≥ 5.50</span><span class="fr-text">Very weak — high-value target for hitters</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">WHIP <span class="formula-divider-sub">Walks + Hits per Inning Pitched</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">How many baserunners a pitcher allows per inning. A tighter measure of control and contact allowed than ERA alone. MLB average is around <strong>1.25–1.30</strong>.</p>
+          <div class="formula-row"><span class="fr-sign neg">≤ 0.95</span><span class="fr-text">Elite — almost no baserunners</span></div>
+          <div class="formula-row"><span class="fr-sign neg">0.96–1.10</span><span class="fr-text">Strong command</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">1.11–1.35</span><span class="fr-text">Average</span></div>
+          <div class="formula-row"><span class="fr-sign pos">≥ 1.50</span><span class="fr-text">Weak — lots of traffic on the bases</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">BB/BF% <span class="formula-divider-sub">Walk Rate per Batter Faced</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">How often a pitcher walks a batter out of every batter they face. A high BB/BF% signals poor command — a direct advantage for hitters.</p>
+          <div class="formula-row"><span class="fr-sign neg">&lt; 6%</span><span class="fr-text">Elite command — rarely walks anyone</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">7–11%</span><span class="fr-text">Average to below-average command</span></div>
+          <div class="formula-row"><span class="fr-sign pos">&gt; 12%</span><span class="fr-text">Wild — hitters benefit from frequent free passes</span></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Used in The Lab matchup score: high BB/BF% adds up to +6 pts for the hitter; elite command subtracts up to −6 pts.</p>
+
+          <div class="formula-divider" style="margin-top:16px">K% (Pitcher) <span class="formula-divider-sub">Pitcher Strikeout Rate</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Percentage of batters faced that end in a strikeout. High K% signals elite swing-and-miss stuff — difficult matchup for any hitter.</p>
+          <div class="formula-row"><span class="fr-sign neg">≥ 29%</span><span class="fr-text">Elite swing-and-miss — tough matchup for any hitter</span></div>
+          <div class="formula-row"><span class="fr-sign neg">25–28%</span><span class="fr-text">Above average K stuff</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">21–24%</span><span class="fr-text">League average</span></div>
+          <div class="formula-row"><span class="fr-sign pos">&lt; 16%</span><span class="fr-text">Contact-prone — hitters put the ball in play regularly</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">HR/9 <span class="formula-divider-sub">Home Runs Allowed per 9 Innings</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">How many home runs a pitcher surrenders per 9 innings. A high HR/9 signals a fly-ball pitcher with poor HR suppression — a premium target for HR picks.</p>
+          <div class="formula-row"><span class="fr-sign pos">≥ 1.50</span><span class="fr-text">Very HR-prone — high-value target for power hitters</span></div>
+          <div class="formula-row"><span class="fr-sign pos">1.20–1.49</span><span class="fr-text">HR-prone — above-average HR risk</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">0.90–1.19</span><span class="fr-text">Average HR rate allowed</span></div>
+          <div class="formula-row"><span class="fr-sign neg">&lt; 0.40</span><span class="fr-text">HR suppressor — elite fly-ball control</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">P-BABIP <span class="formula-divider-sub">BABIP Allowed by Pitcher</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">How often batters get a hit when making contact against this pitcher (home runs excluded). A high P-BABIP means batters are putting balls in play and getting hits — the pitcher doesn't generate weak contact.</p>
+          <div class="formula-row"><span class="fr-sign pos">≥ .330</span><span class="fr-text">Allows lots of hits on contact — hitter-friendly matchup</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.281–.309</span><span class="fr-text">Average contact allowed</span></div>
+          <div class="formula-row"><span class="fr-sign neg">≤ .260</span><span class="fr-text">Induces weak contact — tough matchup</span></div>
+
+          <div class="formula-divider" style="margin-top:16px">P-BACON <span class="formula-divider-sub">BACON Allowed by Pitcher</span></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Same as P-BABIP but includes home runs — the full picture of how often batters convert contact into hits against this pitcher. A high P-BACON means the pitcher allows hard, productive contact.</p>
+          <div class="formula-row"><span class="fr-sign pos">≥ .310</span><span class="fr-text">Hitters make hard contact — dangerous for pitchers</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--accent-orange)">.271–.309</span><span class="fr-text">Average contact quality allowed</span></div>
+          <div class="formula-row"><span class="fr-sign neg">≤ .250</span><span class="fr-text">Elite contact suppressor — limits hard contact effectively</span></div>
+        </div>
+
       </div>
     </div>
 
@@ -7294,6 +7387,14 @@ function toggleLegend() {
   arrow.classList.toggle('open', !isOpen);
 }
 
+function toggleStats() {
+  const body  = document.getElementById('statsBody');
+  const arrow = document.getElementById('statsArrow');
+  const isOpen = body.style.display === 'grid';
+  body.style.display = isOpen ? 'none' : 'grid';
+  arrow.classList.toggle('open', !isOpen);
+}
+
 // ─── LOADING / ERROR UTILS ────────────────────────────────────────────────
 function showLoading(msg='Loading...') {
   document.getElementById('loadingOverlay').style.display='flex';
@@ -7439,6 +7540,7 @@ async function startFetch() {
 
     document.getElementById('formulaSection').style.display='block';
     document.getElementById('legendSection').style.display='block';
+    document.getElementById('statsSection').style.display='block';
     document.getElementById('lastUpdated').innerHTML = `Updated: <span>${new Date().toLocaleTimeString()}</span>`;
     saveSnapshot(); // persist processed predictions for same-day instant reload
 
