@@ -9543,28 +9543,140 @@ async function openPlayerAnalyzer(playerId, source) {
   const dcCls   = dcPoints >= 6 ? 'pos'  : dcPoints >= 3 ? 'neu'    : 'neg';
 
   // Top decision
-  let pickEmoji, pickLabel, pickCls, confidence, bestUse, actionLine;
+  let pickEmoji, pickLabel, pickCls, confidence, bestUse;
   if (matchupScore >= 70) {
     pickEmoji='✅'; pickLabel='Good Pick'; pickCls='pa-verdict-good';
     confidence = dcPoints >= 5 ? 'High' : 'Medium';
     bestUse = ((p.hitStreak||0)>=3 || (ghp!=null&&ghp>=0.65)) ? 'Beat the Streak / Hit Prop Lean' : 'Hit Prop Lean';
-    actionLine = 'Good hit pick — verify lineup before locking.';
   } else if (matchupScore >= 55) {
     pickEmoji='🟡'; pickLabel='Monitor Lineup'; pickCls='pa-verdict-mixed';
     confidence = 'Medium';
     bestUse = 'Hit Prop Lean (verify lineup first)';
-    actionLine = 'Playable, but not elite — confirm lineup and monitor closer to game time.';
   } else if (matchupScore >= 40) {
     pickEmoji='⚠️'; pickLabel='Risky Pick'; pickCls='pa-verdict-risky';
     confidence = 'Low';
     bestUse = 'Avoid BTS — marginal hit prop only';
-    actionLine = 'Caution — multiple risk factors present today.';
   } else {
     pickEmoji='❌'; pickLabel='Avoid'; pickCls='pa-verdict-poor';
     confidence = 'Low';
     bestUse = 'Skip today';
-    actionLine = 'Skip unless lineup or matchup improves significantly.';
   }
+
+  // Dynamic, data-driven action line
+  const _al = {
+    hasStrongSplit    : splitAB >= 30 && splitDiff >  0.050,
+    hasFavorableSplit : splitAB >= 20 && splitDiff >  0.025,
+    hasWeakSplit      : splitAB >= 20 && splitDiff < -0.030,
+    hasGoodH9         : pH9 != null   && pH9 >= 8.5,
+    hasBadH9          : pH9 != null   && pH9 <= 7.0,
+    hasLowK           : pBF > 0       && pKpct < 0.18,
+    hasHighK          : pBF > 0       && pKpct >= 0.25,
+    hasElitePitcher   : pEra != null  && pEra <= 3.00,
+    hasWeakPitcher    : pEra != null  && pEra >= 5.00,
+    hasHotStreak      : (p.hitStreak  || 0) >= 3,
+    hasHighGHP        : ghp != null   && ghp >= 0.65,
+    hasHotForm        : (l10?.avg     || 0) >= 0.300,
+    hasColdForm       : l10?.avg != null && l10.avg < 0.210,
+    hasWeakBullpen    : (bullpenH9    || 0) >= 8.5,
+    hasBadPark        : (pf.overall   || 1) <= 0.95,
+    lineupBad         : lStatus === 'unconfirmed' || lStatus === 'projected',
+    smallSample       : splitAB < 20,
+  };
+  const _pctAl = v => Math.round(v * 100) + '%';
+  const alParts = [];
+
+  if (matchupScore >= 70) {
+    if (_al.hasStrongSplit && _al.hasGoodH9) {
+      alParts.push(`Strong platoon edge (${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB) against a pitcher allowing ${pH9.toFixed(1)} H/9 — this is a premium hit environment and a legitimate BTS candidate.`);
+    } else if (_al.hasStrongSplit) {
+      alParts.push(`Clear platoon advantage (${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB, +${Math.round(splitDiff*1000)} pts above season average) is the primary driver — the matchup structure strongly favors a hit today.`);
+    } else if (_al.hasGoodH9 && _al.hasLowK) {
+      alParts.push(`Contact-friendly pitcher profile — ${pH9.toFixed(1)} H/9 and just ${_pctAl(pKpct)} K rate means batters regularly put the ball in play, giving this hitter genuine opportunities to reach base.`);
+    } else if (_al.hasGoodH9) {
+      alParts.push(`The opposing starter allows ${pH9.toFixed(1)} H/9 — above-average contact allowed — which is the main structural reason this matchup scores well for a hit.`);
+    } else if (_al.hasHotForm && _al.hasHighGHP) {
+      alParts.push(`Hot recent form (${fmt3(l10?.avg)} L10 AVG) backed by consistent production (${Math.round(ghp*100)}% GHP last 7) makes this a reliable pick even without a matchup standout today.`);
+    } else {
+      alParts.push(`Multiple positive indicators align — ${whyBullets[0] || 'favorable conditions across the board'} — producing a well-supported score.`);
+    }
+    if (_al.hasHotStreak && _al.hasHighGHP) {
+      alParts.push(`Active ${p.hitStreak}-game hit streak and ${Math.round(ghp*100)}% GHP over the last 7 games reinforce the matchup data with real recent evidence.`);
+    } else if (_al.hasHotStreak) {
+      alParts.push(`An active ${p.hitStreak}-game hit streak adds momentum — this hitter is producing right now.`);
+    } else if (_al.hasHighGHP) {
+      alParts.push(`Consistent hit production (${Math.round(ghp*100)}% GHP) means this hitter gets a hit in most games even without a perfect matchup.`);
+    } else if (_al.hasWeakPitcher) {
+      alParts.push(`The opposing starter (ERA ${pEra.toFixed(2)}) does not have the profile to suppress quality hitters on a given night.`);
+    }
+    if (_al.lineupBad) {
+      alParts.push(`Do not lock this pick until the official batting order is posted — lineup uncertainty is the one remaining risk.`);
+    } else if (_al.hasHighK && !_al.hasGoodH9) {
+      alParts.push(`Note: pitcher's ${_pctAl(pKpct)} K rate is elevated — this hitter must make contact to capitalize on the otherwise favorable conditions.`);
+    } else if (_al.smallSample) {
+      alParts.push(`Platoon split sample is limited (${splitAB} AB vs ${pitcherHand}HP) — weight that signal accordingly, but the rest of the profile holds up.`);
+    } else {
+      alParts.push(`Lineup confirmed — this is a strong BTS or hit prop play.`);
+    }
+
+  } else if (matchupScore >= 55) {
+    if (_al.hasFavorableSplit) {
+      alParts.push(`Playable matchup — ${fmt3(splitAvg)} vs ${pitcherHand}HP is a real edge, but the overall profile does not reach elite territory today.`);
+    } else if (_al.hasGoodH9) {
+      alParts.push(`The pitcher's contact rate (${pH9.toFixed(1)} H/9) gives this hitter a reasonable shot, but no single signal stands out as dominant.`);
+    } else if (_al.hasHotForm) {
+      alParts.push(`Recent form is the main positive here — ${fmt3(l10?.avg)} L10 AVG — but the matchup structure itself is not particularly favorable.`);
+    } else {
+      alParts.push(`Mixed signals — the matchup is playable but lacks a high-confidence primary driver today.`);
+    }
+    if (_al.hasElitePitcher) {
+      alParts.push(`The opposing pitcher is a legitimate ace (ERA ${pEra.toFixed(2)}) — that alone caps the ceiling on this pick regardless of other positives.`);
+    } else if (_al.hasBadH9 && _al.hasHighK) {
+      alParts.push(`Pitcher suppresses contact (${pH9.toFixed(1)} H/9, ${_pctAl(pKpct)} K rate) — getting a hit requires this hitter to exceed average expectations.`);
+    } else if (_al.hasWeakSplit) {
+      alParts.push(`Platoon disadvantage (${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB) is actively working against this pick.`);
+    } else if (_al.hasColdForm) {
+      alParts.push(`Cold recent stretch (${fmt3(l10?.avg)} L10 AVG) prevents a stronger recommendation despite a workable matchup.`);
+    } else if (_al.hasBadPark) {
+      alParts.push(`The park suppresses offense (${(pf.overall||1).toFixed(2)}×), limiting upside even in a neutral matchup.`);
+    }
+    if (_al.lineupBad) {
+      alParts.push(`Hold off — confirm the lineup is posted before committing to this pick.`);
+    } else {
+      alParts.push(`Use as a secondary pick only — this is a lean, not a lock, and stronger options should take priority today.`);
+    }
+
+  } else if (matchupScore >= 40) {
+    if (_al.hasElitePitcher && _al.hasBadH9) {
+      alParts.push(`Difficult matchup — the starter has a strong suppression profile (ERA ${pEra.toFixed(2)}, ${pH9.toFixed(1)} H/9) that limits contact opportunities across the board. This hitter will need to do something exceptional to reach base.`);
+    } else if (_al.hasBadH9 && _al.hasHighK) {
+      alParts.push(`The pitcher's numbers are unfavorable for hits — ${pH9.toFixed(1)} H/9 and ${_pctAl(pKpct)} K rate create a genuine contact suppression environment that limits even quality hitters.`);
+    } else if (_al.hasWeakSplit && !_al.smallSample) {
+      alParts.push(`Platoon disadvantage is the primary concern — ${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB shows this hitter has historically struggled against this arm type.`);
+    } else if (_al.hasColdForm) {
+      alParts.push(`Recent form is a significant red flag — ${fmt3(l10?.avg)} L10 AVG signals a hitter currently out of sync at the plate, regardless of the matchup.`);
+    } else {
+      alParts.push(`Multiple moderate risk factors combine to make this a below-average hit environment without a clear offsetting positive.`);
+    }
+    if (_al.hasHotStreak || _al.hasFavorableSplit || _al.hasHighGHP) {
+      const bright = _al.hasHotStreak ? `a ${p.hitStreak}-game hit streak` : _al.hasFavorableSplit ? `the platoon split` : `the hit game rate (${Math.round(ghp*100)}% GHP)`;
+      alParts.push(`The one bright spot is ${bright} — but it is not enough to overcome the structural negatives today.`);
+    }
+    alParts.push(`Avoid for BTS. If considering a hit prop, reduce stake significantly and confirm the lineup first.`);
+
+  } else {
+    if (_al.hasElitePitcher && _al.hasBadH9 && _al.hasHighK) {
+      alParts.push(`Very difficult hit environment across every key metric — the starter combines a ${pH9.toFixed(1)} H/9, ${_pctAl(pKpct)} K rate, and ERA of ${pEra.toFixed(2)}. Batters are unlikely to produce hits at a normal clip today.`);
+    } else if (_al.hasBadH9 && _al.hasHighK) {
+      alParts.push(`Starter's ${pH9.toFixed(1)} H/9 and ${_pctAl(pKpct)} K rate point to near-elite contact suppression — not a BTS-viable environment for any hitter.`);
+    } else if (_al.hasColdForm && _al.hasWeakSplit) {
+      alParts.push(`Compounding risks — a cold recent stretch (${fmt3(l10?.avg)} L10 AVG) and a platoon disadvantage (${fmt3(splitAvg)} vs ${pitcherHand}HP) leave little to work with today.`);
+    } else {
+      alParts.push(`Score falls well below the playable threshold — the combination of risk factors today does not offer enough offsetting upside for a credible hit pick.`);
+    }
+    alParts.push(`Skip today. Revisit tomorrow or if the starting pitcher changes.`);
+  }
+
+  const actionLine = alParts.join(' ');
   const mainReason = whyBullets[0] || 'No strong positive signals identified.';
   const mainRisk   = riskBullets[0] || 'No major risks identified.';
 
