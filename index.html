@@ -6182,206 +6182,232 @@ function _btsLineupBadge(status) {
 }
 
 function computeBtsScore(player, gameData) {
-  // Returns a 0–100 score specifically for hit likelihood vs today's matchup
-  let score = 50;
   const reasons = [];
-  const ss  = player.seasonStats || {};
-  const l7  = player.last7Stats  || {};
-  const avg = ss.avg || 0;
-  const obp = ss.obp || 0;
-  const l7avg = l7.avg || 0;
+  const ss    = player.seasonStats || {};
+  const l7    = player.last7Stats  || {};
+  const avg   = ss.avg   || 0;
+  const obp   = ss.obp   || 0;
+  const bacon = ss.bacon || 0;
+  const babip = ss.babip || 0;
+  const ssAB  = ss.atBats      || 0;
+  const ssSO  = ss.strikeOuts  || 0;
+  const ssBB  = ss.baseOnBalls || 0;
+  const batKPct = (ssAB + ssBB) > 0 ? ssSO / (ssAB + ssBB) : 0;
 
-  // 1. Batter skill
-  if      (avg >= 0.310) { score += 10; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (elite)`); }
-  else if (avg >= 0.285) { score +=  7; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (above avg)`); }
-  else if (avg >= 0.260) { score +=  4; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (solid)`); }
-  else if (avg < 0.230)  { score -=  6; reasons.push(`AVG ${avg.toFixed(3).replace(/^0/,'')} (below avg)`); }
+  const fmt    = v => v > 0 ? v.toFixed(3).replace(/^0/, '') : '—';
+  const fmtPct = v => Math.round(v * 100) + '%';
 
-  if (obp >= 0.380) { score += 4; reasons.push(`OBP ${obp.toFixed(3).replace(/^0/,'')} (high)`); }
-  else if (obp >= 0.350) { score += 2; }
+  // Home batter faces away pitcher; away batter faces home pitcher
+  const pitcher = player.isAway ? gameData?.homePitcher : gameData?.awayPitcher;
+  const pEra    = pitcher?.seasonStats?.era            || 0;
+  const pWhip   = pitcher?.seasonStats?.whip           || 0;
+  const pIP     = pitcher?.seasonStats?.inningsPitched || 0;
+  const pBB     = pitcher?.seasonStats?.baseOnBalls    || 0;
+  const pK      = pitcher?.seasonStats?.strikeOuts     || 0;
+  const pBacon  = pitcher?.seasonStats?.bacon          || 0;
+  const pBabip  = pitcher?.seasonStats?.babip          || 0;
+  const pBF     = pIP > 0 ? pIP * (3 + pWhip) : 0;
+  const pH      = pIP > 0 ? Math.max(0, pWhip * pIP - pBB) : 0;
+  const pH9     = pIP > 0 ? (pH / pIP) * 9 : 0;
+  const pHBF    = pBF > 0 ? pH / pBF : 0;
+  const pKpct   = pBF > 0 ? pK / pBF : 0;
+  const pConPct = pBF > 0 ? Math.max(0, (pBF - pK - pBB) / pBF) : 0;
 
-  // 2. Recent form (L7)
-  if      (l7avg >= 0.350) { score += 8; reasons.push(`L7 AVG ${l7avg.toFixed(3).replace(/^0/,'')} 🔥`); }
-  else if (l7avg >= 0.300) { score += 5; reasons.push(`L7 AVG ${l7avg.toFixed(3).replace(/^0/,'')} (hot)`); }
-  else if (l7avg >= 0.260) { score += 2; }
-  else if (l7avg < 0.180 && l7avg > 0) { score -= 4; reasons.push(`L7 AVG ${l7avg.toFixed(3).replace(/^0/,'')} (cold)`); }
+  const pf     = gameData?.parkFactor?.overall || 1.0;
+  const penEra = player.isAway ? (gameData?.homeBullpenEra || 0) : (gameData?.awayBullpenEra || 0);
+  const penH9  = player.isAway ? (gameData?.homeBullpenH9  || 0) : (gameData?.awayBullpenH9  || 0);
 
-  // Hit streak bonus
-  const hitStreak = player.hitStreak || 0;
-  if      (hitStreak >= 10) { score += 8; reasons.push(`${hitStreak}-game hit streak 🔥🔥`); }
-  else if (hitStreak >= 5)  { score += 5; reasons.push(`${hitStreak}-game hit streak 🔥`); }
-  else if (hitStreak >= 2)  { score += 2; reasons.push(`${hitStreak}-game hit streak`); }
+  const pitHand = pitcher?.pitchHand || null;
+  const vsSplit = pitHand === 'L' ? player.vsLHP : pitHand === 'R' ? player.vsRHP : null;
+  const vsAvg   = vsSplit?.avg    || 0;
+  const vsAB    = vsSplit?.atBats || 0;
+  const vsObp   = vsSplit?.obp    || 0;
 
-  // hitGames7 (games with ≥1 hit in last 7)
-  const hg7 = player.hitGames7 || 0;
-  if      (hg7 >= 6) { score += 5; reasons.push(`Hit in ${hg7}/7 games`); }
-  else if (hg7 >= 5) { score += 3; }
-  else if (hg7 <= 2 && hg7 > 0) { score -= 3; }
+  const weather   = gameData?.weather || null;
+  const temp      = weather?.temp      || 70;
+  const windSpd   = weather?.windSpeed || 0;
+  const windDir   = weather?.windDir   || 180;
+  const isWindOut = windSpd >= 10 && windDir >= 135 && windDir <= 315;
+  const isWindIn  = windSpd >= 10 && (windDir < 135 || windDir > 315);
 
-  // 3. Pitcher weakness — the key "Beat the Streak" signal
-  const pitcher = gameData.awayPitcher?.seasonStats && player.teamId === gameData.homeTeamId
-    ? gameData.homePitcher : gameData.awayPitcher;
-  const pEra   = pitcher?.seasonStats?.era           || 0;
-  const pWhs   = pitcher?.seasonStats?.whip          || 0;
-  const pIPs   = pitcher?.seasonStats?.inningsPitched|| 0;
-  const pBBs   = pitcher?.seasonStats?.baseOnBalls   || 0;
-  const pStarH9= pIPs > 0 && pWhs > 0 ? Math.max(0, (pWhs * pIPs - pBBs) / pIPs * 9) : 0;
-  if      (pEra >= 5.50) { score += 12; reasons.push(`Opp ERA ${pEra.toFixed(2)} (poor pitcher)`); }
-  else if (pEra >= 4.50) { score +=  8; reasons.push(`Opp ERA ${pEra.toFixed(2)} (high ERA)`); }
-  else if (pEra >= 4.00) { score +=  4; reasons.push(`Opp ERA ${pEra.toFixed(2)} (above avg ERA)`); }
-  else if (pEra >  0 && pEra <= 3.00) { score -= 6; reasons.push(`Opp ERA ${pEra.toFixed(2)} (ace)`); }
-  else if (pEra <= 3.50) { score -= 3; }
+  // ─── 1. SEASON SKILL  (cap −8 / +12) ──────────────────────────────────────
+  let skill = 0;
+  if      (avg >= 0.310)               { skill += 6; reasons.push(`AVG ${fmt(avg)} — Strong Season Skill`); }
+  else if (avg >= 0.285)               { skill += 4; reasons.push(`AVG ${fmt(avg)}`); }
+  else if (avg >= 0.260)               { skill += 2; }
+  else if (avg > 0 && avg < 0.220)     { skill -= 6; reasons.push(`AVG ${fmt(avg)} — Weak Season Skill`); }
+  else if (avg > 0 && avg < 0.240)     { skill -= 3; }
 
-  if      (pStarH9 >= 9.5) { score += 3; reasons.push(`Starter H/9 ${pStarH9.toFixed(1)} (allows hits freely)`); }
-  else if (pStarH9 >= 8.5) { score += 2; reasons.push(`Starter H/9 ${pStarH9.toFixed(1)}`); }
-  else if (pStarH9 >= 8.0) { score += 1; }
-  else if (pStarH9 > 0 && pStarH9 <= 6.3) { score -= 3; reasons.push(`Low Starter H/9 ${pStarH9.toFixed(1)} (suppresses hits)`); }
-  else if (pStarH9 > 0 && pStarH9 <= 6.9) { score -= 2; }
+  if      (obp >= 0.380)               { skill += 3; reasons.push(`OBP ${fmt(obp)} (elite plate discipline)`); }
+  else if (obp >= 0.350)               { skill += 2; }
+  else if (obp >= 0.330)               { skill += 1; }
+  else if (obp > 0 && obp < 0.300)    { skill -= 2; }
 
-  // 4. Park factor
-  const pf = gameData.parkFactor?.overall || 1.0;
-  if      (pf >= 1.10) { score += 6; reasons.push(`Hitter's park (${pf.toFixed(2)}×)`); }
-  else if (pf >= 1.03) { score += 3; reasons.push(`Park favours hitters (${pf.toFixed(2)}×)`); }
-  else if (pf <= 0.90) { score -= 5; reasons.push(`Pitcher's park (${pf.toFixed(2)}×)`); }
-  else if (pf <= 0.97) { score -= 2; }
+  if      (batKPct > 0 && batKPct < 0.15) { skill += 4; reasons.push(`K% ${fmtPct(batKPct)} — Elite Contact`); }
+  else if (batKPct > 0 && batKPct < 0.20) { skill += 2; }
+  else if (batKPct >= 0.30)               { skill -= 5; reasons.push(`K% ${fmtPct(batKPct)} — High Batter K%`); }
+  else if (batKPct >= 0.25)               { skill -= 3; reasons.push(`K% ${fmtPct(batKPct)} — High Batter K%`); }
 
-  // 5. Lineup position — top of order gets more ABs
-  const pos = player.orderPos || 0;
-  if      (pos <= 2) { score += 4; }
-  else if (pos <= 4) { score += 2; }
-  else if (pos >= 8) { score -= 2; }
+  if      (bacon >= 0.320)             { skill += 2; reasons.push(`BACON ${fmt(bacon)} — Strong Contact`); }
+  else if (bacon >= 0.295)             { skill += 1; }
+  else if (bacon > 0 && bacon < 0.275) { skill -= 2; }
 
-  // 7. Opposing bullpen / team ERA (season YTD)
-  const oppBullpenEra = player.teamId === gameData?.homeTeamId
-    ? (gameData?.awayBullpenEra || 0)
-    : (gameData?.homeBullpenEra || 0);
-  if (oppBullpenEra > 0) {
-    if      (oppBullpenEra >= 5.50) { score += 6; reasons.push(`Weak bullpen ERA ${oppBullpenEra.toFixed(2)}`); }
-    else if (oppBullpenEra >= 4.80) { score += 4; reasons.push(`Below-avg bullpen ERA ${oppBullpenEra.toFixed(2)}`); }
-    else if (oppBullpenEra >= 4.20) { score += 1; }
-    else if (oppBullpenEra <= 2.80) { score -= 6; reasons.push(`Elite bullpen ERA ${oppBullpenEra.toFixed(2)}`); }
-    else if (oppBullpenEra <= 3.30) { score -= 3; }
-    else if (oppBullpenEra <= 3.70) { score -= 1; }
+  if      (babip >= 0.320)             { skill += 1; }
+  else if (babip > 0 && babip < 0.270) { skill -= 1; }
+
+  skill = clamp(skill, -8, 12);
+
+  // ─── 2. RECENT CONSISTENCY  (cap −6 / +10) ─────────────────────────────────
+  let consistency = 0;
+  const l7avg  = l7.avg || 0;
+  const hg7    = player.hitGames7 || 0;
+  const streak = player.hitStreak || 0;
+  const ghp7   = player.hitGames7 != null ? player.hitGames7 / 7 : null;
+
+  if      (l7avg >= 0.350)              { consistency += 5; reasons.push(`L7 AVG ${fmt(l7avg)} 🔥 — Hot Recent Consistency`); }
+  else if (l7avg >= 0.300)              { consistency += 3; reasons.push(`L7 AVG ${fmt(l7avg)} (hot)`); }
+  else if (l7avg >= 0.260)              { consistency += 1; }
+  else if (l7avg > 0 && l7avg < 0.200) { consistency -= 3; reasons.push(`L7 AVG ${fmt(l7avg)} — Poor Recent Consistency`); }
+
+  if      (hg7 >= 6)              { consistency += 4; reasons.push(`Hit in ${hg7}/7 games — High Hit Game Rate`); }
+  else if (hg7 >= 5)              { consistency += 2; reasons.push(`Hit in ${hg7}/7 games`); }
+  else if (hg7 <= 2 && hg7 > 0)  { consistency -= 3; reasons.push(`Hit in only ${hg7}/7 games — Low Hit Game Rate`); }
+
+  if      (streak >= 5) { consistency += 2; reasons.push(`${streak}-game hit streak`); }
+  else if (streak >= 3) { consistency += 1; }
+
+  if (ghp7 !== null) {
+    if      (ghp7 >= 0.70) { consistency += 4; reasons.push(`High Hit Game Rate (${hg7}/7)`); }
+    else if (ghp7 >= 0.65) { consistency += 3; }
+    else if (ghp7 >= 0.60) { consistency += 1; }
+    else if (ghp7  < 0.50) { consistency -= 2; reasons.push(`Low Hit Game Rate (${hg7}/7)`); }
   }
 
-  // 8. Home/away environment split (from game log)
-  const _log = gameLogCache.get(player.id) || [];
-  const isHomeGame = !player.isAway;
-  const _envAvg = games => {
-    const ab = games.reduce((s, g) => s + (g.stat?.atBats || 0), 0);
-    const h  = games.reduce((s, g) => s + (g.stat?.hits   || 0), 0);
-    return ab >= 10 ? h / ab : null;
-  };
-  const _homeAvg = _envAvg(_log.filter(g => g.isHome === true));
-  const _awayAvg = _envAvg(_log.filter(g => g.isHome === false));
-  if (_homeAvg !== null && _awayAvg !== null) {
-    const todayAvg = isHomeGame ? _homeAvg : _awayAvg;
-    const otherAvg = isHomeGame ? _awayAvg : _homeAvg;
-    const envEdge  = todayAvg - otherAvg;
-    const envLabel = isHomeGame ? 'Home' : 'Away';
-    if      (envEdge >  0.040) { score += 6; reasons.push(`Hits better ${envLabel} (.${Math.round(todayAvg*1000)})`); }
-    else if (envEdge >  0.020) { score += 3; reasons.push(`${envLabel} edge`); }
-    else if (envEdge < -0.040) { score -= 6; reasons.push(`Weaker ${envLabel} (.${Math.round(todayAvg*1000)})`); }
-    else if (envEdge < -0.020) { score -= 3; }
+  consistency = clamp(consistency, -6, 10);
+
+  // ─── 3. OPPORTUNITY  (cap −12 / +8) ────────────────────────────────────────
+  let opportunity = 0;
+  const pos    = player.orderPos || 0;
+  const abVol7 = l7.atBats || 0;
+
+  if      (pos >= 1 && pos <= 2) { opportunity += 5; }
+  else if (pos >= 3 && pos <= 5) { opportunity += 4; }
+  else if (pos >= 6 && pos <= 7) { opportunity += 1; }
+  else if (pos >= 8)             { opportunity -= 3; reasons.push(`Batting ${pos}th — Limited Opportunity`); }
+
+  if      (abVol7 >= 25)               { opportunity += 3; }
+  else if (abVol7 >= 20)               { opportunity += 2; }
+  else if (abVol7 > 0 && abVol7 < 10) { opportunity -= 4; reasons.push(`Low AB Volume (${abVol7} last 7)`); }
+
+  const lineupSt = _btsLineupStatus(player, gameData);
+  if (lineupSt === 'unconfirmed') { opportunity -= 1; reasons.push('Lineup Not Confirmed'); }
+
+  opportunity = clamp(opportunity, -12, 8);
+
+  // ─── 4. STARTER HIT MATCHUP  (cap −10 / +12) ───────────────────────────────
+  let starterMatchup = 0;
+
+  if (pIP > 0) {
+    if      (pH9 >= 9.5) { starterMatchup += 4; reasons.push(`Starter H/9 ${pH9.toFixed(1)} — Starter Allows Hits`); }
+    else if (pH9 >= 8.5) { starterMatchup += 2; reasons.push(`Starter H/9 ${pH9.toFixed(1)}`); }
+    else if (pH9 <= 6.3) { starterMatchup -= 3; reasons.push(`Starter H/9 ${pH9.toFixed(1)} — Starter Suppresses Hits`); }
+    else if (pH9 <= 6.9) { starterMatchup -= 2; }
   }
 
-  // 9. Handedness split vs today's pitcher
-  const pitcherHand = pitcher?.pitchHand || null;
-  if (pitcherHand) {
-    const vsHandStats = pitcherHand === 'L' ? player.vsLHP : player.vsRHP;
-    const vsAvg = vsHandStats?.avg    || 0;
-    const vsAB  = vsHandStats?.atBats || 0;
-    if (vsAvg > 0 && vsAB >= 20) {
-      if      (vsAvg >= 0.300) { score += 5; reasons.push(`AVG .${Math.round(vsAvg*1000)} vs ${pitcherHand}HP`); }
-      else if (vsAvg >= 0.270) { score += 3; }
-      else if (vsAvg >= 0.250) { score += 1; }
-      else if (vsAvg <  0.220) { score -= 4; reasons.push(`Weak .${Math.round(vsAvg*1000)} vs ${pitcherHand}HP`); }
-      else if (vsAvg <  0.240) { score -= 2; }
-    }
+  if (pBF > 0) {
+    const hbfPct = Math.round(pHBF * 100);
+    if      (pHBF >= 0.27) { starterMatchup += 4; reasons.push(`H/BF% ${hbfPct}% — High Starter H/BF%`); }
+    else if (pHBF >= 0.25) { starterMatchup += 2; reasons.push(`H/BF% ${hbfPct}%`); }
+    else if (pHBF >= 0.23) { starterMatchup += 1; }
+    else if (pHBF <= 0.20) { starterMatchup -= 2; }
+
+    const kpPct = Math.round(pKpct * 100);
+    if      (pKpct < 0.18) { starterMatchup += 4; reasons.push(`Starter K% ${kpPct}% — Low-K Starter`); }
+    else if (pKpct < 0.22) { starterMatchup += 2; }
+    else if (pKpct > 0.32) { starterMatchup -= 5; reasons.push(`Starter K% ${kpPct}% — High-K Starter`); }
+    else if (pKpct > 0.28) { starterMatchup -= 3; reasons.push(`Starter K% ${kpPct}% — High-K Starter`); }
+
+    if      (pConPct >= 0.78) { starterMatchup += 2; }
+    else if (pConPct >= 0.75) { starterMatchup += 1; }
+    else if (pConPct  < 0.65) { starterMatchup -= 2; }
   }
 
-  // 10. New contact-quality and usage factors
-  const pIP2    = pitcher?.seasonStats?.inningsPitched || 0;
-  const pBB2    = pitcher?.seasonStats?.baseOnBalls    || 0;
-  const pK2     = pitcher?.seasonStats?.strikeOuts     || 0;
-  const pWh2    = pitcher?.seasonStats?.whip           || 0;
-  const pBF2    = pIP2 > 0 ? pIP2 * (3 + pWh2) : 0;
-  const pH2     = pIP2 > 0 ? Math.max(0, pWh2 * pIP2 - pBB2) : 0;
-  const pHBF2   = pBF2 > 0 ? pH2 / pBF2 : 0;
-  const pKpct2  = pBF2 > 0 ? pK2 / pBF2 : 0;
-  const pConPct2= pBF2 > 0 ? Math.max(0, (pBF2 - pK2 - pBB2) / pBF2) : 0;
-  const pBacon2 = pitcher?.seasonStats?.bacon || 0;
-  const pBabip2 = pitcher?.seasonStats?.babip || 0;
-
-  // GHP proxy — hit game rate last 7
-  const ghp7val = (player.hitGames7 != null) ? player.hitGames7 / 7 : null;
-  if (ghp7val !== null) {
-    if      (ghp7val >= 0.70) { score += 4; reasons.push(`High hit rate (${player.hitGames7}/7 games)`); }
-    else if (ghp7val >= 0.65) { score += 3; reasons.push(`Good hit rate (${player.hitGames7}/7 games)`); }
-    else if (ghp7val >= 0.60) { score += 1; }
-    else if (ghp7val <  0.50) { score -= 2; }
+  if (pBacon > 0) {
+    if      (pBacon >= 0.310) { starterMatchup += 2; reasons.push(`P-BACON ${fmt(pBacon)} — Starter Allows Hits`); }
+    else if (pBacon >= 0.290) { starterMatchup += 1; }
+    else if (pBacon  < 0.250) { starterMatchup -= 2; }
+    else if (pBacon  < 0.270) { starterMatchup -= 1; }
   }
 
-  // Pitcher K% (low = more contact = more hits)
-  if (pBF2 > 0) {
-    const kp = Math.round(pKpct2 * 100);
-    if      (pKpct2 < 0.18) { score += 3; reasons.push(`Low K% pitcher (${kp}%)`); }
-    else if (pKpct2 < 0.22) { score += 2; reasons.push(`Low K% pitcher (${kp}%)`); }
-    else if (pKpct2 > 0.32) { score -= 4; }
-    else if (pKpct2 > 0.28) { score -= 2; }
+  if (pBabip > 0) {
+    if      (pBabip >= 0.320) { starterMatchup += 1; }
+    else if (pBabip  < 0.270) { starterMatchup -= 1; }
   }
 
-  // Starter H/BF%
-  if (pBF2 > 0) {
-    const hbfPct = Math.round(pHBF2 * 100);
-    if      (pHBF2 >= 0.27) { score += 3; reasons.push(`Starter H/BF% ${hbfPct}% (high)`); }
-    else if (pHBF2 >= 0.25) { score += 2; reasons.push(`Starter H/BF% ${hbfPct}%`); }
-    else if (pHBF2 >= 0.23) { score += 1; }
-    else if (pHBF2 <= 0.20) { score -= 2; }
+  // ERA: secondary context only — max ±2
+  if (pEra > 0) {
+    if      (pEra >= 5.00) { starterMatchup += 2; reasons.push(`ERA ${pEra.toFixed(2)} — Weak Starter`); }
+    else if (pEra >= 4.25) { starterMatchup += 1; }
+    else if (pEra <= 3.00) { starterMatchup -= 2; reasons.push(`ERA ${pEra.toFixed(2)} — Elite Starter`); }
+    else if (pEra <= 3.50) { starterMatchup -= 1; }
   }
 
-  // Pitcher contact% (more balls in play = more hits)
-  if (pBF2 > 0) {
-    if      (pConPct2 >= 0.77) { score += 2; }
-    else if (pConPct2 >= 0.73) { score += 1; }
-    else if (pConPct2  < 0.65) { score -= 1; }
-  }
+  starterMatchup = clamp(starterMatchup, -10, 12);
 
-  // Pitcher BACON allowed
-  if (pBacon2 > 0) {
-    if      (pBacon2 >= 0.310) { score += 3; reasons.push(`P BACON ${pBacon2.toFixed(3)} (allows hits on contact)`); }
-    else if (pBacon2 >= 0.290) { score += 2; }
-    else if (pBacon2  < 0.250) { score -= 3; }
-    else if (pBacon2  < 0.270) { score -= 2; }
-  }
+  // ─── 5. BULLPEN HIT MATCHUP  (cap −5 / +5) ─────────────────────────────────
+  let bullpenScore = 0;
 
-  // Pitcher BABIP allowed (supporting)
-  if (pBabip2 > 0) {
-    if      (pBabip2 >= 0.320) score += 1;
-    else if (pBabip2  < 0.280) score -= 1;
-  }
-
-  // Bullpen H/9
-  const penH9 = player.isAway ? (gameData.homeBullpenH9 || 0) : (gameData.awayBullpenH9 || 0);
   if (penH9 > 0) {
-    if      (penH9 >= 9.5) { score += 2; reasons.push(`High Bullpen H/9 ${penH9.toFixed(1)}`); }
-    else if (penH9 >= 8.5) { score += 1; }
-    else if (penH9 <= 6.3) { score -= 2; reasons.push(`Elite Bullpen H/9 ${penH9.toFixed(1)}`); }
-    else if (penH9 <= 6.9) { score -= 1; }
+    if      (penH9 >= 9.5) { bullpenScore += 2; reasons.push(`Bullpen H/9 ${penH9.toFixed(1)} — Bullpen Hit Risk`); }
+    else if (penH9 >= 8.5) { bullpenScore += 1; }
+    else if (penH9 <= 6.3) { bullpenScore -= 1; }
+    else if (penH9 <= 6.9) { bullpenScore -= 1; }
   }
 
-  // Recent AB Volume (last 7)
-  const abVol7 = player.last7Stats?.atBats || 0;
-  if      (abVol7 >= 25) { score += 3; }
-  else if (abVol7 >= 20) { score += 2; }
-  else if (abVol7 > 0 && abVol7 < 10) { score -= 3; }
+  if (penEra > 0) {
+    if      (penEra >= 4.75) { bullpenScore += 1; }
+    else if (penEra <= 3.25) { bullpenScore -= 1; }
+  }
 
-  // Lineup status
-  const lineupSt2 = _btsLineupStatus(player, gameData);
-  if (lineupSt2 === 'unconfirmed') score -= 1;
-  if (lineupSt2 === 'notStarting') score -= 20;
+  bullpenScore = clamp(bullpenScore, -5, 5);
 
-  return { score: clamp(Math.round(score), 0, 100), reasons };
+  // ─── 6. PARK / ENVIRONMENT  (cap −4 / +4) ──────────────────────────────────
+  let parkScore = 0;
+
+  if      (pf >= 1.10) { parkScore += 3; reasons.push(`Hitter-Friendly Park (${pf.toFixed(2)}×)`); }
+  else if (pf >= 1.03) { parkScore += 2; }
+  else if (pf <= 0.90) { parkScore -= 3; reasons.push(`Pitcher-Friendly Park (${pf.toFixed(2)}×)`); }
+  else if (pf <= 0.95) { parkScore -= 2; }
+
+  if      (isWindOut && windSpd >= 15) { parkScore += 1; }
+  else if (isWindIn  && windSpd >= 15) { parkScore -= 1; }
+  if (temp < 45) { parkScore -= 1; }
+
+  parkScore = clamp(parkScore, -4, 4);
+
+  // ─── 7. PLATOON / SPLIT EDGE  (cap −5 / +6) ────────────────────────────────
+  let platoon = 0;
+
+  if (pitHand && vsAvg > 0) {
+    if      (vsAB >= 30 && vsAvg >= 0.300) { platoon += 5; reasons.push(`AVG ${fmt(vsAvg)} vs ${pitHand}HP (${vsAB} AB) — Favorable Platoon Split`); }
+    else if (vsAB >= 20 && vsAvg >= 0.275) { platoon += 3; reasons.push(`AVG ${fmt(vsAvg)} vs ${pitHand}HP`); }
+    else if (vsAB >= 20 && vsAvg  < 0.220) { platoon -= 4; reasons.push(`AVG ${fmt(vsAvg)} vs ${pitHand}HP — Weak Split vs Hand`); }
+    else if (vsAB >= 20 && vsAvg  < 0.240) { platoon -= 2; }
+    else if (vsAB >= 10 && vsAvg >= 0.300) { platoon += 1; }
+    else if (vsAB >= 10 && vsAvg  < 0.200) { platoon -= 1; }
+  }
+
+  if (vsObp > 0 && vsAB >= 20) {
+    if      (vsObp >= 0.360) { platoon += 2; }
+    else if (vsObp >= 0.340) { platoon += 1; }
+    else if (vsObp  < 0.300) { platoon -= 1; }
+  }
+
+  platoon = clamp(platoon, -5, 6);
+
+  // ─── FINAL SCORE ────────────────────────────────────────────────────────────
+  const score = clamp(Math.round(50 + skill + consistency + opportunity + starterMatchup + bullpenScore + parkScore + platoon), 0, 100);
+  return { score, reasons };
 }
 
 // ─── PICK CONFIDENCE ──────────────────────────────────────────────────────
