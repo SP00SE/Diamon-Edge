@@ -8964,6 +8964,9 @@ function buildPlayerAnalysisShareText() {
         : `${d.pickEmoji} Avoid`)
       : `${d.pickEmoji} ${d.pickLabel}`;
 
+  const f3 = v => v != null && v > 0 ? v.toFixed(3).replace(/^0/, '') : '—';
+  const pct = v => Math.round(v * 100) + '%';
+
   const lines = [
     `${d.playerName} — ${d.team} vs ${d.matchup}`,
     `Source: ${srcLabel}`,
@@ -8976,30 +8979,72 @@ function buildPlayerAnalysisShareText() {
     '',
   ].filter(l => l !== null);
 
+  // ── Batter Stats ──────────────────────────────────────────────────────────
+  const batLines = ['Batter Stats:'];
+  if (d.ssAvg != null) batLines.push(`  • Season: AVG ${f3(d.ssAvg)}${d.ssObp != null ? ' / OBP ' + f3(d.ssObp) : ''}`);
+  if (d.ssBabip != null || d.ssBacon != null) batLines.push(`  • BABIP ${f3(d.ssBabip)} | BACON ${f3(d.ssBacon)}`);
+  const recentAvg = d.l10Avg ?? d.l7Avg;
+  if (recentAvg != null) batLines.push(`  • Recent AVG (L${d.l10Avg != null ? '10' : '7'}): ${f3(recentAvg)}`);
+  if (d.ghp7 != null) batLines.push(`  • GHP (last 7): ${pct(d.ghp7)}`);
+  if ((d.hitStreak || 0) >= 2) batLines.push(`  • Hit streak: ${d.hitStreak} games`);
+  if (batLines.length > 1) { lines.push(...batLines); lines.push(''); }
+
+  // ── Platoon split ─────────────────────────────────────────────────────────
+  if ((d.splitAB || 0) >= 10 && d.splitAvg != null) {
+    const diffSign = (d.splitDiff || 0) >= 0 ? '+' : '';
+    lines.push(`Vs ${d.pitcherHand}HP (platoon split):`);
+    lines.push(`  • ${f3(d.splitAvg)} AVG in ${d.splitAB} AB (${diffSign}${Math.round((d.splitDiff || 0) * 1000)} pts vs season avg)`);
+    lines.push(`  • ${d.platoonLabel || '—'}`);
+    lines.push('');
+  }
+
+  // ── Hitter advantages ─────────────────────────────────────────────────────
   if (d.whyBullets?.length) {
     lines.push(isBts ? 'Why he can get a hit:' : 'Hitter advantages:');
     d.whyBullets.slice(0, 4).forEach(b => lines.push(`  • ${b}`));
     lines.push('');
   }
 
+  // ── Risk factors ──────────────────────────────────────────────────────────
   if (d.riskBullets?.length && d.riskBullets[0] !== 'No major risk factors identified') {
     lines.push('Risk factors:');
     d.riskBullets.slice(0, 3).forEach(b => lines.push(`  • ${b}`));
     lines.push('');
   }
 
+  // ── Pitcher matchup ───────────────────────────────────────────────────────
   const pitLines = ['Pitcher Matchup:'];
   if (d.pitcherName && d.pitcherName !== '—') pitLines.push(`  • Opposing Starter: ${d.pitcherName} (${d.pitcherHand}HP)`);
-  if (d.pH9 != null)  pitLines.push(`  • Starter H/9: ${d.pH9.toFixed(1)}`);
-  if (d.pHBF > 0)     pitLines.push(`  • Starter H/BF%: ${(d.pHBF * 100).toFixed(1)}%`);
-  if (d.pKpct > 0)    pitLines.push(`  • Pitcher K%: ${(d.pKpct * 100).toFixed(1)}%`);
-  if (d.pEra != null) pitLines.push(`  • ERA: ${d.pEra.toFixed(2)}`);
+  if (d.pEra != null)   pitLines.push(`  • ERA: ${d.pEra.toFixed(2)}`);
+  if (d.pH9 != null)    pitLines.push(`  • H/9: ${d.pH9.toFixed(1)}`);
+  if (d.pHBF > 0)       pitLines.push(`  • H/BF%: ${(d.pHBF * 100).toFixed(1)}%`);
+  if (d.pKpct > 0)      pitLines.push(`  • K%: ${(d.pKpct * 100).toFixed(1)}%`);
+  if (d.pBabip != null) pitLines.push(`  • BABIP Allowed: ${f3(d.pBabip)}`);
+  if (d.pBacon != null) pitLines.push(`  • BACON Allowed: ${f3(d.pBacon)}`);
   if (pitLines.length > 1) { lines.push(...pitLines); lines.push(''); }
 
-  lines.push('Platoon Edge:');
-  lines.push(`  ${d.platoonLabel || 'Unknown'}`);
-  lines.push('');
+  // ── Head-to-head history ──────────────────────────────────────────────────
+  const pitName = (d.pitcherName && d.pitcherName !== '—') ? d.pitcherName : 'this pitcher';
+  if ((d.h2hAB || 0) >= 5) {
+    lines.push(`Career vs ${pitName}:`);
+    lines.push(`  • ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}), ${d.h2hHR} HR, ${d.h2hK} K`);
+    lines.push('');
+  } else if ((d.h2hAB || 0) === 0 && d.pitcherName && d.pitcherName !== '—') {
+    lines.push(`Career vs ${pitName}:`);
+    lines.push(`  • No prior head-to-head data`);
+    lines.push('');
+  }
 
+  // ── Bullpen ───────────────────────────────────────────────────────────────
+  if (d.bullpenEra != null) {
+    lines.push('Opposing Bullpen:');
+    lines.push(`  • ERA: ${d.bullpenEra.toFixed(2)}${d.bullpenH9 != null ? ` | H/9: ${d.bullpenH9.toFixed(1)}` : ''}`);
+    if (d.bullpenEra >= 5.0) lines.push('  • Exploitable late — bullpen has been giving up runs');
+    else if (d.bullpenEra <= 3.5) lines.push('  • Strong bullpen — limits late-inning upside');
+    lines.push('');
+  }
+
+  // ── Park & weather ────────────────────────────────────────────────────────
   if (d.venueName || d.wxNote) {
     lines.push('Park/Weather:');
     if (d.venueName) lines.push(`  • ${d.venueName}${d.parkFactor ? ` (${d.parkFactor.toFixed(2)}×)` : ''} — ${d.parkImpact?.lbl || 'Neutral'}`);
@@ -9007,11 +9052,62 @@ function buildPlayerAnalysisShareText() {
     lines.push('');
   }
 
-  lines.push('Final Take:');
-  lines.push(`  ${d.actionLine}`);
-  if (d.riskBullets?.some(r => r.toLowerCase().includes('lineup'))) {
-    lines.push('  ⚠️ Verify lineup before locking this pick.');
+  // ── Final Take — analytical multi-sentence conclusion ─────────────────────
+  const ftParts = [];
+
+  if (d.matchupScore >= 70) {
+    if ((d.splitAB || 0) >= 25 && (d.splitDiff || 0) > 0.040) {
+      ftParts.push(`Score ${d.matchupScore}/100 — strong lean built on a real platoon edge (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB, +${Math.round((d.splitDiff || 0) * 1000)} pts above season avg).`);
+    } else if (d.pH9 != null && d.pH9 >= 8.5) {
+      ftParts.push(`Score ${d.matchupScore}/100 — strong lean. The opposing starter allows ${d.pH9.toFixed(1)} H/9; this is a contact-friendly environment that creates genuine opportunities for a quality hitter.`);
+    } else if (d.pEra != null && d.pEra >= 5.0) {
+      ftParts.push(`Score ${d.matchupScore}/100 — strong lean against a vulnerable starter (ERA ${d.pEra.toFixed(2)}) who has been allowing hard contact at an elevated rate.`);
+    } else {
+      ftParts.push(`Score ${d.matchupScore}/100 — strong lean. Multiple positive signals converge without a major red flag; this is one of the better hit environments on today's slate.`);
+    }
+  } else if (d.matchupScore >= 55) {
+    if (d.pEra != null && d.pEra >= 4.5) {
+      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Facing a below-average starter (ERA ${d.pEra.toFixed(2)}) is a real edge, though other factors cap the ceiling here.`);
+    } else if ((d.splitAB || 0) >= 20 && (d.splitDiff || 0) > 0.015) {
+      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. A favorable platoon split (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB) is the strongest positive today, but the overall profile isn't elite.`);
+    } else {
+      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Playable conditions with no single dominant driver; treat as a secondary pick.`);
+    }
+  } else if (d.matchupScore >= 40) {
+    const topRisk = d.riskBullets?.[0] || 'multiple risk factors present';
+    ftParts.push(`Score ${d.matchupScore}/100 — proceed with caution. ${topRisk} is the primary concern suppressing this matchup.`);
+  } else {
+    ftParts.push(`Score ${d.matchupScore}/100 — avoid. The combination of pitcher quality, splits, and form creates a below-average hit environment today.`);
   }
+
+  if ((d.h2hAB || 0) >= 5) {
+    const h2hPct = Math.round((d.h2hH || 0) / d.h2hAB * 100);
+    if ((d.h2hAvg || 0) >= 0.290) {
+      ftParts.push(`History backs the play: ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}, ${d.h2hHR} HR, ${d.h2hK} K) career vs ${pitName} — a ${h2hPct}% hit rate against this arm is meaningful evidence beyond the season numbers.`);
+    } else if ((d.h2hAvg || 0) < 0.200 && d.h2hAB >= 8) {
+      ftParts.push(`History is a red flag: only ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}) career — this hitter has consistently struggled against ${pitName}.`);
+    } else if (d.h2hAB >= 10) {
+      ftParts.push(`Career vs ${pitName}: ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}, ${d.h2hHR} HR) — neutral history, no directional edge.`);
+    } else {
+      ftParts.push(`Small H2H sample: ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}) — light context, not a primary signal.`);
+    }
+  }
+
+  const lineupWarning = d.riskBullets?.some(r => /lineup/i.test(r));
+  if (d.matchupScore >= 70) {
+    ftParts.push(lineupWarning
+      ? 'Valid BTS/hit prop candidate — confirm the lineup is officially posted before locking.'
+      : 'Solid BTS or hit prop play; lineup is confirmed, proceed with confidence.');
+  } else if (d.matchupScore >= 55) {
+    ftParts.push(lineupWarning
+      ? 'Hold — confirm lineup first before committing to this pick.'
+      : 'Use as a low-priority secondary pick only if stronger options on the slate are already covered.');
+  } else {
+    ftParts.push('Pass today — look for a cleaner matchup elsewhere on the slate.');
+  }
+
+  lines.push('Final Take:');
+  ftParts.forEach(s => lines.push(`  ${s}`));
   lines.push('');
   lines.push('— Diamond Edge MLB Analysis  🔬');
   return lines.join('\n');
@@ -9860,6 +9956,20 @@ async function openPlayerAnalyzer(playerId, source) {
     bullpenEra,
     bullpenH9,
     bullpenVerdict,
+    ssAvg: p.seasonStats?.avg ?? null,
+    ssObp: p.seasonStats?.obp ?? null,
+    ssBabip: p.seasonStats?.babip ?? null,
+    ssBacon: p.seasonStats?.bacon ?? null,
+    l10Avg: l10?.avg ?? null,
+    l10GHP: l10?.gamesWithHit != null ? +(l10.gamesWithHit/10).toFixed(2) : null,
+    hitStreak: p.hitStreak || 0,
+    ghp7: p.hitGames7 != null ? +(p.hitGames7/7).toFixed(2) : null,
+    splitAvg: splitAvg || null,
+    splitAB: splitAB || 0,
+    splitDiff: splitDiff || 0,
+    pBabip: pBabip || null,
+    pBacon: pBacon || null,
+    h2hAB: 0, h2hH: 0, h2hAvg: 0, h2hHR: 0, h2hK: 0,
   };
   const _sb = document.getElementById('paShareBtn');
   if (_sb) _sb.style.display = '';
@@ -10644,7 +10754,7 @@ async function runLabAnalysis() {
   const narrative = [];
   if (parkCtx) narrative.push(`At ${venue}, ${parkCtx.headline.toLowerCase()}.`);
   if (pitcher?.fullName) narrative.push(`${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}) — ${profile.eraTier.label.toLowerCase()} pitcher.`);
-  if (h2h?.ab>=5) narrative.push(`Career head-to-head: ${fmt3(h2h.avg)} over ${h2h.ab} at-bats (${h2h.hr} HR, ${h2h.k} K).`);
+  if (h2h?.ab>=5) narrative.push(`Career head-to-head: ${fmt3(h2h.avg)} over ${h2h.ab} at-bats (${h2h.h} H, ${h2h.hr} HR, ${h2h.k} K).`);
   else if (pitcher?.fullName) narrative.push(`First career matchup against ${pitcher.fullName} — no prior head-to-head data.`);
   if (splitAB>=20&&Math.abs(splitDiff)>0.015) narrative.push(`${player.name} hits ${splitDiff>0?'notably better':'notably worse'} vs ${pitcherHand}HP (${fmt3(splitAvg)} vs ${fmt3(seasAvg)} season avg).`);
   if (parkStats?.ab>=5) narrative.push(`In ${parkStats.games} games at ${venue} this season: ${fmtX(parkStats.avg,3)} AVG, ${parkStats.hr} HR.`);
@@ -10915,6 +11025,20 @@ async function runLabAnalysis() {
     bullpenEra: bullpenEra || null,
     bullpenH9: null,
     bullpenVerdict: null,
+    ssAvg: player.seasonStats?.avg ?? null,
+    ssObp: player.seasonStats?.obp ?? null,
+    ssBabip: player.seasonStats?.babip ?? null,
+    ssBacon: player.seasonStats?.bacon ?? null,
+    l7Avg: player.last7Stats?.avg ?? null,
+    ghp7: ghp,
+    splitAvg: _lSplitAv || null,
+    splitAB: _lSplitAB || 0,
+    splitDiff: _lDiff || 0,
+    pBabip: pitcher?.seasonStats?.babip ?? null,
+    pBacon: pitcher?.seasonStats?.bacon ?? null,
+    h2hAB: h2h?.ab || 0, h2hH: h2h?.h || 0, h2hAvg: h2h?.avg || 0, h2hHR: h2h?.hr || 0, h2hK: h2h?.k || 0,
+    hitStreak: player.hitStreak || 0,
+    narrative: narrative.join(' '),
   };
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'block';
