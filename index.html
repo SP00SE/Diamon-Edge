@@ -4126,22 +4126,25 @@ async function fetchPlayerInfo(personId) {
 async function fetchWeather(lat, lng, gameDateStr) {
   if (!lat || !lng) return null;
   const date = gameDateStr ? gameDateStr.slice(0,10) : getTodayStr();
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true&hourly=temperature_2m,windspeed_10m,winddirection_10m,relativehumidity_2m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&start_date=${date}&end_date=${date}`;
+  // No current_weather — use hourly forecast at game start time instead
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&hourly=temperature_2m,windspeed_10m,winddirection_10m,relativehumidity_2m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&start_date=${date}&end_date=${date}`;
   try {
     const data = await cachedFetch(url);
-    const cw = data.current_weather;
-    // Find hour index closest to game time
     const hourly = data.hourly;
-    let humidity = null;
-    if (hourly?.relativehumidity_2m?.length > 0) {
-      // use midday index (12)
-      humidity = hourly.relativehumidity_2m[12] || hourly.relativehumidity_2m[0];
+    // Resolve game start hour in venue local time via Open-Meteo utc_offset_seconds.
+    // gameDateStr is a full ISO-8601 UTC timestamp from the MLB schedule API.
+    // Default to 19 (7 PM) — the most common first-pitch slot — when no time is present.
+    let hourIdx = 19;
+    if (gameDateStr && gameDateStr.length > 10) {
+      const gameUtcMs = new Date(gameDateStr).getTime();
+      const offsetMs  = (data.utc_offset_seconds || 0) * 1000;
+      hourIdx = Math.min(Math.max(new Date(gameUtcMs + offsetMs).getUTCHours(), 0), 23);
     }
     return {
-      temp: cw?.temperature || 70,
-      windSpeed: cw?.windspeed || 0,
-      windDir: cw?.winddirection || 180,
-      humidity: humidity || 50,
+      temp:      hourly?.temperature_2m?.[hourIdx]    ?? 70,
+      windSpeed: hourly?.windspeed_10m?.[hourIdx]     ?? 0,
+      windDir:   hourly?.winddirection_10m?.[hourIdx] ?? 180,
+      humidity:  hourly?.relativehumidity_2m?.[hourIdx] ?? 50,
     };
   } catch { return null; }
 }
