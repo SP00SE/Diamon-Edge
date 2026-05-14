@@ -2281,6 +2281,14 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
+          <span class="bts-filter-label">Opp Bullpen H/BF%</span>
+          <div class="bts-filter-btns">
+            <button class="bts-filter-btn active" data-active="true" data-bullpenhbf="0" onclick="setBtsFilter(this,'bullpenhbf')">Any</button>
+            <button class="bts-filter-btn" data-bullpenhbf="0.25" onclick="setBtsFilter(this,'bullpenhbf')">25%+</button>
+            <button class="bts-filter-btn" data-bullpenhbf="0.27" onclick="setBtsFilter(this,'bullpenhbf')">27%+</button>
+          </div>
+        </div>
+        <div class="bts-filter-group">
           <span class="bts-filter-label">Park Factor</span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-park="0" onclick="setBtsFilter(this,'park')">Any</button>
@@ -4175,6 +4183,8 @@ async function processGame(game) {
   const homeBullpenWhip = homeBullpenStats.whip;
   const awayBullpenH9   = awayBullpenStats.h9;
   const homeBullpenH9   = homeBullpenStats.h9;
+  const awayBullpenHBF  = awayBullpenStats.hbf || 0;
+  const homeBullpenHBF  = homeBullpenStats.hbf || 0;
 
   const weather = weatherData || { temp:70, windSpeed:0, windDir:180, humidity:50 };
 
@@ -4315,7 +4325,7 @@ async function processGame(game) {
   const processedHomePitcher = { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats?.stat), pitchHand: homePitcherStats?.pitchHand || null };
 
   // Attach confidence to every player (uses gameLogCache if already populated)
-  const gameCtx = { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId, awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9, parkFactor, weather };
+  const gameCtx = { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId, awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9, awayBullpenHBF, homeBullpenHBF, parkFactor, weather };
   for (const p of players) {
     p.confidence    = computePickConfidence(p, gameCtx, lineupPosted, 'combined');
     p.hitConfidence = computePickConfidence(p, gameCtx, lineupPosted, 'hit');
@@ -4338,7 +4348,7 @@ async function processGame(game) {
     homeLineupPosted: homeLineup.some(p => !p._projected),
     awayPitcher: processedAwayPitcher,
     homePitcher: processedHomePitcher,
-    awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9,
+    awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9, awayBullpenHBF, homeBullpenHBF,
     gameDate,
     players,
     lockedBestBet,
@@ -6100,6 +6110,7 @@ const _btsState = {
   minBabipAllowed:0,     // 0 | 0.300
   minBullpenEra:  0,     // 0 | 4.50
   minBullpenH9:   0,     // bullpen H/9: 0 | 8.5 | 9.5
+  minBullpenHBF:  0,     // bullpen H/BF%: 0 | 0.25 | 0.27
   homeAway:       'any', // 'any' | 'away'
   minBabip:       0,     // 0 | 0.300
   minBacon:       0,     // 0 | 0.295
@@ -6131,7 +6142,7 @@ function setBtsFilter(btn, type) {
     ghp7:'ghp7', starterh9:'starterh9', pitcherkpct:'pitcherkpct', starterhbf:'starterhbf',
     avgvshand:'avgvshand', obpvshand:'obpvshand', abvolume:'abvolume', contactpct:'contactpct',
     baconallowed:'baconallowed', babipallowed:'babipallowed', bullpenh9:'bullpenh9',
-    pitcherhand:'pitcherhand',
+    pitcherhand:'pitcherhand', bullpenhbf:'bullpenhbf',
   };
   const stateKey = {
     avg:'minAvg', era:'minEra', bullpen:'minBullpenEra', park:'minPark',
@@ -6140,7 +6151,7 @@ function setBtsFilter(btn, type) {
     ghp7:'minGhp7', starterh9:'minStarterH9', pitcherkpct:'maxPitcherKpct', starterhbf:'minStarterHBF',
     avgvshand:'minAvgVsHand', obpvshand:'minObpVsHand', abvolume:'minAbVolume', contactpct:'minContactPct',
     baconallowed:'minBaconAllowed', babipallowed:'minBabipAllowed', bullpenh9:'minBullpenH9',
-    pitcherhand:'pitcherHand',
+    pitcherhand:'pitcherHand', bullpenhbf:'minBullpenHBF',
   };
   const attr = attrMap[type];
   const raw  = btn.dataset[attr];
@@ -6156,7 +6167,7 @@ function resetBtsFilters() {
     minAvg:0.250, minAvgFilter:0, lineupStatus:'any', lineupSpot:'any',
     maxKpct:1, minGhp7:0, minStarterH9:0, maxPitcherKpct:1, minStarterHBF:0, minStreak:0, minPark:0,
     minAvgVsHand:0, minObpVsHand:0, minAbVolume:0, minEra:0, minContactPct:0,
-    minBaconAllowed:0, minBabipAllowed:0, minBullpenEra:0, minBullpenH9:0,
+    minBaconAllowed:0, minBabipAllowed:0, minBullpenEra:0, minBullpenH9:0, minBullpenHBF:0,
     homeAway:'any', minBabip:0, minBacon:0, pitcherHand:'any',
   });
   _btsResultCount = 15;
@@ -6216,6 +6227,7 @@ function computeBtsScore(player, gameData) {
   const pf     = gameData?.parkFactor?.overall || 1.0;
   const penEra = player.isAway ? (gameData?.homeBullpenEra || 0) : (gameData?.awayBullpenEra || 0);
   const penH9  = player.isAway ? (gameData?.homeBullpenH9  || 0) : (gameData?.awayBullpenH9  || 0);
+  const penHBF = player.isAway ? (gameData?.homeBullpenHBF || 0) : (gameData?.awayBullpenHBF || 0);
 
   const pitHand = pitcher?.pitchHand || null;
   const vsSplit = pitHand === 'L' ? player.vsLHP : pitHand === 'R' ? player.vsRHP : null;
@@ -6362,6 +6374,12 @@ function computeBtsScore(player, gameData) {
     else if (penH9 >= 8.5) { bullpenScore += 1; }
     else if (penH9 <= 6.3) { bullpenScore -= 1; }
     else if (penH9 <= 6.9) { bullpenScore -= 1; }
+  }
+
+  if (penHBF > 0) {
+    if      (penHBF >= 0.27) { bullpenScore += 2; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — High Opp Bullpen H/BF%`); }
+    else if (penHBF >= 0.25) { bullpenScore += 1; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — Bullpen Allows Hits`); }
+    else if (penHBF <= 0.20) { bullpenScore -= 1; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — Low Opp Bullpen H/BF%`); }
   }
 
   if (penEra > 0) {
@@ -6598,6 +6616,7 @@ function renderBeatTheStreak() {
       const oppBullpenEra  = player.isAway ? (gd.homeBullpenEra  || 0) : (gd.awayBullpenEra  || 0);
       const oppBullpenWhip = player.isAway ? (gd.homeBullpenWhip || 0) : (gd.awayBullpenWhip || 0);
       const oppBullpenH9   = player.isAway ? (gd.homeBullpenH9   || 0) : (gd.awayBullpenH9   || 0);
+      const oppBullpenHBF  = player.isAway ? (gd.homeBullpenHBF  || 0) : (gd.awayBullpenHBF  || 0);
 
       // Player K%
       const playerSO   = player.seasonStats?.strikeOuts     || 0;
@@ -6663,6 +6682,7 @@ function renderBeatTheStreak() {
       if (_btsState.minBabipAllowed > 0 && pBabip > 0 && pBabip < _btsState.minBabipAllowed) continue;
       if (_btsState.minBullpenEra > 0 && oppBullpenEra < _btsState.minBullpenEra) continue;
       if (_btsState.minBullpenH9 > 0 && oppBullpenH9 < _btsState.minBullpenH9) continue;
+      if (_btsState.minBullpenHBF > 0) { if (oppBullpenHBF <= 0 || oppBullpenHBF < _btsState.minBullpenHBF) continue; }
       if (_btsState.homeAway === 'away' && !player.isAway) continue;
       if (_btsState.homeAway === 'home' && player.isAway) continue;
       if (_btsState.homeAway === 'awaytop5' && (!player.isAway || player.orderPos < 1 || player.orderPos > 5)) continue;
@@ -7627,7 +7647,7 @@ async function fetchBullpenEra(teamId) {
 }
 
 async function fetchBullpenWhip(teamId) {
-  if (!teamId) return { whip:0, h9:0 };
+  if (!teamId) return { whip:0, h9:0, hbf:0 };
   const key = `bullwhip_${teamId}_${hfDateStr()}`;
   if (hfCache.has(key)) return hfCache.get(key);
   const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=season&group=pitching&season=${new Date().getFullYear()}&gameType=R`;
@@ -7638,10 +7658,12 @@ async function fetchBullpenWhip(teamId) {
     const ip   = parseFloat(s.inningsPitched)  || 0;
     const hits = parseFloat(s.hits)            || 0;
     const h9   = ip > 0 ? Math.round((hits / ip) * 9 * 10) / 10 : 0;
-    const result = { whip, h9 };
+    const bf   = parseFloat(s.battersFaced)    || 0;
+    const hbf  = bf > 0 ? hits / bf : 0;
+    const result = { whip, h9, hbf };
     hfCache.set(key, result);
     return result;
-  } catch { return { whip:0, h9:0 }; }
+  } catch { return { whip:0, h9:0, hbf:0 }; }
 }
 
 async function fetchTeamHitAvg7(teamId) {
