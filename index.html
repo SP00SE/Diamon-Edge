@@ -907,6 +907,7 @@ main { padding: 28px 0 60px; }
 .bts-lineup.unconfirmed  { background:#6b728022; color:#9ca3af; border:1px solid #6b728044; }
 .bts-lineup.not-starting { background:#dc262622; color:#dc2626; border:1px solid #dc262644; }
 .bts-lineup-warn { font-size:11px; color:#facc15; margin-top:4px; font-style:italic; line-height:1.4; }
+.bts-exception-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.4px; padding:2px 7px; border-radius:10px; background:#78350f33; color:#fb923c; border:1px solid #fb923c55; margin-top:4px; cursor:help; }
 .bts-advanced-toggle { background:transparent; border:1px solid var(--border); border-radius:6px; padding:5px 14px; color:var(--text-muted); font-size:12px; cursor:pointer; margin:10px 0 4px; display:block; }
 .bts-advanced-toggle:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
 .bts-show-more-btn { background:transparent; border:1px solid var(--accent-blue); border-radius:6px; padding:6px 18px; color:var(--accent-blue); font-size:13px; cursor:pointer; }
@@ -2102,7 +2103,7 @@ main { padding: 28px 0 60px; }
         <div class="bts-intro-icon">⚡</div>
         <div>
           <div class="bts-intro-title">Beat the Streak</div>
-          <div class="bts-intro-sub">Top hit candidates today — above-average hitters facing weak pitching, favourable parks, and struggling opponents.</div>
+          <div class="bts-intro-sub">Top hit candidates today — strong contact hitters with good opportunity, favorable splits, and matchups against pitchers/bullpens that allow frequent contact and elevated hit rates.</div>
         </div>
       </div>
       <div id="btsFilters" class="bts-filters">
@@ -6626,6 +6627,68 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
   return { score, tier, label, icon, cls };
 }
 
+// ── BTS exception eligibility helpers ────────────────────────────────────────
+function countStrongBtsSignals(player, mc) {
+  let signals = 0;
+  mc = mc || {};
+
+  // 1. Strong Hit Game Rate (GHP >= 60%)
+  const ghp7 = player.hitGames7 != null ? player.hitGames7 / 7 : null;
+  if (ghp7 != null && ghp7 >= 0.60) signals++;
+
+  // 2. Strong recent form (L7 AVG >= .280)
+  const l7avg = player.last7Stats?.avg || 0;
+  if (l7avg >= 0.280) signals++;
+
+  // 3. Hit consistency (5+ hit games in last 7)
+  const hg7 = player.hitGames7 || 0;
+  if (hg7 >= 5) signals++;
+
+  // 4. Low strikeout hitter (K% < 20%)
+  const so = player.seasonStats?.strikeOuts || 0;
+  const pa = player.seasonStats?.plateAppearances || 0;
+  if (pa > 0 && so / pa < 0.20) signals++;
+
+  // 5. Strong AVG vs today's pitcher hand (>= .275, 20+ AB)
+  if (mc.splitAvg != null && mc.splitAB >= 20 && mc.splitAvg >= 0.275) signals++;
+
+  // 6. Strong OBP vs today's pitcher hand (>= .340, 20+ AB)
+  if (mc.splitObp != null && mc.splitAB >= 20 && mc.splitObp >= 0.340) signals++;
+
+  // 7. Good lineup opportunity (spots 1–5)
+  const spot = player.orderPos || 0;
+  if (spot >= 1 && spot <= 5) signals++;
+
+  // 8. Strong recent AB volume (20+ AB in last 7)
+  const abVol7 = player.last7Stats?.atBats || 0;
+  if (abVol7 >= 20) signals++;
+
+  // 9. Opposing starter allows hits (H/9 >= 8.5)
+  if (mc.starterH9 != null && mc.starterH9 >= 8.5) signals++;
+
+  // 10. Opposing starter allows high hit rate (H/BF% >= 0.25)
+  if (mc.starterHBF != null && mc.starterHBF >= 0.25) signals++;
+
+  // 11. Opposing starter has low K rate (< 22%)
+  if (mc.starterKRate != null && mc.starterKRate < 0.22) signals++;
+
+  // 12. Starter profile is broadly hit-friendly (H/9 and H/BF% both strong)
+  if (mc.starterH9 != null && mc.starterH9 >= 8.5 && mc.starterHBF != null && mc.starterHBF >= 0.25) signals++;
+
+  return signals;
+}
+
+function isBtsEligibleHitter(player, mc, minAvgFilter) {
+  const avg = player.seasonStats?.avg || 0;
+  if (avg < 0.230) return { eligible: false, exception: false };
+  if (avg >= 0.250) return { eligible: true, exception: false };
+  // .230–.249 range: exception only active when the AVG filter is set to Any
+  if (minAvgFilter > 0) return { eligible: false, exception: false };
+  const signals = countStrongBtsSignals(player, mc);
+  const ok = signals >= 3;
+  return { eligible: ok, exception: ok, signals };
+}
+
 function renderBeatTheStreak() {
   const grid  = document.getElementById('btsGrid');
   const empty = document.getElementById('btsEmpty');
@@ -6681,9 +6744,23 @@ function renderBeatTheStreak() {
       // Lineup status
       const lineupSt = _btsLineupStatus(player, gd);
 
-      // Hard floor + always exclude Not Starting
-      if (avg < _btsState.minAvg) continue;
+      // Always exclude scratched players
       if (lineupSt === 'notStarting') continue;
+
+      // Build matchup context for signal counting
+      const _mc = {
+        starterH9:   pH9  > 0 ? pH9  : null,
+        starterHBF:  pHBF > 0 ? pHBF : null,
+        starterKRate:pKpct> 0 ? pKpct: null,
+        splitAvg:  (() => { const ph = pitcher?.pitchHand||null; return ph ? (ph==='L'?(player.vsLHP?.avg||null):(player.vsRHP?.avg||null)) : null; })(),
+        splitObp:  (() => { const ph = pitcher?.pitchHand||null; return ph ? (ph==='L'?(player.vsLHP?.obp||null):(player.vsRHP?.obp||null)) : null; })(),
+        splitAB:   (() => { const ph = pitcher?.pitchHand||null; return ph ? (ph==='L'?(player.vsLHP?.atBats||0):(player.vsRHP?.atBats||0)) : 0; })(),
+      };
+
+      // Eligibility: normal (>= .250), exception (.230–.249 with 3+ signals), or excluded (< .230)
+      const _elig = isBtsEligibleHitter(player, _mc, _btsState.minAvgFilter);
+      if (!_elig.eligible) continue;
+      const isException = _elig.exception;
 
       // Basic filters
       if (_btsState.minAvgFilter > 0 && avg < _btsState.minAvgFilter) continue;
@@ -6741,7 +6818,7 @@ function renderBeatTheStreak() {
       }
 
       const { score, reasons } = computeBtsScore(player, gd);
-      candidates.push({ player, gameData: gd, score, reasons, lineupSt });
+      candidates.push({ player, gameData: gd, score, reasons, lineupSt, isException });
     }
   }
 
@@ -6756,7 +6833,7 @@ function renderBeatTheStreak() {
     return;
   }
 
-  grid.innerHTML = top.map(({ player, gameData: gd, score, reasons, lineupSt }, i) => {
+  grid.innerHTML = top.map(({ player, gameData: gd, score, reasons, lineupSt, isException }, i) => {
     const ti = TEAM_INFO[player.teamId] || {};
     const slug = ti.espn || player.teamAbbr?.toLowerCase() || '';
     const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
@@ -6814,6 +6891,7 @@ function renderBeatTheStreak() {
           <div>
             <div class="bts-card-name td-player-link" onclick="openPlayerModal(${player.id})" style="cursor:pointer">${player.name}</div>
             <div style="margin-top:3px">${lineupBadge}</div>
+            ${isException ? `<div class="bts-exception-tag" title="This hitter is below the normal .250 AVG floor but qualifies through strong recent form, split advantage, opportunity, or matchup signals.">Sub-.250 Exception</div>` : ''}
             <div class="bts-card-meta">
               ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || player.teamAbbr || ''} · ${player.position || ''} · #${player.orderPos || '—'}
