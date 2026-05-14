@@ -9062,9 +9062,12 @@ function buildPlayerAnalysisShareText() {
   // ── Bullpen ───────────────────────────────────────────────────────────────
   if (d.bullpenEra != null) {
     lines.push('Opposing Bullpen:');
-    lines.push(`  • ERA: ${d.bullpenEra.toFixed(2)}${d.bullpenH9 != null ? ` | H/9: ${d.bullpenH9.toFixed(1)}` : ''}`);
-    if (d.bullpenEra >= 5.0) lines.push('  • Exploitable late — bullpen has been giving up runs');
-    else if (d.bullpenEra <= 3.5) lines.push('  • Strong bullpen — limits late-inning upside');
+    let penLine = `  • ERA: ${d.bullpenEra.toFixed(2)}`;
+    if (d.bullpenH9 != null) penLine += ` | H/9: ${d.bullpenH9.toFixed(1)}`;
+    if (d.bullpenHBF != null) penLine += ` | H/BF%: ${Math.round(d.bullpenHBF*100)}%`;
+    lines.push(penLine);
+    if (d.bullpenEra >= 5.0 || (d.bullpenH9||0) >= 9.0) lines.push('  • Exploitable late — bullpen is giving up hits freely');
+    else if (d.bullpenEra <= 3.5 && (d.bullpenH9 == null || d.bullpenH9 <= 7.5)) lines.push('  • Strong bullpen — limits late-inning upside');
     lines.push('');
   }
 
@@ -10301,7 +10304,7 @@ async function fetchLabAnalysisData(playerId) {
     } catch {}
   }
 
-  let parkStats = null, bullpenEra = 0;
+  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0;
   await Promise.all([
     (async () => {
       try {
@@ -10314,11 +10317,16 @@ async function fetchLabAnalysisData(playerId) {
         }
       } catch {}
     })(),
-    (async () => { if (oppTeamId) { try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {} } })(),
+    (async () => {
+      if (oppTeamId) {
+        try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
+        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
+      }
+    })(),
   ]);
 
-  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats);
-  return { player, pitcher, gd, pf, parkCtx, profile, h2h, parkStats, bullpenEra, handHRFactor, score, venue };
+  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, null, bullpenH9, bullpenHBF);
+  return { player, pitcher, gd, pf, parkCtx, profile, h2h, parkStats, bullpenEra, bullpenH9, bullpenHBF, handHRFactor, score, venue };
 }
 
 async function runLabCompare() {
@@ -10429,6 +10437,19 @@ function buildCompareHTML(dataA, dataB) {
       aWins: penH9A > 0 && penH9B > 0 && penH9A !== penH9B ? penH9A > penH9B : null,
     });
     if (penH9A > 0 && penH9B > 0) score(penH9A > penH9B ? true : penH9A < penH9B ? false : null);
+  }
+
+  // Opp Bullpen H/BF%
+  const penHBFA = pA.isAway ? (dataA.gd?.homeBullpenHBF||0) : (dataA.gd?.awayBullpenHBF||0);
+  const penHBFB = pB.isAway ? (dataB.gd?.homeBullpenHBF||0) : (dataB.gd?.awayBullpenHBF||0);
+  if (penHBFA > 0 || penHBFB > 0) {
+    rows.push({
+      label: 'Opp Bullpen H/BF%',
+      aDisp: penHBFA > 0 ? Math.round(penHBFA*100)+'%' : '—',
+      bDisp: penHBFB > 0 ? Math.round(penHBFB*100)+'%' : '—',
+      aWins: penHBFA > 0 && penHBFB > 0 && penHBFA !== penHBFB ? penHBFA > penHBFB : null,
+    });
+    if (penHBFA > 0 && penHBFB > 0) score(penHBFA > penHBFB ? true : penHBFA < penHBFB ? false : null);
   }
 
   // L7 AVG
@@ -10576,8 +10597,10 @@ async function copyLabCompareText() {
   const splAbB  = phB ? ((phB==='L'?pB.vsLHP?.atBats:pB.vsRHP?.atBats)||0) : 0;
   const ghpA = pA.hitGames7 != null ? Math.round(pA.hitGames7/7*100)+'%' : '—';
   const ghpB = pB.hitGames7 != null ? Math.round(pB.hitGames7/7*100)+'%' : '—';
-  const penH9A = pA.isAway ? (dataA.gd?.homeBullpenH9||0) : (dataA.gd?.awayBullpenH9||0);
-  const penH9B = pB.isAway ? (dataB.gd?.homeBullpenH9||0) : (dataB.gd?.awayBullpenH9||0);
+  const penH9A  = pA.isAway ? (dataA.gd?.homeBullpenH9||0)  : (dataA.gd?.awayBullpenH9||0);
+  const penH9B  = pB.isAway ? (dataB.gd?.homeBullpenH9||0)  : (dataB.gd?.awayBullpenH9||0);
+  const penHBFA = pA.isAway ? (dataA.gd?.homeBullpenHBF||0) : (dataA.gd?.awayBullpenHBF||0);
+  const penHBFB = pB.isAway ? (dataB.gd?.homeBullpenHBF||0) : (dataB.gd?.awayBullpenHBF||0);
   const eraA = dataA.pitcher?.seasonStats?.era||0, eraB = dataB.pitcher?.seasonStats?.era||0;
   const h2hDispA = dataA.h2h?.ab>=1 ? `${fmt3(dataA.h2h.avg)} (${dataA.h2h.ab}AB)` : '—';
   const h2hDispB = dataB.h2h?.ab>=1 ? `${fmt3(dataB.h2h.avg)} (${dataB.h2h.ab}AB)` : '—';
@@ -10609,6 +10632,7 @@ async function copyLabCompareText() {
     line((dataA.pf?.overall||1).toFixed(2)+'×', 'Park Factor', (dataB.pf?.overall||1).toFixed(2)+'×', gt(dataA.pf?.overall||1,dataB.pf?.overall||1)),
     line(fmtE(dataA.bullpenEra||null),  'Opp Bullpen ERA',    fmtE(dataB.bullpenEra||null),  gt(dataA.bullpenEra,dataB.bullpenEra)),
     line(penH9A>0?penH9A.toFixed(1):'—','Opp Bullpen H/9',   penH9B>0?penH9B.toFixed(1):'—',gt(penH9A,penH9B)),
+    line(penHBFA>0?Math.round(penHBFA*100)+'%':'—','Opp Bullpen H/BF%',penHBFB>0?Math.round(penHBFB*100)+'%':'—',gt(penHBFA,penHBFB)),
     line((pA.orderPos||0)>0?`#${pA.orderPos}`:'TBD', 'Lineup Spot', (pB.orderPos||0)>0?`#${pB.orderPos}`:'TBD', (pA.orderPos||0)>0&&(pB.orderPos||0)>0?lt(pA.orderPos,pB.orderPos):null),
     '─'.repeat(col*2 + 24),
     line(String(dataA.score),           'Lab Score',          String(dataB.score),           gt(dataA.score,dataB.score)),
@@ -10658,7 +10682,7 @@ function buildPitcherProfile(pitcher) {
   return { era, whip, h9, ip: Math.floor(ip), k9: k9.toFixed(1), bb9: bb9.toFixed(1), hr9: hr9.toFixed(2), eraTier, kTend, h9Tend, hrTend };
 }
 
-function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp = null) {
+function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp = null, bullpenH9 = 0, bullpenHBF = 0) {
   let score = 50;
   // Park factor ±15
   score += clamp(Math.round((pf.overall - 1.0) * 60), -15, 15);
@@ -10687,13 +10711,27 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     else if (h2h.avg <= 0.150) score -= 10;
     else if (h2h.avg <= 0.200) score -= 5;
   }
-  // Bullpen ERA
+  // Bullpen ERA ±12
   if (bullpenEra > 0) {
     if      (bullpenEra > 5.00) score += 8;
     else if (bullpenEra > 4.50) score += 4;
     else if (bullpenEra <= 3.00) score -= 12;
     else if (bullpenEra <= 3.50) score -= 8;
     else if (bullpenEra <= 4.00) score -= 4;
+  }
+  // Bullpen H/9 ±4
+  if (bullpenH9 > 0) {
+    if      (bullpenH9 >= 9.5) score += 4;
+    else if (bullpenH9 >= 8.5) score += 2;
+    else if (bullpenH9 <= 6.5) score -= 4;
+    else if (bullpenH9 <= 7.5) score -= 2;
+  }
+  // Bullpen H/BF% ±3
+  if (bullpenHBF > 0) {
+    if      (bullpenHBF >= 0.27) score += 3;
+    else if (bullpenHBF >= 0.25) score += 1;
+    else if (bullpenHBF <= 0.20) score -= 3;
+    else if (bullpenHBF <= 0.22) score -= 1;
   }
   // L10 recent form ±8
   const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
@@ -10845,7 +10883,7 @@ async function runLabAnalysis() {
 
   // Step 4: Park history (2026 game log filtered by venue) + bullpen
   _labStep('ls4','active');
-  let parkStats = null, bullpenEra = 0, ghp = null, ghpGames = 0, ghpHitGames = 0;
+  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, ghp = null, ghpGames = 0, ghpHitGames = 0;
   await Promise.all([
     (async () => {
       try {
@@ -10872,14 +10910,17 @@ async function runLabAnalysis() {
       } catch {}
     })(),
     (async () => {
-      if (oppTeamId) { try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {} }
+      if (oppTeamId) {
+        try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
+        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
+      }
     })(),
   ]);
   _labStep('ls4','done');
 
   // Step 5: Score + render
   _labStep('ls5','active');
-  const score    = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp);
+  const score    = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF);
   const scoreCls = score>=80?'score-great':score>=65?'score-good':score>=45?'score-neutral':score>=30?'score-bad':'score-poor';
   const scoreLbl = score>=80?'Strong Hitter Edge':score>=65?'Hitter Leaning':score>=45?'Neutral Matchup':score>=30?'Pitcher Leaning':'Strong Pitcher Edge';
   const barColor = score>=65?'#22c55e':score>=45?'#94a3b8':'#ef4444';
@@ -11083,15 +11124,30 @@ async function runLabAnalysis() {
       <!-- Bullpen -->
       <div class="lab-section-label">Opposing Bullpen</div>
       <div class="lab-stat-row">
-        <span class="lab-stat-label">Team ERA (season)</span>
+        <span class="lab-stat-label">Bullpen ERA</span>
         <span class="lab-stat-val ${bullpenCls}">${bullpenEra?bullpenEra.toFixed(2):'—'} <span style="font-size:10px;font-weight:400">${bullpenEra?'('+bullpenTier+')':''}</span></span>
       </div>
+      <div class="lab-stat-row">
+        <span class="lab-stat-label">Bullpen H/9</span>
+        <span class="lab-stat-val ${bullpenH9>=9?'bad':bullpenH9>0&&bullpenH9<=7?'good':''}">${bullpenH9>0?bullpenH9.toFixed(1):'—'} <span style="font-size:10px;font-weight:400">${bullpenH9>=9.5?'(High Hit Risk)':bullpenH9>=8.5?'(Elevated)':bullpenH9>0&&bullpenH9<=6.5?'(Elite)':bullpenH9>0&&bullpenH9<=7.5?'(Strong)':bullpenH9>0?'(Average)':''}</span></span>
+      </div>
+      <div class="lab-stat-row">
+        <span class="lab-stat-label">Bullpen H/BF%</span>
+        <span class="lab-stat-val ${bullpenHBF>=0.27?'bad':bullpenHBF>0&&bullpenHBF<=0.21?'good':''}">${bullpenHBF>0?Math.round(bullpenHBF*100)+'%':'—'} <span style="font-size:10px;font-weight:400">${bullpenHBF>=0.27?'(High Hit Rate)':bullpenHBF>=0.25?'(Elevated)':bullpenHBF>0&&bullpenHBF<=0.21?'(Stingy)':bullpenHBF>0?'(Average)':''}</span></span>
+      </div>
       <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:6px">
-        ${bullpenEra>=5.00 ? 'Late-inning opportunities exist — bullpen is struggling and prone to allowing runs.'
-        : bullpenEra>=4.50 ? 'Below-average bullpen — late-game hitter advantage is likely.'
-        : bullpenEra>0&&bullpenEra<=3.00 ? 'Elite bullpen will lock down late innings — hitter upside is capped after the starter exits.'
-        : bullpenEra>0&&bullpenEra<=3.50 ? 'Strong bullpen — late-inning scoring chances are limited.'
-        : 'Bullpen is around league average — no significant late-game edge either way.'}
+        ${(() => {
+          const dangerScore = (bullpenEra>=5?2:bullpenEra>=4.5?1:bullpenEra>0&&bullpenEra<=3?-2:bullpenEra>0&&bullpenEra<=3.5?-1:0)
+                            + (bullpenH9>=9.5?2:bullpenH9>=8.5?1:bullpenH9>0&&bullpenH9<=6.5?-2:bullpenH9>0&&bullpenH9<=7.5?-1:0)
+                            + (bullpenHBF>=0.27?1:bullpenHBF>0&&bullpenHBF<=0.21?-1:0);
+          if (dangerScore >= 3) return 'Strong late-game hitter advantage — high ERA, elevated hit rate, and poor hit suppression across the board.';
+          if (dangerScore >= 2) return 'Late-inning opportunities exist — multiple metrics point to a bullpen that struggles to contain hitters.';
+          if (dangerScore === 1) return 'Slight late-game hitter edge — bullpen is below average in at least one key area.';
+          if (dangerScore === 0 && bullpenEra > 0) return 'Bullpen is around league average — no significant late-game edge either way.';
+          if (dangerScore === -1) return 'Solid bullpen — late-inning scoring chances are somewhat limited.';
+          if (dangerScore <= -2) return 'Elite bullpen — locks down late innings across ERA, H/9, and H/BF%. Hitter upside is capped after the starter exits.';
+          return 'Bullpen data unavailable.';
+        })()}
       </div>
     </div>
   </div>`;
@@ -11203,7 +11259,8 @@ async function runLabAnalysis() {
     parkImpact: _lParkImp,
     wxNote: _lWx,
     bullpenEra: bullpenEra || null,
-    bullpenH9: null,
+    bullpenH9: bullpenH9 || null,
+    bullpenHBF: bullpenHBF || null,
     bullpenVerdict: null,
     ssAvg: player.seasonStats?.avg ?? null,
     ssObp: player.seasonStats?.obp ?? null,
