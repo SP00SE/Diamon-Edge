@@ -2302,6 +2302,8 @@ main { padding: 28px 0 60px; }
             <button class="bts-filter-btn active" data-active="true" data-homeaway="any" onclick="setBtsFilter(this,'homeAway')">Any</button>
             <button class="bts-filter-btn" data-homeaway="away" onclick="setBtsFilter(this,'homeAway')">Away</button>
             <button class="bts-filter-btn" data-homeaway="awaytop5" onclick="setBtsFilter(this,'homeAway')">Away + Top 5</button>
+            <button class="bts-filter-btn" data-homeaway="home" onclick="setBtsFilter(this,'homeAway')">Home</button>
+            <button class="bts-filter-btn" data-homeaway="hometop5" onclick="setBtsFilter(this,'homeAway')">Home + Top 5</button>
           </div>
         </div>
 
@@ -6687,8 +6689,9 @@ function renderBeatTheStreak() {
       if (_btsState.minBullpenH9 > 0 && oppBullpenH9 < _btsState.minBullpenH9) continue;
       if (_btsState.minBullpenHBF > 0) { if (oppBullpenHBF <= 0 || oppBullpenHBF < _btsState.minBullpenHBF) continue; }
       if (_btsState.homeAway === 'away' && !player.isAway) continue;
-      if (_btsState.homeAway === 'home' && player.isAway) continue;
       if (_btsState.homeAway === 'awaytop5' && (!player.isAway || player.orderPos < 1 || player.orderPos > 5)) continue;
+      if (_btsState.homeAway === 'home' && player.isAway) continue;
+      if (_btsState.homeAway === 'hometop5' && (player.isAway || player.orderPos < 1 || player.orderPos > 5)) continue;
       if (_btsState.minBabip > 0 && (player.seasonStats?.babip || 0) < _btsState.minBabip) continue;
       if (_btsState.minBacon > 0 && (player.seasonStats?.bacon || 0) < _btsState.minBacon) continue;
       if (_btsState.pitcherHand === 'split') {
