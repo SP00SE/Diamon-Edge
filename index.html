@@ -6111,7 +6111,8 @@ async function renderLeaderboard() {
               <div class="leaders-team">${teamName}</div>
             </div>
             <div class="leaders-val ${valClass}">${l.value}</div>
-            <div class="streak-expand-btn" style="margin-left:8px;flex-shrink:0" onclick="event.stopPropagation();toggleStreakGameLog(${pid},this,'${glId}')">
+            <button class="lab-quick-btn" style="flex-shrink:0;font-size:11px;padding:3px 9px" onclick="event.stopPropagation();openLabFor(${pid},'leaders')" title="Open Lab Analysis">🔬 Lab</button>
+            <div class="streak-expand-btn" style="margin-left:4px;flex-shrink:0" onclick="event.stopPropagation();toggleStreakGameLog(${pid},this,'${glId}')">
               <span style="display:none">Last 7</span><span class="chevron" title="Last 7 Games">▼</span>
             </div>
           </div>
@@ -10331,7 +10332,10 @@ function _labShow(screenId) {
 
 function openLabFor(playerId, source) {
   const p = (state.playerMap || {})[playerId];
-  if (!p) return;
+  if (!p) {
+    _paToast('Player not in today\'s lineup — Lab analysis requires an active game today.');
+    return;
+  }
   _labState.playerId = playerId;
   _labState.gamePk   = p.gamePk || null;
   _labState.source   = source || state.activeTab || 'general';
@@ -10349,7 +10353,8 @@ function openLabFor(playerId, source) {
   const _bb = document.getElementById('labBackToSourceBtn');
   if (_bb) {
     const lblMap = { bts:'BTS', hitPicks:'Top Picks', hrPicks:'Top Picks',
-                     streaks:'Hot Streaks', dominator:'Dominators', dueForHit:'Due for a Hit' };
+                     streaks:'Hot Streaks', dominator:'Dominators', dueForHit:'Due for a Hit',
+                     leaders:'Leaderboard' };
     const lbl = lblMap[_labState.source];
     if (lbl) { _bb.textContent = `← ${lbl}`; _bb.style.display = ''; }
     else { _bb.style.display = 'none'; }
@@ -10503,6 +10508,7 @@ function labGoBack() {
   const tabMap = {
     bts: 'bts', hitPicks: 'overall', hrPicks: 'overall',
     streaks: 'streaks', dominator: 'dominators', dueForHit: 'dueforhit',
+    leaders: 'leaders',
   };
   const tabName = tabMap[_labState.source];
   const btn = tabName && document.querySelector(`.main-tab[data-tab="${tabName}"]`);
