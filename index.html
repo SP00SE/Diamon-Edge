@@ -9009,6 +9009,115 @@ function _paToast(msg) {
   t._tid = setTimeout(() => t.classList.remove('pa-toast-show'), 2600);
 }
 
+// ── Smart matchup summary: detects conflicting signals and explains traps ──
+function generateSmartMatchupSummary(ctx) {
+  const {
+    playerName = 'The hitter',
+    pitcherName,
+    pitcherHand = 'R',
+    pEra, pH9, pKpct,
+    bullpenEra, bullpenH9, bullpenHBF,
+    ssAvg, ssBabip,
+    l10Avg, hitStreak = 0,
+    splitAvg, splitAB = 0, splitDiff = 0,
+    parkFactor,
+    hitScore, hrScore, matchupScore = 50,
+  } = ctx;
+
+  const fv  = v => v != null && !isNaN(v) && +v > 0;
+  const f3s = v => fv(v) ? (+v).toFixed(3).replace(/^0/, '') : null;
+  const f2s = v => fv(v) ? (+v).toFixed(2) : null;
+  const pcs = v => fv(v) ? `${(+v * 100).toFixed(0)}%` : null;
+
+  // ── Detect conflicting signals ────────────────────────────────────────────
+  const p1  = fv(pEra) && pEra >= 4.50 && fv(pKpct) && pKpct >= 0.22;                            // High ERA + High K%
+  const p2  = fv(pEra) && pEra >= 4.50 && !p1 && fv(pH9) && pH9 < 7.5;                           // High ERA + Low H/9
+  const p3  = fv(pEra) && pEra >= 4.50 && fv(bullpenEra) && bullpenEra > 0 && bullpenEra <= 3.50; // Bad SP + Elite pen
+  const p4  = fv(pEra) && pEra > 0 && pEra <= 3.50 && fv(bullpenEra) && bullpenEra >= 4.50;      // Good SP + Weak pen
+  const p5  = ((fv(l10Avg) && l10Avg >= 0.310) || hitStreak >= 5) && fv(ssBabip) && ssBabip >= 0.340; // Hot form + High BABIP
+  const p6  = fv(ssAvg) && ssAvg >= 0.270 && splitAB >= 20 && splitDiff <= -0.035;                // Good AVG + bad split
+  const p7  = splitDiff > 0.020 && splitAB > 0 && splitAB < 20;                                   // Good split + tiny sample
+  const p8  = fv(parkFactor) && parkFactor >= 1.06 && fv(ssAvg) && ssAvg < 0.240;                 // Hitter park + weak contact
+  const p9  = fv(parkFactor) && parkFactor <= 0.95 && fv(ssAvg) && ssAvg >= 0.280;                // Pitcher park + contact hitter
+  const p10 = fv(bullpenEra) && bullpenEra >= 4.50 && fv(bullpenH9) && bullpenH9 <= 8.0 && !(fv(bullpenHBF) && bullpenHBF >= 0.27); // Bad ERA + OK hit metrics
+  const p11 = fv(bullpenEra) && bullpenEra <= 3.50 && fv(bullpenHBF) && bullpenHBF >= 0.26;       // Good ERA + high H/BF%
+  const p12 = fv(hrScore) && fv(hitScore) && hrScore > hitScore + 15;                              // Power profile
+  const p13 = fv(hitScore) && fv(hrScore) && hitScore > hrScore + 15;                              // Contact profile
+
+  const parts = [];
+
+  // ── Sentence 1: Why the score makes sense ────────────────────────────────
+  if (p1) {
+    parts.push(`This matchup carries conflicting pitcher signals — the ERA (${f2s(pEra)}) looks hittable, but a ${pcs(pKpct)} K rate means bat-to-ball contact won't come as freely as the ERA number alone suggests.`);
+  } else if (matchupScore >= 70 && fv(pEra) && pEra >= 5.0) {
+    parts.push(`The ${matchupScore}/100 rating reflects a genuine hitter edge — a starter ERA of ${f2s(pEra)} creates real opportunities for any disciplined hitter making contact.`);
+  } else if (matchupScore >= 70 && fv(pH9) && pH9 >= 8.5) {
+    parts.push(`The ${matchupScore}/100 rating is built on contact opportunity — the starter's H/9 of ${pH9.toFixed(1)} confirms a pattern of allowing hits at an above-average rate.`);
+  } else if (matchupScore >= 70 && splitAB >= 20 && splitDiff > 0.030) {
+    parts.push(`The ${matchupScore}/100 rating is anchored by a confirmed platoon edge — ${f3s(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB is meaningful data, not a small-sample projection.`);
+  } else if (matchupScore >= 55 && fv(pEra) && pEra >= 4.50) {
+    parts.push(`The ${matchupScore}/100 score identifies the starter's ERA (${f2s(pEra)}) as the primary edge — real, but not every factor aligns cleanly enough for a strong lean.`);
+  } else if (matchupScore >= 55) {
+    parts.push(`The ${matchupScore}/100 score reflects a modest overall edge with no dominant driver — conditions are playable but not ideal.`);
+  } else {
+    parts.push(`The ${matchupScore}/100 score reflects more headwinds than tailwinds — this is a workable spot in limited cases but not a clean hit environment.`);
+  }
+
+  // ── Sentence 2: What's helping the hitter ────────────────────────────────
+  const posSignals = [];
+  if (splitAB >= 20 && splitDiff > 0.025 && !p6)           posSignals.push(`a platoon edge (${f3s(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB)`);
+  if (fv(l10Avg) && l10Avg >= 0.300)                        posSignals.push(`strong recent form (L10 AVG ${f3s(l10Avg)})`);
+  if (hitStreak >= 4)                                        posSignals.push(`an active ${hitStreak}-game hit streak`);
+  if (fv(pEra) && pEra >= 4.50 && !p1)                      posSignals.push(`a hittable starter ERA (${f2s(pEra)})`);
+  if (fv(pH9) && pH9 >= 8.5)                                posSignals.push(`a hit-prone H/9 (${pH9.toFixed(1)})`);
+  if (fv(parkFactor) && parkFactor >= 1.06)                  posSignals.push(`a hitter-friendly park (${f2s(parkFactor)}×)`);
+  if (fv(bullpenEra) && bullpenEra >= 4.50 && !p3)          posSignals.push(`a weak opposing bullpen (ERA ${f2s(bullpenEra)})`);
+  if (posSignals.length > 0) {
+    parts.push(`Working in the hitter's favor: ${posSignals.slice(0, 2).join(' and ')}.`);
+  }
+
+  // ── Sentence 3: Trap / conflicting signal (single most impactful) ────────
+  if (p1) {
+    parts.push(`Trap: the ERA is weak, but ${pitcherName || 'this pitcher'}'s ${pcs(pKpct)} strikeout rate keeps this from being a clean contact spot — swing-and-miss risk is real regardless of the ERA.`);
+  } else if (p2) {
+    parts.push(`Trap: the ERA looks exploitable, but H/9 of ${fv(pH9) ? pH9.toFixed(1) : '—'} shows the starter doesn't allow hits freely — damage is coming via walks or home runs, not consistent contact.`);
+  } else if (p6) {
+    parts.push(`Trap: ${playerName} has a strong overall season line, but hits only ${f3s(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB — the handedness split is a real drag that the season average masks.`);
+  } else if (p7) {
+    parts.push(`Trap: the split looks favorable vs ${pitcherHand}HP, but the sample is only ${splitAB} AB — treat this as a directional signal, not confirmed data.`);
+  } else if (p5) {
+    parts.push(`Trap: recent form is genuine, but a season BABIP of ${f3s(ssBabip)} is elevated — some of the hot production reflects luck that may not sustain at the same pace.`);
+  } else if (p10) {
+    parts.push(`Trap: the bullpen ERA of ${f2s(bullpenEra)} sounds exploitable, but H/9 of ${fv(bullpenH9) ? bullpenH9.toFixed(1) : '—'} shows hits aren't as freely available as ERA implies — damage is more likely via walks or home runs.`);
+  } else if (p8) {
+    parts.push(`The park environment helps hitters, but ${playerName}'s contact profile (${f3s(ssAvg)} AVG) means the park edge is a partial assist — it does not fully erase the underlying contact risk.`);
+  } else if (p9) {
+    parts.push(`The park suppresses power, but ${playerName}'s contact approach (${f3s(ssAvg)} AVG) keeps the hit floor playable — this is not a situation where the park alone kills the pick.`);
+  }
+
+  // ── Sentence 4: Starter / bullpen dynamic ────────────────────────────────
+  if (parts.length < 5) {
+    if (p3) {
+      parts.push(`The starter gives the hitter early-game opportunity, but the opposing bullpen (ERA ${f2s(bullpenEra)}) is elite — the matchup toughens considerably once the starter exits.`);
+    } else if (p4) {
+      parts.push(`The opening matchup is difficult, but late-game upside improves if the hitter reaches the bullpen — that unit's ERA of ${f2s(bullpenEra)} is a meaningful edge in later innings.`);
+    } else if (p11) {
+      parts.push(`The bullpen's ERA looks strong, but an H/BF% of ${pcs(bullpenHBF)} means hits still occur even when runs don't — late-game hit opportunity is real despite the ERA number.`);
+    }
+  }
+
+  // ── Sentence 5: Profile type ──────────────────────────────────────────────
+  if (parts.length < 5) {
+    if (p12) {
+      parts.push(`Profile: this reads more as a power and total-bases spot than a guaranteed-hit play — strong for HR or extra-base props, but not the safest BTS single-hit option.`);
+    } else if (p13) {
+      parts.push(`Profile: this is a high contact-floor spot, not a power play — well-suited for BTS and single-hit props rather than HR or total-bases bets.`);
+    }
+  }
+
+  return parts.join(' ');
+}
+
 // ── Share: build text summary ──────────────────────────────────────────────
 function buildPlayerAnalysisShareText() {
   const d = _paShareData;
@@ -9231,6 +9340,36 @@ function buildPlayerAnalysisShareText() {
   lines.push('Final Take:');
   ftParts.forEach(s => lines.push(`  ${s}`));
   lines.push('');
+
+  // Smart analysis — appended after the Final Take
+  const _smartSummary = generateSmartMatchupSummary({
+    playerName: d.playerName,
+    pitcherName: pitName,
+    pitcherHand: d.pitcherHand,
+    pEra: d.pEra,
+    pH9: d.pH9,
+    pKpct: d.pKpct,
+    bullpenEra: d.bullpenEra,
+    bullpenH9: d.bullpenH9,
+    bullpenHBF: d.bullpenHBF,
+    ssAvg: d.ssAvg,
+    ssBabip: d.ssBabip,
+    l10Avg: d.l10Avg,
+    hitStreak: d.hitStreak,
+    splitAvg: d.splitAvg,
+    splitAB: d.splitAB,
+    splitDiff: d.splitDiff,
+    parkFactor: d.parkFactor,
+    hitScore: d.hitScore,
+    hrScore: d.hrScore,
+    matchupScore: d.matchupScore,
+  });
+  if (_smartSummary) {
+    lines.push('Smart Analysis:');
+    _smartSummary.split('. ').filter(Boolean).forEach(s => lines.push(`  ${s.trim()}${s.trim().endsWith('.') ? '' : '.'}`));
+    lines.push('');
+  }
+
   lines.push('— Diamond Edge MLB Analysis  🔬');
   return lines.join('\n');
 }
@@ -9605,11 +9744,12 @@ async function openPlayerAnalyzer(playerId, source) {
 
   // Bullpen (parallel fetch)
   const oppTeamId = p.isAway ? gd.homeTeamId : gd.awayTeamId;
-  let bullpenEra = null, bullpenH9 = null;
+  let bullpenEra = null, bullpenH9 = null, bullpenHBF = null;
   try {
     const [bEra, bWh] = await Promise.all([fetchBullpenEra(oppTeamId), fetchBullpenWhip(oppTeamId)]);
     bullpenEra = bEra || null;
     bullpenH9  = bWh?.h9 || null;
+    bullpenHBF = bWh?.hbf || null;
   } catch {}
 
   // Park & weather
@@ -10077,6 +10217,7 @@ async function openPlayerAnalyzer(playerId, source) {
     wxNote,
     bullpenEra,
     bullpenH9,
+    bullpenHBF,
     bullpenVerdict,
     ssAvg: p.seasonStats?.avg ?? null,
     ssObp: p.seasonStats?.obp ?? null,
@@ -11109,6 +11250,31 @@ async function runLabAnalysis() {
   } else if (score < 55 && _labCounterPts.length > 0) {
     narrative.push(`Key headwinds: ${_labCounterPts.slice(0,2).join('; ')}.`);
   }
+
+  // Smart matchup summary — appended after existing narrative
+  const _labSmartSummary = generateSmartMatchupSummary({
+    playerName: player.name,
+    pitcherName: pitcher?.fullName || pitcher?.name,
+    pitcherHand,
+    pEra: era || null,
+    pH9: profile.h9 > 0 ? profile.h9 : null,
+    pKpct: _labKpct > 0 ? _labKpct : null,
+    bullpenEra: bullpenEra > 0 ? bullpenEra : null,
+    bullpenH9: bullpenH9 > 0 ? bullpenH9 : null,
+    bullpenHBF: bullpenHBF > 0 ? bullpenHBF : null,
+    ssAvg: player.seasonStats?.avg || null,
+    ssBabip: player.seasonStats?.babip || null,
+    l10Avg: l10?.avg || null,
+    hitStreak: player.hitStreak || 0,
+    splitAvg: splitAvg || null,
+    splitAB: splitAB || 0,
+    splitDiff: splitDiff || 0,
+    parkFactor: pf.overall || null,
+    hitScore: player.hitScore || null,
+    hrScore: player.hrScore || null,
+    matchupScore: score,
+  });
+  if (_labSmartSummary) narrative.push(_labSmartSummary);
 
   await new Promise(r => setTimeout(r, 200));
   _labStep('ls5','done');
