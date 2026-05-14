@@ -1989,7 +1989,7 @@ main { padding: 28px 0 60px; }
     <div class="date-bar">
       <span class="date-label">Date:</span>
       <input type="date" class="date-input" id="dateInput" onchange="onDateChange()">
-      <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
+      <button id="refreshDataBtn" onclick="forceRefreshData()" title="Clear cached data and reload fresh stats" style="padding:4px 10px;font-size:11px;font-weight:600;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;">↺ Refresh</button>
       <div id="gameCount" style="font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;"></div>
       <div class="main-tabs" id="mainTabs" style="display:none;">
         <button class="main-tab" data-tab="overall" onclick="switchTab('overall',this)">Overall Top Picks</button>
@@ -3210,7 +3210,7 @@ const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const DB_NAME = 'BaseballDashboard';
 const DB_STORE = 'apiCache';
-const DB_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const DB_TTL = 3 * 60 * 60 * 1000; // 3 hours (stats change throughout the day)
 let db = null;
 
 // Initialize IndexedDB with fallback for private mode / old browsers
@@ -3267,6 +3267,44 @@ async function setCachedData(url, data) {
     });
   } catch (e) {
     // Silently fail—app still works with RAM cache
+  }
+}
+
+// Wipe all IndexedDB entries (used on date change or manual refresh)
+async function clearIndexedDB() {
+  if (!db) return;
+  try {
+    await new Promise((resolve) => {
+      const tx = db.transaction(DB_STORE, 'readwrite');
+      tx.objectStore(DB_STORE).clear();
+      tx.oncomplete = resolve;
+      tx.onerror = resolve;
+    });
+  } catch {}
+}
+
+// Clear every cache layer — RAM, IndexedDB, hfCache, gameLogCache, localStorage snapshot
+async function clearAllCaches() {
+  cache.clear();
+  if (typeof gameLogCache !== 'undefined') gameLogCache.clear();
+  if (typeof hfCache !== 'undefined') hfCache.clear();
+  await clearIndexedDB();
+  // Remove today's snapshot so next load fetches fresh
+  try { localStorage.removeItem(`btsSnapshot_${state.date}`); } catch {}
+}
+
+// Force-refresh button handler — wipes all caches then re-runs full fetch
+async function forceRefreshData() {
+  const btn = document.getElementById('refreshDataBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⟳ Loading…'; }
+  await clearAllCaches();
+  state.predictions = {};
+  state.playerMap   = {};
+  if (typeof leaderboardLoaded !== 'undefined') leaderboardLoaded = false;
+  startFetch();
+  if (btn) {
+    btn.textContent = '✓ Refreshed';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '↺ Refresh'; }, 2500);
   }
 }
 
@@ -7476,11 +7514,12 @@ function clearError() { document.getElementById('errorState').style.display='non
 function onDateChange() {
   state.date = document.getElementById('dateInput').value;
   state.predictions = {};
-  state.playerMap = {};
+  state.playerMap   = {};
   leaderboardLoaded = false;
-  // Clear all caches so fresh player stats are fetched for the new date
   cache.clear();
   gameLogCache.clear();
+  hfCache.clear();
+  clearIndexedDB(); // purge IndexedDB so the new date fetches fresh data
   startFetch();
 }
 
@@ -8896,7 +8935,16 @@ async function init() {
   try {
     db = await initDB();
     if (db) {
-      console.log('✅ IndexedDB enabled for 24-hour cache');
+      console.log('✅ IndexedDB enabled for 3-hour cache');
+      // Purge all IndexedDB entries if the stored date differs from today
+      // (ensures stale prior-day data never survives overnight)
+      const storedDate = localStorage.getItem('dbCacheDate');
+      const todayStr   = new Date().toISOString().slice(0,10);
+      if (storedDate && storedDate !== todayStr) {
+        await clearIndexedDB();
+        console.log('ℹ️ Purged previous-day IndexedDB entries');
+      }
+      localStorage.setItem('dbCacheDate', todayStr);
     } else {
       console.log('ℹ️ Using RAM cache only (IndexedDB unavailable)');
     }
