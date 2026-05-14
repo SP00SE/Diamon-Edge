@@ -9130,6 +9130,40 @@ function buildPlayerAnalysisShareText() {
   // ── Final Take — analytical multi-sentence conclusion ─────────────────────
   const ftParts = [];
 
+  // Build specific counter-points from raw data (what's preventing a perfect score)
+  const counterPoints = [];
+  // High K% even when ERA is weak — the key nuance users miss
+  if (d.pKpct != null && d.pKpct >= 0.22 && (d.pEra == null || d.pEra >= 4.50)) {
+    counterPoints.push(`despite the elevated ERA, ${pitName} has a ${(d.pKpct*100).toFixed(0)}% K rate — strikeout risk remains`);
+  }
+  // Strong/good pitcher quality
+  if (d.pEra != null && d.pEra <= 3.50) {
+    counterPoints.push(`facing a quality arm (ERA ${d.pEra.toFixed(2)}) caps the hit ceiling`);
+  } else if (d.pH9 != null && d.pH9 <= 7.0 && (d.pEra == null || d.pEra > 3.50)) {
+    counterPoints.push(`starter suppresses hits (H/9 ${d.pH9.toFixed(1)}) — harder contact environment than ERA alone suggests`);
+  }
+  // Bullpen quality (limits late-game upside even if score is high)
+  if (d.bullpenEra != null && d.bullpenEra > 0 && d.bullpenEra <= 3.50) {
+    counterPoints.push(`opposing bullpen is elite (ERA ${d.bullpenEra.toFixed(2)}) — late-inning scoring chances are limited`);
+  } else if (d.bullpenEra != null && d.bullpenEra > 0 && d.bullpenEra <= 4.00 && d.matchupScore >= 65) {
+    counterPoints.push(`bullpen is solid (ERA ${d.bullpenEra.toFixed(2)}) — no guaranteed late-game upside`);
+  }
+  // Small platoon split sample
+  if ((d.splitAB || 0) > 0 && (d.splitAB || 0) < 20) {
+    counterPoints.push(`platoon split is unproven — only ${d.splitAB} AB vs ${d.pitcherHand}HP limits conviction`);
+  }
+  // Recent slump
+  if (d.l10Avg != null && d.l10Avg < 0.230) {
+    counterPoints.push(`recent slump (${f3(d.l10Avg)} L10 AVG) tempers confidence`);
+  }
+  // Park suppresses offense
+  if (d.parkFactor != null && d.parkFactor <= 0.97) {
+    counterPoints.push(`${d.venueName || 'the park'} suppresses offense (${d.parkFactor.toFixed(2)}×)`);
+  }
+  const meaningfulRisks = (d.riskBullets || []).filter(r =>
+    r !== 'No major risk factors identified' && !/lineup/i.test(r)
+  );
+
   if (d.matchupScore >= 70) {
     if ((d.splitAB || 0) >= 25 && (d.splitDiff || 0) > 0.040) {
       ftParts.push(`Score ${d.matchupScore}/100 — strong lean built on a real platoon edge (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB, +${Math.round((d.splitDiff || 0) * 1000)} pts above season avg).`);
@@ -9138,19 +9172,32 @@ function buildPlayerAnalysisShareText() {
     } else if (d.pEra != null && d.pEra >= 5.0) {
       ftParts.push(`Score ${d.matchupScore}/100 — strong lean against a vulnerable starter (ERA ${d.pEra.toFixed(2)}) who has been allowing hard contact at an elevated rate.`);
     } else {
-      ftParts.push(`Score ${d.matchupScore}/100 — strong lean. Multiple positive signals converge without a major red flag; this is one of the better hit environments on today's slate.`);
+      ftParts.push(`Score ${d.matchupScore}/100 — strong lean. Multiple positive signals converge; this is one of the better hit environments on today's slate.`);
+    }
+    // Counter-point: name what's keeping it from being a perfect score
+    if (counterPoints.length > 0) {
+      ftParts.push(`That said — ${counterPoints.slice(0, 2).join('; ')}. Factor this into your confidence level.`);
     }
   } else if (d.matchupScore >= 55) {
     if (d.pEra != null && d.pEra >= 4.5) {
-      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Facing a below-average starter (ERA ${d.pEra.toFixed(2)}) is a real edge, though other factors cap the ceiling here.`);
+      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Facing a below-average starter (ERA ${d.pEra.toFixed(2)}) is a real edge.`);
     } else if ((d.splitAB || 0) >= 20 && (d.splitDiff || 0) > 0.015) {
-      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. A favorable platoon split (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB) is the strongest positive today, but the overall profile isn't elite.`);
+      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. A favorable platoon split (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB) is the strongest positive today.`);
     } else {
       ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Playable conditions with no single dominant driver; treat as a secondary pick.`);
+    }
+    // Explicitly name what's capping this score
+    if (counterPoints.length > 0) {
+      ftParts.push(`The ceiling is capped by: ${counterPoints.slice(0, 2).join('; ')}.`);
+    } else if (meaningfulRisks.length > 0) {
+      ftParts.push(`Main constraint holding back a higher score: ${meaningfulRisks[0].toLowerCase()}.`);
     }
   } else if (d.matchupScore >= 40) {
     const topRisk = d.riskBullets?.[0] || 'multiple risk factors present';
     ftParts.push(`Score ${d.matchupScore}/100 — proceed with caution. ${topRisk} is the primary concern suppressing this matchup.`);
+    if (counterPoints.length > 1) {
+      ftParts.push(`Additional headwinds: ${counterPoints.slice(1, 3).join('; ')}.`);
+    }
   } else {
     ftParts.push(`Score ${d.matchupScore}/100 — avoid. The combination of pitcher quality, splits, and form creates a below-average hit environment today.`);
   }
@@ -11029,6 +11076,39 @@ async function runLabAnalysis() {
   if (parkStats?.ab>=5) narrative.push(`In ${parkStats.games} games at ${venue} this season: ${fmtX(parkStats.avg,3)} AVG, ${parkStats.hr} HR.`);
   if (bullpenEra>4.50) narrative.push(`The opposing bullpen (ERA ${bullpenEra.toFixed(2)}) is exploitable late.`);
   else if (bullpenEra>0&&bullpenEra<3.50) narrative.push(`A strong bullpen (ERA ${bullpenEra.toFixed(2)}) limits late-inning upside.`);
+
+  // Counter-point: what's preventing a higher score — surface even for high-scoring matchups
+  const _labKpct = (() => {
+    const ip = pitcher?.seasonStats?.inningsPitched || 0;
+    const k  = pitcher?.seasonStats?.strikeOuts || 0;
+    const bf = ip > 0 ? ip * 3.3 : 0; // approximate BF from IP
+    return bf > 0 ? k / bf : 0;
+  })();
+  const _labCounterPts = [];
+  if (_labKpct >= 0.22 && era >= 4.50)
+    _labCounterPts.push(`despite the weak ERA, ${pitcher?.fullName||'the pitcher'} carries a ${(_labKpct*100).toFixed(0)}% K rate — strikeout risk remains`);
+  if (era > 0 && era <= 3.50)
+    _labCounterPts.push(`quality arm (ERA ${era.toFixed(2)}) caps the hit ceiling`);
+  else if (profile.h9 > 0 && profile.h9 <= 7.0 && era > 3.50)
+    _labCounterPts.push(`starter suppresses hits (H/9 ${profile.h9.toFixed(1)}) despite the ERA tier`);
+  if (bullpenEra > 0 && bullpenEra <= 3.50)
+    _labCounterPts.push(`elite bullpen (ERA ${bullpenEra.toFixed(2)}) limits late-inning upside`);
+  else if (bullpenEra > 0 && bullpenEra <= 4.00 && score >= 65)
+    _labCounterPts.push(`solid bullpen (ERA ${bullpenEra.toFixed(2)}) — no guaranteed late-game runs`);
+  if (splitAB > 0 && splitAB < 20)
+    _labCounterPts.push(`platoon split has a small sample (${splitAB} AB vs ${pitcherHand}HP)`);
+  if ((l10?.avg||0) > 0 && (l10?.avg||0) < 0.230)
+    _labCounterPts.push(`recent slump — L10 AVG ${fmt3(l10.avg)} is below the season mark`);
+  if ((pf.overall||1) <= 0.97)
+    _labCounterPts.push(`${venue||'park'} suppresses offense (${(pf.overall||1).toFixed(2)}×)`);
+
+  if (score >= 70 && _labCounterPts.length > 0) {
+    narrative.push(`Score capped at ${score} — ${_labCounterPts.slice(0,2).join('; ')}.`);
+  } else if (score >= 55 && _labCounterPts.length > 0) {
+    narrative.push(`Ceiling limited by: ${_labCounterPts.slice(0,2).join('; ')}.`);
+  } else if (score < 55 && _labCounterPts.length > 0) {
+    narrative.push(`Key headwinds: ${_labCounterPts.slice(0,2).join('; ')}.`);
+  }
 
   await new Promise(r => setTimeout(r, 200));
   _labStep('ls5','done');
