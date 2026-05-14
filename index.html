@@ -10004,6 +10004,7 @@ async function openPlayerAnalyzer(playerId, source) {
 // ─── THE LAB ──────────────────────────────────────────────────────────────
 let _labState = { gamePk: null, playerId: null, source: null };
 let _labCompareSet = new Set();
+let _lastCompareData = null;
 
 function _labShow(screenId) {
   ['labScreenGame','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
@@ -10341,6 +10342,7 @@ async function runLabCompare() {
   await new Promise(r => setTimeout(r, 200));
   _labStep('lc3','done');
 
+  _lastCompareData = { dataA, dataB };
   document.getElementById('labCompareCrumb').textContent = `${pA.name} vs ${pB.name}`;
   document.getElementById('labCompareContent').innerHTML = buildCompareHTML(dataA, dataB);
   _labShow('labScreenCompare');
@@ -10416,6 +10418,85 @@ function buildCompareHTML(dataA, dataB) {
     rows.push({ label:'Opp Bullpen ERA', aDisp:'—', bDisp:'—', aWins:null });
   }
 
+  // Opp Bullpen H/9
+  const penH9A = pA.isAway ? (dataA.gd?.homeBullpenH9||0) : (dataA.gd?.awayBullpenH9||0);
+  const penH9B = pB.isAway ? (dataB.gd?.homeBullpenH9||0) : (dataB.gd?.awayBullpenH9||0);
+  if (penH9A > 0 || penH9B > 0) {
+    rows.push({
+      label: 'Opp Bullpen H/9',
+      aDisp: penH9A > 0 ? penH9A.toFixed(1) : '—',
+      bDisp: penH9B > 0 ? penH9B.toFixed(1) : '—',
+      aWins: penH9A > 0 && penH9B > 0 && penH9A !== penH9B ? penH9A > penH9B : null,
+    });
+    if (penH9A > 0 && penH9B > 0) score(penH9A > penH9B ? true : penH9A < penH9B ? false : null);
+  }
+
+  // L7 AVG
+  const l7A = pA.last7Stats?.avg ?? null;
+  const l7B = pB.last7Stats?.avg ?? null;
+  rows.push({ label:'L7 AVG', aDisp:fmt3(l7A), bDisp:fmt3(l7B), aWins: l7A!=null&&l7B!=null&&l7A!==l7B?l7A>l7B:null });
+  if (l7A != null && l7B != null) score(l7A > l7B ? true : l7A < l7B ? false : null);
+
+  // GHP (hit game % last 7)
+  const ghpA = pA.hitGames7 != null ? pA.hitGames7 / 7 : null;
+  const ghpB = pB.hitGames7 != null ? pB.hitGames7 / 7 : null;
+  rows.push({
+    label: 'GHP (L7)',
+    aDisp: ghpA != null ? Math.round(ghpA*100)+'%' : '—',
+    bDisp: ghpB != null ? Math.round(ghpB*100)+'%' : '—',
+    aWins: ghpA != null && ghpB != null && ghpA !== ghpB ? ghpA > ghpB : null,
+  });
+  if (ghpA != null && ghpB != null) score(ghpA > ghpB ? true : ghpA < ghpB ? false : null);
+
+  // Hit Streak
+  const strkA = pA.hitStreak || 0, strkB = pB.hitStreak || 0;
+  if (strkA > 0 || strkB > 0) {
+    rows.push({
+      label: 'Hit Streak',
+      aDisp: strkA > 0 ? `${strkA}G` : '—',
+      bDisp: strkB > 0 ? `${strkB}G` : '—',
+      aWins: strkA !== strkB ? strkA > strkB : null,
+    });
+    score(strkA > strkB ? true : strkA < strkB ? false : null);
+  }
+
+  // Platoon split vs today's pitcher hand
+  const phA = dataA.pitcher?.pitchHand || null;
+  const phB = dataB.pitcher?.pitchHand || null;
+  const splAvgA = phA ? ((phA==='L'?pA.vsLHP?.avg:pA.vsRHP?.avg) ?? null) : null;
+  const splAbA  = phA ? ((phA==='L'?pA.vsLHP?.atBats:pA.vsRHP?.atBats) || 0) : 0;
+  const splAvgB = phB ? ((phB==='L'?pB.vsLHP?.avg:pB.vsRHP?.avg) ?? null) : null;
+  const splAbB  = phB ? ((phB==='L'?pB.vsLHP?.atBats:pB.vsRHP?.atBats) || 0) : 0;
+  const splScoreA = splAbA >= 20 ? splAvgA : null;
+  const splScoreB = splAbB >= 20 ? splAvgB : null;
+  rows.push({
+    label: 'Split vs Pitcher Hand',
+    aDisp: splAvgA != null ? `${fmt3(splAvgA)} (${splAbA} AB vs ${phA}HP)` : '—',
+    bDisp: splAvgB != null ? `${fmt3(splAvgB)} (${splAbB} AB vs ${phB}HP)` : '—',
+    aWins: splScoreA != null && splScoreB != null && splScoreA !== splScoreB ? splScoreA > splScoreB : null,
+  });
+  if (splScoreA != null && splScoreB != null) score(splScoreA > splScoreB ? true : splScoreA < splScoreB ? false : null);
+
+  // Park Factor
+  const pfA = dataA.pf?.overall || 1.0, pfB = dataB.pf?.overall || 1.0;
+  rows.push({
+    label: 'Park Factor',
+    aDisp: pfA.toFixed(2)+'×',
+    bDisp: pfB.toFixed(2)+'×',
+    aWins: pfA !== pfB ? pfA > pfB : null,
+  });
+  if (pfA !== pfB) score(pfA > pfB ? true : false);
+
+  // Lineup Spot (lower = better)
+  const spotA = pA.orderPos || 0, spotB = pB.orderPos || 0;
+  rows.push({
+    label: 'Lineup Spot',
+    aDisp: spotA > 0 ? `#${spotA}` : 'TBD',
+    bDisp: spotB > 0 ? `#${spotB}` : 'TBD',
+    aWins: spotA > 0 && spotB > 0 && spotA !== spotB ? spotA < spotB : null,
+  });
+  if (spotA > 0 && spotB > 0 && spotA !== spotB) score(spotA < spotB ? true : false);
+
   // Lab Score — 1pt (already incorporates ERA, park, H2H, bullpen — avoid double-weighting)
   const scoreA = dataA.score, scoreB = dataB.score;
   if (scoreA !== scoreB) {
@@ -10465,7 +10546,82 @@ function buildCompareHTML(dataA, dataB) {
         <td class="lct-label">Lab Score</td>
         <td class="${scoreB>scoreA?'lct-win':scoreB<scoreA?'lct-lose':''}" style="color:${scoreCls(scoreB)}">${scoreB}</td>
       </tr>
-    </table>`;
+    </table>
+    <button onclick="copyLabCompareText()" style="width:100%;margin-top:4px;padding:9px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);font-size:13px;font-weight:600;cursor:pointer;">📋 Copy Comparison</button>`;
+}
+
+async function copyLabCompareText() {
+  const { dataA, dataB } = _lastCompareData || {};
+  if (!dataA || !dataB) return;
+  const pA = dataA.player, pB = dataB.player;
+  const fmt3 = v => (v != null && v > 0) ? v.toFixed(3).replace(/^0/,'') : '—';
+  const fmtE = v => (v != null && v > 0) ? v.toFixed(2) : '—';
+  const pad  = (s, n) => String(s).padEnd(n);
+
+  const winA = pA.name.length > 18 ? pA.name.slice(0,17)+'…' : pA.name;
+  const winB = pB.name.length > 18 ? pB.name.slice(0,17)+'…' : pB.name;
+  const col = 18;
+
+  const line = (label, a, b, aWins) => {
+    const trophy = aWins === true ? ' 🏆' : aWins === false ? '' : '';
+    const trophyB = aWins === false ? ' 🏆' : '';
+    return `${pad(a + trophy, col)}  ${pad(label, 20)}  ${b + trophyB}`;
+  };
+
+  const phA = dataA.pitcher?.pitchHand || null;
+  const phB = dataB.pitcher?.pitchHand || null;
+  const splAvgA = phA ? ((phA==='L'?pA.vsLHP?.avg:pA.vsRHP?.avg) ?? null) : null;
+  const splAbA  = phA ? ((phA==='L'?pA.vsLHP?.atBats:pA.vsRHP?.atBats)||0) : 0;
+  const splAvgB = phB ? ((phB==='L'?pB.vsLHP?.avg:pB.vsRHP?.avg) ?? null) : null;
+  const splAbB  = phB ? ((phB==='L'?pB.vsLHP?.atBats:pB.vsRHP?.atBats)||0) : 0;
+  const ghpA = pA.hitGames7 != null ? Math.round(pA.hitGames7/7*100)+'%' : '—';
+  const ghpB = pB.hitGames7 != null ? Math.round(pB.hitGames7/7*100)+'%' : '—';
+  const penH9A = pA.isAway ? (dataA.gd?.homeBullpenH9||0) : (dataA.gd?.awayBullpenH9||0);
+  const penH9B = pB.isAway ? (dataB.gd?.homeBullpenH9||0) : (dataB.gd?.awayBullpenH9||0);
+  const eraA = dataA.pitcher?.seasonStats?.era||0, eraB = dataB.pitcher?.seasonStats?.era||0;
+  const h2hDispA = dataA.h2h?.ab>=1 ? `${fmt3(dataA.h2h.avg)} (${dataA.h2h.ab}AB)` : '—';
+  const h2hDispB = dataB.h2h?.ab>=1 ? `${fmt3(dataB.h2h.avg)} (${dataB.h2h.ab}AB)` : '—';
+  const pkDispA  = dataA.parkStats?.ab>=1 ? `${fmt3(dataA.parkStats.avg)} (${dataA.parkStats.games}G)` : '—';
+  const pkDispB  = dataB.parkStats?.ab>=1 ? `${fmt3(dataB.parkStats.avg)} (${dataB.parkStats.games}G)` : '—';
+
+  const w = v => v != null;
+  const gt = (a,b) => w(a)&&w(b)&&a!==b ? a>b : null;
+  const lt = (a,b) => w(a)&&w(b)&&a!==b ? a<b : null;
+
+  const lines = [
+    `🔬 Diamond Edge — Player Comparison`,
+    `${pA.name} vs ${pB.name}`,
+    '',
+    `${pad(winA,col)}  ${'STAT'.padEnd(20)}  ${winB}`,
+    '─'.repeat(col*2 + 24),
+    line(fmt3(pA.seasonStats?.avg),     'AVG',                fmt3(pB.seasonStats?.avg),     gt(pA.seasonStats?.avg,pB.seasonStats?.avg)),
+    line(fmt3(pA.seasonStats?.obp),     'OBP',                fmt3(pB.seasonStats?.obp),     gt(pA.seasonStats?.obp,pB.seasonStats?.obp)),
+    line(fmt3(pA.seasonStats?.slg),     'SLG',                fmt3(pB.seasonStats?.slg),     gt(pA.seasonStats?.slg,pB.seasonStats?.slg)),
+    line(fmt3(pA.seasonStats?.babip),   'BABIP',              fmt3(pB.seasonStats?.babip),   gt(pA.seasonStats?.babip,pB.seasonStats?.babip)),
+    line(fmt3(pA.seasonStats?.bacon),   'BACON',              fmt3(pB.seasonStats?.bacon),   gt(pA.seasonStats?.bacon,pB.seasonStats?.bacon)),
+    line(fmt3(pA.last7Stats?.avg),      'L7 AVG',             fmt3(pB.last7Stats?.avg),      gt(pA.last7Stats?.avg,pB.last7Stats?.avg)),
+    line(ghpA,                          'GHP (L7)',            ghpB,                          gt(pA.hitGames7,pB.hitGames7)),
+    line((pA.hitStreak||0)>0?`${pA.hitStreak}G`:'—', 'Hit Streak', (pB.hitStreak||0)>0?`${pB.hitStreak}G`:'—', gt(pA.hitStreak||0,pB.hitStreak||0)),
+    line(splAvgA!=null?`${fmt3(splAvgA)} (${splAbA}AB vs ${phA}HP)`:'—', 'Split vs Pitcher', splAvgB!=null?`${fmt3(splAvgB)} (${splAbB}AB vs ${phB}HP)`:'—', splAbA>=20&&splAbB>=20?gt(splAvgA,splAvgB):null),
+    line(fmtE(eraA||null),             'Opp ERA',             fmtE(eraB||null),              gt(eraA,eraB)),
+    line(h2hDispA,                      'H2H vs Pitcher',     h2hDispB,                      dataA.h2h?.ab>=5&&dataB.h2h?.ab>=5?gt(dataA.h2h.avg,dataB.h2h.avg):null),
+    line(pkDispA,                       'Park AVG',           pkDispB,                       dataA.parkStats?.ab>=5&&dataB.parkStats?.ab>=5?gt(dataA.parkStats.avg,dataB.parkStats.avg):null),
+    line((dataA.pf?.overall||1).toFixed(2)+'×', 'Park Factor', (dataB.pf?.overall||1).toFixed(2)+'×', gt(dataA.pf?.overall||1,dataB.pf?.overall||1)),
+    line(fmtE(dataA.bullpenEra||null),  'Opp Bullpen ERA',    fmtE(dataB.bullpenEra||null),  gt(dataA.bullpenEra,dataB.bullpenEra)),
+    line(penH9A>0?penH9A.toFixed(1):'—','Opp Bullpen H/9',   penH9B>0?penH9B.toFixed(1):'—',gt(penH9A,penH9B)),
+    line((pA.orderPos||0)>0?`#${pA.orderPos}`:'TBD', 'Lineup Spot', (pB.orderPos||0)>0?`#${pB.orderPos}`:'TBD', (pA.orderPos||0)>0&&(pB.orderPos||0)>0?lt(pA.orderPos,pB.orderPos):null),
+    '─'.repeat(col*2 + 24),
+    line(String(dataA.score),           'Lab Score',          String(dataB.score),           gt(dataA.score,dataB.score)),
+    '',
+    '— Diamond Edge MLB Analysis  🔬',
+  ];
+
+  const text = lines.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.querySelector('#labScreenCompare button[onclick="copyLabCompareText()"]');
+    if (btn) { const orig=btn.textContent; btn.textContent='✅ Copied!'; setTimeout(()=>btn.textContent=orig,2000); }
+  } catch { /* clipboard unavailable */ }
 }
 
 function labSelectPlayer(playerId) {
