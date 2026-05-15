@@ -2392,17 +2392,22 @@ main { padding: 28px 0 60px; }
       <!-- Screen 1: Game Picker -->
       <div id="labScreenGame" class="lab-screen">
         <div class="lab-step-label">Select a Game</div>
-        <div class="lab-game-grid" id="labGameGrid"></div>
         <button id="labGlobalScanBtn" class="lab-global-scan-btn" onclick="handleGlobalScan()">🌐 Scan All Games for Elite Picks (90+ Score)</button>
-        <div id="labGlobalEliteSection" style="display:none;">
-          <div class="lab-global-elite-header">🏆 Elite Picks — All Games · 90+ Matchup Score</div>
-          <div class="lab-compare-bar" id="labGlobalCompareBar" style="display:none;">
-            <span id="labGlobalCompareCount">0 of 2 selected</span>
-            <button class="lab-compare-btn" id="labGlobalCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
-            <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
-          </div>
-          <div id="labGlobalEliteCards"></div>
+        <div class="lab-game-grid" id="labGameGrid"></div>
+      </div>
+      <!-- Screen 1b: Global Elite Scan Results -->
+      <div id="labScreenGlobalScan" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
+          <span class="lab-back-crumb">Elite Picks — All Games</span>
         </div>
+        <div class="lab-global-elite-header">🏆 Elite Picks — All Games · 90+ Matchup Score</div>
+        <div class="lab-compare-bar" id="labGlobalCompareBar" style="display:none;">
+          <span id="labGlobalCompareCount">0 of 2 selected</span>
+          <button class="lab-compare-btn" id="labGlobalCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
+          <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
+        </div>
+        <div id="labGlobalEliteCards"></div>
       </div>
       <!-- Screen 2: Player Picker (both rosters) -->
       <div id="labScreenPlayer" class="lab-screen" style="display:none;">
@@ -10425,7 +10430,7 @@ let _labCompareSet = new Set();
 let _lastCompareData = null;
 
 function _labShow(screenId) {
-  ['labScreenGame','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
+  ['labScreenGame','labScreenGlobalScan','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
   window.scrollTo(0, 0);
 }
@@ -10465,10 +10470,12 @@ function openLabFor(playerId, source) {
 function labInit() {
   _labState = { gamePk: null, playerId: null, source: null };
   _labShow('labScreenGame');
-  const _gsBtn = document.getElementById('labGlobalScanBtn');
-  const _gsSec = document.getElementById('labGlobalEliteSection');
-  if (_gsBtn) { _gsBtn.disabled = false; _gsBtn.textContent = '🌐 Scan All Games for Elite Picks (90+ Score)'; }
-  if (_gsSec) _gsSec.style.display = 'none';
+  const _gsBtn   = document.getElementById('labGlobalScanBtn');
+  const _gcards  = document.getElementById('labGlobalEliteCards');
+  const _gcBar   = document.getElementById('labGlobalCompareBar');
+  if (_gsBtn)  { _gsBtn.disabled = false; _gsBtn.textContent = '🌐 Scan All Games for Elite Picks (90+ Score)'; }
+  if (_gcards) _gcards.innerHTML = '';
+  if (_gcBar)  _gcBar.style.display = 'none';
   const grid = document.getElementById('labGameGrid');
   const games = Object.values(state.predictions).sort((a, b) => new Date(a.gameDate || 0) - new Date(b.gameDate || 0));
   if (!games.length) {
@@ -10611,8 +10618,15 @@ document.addEventListener('click', e => {
 function labGoRoster() {
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'none';
-  if (_labState.gamePk) labSelectGame(_labState.gamePk);
-  else { clearCompareSelection(); _labShow('labScreenGame'); }
+  if (_labState.gamePk) {
+    labSelectGame(_labState.gamePk);
+  } else if (_labState.compareReturnScreen === 'labScreenGlobalScan') {
+    clearCompareSelection();
+    _labShow('labScreenGlobalScan');
+  } else {
+    clearCompareSelection();
+    _labShow('labScreenGame');
+  }
 }
 
 function labGoBack() {
@@ -10794,8 +10808,9 @@ async function runLabCompare() {
   _lastCompareData = { dataA, dataB };
   document.getElementById('labCompareCrumb').textContent = `${pA.name} vs ${pB.name}`;
   document.getElementById('labCompareContent').innerHTML = buildCompareHTML(dataA, dataB);
+  _labState.compareReturnScreen = _labState.gamePk ? 'labScreenPlayer' : 'labScreenGlobalScan';
   const _cBackBtn = document.querySelector('#labScreenCompare .lab-back-btn');
-  if (_cBackBtn) _cBackBtn.textContent = _labState.gamePk ? '← Roster' : '← Scan Results';
+  if (_cBackBtn) _cBackBtn.textContent = _labState.gamePk ? '← Roster' : '← Elite Picks';
   _labShow('labScreenCompare');
 }
 
@@ -11473,12 +11488,11 @@ async function handleGlobalScan() {
     await new Promise(r => setTimeout(r, 200));
     _labStep('scan_s2', 'done');
     await new Promise(r => setTimeout(r, 150));
+    btn.textContent = `✅ ${elites.length} Elite Pick${elites.length !== 1 ? 's' : ''} Found`;
     _scanRestoreLoading();
-    _labShow('labScreenGame');
 
-    const section = document.getElementById('labGlobalEliteSection');
-    const cards   = document.getElementById('labGlobalEliteCards');
-    if (!section || !cards) return;
+    const cards = document.getElementById('labGlobalEliteCards');
+    if (!cards) return;
     if (elites.length === 0) {
       cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitter reached 90+ across today\'s slate — check individual game analyses for the best available options.</div>';
     } else {
@@ -11486,8 +11500,7 @@ async function handleGlobalScan() {
         _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, true)
       ).join('');
     }
-    section.style.display = 'block';
-    btn.textContent = `✅ ${elites.length} Elite Pick${elites.length !== 1 ? 's' : ''} Found`;
+    _labShow('labScreenGlobalScan');
   } catch {
     _scanRestoreLoading();
     _labShow('labScreenGame');
