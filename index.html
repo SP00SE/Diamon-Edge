@@ -497,6 +497,23 @@ main { padding: 28px 0 60px; }
 .lcv-trophy { font-size:28px; line-height:1; }
 .lcv-name   { font-family:'Bebas Neue',cursive; font-size:22px; color:#f59e0b; margin:6px 0 4px; }
 .lcv-sub    { font-size:12px; color:var(--text-muted); }
+/* Lab — Elite Picks scan */
+.lab-scan-btn { display:block; width:100%; background:var(--bg-card); border:1px dashed #16a34a88; border-radius:8px; padding:10px; color:#4ade80; font-size:13px; font-weight:700; cursor:pointer; transition:background .15s; margin-bottom:12px; }
+.lab-scan-btn:hover:not(:disabled) { background:#0f2a1a; border-style:solid; }
+.lab-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
+.lab-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#4ade80; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #16a34a33; margin-bottom:10px; }
+.lab-elite-card { display:flex; align-items:center; gap:12px; padding:10px 14px; background:#0f2a1a; border:1px solid #16a34a44; border-radius:10px; margin-bottom:8px; }
+.lab-elite-score { font-size:22px; font-weight:800; color:#4ade80; min-width:38px; text-align:center; flex-shrink:0; }
+.lab-elite-info { flex:1; min-width:0; }
+.lab-elite-name { font-weight:700; font-size:14px; color:#e2e8f0; }
+.lab-elite-reason { font-size:12px; color:#86efac; margin-top:3px; opacity:.85; }
+.lab-elite-analyze-btn { flex-shrink:0; background:#15803d; border:1px solid #22c55e55; color:#bbf7d0; border-radius:7px; padding:6px 13px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .15s; }
+.lab-elite-analyze-btn:hover { background:#166534; }
+.lab-global-scan-btn { display:block; width:100%; background:var(--bg-card); border:1px dashed #7c3aed88; border-radius:8px; padding:10px; color:#a78bfa; font-size:13px; font-weight:700; cursor:pointer; transition:background .15s; margin-top:12px; }
+.lab-global-scan-btn:hover:not(:disabled) { background:#1e1133; border-style:solid; }
+.lab-global-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
+.lab-global-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#a78bfa; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #7c3aed33; margin-bottom:10px; margin-top:14px; }
+.lab-global-game-badge { display:inline-block; font-size:10px; color:#c4b5fd; font-weight:600; background:#2e1065; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
 .lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
 .lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-compare-table th:first-child  { text-align:right; width:40%; }
@@ -2376,6 +2393,11 @@ main { padding: 28px 0 60px; }
       <div id="labScreenGame" class="lab-screen">
         <div class="lab-step-label">Select a Game</div>
         <div class="lab-game-grid" id="labGameGrid"></div>
+        <button id="labGlobalScanBtn" class="lab-global-scan-btn" onclick="handleGlobalScan()">🌐 Scan All Games for Elite Picks (90+ Score)</button>
+        <div id="labGlobalEliteSection" style="display:none;">
+          <div class="lab-global-elite-header">🏆 Elite Picks — All Games · 90+ Matchup Score</div>
+          <div id="labGlobalEliteCards"></div>
+        </div>
       </div>
       <!-- Screen 2: Player Picker (both rosters) -->
       <div id="labScreenPlayer" class="lab-screen" style="display:none;">
@@ -2394,6 +2416,11 @@ main { padding: 28px 0 60px; }
           <span id="labCompareCount">0 of 2 selected</span>
           <button class="lab-compare-btn" id="labCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
           <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
+        </div>
+        <button id="labScanBtn" class="lab-scan-btn" onclick="handleLabScan()">🔬 Scan for Elite Picks (90+ Score)</button>
+        <div id="labEliteSection" style="display:none;margin-bottom:14px;">
+          <div class="lab-elite-header">🏆 Elite Picks — 90+ Matchup Score</div>
+          <div id="labEliteCards"></div>
         </div>
         <div class="lab-player-columns" id="labPlayerColumns"></div>
       </div>
@@ -3074,6 +3101,13 @@ main { padding: 28px 0 60px; }
   <div class="modal-box" id="playerModalBox">
     <button class="modal-close" onclick="closePlayerModal()">✕</button>
     <div id="playerModalBody"></div>
+  </div>
+</div>
+
+<div id="labCompareConfirm" class="modal-overlay" onclick="closeLabCompareConfirm(event)" style="display:none;">
+  <div class="modal-box" style="max-width:340px;text-align:center;padding:28px 24px">
+    <button class="modal-close" onclick="closeLabCompareConfirm()">✕</button>
+    <div id="labCompareConfirmBody"></div>
   </div>
 </div>
 
@@ -6051,8 +6085,53 @@ function closePlayerModal(e) {
   document.getElementById('playerModal').style.display = 'none';
 }
 
+function _showCompareConfirm() {
+  const [idA, idB] = [..._labCompareSet];
+  const pA = state.playerMap?.[idA], pB = state.playerMap?.[idB];
+  if (!pA || !pB) return;
+  const body = document.getElementById('labCompareConfirmBody');
+  const wrap = document.getElementById('labCompareConfirm');
+  if (!body || !wrap) return;
+  body.innerHTML = `
+    <div style="font-size:15px;font-weight:800;margin-bottom:8px">Compare Players?</div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5">
+      <strong>${escHtml(pA.name)}</strong>
+      <span style="color:var(--text-muted);margin:0 6px">vs</span>
+      <strong>${escHtml(pB.name)}</strong>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="closeLabCompareConfirm();runLabCompare()"
+        style="background:var(--accent-blue);color:#fff;border:none;border-radius:7px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer">
+        Compare Now
+      </button>
+      <button onclick="closeLabCompareConfirm()"
+        style="background:var(--bg-hover);color:var(--text-secondary);border:1px solid var(--border);border-radius:7px;padding:9px 18px;font-size:13px;cursor:pointer">
+        Not Yet
+      </button>
+    </div>`;
+  wrap.style.display = 'flex';
+}
+
+function closeLabCompareConfirm(e) {
+  if (e && e.target !== document.getElementById('labCompareConfirm')) return;
+  const wrap = document.getElementById('labCompareConfirm');
+  if (wrap) wrap.style.display = 'none';
+}
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('playerModal').style.display = 'none';
+  if (e.key === 'Escape') {
+    document.getElementById('playerModal').style.display = 'none';
+    const _cf = document.getElementById('labCompareConfirm');
+    if (_cf) _cf.style.display = 'none';
+  }
+});
+
+// Refresh stale data when the user returns to this tab after being away
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;                              // tab going to background — nothing to do
+  if (state.loading) return;                               // already fetching
+  const staleMs = Date.now() - (state.lastFetched || 0);
+  if (staleMs > 10 * 60 * 1000) startFetch();             // data older than 10 min — refresh
 });
 
 // ─── LEADERBOARD ──────────────────────────────────────────────────────────
@@ -7709,6 +7788,7 @@ async function startFetch() {
     document.getElementById('legendSection').style.display='block';
     document.getElementById('statsSection').style.display='block';
     document.getElementById('lastUpdated').innerHTML = `Updated: <span>${new Date().toLocaleTimeString()}</span>`;
+    state.lastFetched = Date.now();
     saveSnapshot(); // persist processed predictions for same-day instant reload
 
   } catch (err) {
@@ -9147,7 +9227,7 @@ function generateSmartMatchupSummary(ctx) {
   if (splitAB >= 20 && splitDiff > 0.025 && !p6)           posSignals.push(`a platoon edge (${f3s(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB)`);
   if (fv(l10Avg) && l10Avg >= 0.300)                        posSignals.push(`strong recent form (L10 AVG ${f3s(l10Avg)})`);
   if (hitStreak >= 4)                                        posSignals.push(`an active ${hitStreak}-game hit streak`);
-  if (fv(pEra) && pEra >= 4.50 && !p1)                      posSignals.push(`a hittable starter ERA (${f2s(pEra)})`);
+  if (fv(pEra) && pEra >= 4.50 && !p1 && !(fv(pKpct) && pKpct >= 0.28)) posSignals.push(`a hittable starter ERA (${f2s(pEra)})`);
   if (fv(pH9) && pH9 >= 8.5)                                posSignals.push(`a hit-prone H/9 (${pH9.toFixed(1)})`);
   if (fv(parkFactor) && parkFactor >= 1.06)                  posSignals.push(`a hitter-friendly park (${f2s(parkFactor)}×)`);
   if (fv(bullpenEra) && bullpenEra >= 4.50 && !p3)          posSignals.push(`a weak opposing bullpen (ERA ${f2s(bullpenEra)})`);
@@ -10365,6 +10445,10 @@ function openLabFor(playerId, source) {
 function labInit() {
   _labState = { gamePk: null, playerId: null, source: null };
   _labShow('labScreenGame');
+  const _gsBtn = document.getElementById('labGlobalScanBtn');
+  const _gsSec = document.getElementById('labGlobalEliteSection');
+  if (_gsBtn) { _gsBtn.disabled = false; _gsBtn.textContent = '🌐 Scan All Games for Elite Picks (90+ Score)'; }
+  if (_gsSec) _gsSec.style.display = 'none';
   const grid = document.getElementById('labGameGrid');
   const games = Object.values(state.predictions).sort((a, b) => new Date(a.gameDate || 0) - new Date(b.gameDate || 0));
   if (!games.length) {
@@ -10479,6 +10563,12 @@ function labSelectGame(gamePk) {
       ${colHeader(hmTi, hmSlug, 'HOME')}
       ${homePlayers.length ? homePlayers.map(playerCard).join('') : '<div style="color:var(--text-muted);font-size:12px;padding:12px">No lineup posted</div>'}
     </div>`;
+
+  // Reset elite scan state on game (re-)selection
+  const _scanBtn = document.getElementById('labScanBtn');
+  if (_scanBtn) { _scanBtn.disabled = false; _scanBtn.textContent = '🔬 Scan for Elite Picks (90+ Score)'; }
+  const _eliteSec = document.getElementById('labEliteSection');
+  if (_eliteSec) _eliteSec.style.display = 'none';
 }
 
 function labGoGames() {
@@ -10542,12 +10632,15 @@ function updateCompareBar() {
   document.querySelectorAll('.lab-player-check').forEach(cb => {
     if (!cb.checked) cb.disabled = n >= 2;
   });
+  if (n === 2) _showCompareConfirm();
 }
 
 function clearCompareSelection() {
   _labCompareSet.clear();
   document.querySelectorAll('.lab-player-check').forEach(cb => { cb.checked = false; cb.disabled = false; });
   updateCompareBar();
+  const _cf = document.getElementById('labCompareConfirm');
+  if (_cf) _cf.style.display = 'none';
   const si = document.getElementById('labPlayerSearch');
   const sd = document.getElementById('labPlayerSearchDrop');
   if (si) si.value = '';
@@ -10988,12 +11081,30 @@ function buildPitcherProfile(pitcher) {
   const hDer = ip > 0 && whip > 0 ? Math.max(0, whip * ip - bb) : 0;
   const h9   = ip > 0 && hDer > 0 ? (hDer / ip) * 9 : 0;
 
-  const eraTier = !era ? { label:'Unknown',      cls:'score-neutral', desc:'No 2026 stats available — treat as a neutral matchup.' }
+  let eraTier = !era ? { label:'Unknown',      cls:'score-neutral', desc:'No 2026 stats available — treat as a neutral matchup.' }
     : era <= 2.50 ? { label:'Elite Ace',          cls:'score-great',   desc:'Commands multiple pitches with elite precision. Mistake pitches are rare.' }
     : era <= 3.30 ? { label:'Strong',             cls:'score-good',    desc:'Above-average effectiveness with solid command. Keeps hitters off-balance.' }
     : era <= 4.20 ? { label:'Average',            cls:'score-neutral', desc:'Serviceable but attackable when behind in counts. Disciplined hitters find opportunities.' }
     : era <= 5.00 ? { label:'Below Average',      cls:'score-bad',     desc:'Prone to leaving pitches in the zone. Patient hitters can exploit count leverage.' }
     :               { label:'Weak',               cls:'score-poor',    desc:'Significant source of run production. Mistake pitches are frequent.' };
+
+  // K%-aware overrides — ERA alone does not capture swing-and-miss danger
+  const kpct = ip > 0 ? k / (ip * 4.3) : 0;
+  if (era > 5.00) {
+    if (kpct >= 0.32) {
+      eraTier = { label:'ERA Trap · Elite K', cls:'score-bad',
+        desc:'High ERA but elite strikeout rate — not a clean contact matchup. Swing-and-miss risk is real despite the ERA number.' };
+    } else if (kpct >= 0.28) {
+      eraTier = { label:'Mixed Profile', cls:'score-bad',
+        desc:'Elevated ERA but strong strikeout ability — more dangerous than the ERA alone implies.' };
+    } else if (h9 >= 8.5 && kpct < 0.20) {
+      eraTier = { label:'Hit-Friendly', cls:'score-poor',
+        desc:'High ERA, low strikeout rate, and hit-prone — a genuine contact and BTS target.' };
+    }
+  } else if (era > 4.20 && kpct >= 0.28) {
+    eraTier = { label:'ERA Trap', cls:'score-bad',
+      desc:'Surface-level ERA vulnerability, but strikeout rate keeps this from being a clean contact spot.' };
+  }
 
   const kTend   = !k9  ? null : k9   >= 10 ? 'Elite K rate' : k9   >= 8 ? 'High K rate' : k9   >= 6 ? 'Average K' : 'Low K (contact)';
   const h9Tend  = !h9  ? null : h9   >= 9.5 ? 'Allows Hits Freely' : h9 >= 8.5 ? 'Hit-Prone' : h9 >= 7.0 ? 'Average H/9' : 'Suppresses Hits';
@@ -11008,12 +11119,19 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
   score += clamp(Math.round((pf.overall - 1.0) * 60), -15, 15);
   // Pitcher ERA ±20
   const era = pitcher?.seasonStats?.era || 0;
-  if      (!era)       score += 0;
-  else if (era > 5.00) score += 20;
-  else if (era > 4.20) score += 10;
-  else if (era > 3.30) score += 0;
-  else if (era > 2.50) score -= 10;
-  else                 score -= 20;
+  // K% used to limit ERA boost and apply independent strikeout risk penalty
+  const pK_  = pitcher?.seasonStats?.strikeOuts     || 0;
+  const pIP_ = pitcher?.seasonStats?.inningsPitched || 0;
+  const kpct_ = pIP_ > 0 ? pK_ / (pIP_ * 4.3) : 0;
+  // ERA boost — reduced when pitcher K% is high (ERA alone cannot define danger level)
+  let eraBoost = 0;
+  if      (!era)       eraBoost = 0;
+  else if (era > 5.00) eraBoost = kpct_ >= 0.32 ? 1 : kpct_ >= 0.28 ? 3 : 20;
+  else if (era > 4.20) eraBoost = kpct_ >= 0.28 ? 1 : 10;
+  else if (era > 3.30) eraBoost = 0;
+  else if (era > 2.50) eraBoost = -10;
+  else                 eraBoost = -20;
+  score += eraBoost;
   // Handedness split ±15
   const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
   const split = player[splitKey];
@@ -11113,6 +11231,31 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     else if (ghp <  0.45) score -= 7;
     else if (ghp <  0.52) score -= 3;
   }
+  // Pitcher K% strikeout risk — independent penalty (applies on top of reduced ERA boost)
+  if      (kpct_ >= 0.32) score -= 5;
+  else if (kpct_ >= 0.28) score -= 3;
+  else if (kpct_ >= 0.25) score -= 1;
+  else if (kpct_ > 0 && kpct_ < 0.18) score += 1;  // low K% helps slightly
+  // Score ceiling enforcement by pitcher K% tier
+  if (kpct_ >= 0.32) {
+    // Elite K% cap: 88 default; 92 if hitter has elite contact profile (3+ signals)
+    const splitKey_ = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
+    const spl_ = player[splitKey_] || {};
+    const paCount_ = Math.max(player.seasonStats?.plateAppearances || 1, 1);
+    const batKpct_ = (player.seasonStats?.strikeOuts || 0) / paCount_;
+    let eliteContactSigs = 0;
+    if (batKpct_ < 0.15)                                       eliteContactSigs++;
+    if (ghp != null && ghp >= 0.70)                            eliteContactSigs++;
+    if ((spl_.avg||0) >= 0.300 && (spl_.atBats||0) >= 20)     eliteContactSigs++;
+    if ((spl_.obp||0) >= 0.370 && (spl_.atBats||0) >= 20)     eliteContactSigs++;
+    if ((player.orderPos||99) <= 3)                            eliteContactSigs++;
+    if (bullpenHBF >= 0.27)                                    eliteContactSigs++;
+    score = Math.min(score, eliteContactSigs >= 3 ? 92 : 88);
+  } else if (kpct_ >= 0.28) {
+    score = Math.min(score, 92);
+  } else if (kpct_ >= 0.25) {
+    score = Math.min(score, 96);
+  }
   return clamp(Math.round(score), 0, 100);
 }
 
@@ -11121,6 +11264,223 @@ function _labStep(id, st) {
   if (!el) return;
   el.className = 'lab-loading-step ' + st;
   el.querySelector('.ls-icon').textContent = st === 'done' ? '✅' : st === 'active' ? '⏳' : '○';
+}
+
+function labGlobalSelectPlayer(playerId, gamePk) {
+  _labState.gamePk = gamePk;
+  labSelectPlayer(playerId);
+}
+
+async function runGlobalEliteScan() {
+  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  if (!allGames.length) return [];
+
+  const results = [];
+
+  await Promise.allSettled(allGames.map(async gd => {
+    const venue = gd.venueName || '';
+    const pf = getParkFactor(venue);
+
+    const [awBEraRes, awBWhipRes, hmBEraRes, hmBWhipRes] = await Promise.allSettled([
+      gd.awayTeamId ? fetchBullpenEra(gd.awayTeamId)  : Promise.resolve(0),
+      gd.awayTeamId ? fetchBullpenWhip(gd.awayTeamId) : Promise.resolve({}),
+      gd.homeTeamId ? fetchBullpenEra(gd.homeTeamId)  : Promise.resolve(0),
+      gd.homeTeamId ? fetchBullpenWhip(gd.homeTeamId) : Promise.resolve({}),
+    ]);
+    const awBEra  = awBEraRes.status  === 'fulfilled' ? (awBEraRes.value  || 0)  : 0;
+    const awBWhip = awBWhipRes.status === 'fulfilled' ? (awBWhipRes.value || {}) : {};
+    const hmBEra  = hmBEraRes.status  === 'fulfilled' ? (hmBEraRes.value  || 0)  : 0;
+    const hmBWhip = hmBWhipRes.status === 'fulfilled' ? (hmBWhipRes.value || {}) : {};
+
+    for (const player of (gd.players||[]).filter(p => p.id)) {
+      const pitcher    = player.isAway ? gd.homePitcher : gd.awayPitcher;
+      const bullpenEra = player.isAway ? hmBEra  : awBEra;
+      const bullpenH9  = player.isAway ? (hmBWhip.h9||0)  : (awBWhip.h9||0);
+      const bullpenHBF = player.isAway ? (hmBWhip.hbf||0) : (awBWhip.hbf||0);
+
+      const hg7 = player.hitGames7;
+      const ghpApprox = (hg7 != null && hg7 >= 0) ? Math.min(hg7 / 7, 1.0) : null;
+
+      const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, null, null, ghpApprox, bullpenH9, bullpenHBF);
+      if (score < 87) continue;
+
+      const reasons = [];
+      const era = pitcher?.seasonStats?.era || 0;
+      const profile_ = pitcher ? buildPitcherProfile(pitcher) : null;
+      const lbl_ = profile_?.eraTier?.label || '';
+      if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
+        reasons.push(`Mixed matchup (${era.toFixed(2)} ERA / high K%)`);
+      } else if (era > 5.00) {
+        reasons.push(`High ERA starter (${era.toFixed(2)})`);
+      } else if (era > 4.20) {
+        reasons.push(`Below-avg starter (${era.toFixed(2)} ERA)`);
+      }
+      const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
+      const split = player[splitKey];
+      if (split && (split.atBats||0) >= 20) {
+        const diff = (split.avg||0) - (player.seasonStats?.avg||0);
+        if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher?.pitchHand||'?'}HP (${split.avg?.toFixed(3)||'—'})`);
+        else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher?.pitchHand||'?'}HP (+${Math.round(diff*1000)} pts)`);
+      }
+      if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
+      else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
+      if      (bullpenEra > 5.00) reasons.push(`Weak bullpen (${bullpenEra.toFixed(2)} ERA)`);
+      else if (bullpenEra > 4.50) reasons.push(`Vulnerable bullpen (${bullpenEra.toFixed(2)} ERA)`);
+      const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
+      if      (l10avg > 0.350) reasons.push(`On fire recently (${l10avg.toFixed(3)})`);
+      else if (l10avg > 0.300) reasons.push(`Hot recent form (${l10avg.toFixed(3)})`);
+      if (ghpApprox != null && ghpApprox >= 0.72) reasons.push(`Hits in ${hg7}/7 recent games`);
+      else if (ghpApprox != null && ghpApprox >= 0.57) reasons.push(`Consistent contact (${hg7}/7 games)`);
+
+      results.push({
+        player, score,
+        reasons: reasons.slice(0, 3),
+        gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
+        gamePk: gd.gamePk,
+      });
+    }
+  }));
+
+  return results.sort((a, b) => b.score - a.score);
+}
+
+async function handleGlobalScan() {
+  const btn = document.getElementById('labGlobalScanBtn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Scanning all games…';
+  try {
+    const elites = await runGlobalEliteScan();
+    const section = document.getElementById('labGlobalEliteSection');
+    const cards   = document.getElementById('labGlobalEliteCards');
+    if (!section || !cards) return;
+    if (elites.length === 0) {
+      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitter reached 90+ across today\'s slate — check individual game analyses for the best available options.</div>';
+    } else {
+      cards.innerHTML = elites.map(({ player, score, reasons, gameLabel, gamePk }) =>
+        `<div class="lab-elite-card">
+          <div class="lab-elite-score">${score}</div>
+          <div class="lab-elite-info">
+            <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}<span class="lab-global-game-badge">${escHtml(gameLabel)}</span></div>
+            <div class="lab-elite-reason">${escHtml(reasons.length ? reasons.join(' · ') : 'Multiple positive signals')}</div>
+          </div>
+          <button class="lab-elite-analyze-btn" onclick="labGlobalSelectPlayer(${player.id},${gamePk})">Full Analysis →</button>
+        </div>`
+      ).join('');
+    }
+    section.style.display = 'block';
+    btn.textContent = `✅ ${elites.length} Elite Pick${elites.length !== 1 ? 's' : ''} Found`;
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '🌐 Scan All Games for Elite Picks (90+ Score)';
+  }
+}
+
+async function runLabEliteScan() {
+  const gamePk = _labState.gamePk;
+  const gd = state.predictions[gamePk];
+  if (!gd) return [];
+  const allPlayers = (gd.players||[]).filter(p => p.id);
+  if (!allPlayers.length) return [];
+
+  const venue = gd.venueName || '';
+  const pf = getParkFactor(venue);
+
+  // Fetch bullpen data for both teams (4 parallel fetches, cached)
+  const [awBEraRes, awBWhipRes, hmBEraRes, hmBWhipRes] = await Promise.allSettled([
+    gd.awayTeamId ? fetchBullpenEra(gd.awayTeamId)  : Promise.resolve(0),
+    gd.awayTeamId ? fetchBullpenWhip(gd.awayTeamId) : Promise.resolve({}),
+    gd.homeTeamId ? fetchBullpenEra(gd.homeTeamId)  : Promise.resolve(0),
+    gd.homeTeamId ? fetchBullpenWhip(gd.homeTeamId) : Promise.resolve({}),
+  ]);
+  const awBEra  = awBEraRes.status  === 'fulfilled' ? (awBEraRes.value  || 0)  : 0;
+  const awBWhip = awBWhipRes.status === 'fulfilled' ? (awBWhipRes.value || {}) : {};
+  const hmBEra  = hmBEraRes.status  === 'fulfilled' ? (hmBEraRes.value  || 0)  : 0;
+  const hmBWhip = hmBWhipRes.status === 'fulfilled' ? (hmBWhipRes.value || {}) : {};
+
+  const results = [];
+  for (const player of allPlayers) {
+    // Away players bat against home pitcher/bullpen; home players bat against away pitcher/bullpen
+    const pitcher    = player.isAway ? gd.homePitcher : gd.awayPitcher;
+    const bullpenEra = player.isAway ? hmBEra  : awBEra;
+    const bullpenH9  = player.isAway ? (hmBWhip.h9||0)  : (awBWhip.h9||0);
+    const bullpenHBF = player.isAway ? (hmBWhip.hbf||0) : (awBWhip.hbf||0);
+
+    // Approximate GHP from player.hitGames7 (already loaded, no API call needed)
+    // This is the main factor skipped vs individual analysis (worth ±7 pts)
+    const hg7 = player.hitGames7;
+    const ghpApprox = (hg7 != null && hg7 >= 0) ? Math.min(hg7 / 7, 1.0) : null;
+
+    // H2H and park history still skipped (require per-player API calls)
+    // Threshold is 87 (not 90) to account for those missing factors (~3 pt cushion)
+    const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, null, null, ghpApprox, bullpenH9, bullpenHBF);
+    if (score < 87) continue;
+
+    // Build human-readable reason tags (up to 3)
+    const reasons = [];
+    const era = pitcher?.seasonStats?.era || 0;
+    const pitLbl = pitcher ? (state.playerMap?.[pitcher.id] ? '' : '') : '';
+    const profile_ = pitcher ? buildPitcherProfile(pitcher) : null;
+    const lbl_ = profile_?.eraTier?.label || '';
+    if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
+      reasons.push(`Mixed matchup (${era.toFixed(2)} ERA / high K%)`);
+    } else if (era > 5.00) {
+      reasons.push(`High ERA starter (${era.toFixed(2)})`);
+    } else if (era > 4.20) {
+      reasons.push(`Below-avg starter (${era.toFixed(2)} ERA)`);
+    }
+    const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
+    const split = player[splitKey];
+    if (split && (split.atBats||0) >= 20) {
+      const diff = (split.avg||0) - (player.seasonStats?.avg||0);
+      if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher?.pitchHand||'?'}HP (${split.avg?.toFixed(3)||'—'})`);
+      else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher?.pitchHand||'?'}HP (+${Math.round(diff*1000)} pts)`);
+    }
+    if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
+    else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
+    if      (bullpenEra > 5.00) reasons.push(`Weak bullpen (${bullpenEra.toFixed(2)} ERA)`);
+    else if (bullpenEra > 4.50) reasons.push(`Vulnerable bullpen (${bullpenEra.toFixed(2)} ERA)`);
+    const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
+    if      (l10avg > 0.350) reasons.push(`On fire recently (${l10avg.toFixed(3)})`);
+    else if (l10avg > 0.300) reasons.push(`Hot recent form (${l10avg.toFixed(3)})`);
+    if (ghpApprox != null && ghpApprox >= 0.72) reasons.push(`Hits in ${hg7}/7 recent games`);
+    else if (ghpApprox != null && ghpApprox >= 0.57) reasons.push(`Consistent contact (${hg7}/7 games)`);
+
+    results.push({ player, score, reasons: reasons.slice(0, 3) });
+  }
+  return results.sort((a, b) => b.score - a.score);
+}
+
+async function handleLabScan() {
+  const btn = document.getElementById('labScanBtn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Scanning all hitters…';
+  try {
+    const elites = await runLabEliteScan();
+    const section = document.getElementById('labEliteSection');
+    const cards   = document.getElementById('labEliteCards');
+    if (!section || !cards) return;
+    if (elites.length === 0) {
+      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitter reached 90+ for this game — check individual analyses for the best available options.</div>';
+    } else {
+      cards.innerHTML = elites.map(({ player, score, reasons }) =>
+        `<div class="lab-elite-card">
+          <div class="lab-elite-score">${score}</div>
+          <div class="lab-elite-info">
+            <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}</div>
+            <div class="lab-elite-reason">${escHtml(reasons.length ? reasons.join(' · ') : 'Multiple positive signals')}</div>
+          </div>
+          <button class="lab-elite-analyze-btn" onclick="labSelectPlayer(${player.id})">Full Analysis →</button>
+        </div>`
+      ).join('');
+    }
+    section.style.display = 'block';
+    btn.textContent = `✅ ${elites.length} Elite Pick${elites.length !== 1 ? 's' : ''} Found`;
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '🔬 Scan for Elite Picks (90+ Score)';
+  }
 }
 
 async function runLabAnalysis() {
@@ -11291,27 +11651,39 @@ async function runLabAnalysis() {
   if (player.orderPos&&player.orderPos<=3) hStrengths.push(`Batting ${player.orderPos} — premium spot`);
   if (player.orderPos&&player.orderPos>=7) hWeaknesses.push(`Batting ${player.orderPos} — limited PA`);
 
+  // K% — computed early so pitcher narrative can reference it
+  const _labKpct = (() => {
+    const ip = pitcher?.seasonStats?.inningsPitched || 0;
+    const k  = pitcher?.seasonStats?.strikeOuts || 0;
+    return ip > 0 ? k / (ip * 4.3) : 0;  // consistent with BTS scoring formula
+  })();
+
   // Narrative
   const narrative = [];
   if (parkCtx) narrative.push(`At ${venue}, ${parkCtx.headline.toLowerCase()}.`);
-  if (pitcher?.fullName) narrative.push(`${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}) — ${profile.eraTier.label.toLowerCase()} pitcher.`);
+  if (pitcher?.fullName) {
+    const lbl = profile.eraTier.label;
+    let pitDesc;
+    if (lbl.includes('ERA Trap') || lbl.includes('Mixed Profile')) {
+      pitDesc = `${pitcher.fullName}'s ${era.toFixed(2)} ERA creates surface-level vulnerability, but a ${Math.round(_labKpct*100)}% K rate makes this a mixed matchup — not a clean contact spot.`;
+    } else if (lbl === 'Hit-Friendly') {
+      pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) — contact-friendly with low strikeout threat and a hit-prone pattern.`;
+    } else {
+      pitDesc = `${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}) — ${lbl.toLowerCase()} pitcher.`;
+    }
+    narrative.push(pitDesc);
+  }
   if (h2h?.ab>=5) narrative.push(`Career head-to-head: ${fmt3(h2h.avg)} over ${h2h.ab} at-bats (${h2h.h} H, ${h2h.hr} HR, ${h2h.k} K).`);
-  else if (pitcher?.fullName) narrative.push(`First career matchup against ${pitcher.fullName} — no prior head-to-head data.`);
+  else if (pitcher?.fullName) narrative.push(`No prior head-to-head data vs ${pitcher.fullName} — BvP history treated as neutral.`);
   if (splitAB>=20&&Math.abs(splitDiff)>0.015) narrative.push(`${player.name} hits ${splitDiff>0?'notably better':'notably worse'} vs ${pitcherHand}HP (${fmt3(splitAvg)} vs ${fmt3(seasAvg)} season avg).`);
   if (parkStats?.ab>=5) narrative.push(`In ${parkStats.games} games at ${venue} this season: ${fmtX(parkStats.avg,3)} AVG, ${parkStats.hr} HR.`);
   if (bullpenEra>4.50) narrative.push(`The opposing bullpen (ERA ${bullpenEra.toFixed(2)}) is exploitable late.`);
   else if (bullpenEra>0&&bullpenEra<3.50) narrative.push(`A strong bullpen (ERA ${bullpenEra.toFixed(2)}) limits late-inning upside.`);
 
-  // Counter-point: what's preventing a higher score — surface even for high-scoring matchups
-  const _labKpct = (() => {
-    const ip = pitcher?.seasonStats?.inningsPitched || 0;
-    const k  = pitcher?.seasonStats?.strikeOuts || 0;
-    const bf = ip > 0 ? ip * 3.3 : 0; // approximate BF from IP
-    return bf > 0 ? k / bf : 0;
-  })();
+  // Counter-points: risk factors that prevent a higher score
   const _labCounterPts = [];
-  if (_labKpct >= 0.22 && era >= 4.50)
-    _labCounterPts.push(`despite the weak ERA, ${pitcher?.fullName||'the pitcher'} carries a ${(_labKpct*100).toFixed(0)}% K rate — strikeout risk remains`);
+  if (_labKpct >= 0.22)
+    _labCounterPts.push(`${pitcher?.fullName||'the pitcher'} carries a ${Math.round(_labKpct*100)}% K rate — strikeout risk remains regardless of ERA`);
   if (era > 0 && era <= 3.50)
     _labCounterPts.push(`quality arm (ERA ${era.toFixed(2)}) caps the hit ceiling`);
   else if (profile.h9 > 0 && profile.h9 <= 7.0 && era > 3.50)
@@ -11328,7 +11700,7 @@ async function runLabAnalysis() {
     _labCounterPts.push(`${venue||'park'} suppresses offense (${(pf.overall||1).toFixed(2)}×)`);
 
   if (score >= 70 && _labCounterPts.length > 0) {
-    narrative.push(`Score capped at ${score} — ${_labCounterPts.slice(0,2).join('; ')}.`);
+    narrative.push(`Key risk factors keeping this from a higher grade: ${_labCounterPts.slice(0,2).join('; ')}.`);
   } else if (score >= 55 && _labCounterPts.length > 0) {
     narrative.push(`Ceiling limited by: ${_labCounterPts.slice(0,2).join('; ')}.`);
   } else if (score < 55 && _labCounterPts.length > 0) {
