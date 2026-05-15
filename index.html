@@ -2396,6 +2396,11 @@ main { padding: 28px 0 60px; }
         <button id="labGlobalScanBtn" class="lab-global-scan-btn" onclick="handleGlobalScan()">🌐 Scan All Games for Elite Picks (90+ Score)</button>
         <div id="labGlobalEliteSection" style="display:none;">
           <div class="lab-global-elite-header">🏆 Elite Picks — All Games · 90+ Matchup Score</div>
+          <div class="lab-compare-bar" id="labGlobalCompareBar" style="display:none;">
+            <span id="labGlobalCompareCount">0 of 2 selected</span>
+            <button class="lab-compare-btn" id="labGlobalCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
+            <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
+          </div>
           <div id="labGlobalEliteCards"></div>
         </div>
       </div>
@@ -10632,6 +10637,13 @@ function updateCompareBar() {
   document.querySelectorAll('.lab-player-check').forEach(cb => {
     if (!cb.checked) cb.disabled = n >= 2;
   });
+  // Keep global compare bar in sync
+  const gBar = document.getElementById('labGlobalCompareBar');
+  const gBtn = document.getElementById('labGlobalCompareBtn');
+  const gCnt = document.getElementById('labGlobalCompareCount');
+  if (gBar) { gBar.style.display = n > 0 ? 'flex' : 'none'; }
+  if (gCnt) gCnt.textContent = `${n} of 2 selected`;
+  if (gBtn) gBtn.disabled    = n !== 2;
   if (n === 2) _showCompareConfirm();
 }
 
@@ -11359,6 +11371,9 @@ async function handleGlobalScan() {
     } else {
       cards.innerHTML = elites.map(({ player, score, reasons, gameLabel, gamePk }) =>
         `<div class="lab-elite-card">
+          <label class="lab-player-check-wrap" onclick="event.stopPropagation()" style="margin-right:2px;padding-top:0">
+            <input type="checkbox" class="lab-player-check" id="chk_${player.id}" value="${player.id}" onchange="toggleComparePlayer(${player.id},this.checked)">
+          </label>
           <div class="lab-elite-score">${score}</div>
           <div class="lab-elite-info">
             <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}<span class="lab-global-game-badge">${escHtml(gameLabel)}</span></div>
