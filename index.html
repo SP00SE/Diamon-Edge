@@ -529,6 +529,8 @@ main { padding: 28px 0 60px; }
 .lab-compare-table tr.lct-score-row td { font-family:'Bebas Neue',cursive; font-size:22px; padding:12px; }
 .lab-compare-table tr.lct-score-row td.lct-win { color:#22c55e; }
 .lct-photo { width:22px; height:22px; border-radius:50%; object-fit:cover; vertical-align:middle; margin:0 4px; }
+.lct-name-btn { background:none; border:none; color:inherit; font:inherit; font-weight:700; cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:0; transition:color .15s; }
+.lct-name-btn:hover { color:var(--accent-blue); }
 .lab-loading-wrap { max-width:400px; margin:50px auto; text-align:left; }
 .lab-loading-title { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--accent-blue); letter-spacing:2px; margin-bottom:24px; text-align:center; }
 .lab-loading-step { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--text-muted); transition:color .2s; }
@@ -10629,7 +10631,22 @@ function labGoRoster() {
   }
 }
 
+function labCompareViewPlayer(playerId, gamePk) {
+  _labState.playerId = playerId;
+  _labState.gamePk   = gamePk;
+  _labState.source   = 'compare';
+  const _bb = document.getElementById('labBackToSourceBtn');
+  if (_bb) { _bb.textContent = '← Compare'; _bb.style.display = ''; }
+  labSelectPlayer(playerId);
+}
+
 function labGoBack() {
+  if (_labState.source === 'compare') {
+    const _bb = document.getElementById('labBackToSourceBtn');
+    if (_bb) _bb.style.display = 'none';
+    _labShow('labScreenCompare');
+    return;
+  }
   const tabMap = {
     bts: 'bts', hitPicks: 'overall', hrPicks: 'overall',
     streaks: 'streaks', dominator: 'dominators', dueForHit: 'dueforhit',
@@ -11015,9 +11032,9 @@ function buildCompareHTML(dataA, dataB) {
     <table class="lab-compare-table">
       <colgroup><col style="width:40%"><col style="width:20%"><col style="width:40%"></colgroup>
       <tr>
-        <th><img class="lct-photo" src="${photoA}" onerror="this.style.display='none'">${escHtml(pA.name)}</th>
+        <th><img class="lct-photo" src="${photoA}" onerror="this.style.display='none'"><button class="lct-name-btn" onclick="labCompareViewPlayer(${pA.id},${pA.gamePk})">${escHtml(pA.name)}</button></th>
         <th>Stat</th>
-        <th>${escHtml(pB.name)}<img class="lct-photo" src="${photoB}" onerror="this.style.display='none'"></th>
+        <th><button class="lct-name-btn" onclick="labCompareViewPlayer(${pB.id},${pB.gamePk})">${escHtml(pB.name)}</button><img class="lct-photo" src="${photoB}" onerror="this.style.display='none'"></th>
       </tr>
       ${rowHTML}
       <tr class="lct-score-row">
