@@ -10597,6 +10597,7 @@ function labGoRoster() {
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'none';
   if (_labState.gamePk) labSelectGame(_labState.gamePk);
+  else { clearCompareSelection(); _labShow('labScreenGame'); }
 }
 
 function labGoBack() {
@@ -10778,6 +10779,8 @@ async function runLabCompare() {
   _lastCompareData = { dataA, dataB };
   document.getElementById('labCompareCrumb').textContent = `${pA.name} vs ${pB.name}`;
   document.getElementById('labCompareContent').innerHTML = buildCompareHTML(dataA, dataB);
+  const _cBackBtn = document.querySelector('#labScreenCompare .lab-back-btn');
+  if (_cBackBtn) _cBackBtn.textContent = _labState.gamePk ? '← Roster' : '← Scan Results';
   _labShow('labScreenCompare');
 }
 
