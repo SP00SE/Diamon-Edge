@@ -2432,7 +2432,7 @@ main { padding: 28px 0 60px; }
       <!-- Screen 3: Loading -->
       <div id="labScreenLoading" class="lab-screen" style="display:none;">
         <div class="lab-loading-wrap">
-          <div class="lab-loading-title">⚙️ Running Analysis</div>
+          <div class="lab-loading-title" id="labLoadingTitle">⚙️ Running Analysis</div>
           <div id="labLoadingSteps"></div>
         </div>
       </div>
@@ -11283,74 +11283,145 @@ function labGlobalSelectPlayer(playerId, gamePk) {
   labSelectPlayer(playerId);
 }
 
-async function runGlobalEliteScan() {
-  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
-  if (!allGames.length) return [];
+// Full data fetch for one player: H2H + game log (GHP + park history) + bullpen.
+// Produces the same score as runLabAnalysis so scan and individual analysis match.
+async function fetchElitePlayerData(player, gd) {
+  const pitcher   = player.isAway ? gd.homePitcher : gd.awayPitcher;
+  const oppTeamId = player.isAway ? gd.homeTeamId  : gd.awayTeamId;
+  const venue     = gd.venueName || '';
+  const pf        = getParkFactor(venue);
 
-  const results = [];
+  let h2h = null, parkStats = null, ghp = null;
+  let bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0;
 
-  await Promise.allSettled(allGames.map(async gd => {
-    const venue = gd.venueName || '';
-    const pf = getParkFactor(venue);
-
-    const [awBEraRes, awBWhipRes, hmBEraRes, hmBWhipRes] = await Promise.allSettled([
-      gd.awayTeamId ? fetchBullpenEra(gd.awayTeamId)  : Promise.resolve(0),
-      gd.awayTeamId ? fetchBullpenWhip(gd.awayTeamId) : Promise.resolve({}),
-      gd.homeTeamId ? fetchBullpenEra(gd.homeTeamId)  : Promise.resolve(0),
-      gd.homeTeamId ? fetchBullpenWhip(gd.homeTeamId) : Promise.resolve({}),
-    ]);
-    const awBEra  = awBEraRes.status  === 'fulfilled' ? (awBEraRes.value  || 0)  : 0;
-    const awBWhip = awBWhipRes.status === 'fulfilled' ? (awBWhipRes.value || {}) : {};
-    const hmBEra  = hmBEraRes.status  === 'fulfilled' ? (hmBEraRes.value  || 0)  : 0;
-    const hmBWhip = hmBWhipRes.status === 'fulfilled' ? (hmBWhipRes.value || {}) : {};
-
-    for (const player of (gd.players||[]).filter(p => p.id)) {
-      const pitcher    = player.isAway ? gd.homePitcher : gd.awayPitcher;
-      const bullpenEra = player.isAway ? hmBEra  : awBEra;
-      const bullpenH9  = player.isAway ? (hmBWhip.h9||0)  : (awBWhip.h9||0);
-      const bullpenHBF = player.isAway ? (hmBWhip.hbf||0) : (awBWhip.hbf||0);
-
-      const hg7 = player.hitGames7;
-      const ghpApprox = (hg7 != null && hg7 >= 0) ? Math.min(hg7 / 7, 1.0) : null;
-
-      const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, null, null, ghpApprox, bullpenH9, bullpenHBF);
-      if (score < 87) continue;
-
-      const reasons = [];
-      const era = pitcher?.seasonStats?.era || 0;
-      const profile_ = pitcher ? buildPitcherProfile(pitcher) : null;
-      const lbl_ = profile_?.eraTier?.label || '';
-      if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
-        reasons.push(`Mixed matchup (${era.toFixed(2)} ERA / high K%)`);
-      } else if (era > 5.00) {
-        reasons.push(`High ERA starter (${era.toFixed(2)})`);
-      } else if (era > 4.20) {
-        reasons.push(`Below-avg starter (${era.toFixed(2)} ERA)`);
+  await Promise.all([
+    (async () => {
+      try {
+        const fullLog     = await fetchGameLog(player.id, false, 162);
+        const ghpGames    = fullLog.length;
+        const ghpHitGames = fullLog.filter(g => (g.stat?.hits || 0) >= 1).length;
+        if (ghpGames >= 10) ghp = ghpHitGames / ghpGames;
+        const parkGames = fullLog.filter(g => {
+          const vn = g.game?.venue?.name || g.venue?.name || '';
+          return vn && vn === venue;
+        });
+        if (parkGames.length > 0) {
+          const agg = parkGames.reduce((a, g) => ({
+            ab: a.ab + parseInt(g.stat?.atBats||0),
+            h:  a.h  + parseInt(g.stat?.hits||0),
+            hr: a.hr + parseInt(g.stat?.homeRuns||0),
+          }), { ab:0, h:0, hr:0 });
+          agg.avg   = agg.ab > 0 ? agg.h / agg.ab : null;
+          agg.games = parkGames.length;
+          parkStats = agg;
+        }
+      } catch {}
+    })(),
+    (async () => {
+      if (pitcher?.id && player.id) {
+        try {
+          const d   = await cachedFetch(`https://statsapi.mlb.com/api/v1/people/${player.id}/stats?stats=vsPlayerTotal&group=hitting&opposingPlayerId=${pitcher.id}&gameType=R`);
+          const spl = d?.stats?.[0]?.splits?.[0]?.stat || null;
+          if (spl && parseInt(spl.atBats||0) > 0)
+            h2h = { ab:+spl.atBats, h:+spl.hits, hr:+spl.homeRuns, rbi:+spl.rbi,
+                    avg:parseFloat(spl.avg)||0, obp:parseFloat(spl.obp)||0,
+                    k:+spl.strikeOuts, bb:+spl.baseOnBalls };
+        } catch {}
       }
-      const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
-      const split = player[splitKey];
-      if (split && (split.atBats||0) >= 20) {
-        const diff = (split.avg||0) - (player.seasonStats?.avg||0);
-        if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher?.pitchHand||'?'}HP (${split.avg?.toFixed(3)||'—'})`);
-        else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher?.pitchHand||'?'}HP (+${Math.round(diff*1000)} pts)`);
+    })(),
+    (async () => {
+      if (oppTeamId) {
+        try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
+        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
       }
-      if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
-      else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
-      if      (bullpenEra > 5.00) reasons.push(`Weak bullpen (${bullpenEra.toFixed(2)} ERA)`);
-      else if (bullpenEra > 4.50) reasons.push(`Vulnerable bullpen (${bullpenEra.toFixed(2)} ERA)`);
-      const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
-      if      (l10avg > 0.350) reasons.push(`On fire recently (${l10avg.toFixed(3)})`);
-      else if (l10avg > 0.300) reasons.push(`Hot recent form (${l10avg.toFixed(3)})`);
-      if (ghpApprox != null && ghpApprox >= 0.72) reasons.push(`Hits in ${hg7}/7 recent games`);
-      else if (ghpApprox != null && ghpApprox >= 0.57) reasons.push(`Consistent contact (${hg7}/7 games)`);
+    })(),
+  ]);
 
-      results.push({
-        player, score,
-        reasons: reasons.slice(0, 3),
-        gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
-        gamePk: gd.gamePk,
-      });
-    }
+  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF);
+  return { player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF };
+}
+
+// Shared reason builder for elite pick cards
+function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp) {
+  const reasons = [];
+  const era = pitcher?.seasonStats?.era || 0;
+  const profile_ = pitcher ? buildPitcherProfile(pitcher) : null;
+  const lbl_ = profile_?.eraTier?.label || '';
+  if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
+    reasons.push(`Mixed matchup (${era.toFixed(2)} ERA / high K%)`);
+  } else if (era > 5.00) {
+    reasons.push(`High ERA starter (${era.toFixed(2)})`);
+  } else if (era > 4.20) {
+    reasons.push(`Below-avg starter (${era.toFixed(2)} ERA)`);
+  }
+  const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
+  const split = player[splitKey];
+  if (split && (split.atBats||0) >= 20) {
+    const diff = (split.avg||0) - (player.seasonStats?.avg||0);
+    if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher?.pitchHand||'?'}HP (${split.avg?.toFixed(3)||'—'})`);
+    else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher?.pitchHand||'?'}HP (+${Math.round(diff*1000)} pts)`);
+  }
+  if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
+  else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
+  if      (bullpenEra > 5.00) reasons.push(`Weak bullpen (${bullpenEra.toFixed(2)} ERA)`);
+  else if (bullpenEra > 4.50) reasons.push(`Vulnerable bullpen (${bullpenEra.toFixed(2)} ERA)`);
+  const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
+  if      (l10avg > 0.350) reasons.push(`On fire recently (${l10avg.toFixed(3)})`);
+  else if (l10avg > 0.300) reasons.push(`Hot recent form (${l10avg.toFixed(3)})`);
+  const hg7 = player.hitGames7;
+  if      (ghp != null && ghp >= 0.72 && hg7 != null) reasons.push(`Hits in ${hg7}/7 recent games`);
+  else if (ghp != null && ghp >= 0.57 && hg7 != null) reasons.push(`Consistent contact (${hg7}/7 games)`);
+  return reasons.slice(0, 3);
+}
+
+function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal) {
+  const badge  = gameLabel ? `<span class="lab-global-game-badge">${escHtml(gameLabel)}</span>` : '';
+  const onclk  = isGlobal ? `labGlobalSelectPlayer(${player.id},${gamePk})` : `labSelectPlayer(${player.id})`;
+  return `<div class="lab-elite-card">
+    <label class="lab-player-check-wrap" onclick="event.stopPropagation()" style="margin-right:2px;padding-top:0">
+      <input type="checkbox" class="lab-player-check" id="chk_${player.id}" value="${player.id}" onchange="toggleComparePlayer(${player.id},this.checked)">
+    </label>
+    <div class="lab-elite-score">${score}</div>
+    <div class="lab-elite-info">
+      <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}${badge}</div>
+      <div class="lab-elite-reason">${escHtml(reasons.length ? reasons.join(' · ') : 'Multiple positive signals')}</div>
+    </div>
+    <button class="lab-elite-analyze-btn" onclick="${onclk}">Full Analysis →</button>
+  </div>`;
+}
+
+function _scanShowLoading(title, step1Label, step2Label) {
+  const titleEl = document.getElementById('labLoadingTitle');
+  if (titleEl) titleEl.textContent = title;
+  document.getElementById('labLoadingSteps').innerHTML =
+    `<div class="lab-loading-step active" id="scan_s1"><span class="ls-icon">⏳</span>${escHtml(step1Label)}</div>
+     <div class="lab-loading-step pending" id="scan_s2"><span class="ls-icon">○</span>${escHtml(step2Label)}</div>`;
+  _labShow('labScreenLoading');
+}
+
+function _scanRestoreLoading() {
+  const titleEl = document.getElementById('labLoadingTitle');
+  if (titleEl) titleEl.textContent = '⚙️ Running Analysis';
+}
+
+async function runGlobalEliteScan(onProgress) {
+  const allGames   = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const allEntries = allGames.flatMap(gd => (gd.players||[]).filter(p => p.id).map(p => ({ player: p, gd })));
+  const results    = [];
+
+  await Promise.allSettled(allEntries.map(async ({ player, gd }) => {
+    try {
+      const data = await fetchElitePlayerData(player, gd);
+      onProgress?.();
+      if (data.score >= 90) {
+        results.push({
+          player, score: data.score,
+          reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
+          gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
+          gamePk:    gd.gamePk,
+        });
+      }
+    } catch {}
   }));
 
   return results.sort((a, b) => b.score - a.score);
@@ -11360,9 +11431,33 @@ async function handleGlobalScan() {
   const btn = document.getElementById('labGlobalScanBtn');
   if (!btn || btn.disabled) return;
   btn.disabled = true;
-  btn.textContent = '⏳ Scanning all games…';
+
+  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const total    = allGames.reduce((s, gd) => s + (gd.players||[]).filter(p => p.id).length, 0);
+  if (!allGames.length || !total) { btn.disabled = false; return; }
+
+  _scanShowLoading(
+    '🔬 Scanning Elite Picks',
+    `Fetching full data for ${total} players across ${allGames.length} game${allGames.length !== 1 ? 's' : ''}…`,
+    'Finding 90+ elite matchups…'
+  );
+
   try {
-    const elites = await runGlobalEliteScan();
+    let done = 0;
+    const elites = await runGlobalEliteScan(() => {
+      done++;
+      const el = document.getElementById('scan_s1');
+      if (el) el.childNodes[1].textContent = `Analyzing players… ${done} of ${total} complete`;
+    });
+
+    _labStep('scan_s1', 'done');
+    _labStep('scan_s2', 'active');
+    await new Promise(r => setTimeout(r, 200));
+    _labStep('scan_s2', 'done');
+    await new Promise(r => setTimeout(r, 150));
+    _scanRestoreLoading();
+    _labShow('labScreenGame');
+
     const section = document.getElementById('labGlobalEliteSection');
     const cards   = document.getElementById('labGlobalEliteCards');
     if (!section || !cards) return;
@@ -11370,99 +11465,40 @@ async function handleGlobalScan() {
       cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitter reached 90+ across today\'s slate — check individual game analyses for the best available options.</div>';
     } else {
       cards.innerHTML = elites.map(({ player, score, reasons, gameLabel, gamePk }) =>
-        `<div class="lab-elite-card">
-          <label class="lab-player-check-wrap" onclick="event.stopPropagation()" style="margin-right:2px;padding-top:0">
-            <input type="checkbox" class="lab-player-check" id="chk_${player.id}" value="${player.id}" onchange="toggleComparePlayer(${player.id},this.checked)">
-          </label>
-          <div class="lab-elite-score">${score}</div>
-          <div class="lab-elite-info">
-            <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}<span class="lab-global-game-badge">${escHtml(gameLabel)}</span></div>
-            <div class="lab-elite-reason">${escHtml(reasons.length ? reasons.join(' · ') : 'Multiple positive signals')}</div>
-          </div>
-          <button class="lab-elite-analyze-btn" onclick="labGlobalSelectPlayer(${player.id},${gamePk})">Full Analysis →</button>
-        </div>`
+        _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, true)
       ).join('');
     }
     section.style.display = 'block';
     btn.textContent = `✅ ${elites.length} Elite Pick${elites.length !== 1 ? 's' : ''} Found`;
   } catch {
+    _scanRestoreLoading();
+    _labShow('labScreenGame');
     btn.disabled = false;
     btn.textContent = '🌐 Scan All Games for Elite Picks (90+ Score)';
   }
 }
 
-async function runLabEliteScan() {
+async function runLabEliteScan(onProgress) {
   const gamePk = _labState.gamePk;
   const gd = state.predictions[gamePk];
   if (!gd) return [];
   const allPlayers = (gd.players||[]).filter(p => p.id);
   if (!allPlayers.length) return [];
 
-  const venue = gd.venueName || '';
-  const pf = getParkFactor(venue);
-
-  // Fetch bullpen data for both teams (4 parallel fetches, cached)
-  const [awBEraRes, awBWhipRes, hmBEraRes, hmBWhipRes] = await Promise.allSettled([
-    gd.awayTeamId ? fetchBullpenEra(gd.awayTeamId)  : Promise.resolve(0),
-    gd.awayTeamId ? fetchBullpenWhip(gd.awayTeamId) : Promise.resolve({}),
-    gd.homeTeamId ? fetchBullpenEra(gd.homeTeamId)  : Promise.resolve(0),
-    gd.homeTeamId ? fetchBullpenWhip(gd.homeTeamId) : Promise.resolve({}),
-  ]);
-  const awBEra  = awBEraRes.status  === 'fulfilled' ? (awBEraRes.value  || 0)  : 0;
-  const awBWhip = awBWhipRes.status === 'fulfilled' ? (awBWhipRes.value || {}) : {};
-  const hmBEra  = hmBEraRes.status  === 'fulfilled' ? (hmBEraRes.value  || 0)  : 0;
-  const hmBWhip = hmBWhipRes.status === 'fulfilled' ? (hmBWhipRes.value || {}) : {};
-
   const results = [];
-  for (const player of allPlayers) {
-    // Away players bat against home pitcher/bullpen; home players bat against away pitcher/bullpen
-    const pitcher    = player.isAway ? gd.homePitcher : gd.awayPitcher;
-    const bullpenEra = player.isAway ? hmBEra  : awBEra;
-    const bullpenH9  = player.isAway ? (hmBWhip.h9||0)  : (awBWhip.h9||0);
-    const bullpenHBF = player.isAway ? (hmBWhip.hbf||0) : (awBWhip.hbf||0);
+  await Promise.allSettled(allPlayers.map(async player => {
+    try {
+      const data = await fetchElitePlayerData(player, gd);
+      onProgress?.();
+      if (data.score >= 90) {
+        results.push({
+          player, score: data.score,
+          reasons: _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
+        });
+      }
+    } catch {}
+  }));
 
-    // Approximate GHP from player.hitGames7 (already loaded, no API call needed)
-    // This is the main factor skipped vs individual analysis (worth ±7 pts)
-    const hg7 = player.hitGames7;
-    const ghpApprox = (hg7 != null && hg7 >= 0) ? Math.min(hg7 / 7, 1.0) : null;
-
-    // H2H and park history still skipped (require per-player API calls)
-    // Threshold is 87 (not 90) to account for those missing factors (~3 pt cushion)
-    const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, null, null, ghpApprox, bullpenH9, bullpenHBF);
-    if (score < 87) continue;
-
-    // Build human-readable reason tags (up to 3)
-    const reasons = [];
-    const era = pitcher?.seasonStats?.era || 0;
-    const pitLbl = pitcher ? (state.playerMap?.[pitcher.id] ? '' : '') : '';
-    const profile_ = pitcher ? buildPitcherProfile(pitcher) : null;
-    const lbl_ = profile_?.eraTier?.label || '';
-    if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
-      reasons.push(`Mixed matchup (${era.toFixed(2)} ERA / high K%)`);
-    } else if (era > 5.00) {
-      reasons.push(`High ERA starter (${era.toFixed(2)})`);
-    } else if (era > 4.20) {
-      reasons.push(`Below-avg starter (${era.toFixed(2)} ERA)`);
-    }
-    const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
-    const split = player[splitKey];
-    if (split && (split.atBats||0) >= 20) {
-      const diff = (split.avg||0) - (player.seasonStats?.avg||0);
-      if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher?.pitchHand||'?'}HP (${split.avg?.toFixed(3)||'—'})`);
-      else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher?.pitchHand||'?'}HP (+${Math.round(diff*1000)} pts)`);
-    }
-    if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
-    else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
-    if      (bullpenEra > 5.00) reasons.push(`Weak bullpen (${bullpenEra.toFixed(2)} ERA)`);
-    else if (bullpenEra > 4.50) reasons.push(`Vulnerable bullpen (${bullpenEra.toFixed(2)} ERA)`);
-    const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
-    if      (l10avg > 0.350) reasons.push(`On fire recently (${l10avg.toFixed(3)})`);
-    else if (l10avg > 0.300) reasons.push(`Hot recent form (${l10avg.toFixed(3)})`);
-    if (ghpApprox != null && ghpApprox >= 0.72) reasons.push(`Hits in ${hg7}/7 recent games`);
-    else if (ghpApprox != null && ghpApprox >= 0.57) reasons.push(`Consistent contact (${hg7}/7 games)`);
-
-    results.push({ player, score, reasons: reasons.slice(0, 3) });
-  }
   return results.sort((a, b) => b.score - a.score);
 }
 
@@ -11470,9 +11506,35 @@ async function handleLabScan() {
   const btn = document.getElementById('labScanBtn');
   if (!btn || btn.disabled) return;
   btn.disabled = true;
-  btn.textContent = '⏳ Scanning all hitters…';
+
+  const gamePk = _labState.gamePk;
+  const gd     = state.predictions[gamePk];
+  const total  = (gd?.players||[]).filter(p => p.id).length;
+  if (!gd || !total) { btn.disabled = false; return; }
+
+  const gameLabel = `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`;
+  _scanShowLoading(
+    '🔬 Scanning Elite Picks',
+    `Fetching full data for ${total} players — ${gameLabel}…`,
+    'Finding 90+ elite matchups…'
+  );
+
   try {
-    const elites = await runLabEliteScan();
+    let done = 0;
+    const elites = await runLabEliteScan(() => {
+      done++;
+      const el = document.getElementById('scan_s1');
+      if (el) el.childNodes[1].textContent = `Analyzing players… ${done} of ${total} complete`;
+    });
+
+    _labStep('scan_s1', 'done');
+    _labStep('scan_s2', 'active');
+    await new Promise(r => setTimeout(r, 200));
+    _labStep('scan_s2', 'done');
+    await new Promise(r => setTimeout(r, 150));
+    _scanRestoreLoading();
+    _labShow('labScreenPlayer');
+
     const section = document.getElementById('labEliteSection');
     const cards   = document.getElementById('labEliteCards');
     if (!section || !cards) return;
@@ -11480,19 +11542,14 @@ async function handleLabScan() {
       cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitter reached 90+ for this game — check individual analyses for the best available options.</div>';
     } else {
       cards.innerHTML = elites.map(({ player, score, reasons }) =>
-        `<div class="lab-elite-card">
-          <div class="lab-elite-score">${score}</div>
-          <div class="lab-elite-info">
-            <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}</div>
-            <div class="lab-elite-reason">${escHtml(reasons.length ? reasons.join(' · ') : 'Multiple positive signals')}</div>
-          </div>
-          <button class="lab-elite-analyze-btn" onclick="labSelectPlayer(${player.id})">Full Analysis →</button>
-        </div>`
+        _eliteScanCardHTML(player, score, reasons, null, gamePk, false)
       ).join('');
     }
     section.style.display = 'block';
     btn.textContent = `✅ ${elites.length} Elite Pick${elites.length !== 1 ? 's' : ''} Found`;
   } catch {
+    _scanRestoreLoading();
+    _labShow('labScreenPlayer');
     btn.disabled = false;
     btn.textContent = '🔬 Scan for Elite Picks (90+ Score)';
   }
