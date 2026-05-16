@@ -514,6 +514,7 @@ main { padding: 28px 0 60px; }
 .lab-global-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
 .lab-global-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#a78bfa; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #7c3aed33; margin-bottom:10px; margin-top:14px; }
 .lab-global-game-badge { display:inline-block; font-size:10px; color:#c4b5fd; font-weight:600; background:#2e1065; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
+#labGlobalEliteCards, #labEliteCards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-top:4px; }
 .lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
 .lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-compare-table th:first-child  { text-align:right; width:40%; }
@@ -2481,6 +2482,21 @@ main { padding: 28px 0 60px; }
           <span class="lab-back-crumb" id="labCompareCrumb"></span>
         </div>
         <div id="labCompareContent"></div>
+        <div id="labCompareShareBar" style="display:none;padding:4px 0 20px;text-align:right;position:relative">
+          <div class="pa-share-menu-wrap">
+            <button class="pa-share-btn" onclick="_labToggleCompareShareMenu(event)" style="font-size:12px;padding:7px 16px">↗ Share Results</button>
+            <div class="pa-share-menu" id="labCompareShareMenu" style="display:none;bottom:calc(100% + 8px);top:auto">
+              <div class="pa-share-menu-item" onclick="_labCopyCompareSummary()">
+                <span class="pa-smi-icon">📋</span>
+                <div><div class="pa-smi-label">Copy Summary</div><div class="pa-smi-sub">Plain text to clipboard</div></div>
+              </div>
+              <div class="pa-share-menu-item" onclick="_paScreenshot('labCompare')">
+                <span class="pa-smi-icon">📸</span>
+                <div><div class="pa-smi-label">Screenshot</div><div class="pa-smi-sub">Capture comparison as PNG</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -9178,11 +9194,53 @@ function _labToggleShareMenu(e) {
   if (!menu) return;
   menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
 }
+function _labToggleCompareShareMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('labCompareShareMenu');
+  if (!menu) return;
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+async function _labCopyCompareSummary() {
+  const menu = document.getElementById('labCompareShareMenu');
+  if (menu) menu.style.display = 'none';
+  if (!_lastCompareData) { _paToast('No comparison data.'); return; }
+  const pA = _lastCompareData.dataA?.player, pB = _lastCompareData.dataB?.player;
+  if (!pA || !pB) { _paToast('No comparison data.'); return; }
+  const d = _lastCompareData;
+  const fmt3 = v => v != null && v > 0 ? v.toFixed(3).replace(/^0/,'') : '—';
+  const fmtE = v => v != null && v > 0 ? v.toFixed(2) : '—';
+  const lines = [
+    `⚾ Diamond Edge — Player Comparison`,
+    `${pA.name} vs ${pB.name}`,
+    ``,
+    `Matchup Score: ${d.dataA.matchupScore ?? '—'} vs ${d.dataB.matchupScore ?? '—'}`,
+    `AVG: ${fmt3(d.dataA.avg)} vs ${fmt3(d.dataB.avg)}`,
+    `OBP: ${fmt3(d.dataA.obp)} vs ${fmt3(d.dataB.obp)}`,
+    `SLG: ${fmt3(d.dataA.slg)} vs ${fmt3(d.dataB.slg)}`,
+    `HR: ${d.dataA.hr ?? '—'} vs ${d.dataB.hr ?? '—'}`,
+    `RBI: ${d.dataA.rbi ?? '—'} vs ${d.dataB.rbi ?? '—'}`,
+  ];
+  const text = lines.join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    _paToast('Comparison copied to clipboard.');
+  } catch {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      _paToast('Comparison copied to clipboard.');
+    } catch { _paToast('Copy failed — try again.'); }
+  }
+}
 document.addEventListener('click', () => {
   const m1 = document.getElementById('paShareMenu');
   if (m1 && m1.style.display !== 'none') m1.style.display = 'none';
   const m2 = document.getElementById('labShareMenu');
   if (m2 && m2.style.display !== 'none') m2.style.display = 'none';
+  const m3 = document.getElementById('labCompareShareMenu');
+  if (m3 && m3.style.display !== 'none') m3.style.display = 'none';
 });
 
 // ── Share: toast helper ────────────────────────────────────────────────────
@@ -9823,6 +9881,8 @@ async function _paScreenshot(source) {
 
   const el = source === 'lab'
     ? document.getElementById('labScreenAnalysis')
+    : source === 'labCompare'
+    ? document.getElementById('labScreenCompare')
     : document.getElementById('paContent');
   if (!el) { _paToast('Nothing to capture.'); return; }
 
@@ -10620,11 +10680,16 @@ document.addEventListener('click', e => {
 function labGoRoster() {
   const _lBar = document.getElementById('labShareBar');
   if (_lBar) _lBar.style.display = 'none';
-  if (_labState.gamePk) {
-    labSelectGame(_labState.gamePk);
+  const _csBar = document.getElementById('labCompareShareBar');
+  if (_csBar) _csBar.style.display = 'none';
+  if (_labState.fromGlobalScan) {
+    _labState.fromGlobalScan = false;
+    _labShow('labScreenGlobalScan');
   } else if (_labState.compareReturnScreen === 'labScreenGlobalScan') {
     clearCompareSelection();
     _labShow('labScreenGlobalScan');
+  } else if (_labState.gamePk) {
+    labSelectGame(_labState.gamePk);
   } else {
     clearCompareSelection();
     _labShow('labScreenGame');
@@ -10825,9 +10890,11 @@ async function runLabCompare() {
   _lastCompareData = { dataA, dataB };
   document.getElementById('labCompareCrumb').textContent = `${pA.name} vs ${pB.name}`;
   document.getElementById('labCompareContent').innerHTML = buildCompareHTML(dataA, dataB);
-  _labState.compareReturnScreen = _labState.gamePk ? 'labScreenPlayer' : 'labScreenGlobalScan';
+  _labState.compareReturnScreen = _labState.fromGlobalScan ? 'labScreenGlobalScan' : (_labState.gamePk ? 'labScreenPlayer' : 'labScreenGame');
   const _cBackBtn = document.querySelector('#labScreenCompare .lab-back-btn');
-  if (_cBackBtn) _cBackBtn.textContent = _labState.gamePk ? '← Roster' : '← Elite Picks';
+  if (_cBackBtn) _cBackBtn.textContent = _labState.fromGlobalScan || !_labState.gamePk ? '← Elite Picks' : '← Roster';
+  const _csBar = document.getElementById('labCompareShareBar');
+  if (_csBar) _csBar.style.display = 'block';
   _labShow('labScreenCompare');
 }
 
@@ -11330,6 +11397,7 @@ function _labStep(id, st) {
 
 function labGlobalSelectPlayer(playerId, gamePk) {
   _labState.gamePk = gamePk;
+  _labState.fromGlobalScan = true;
   labSelectPlayer(playerId);
 }
 
@@ -11424,19 +11492,39 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp) {
   return reasons.slice(0, 3);
 }
 
-function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal) {
-  const badge  = gameLabel ? `<span class="lab-global-game-badge">${escHtml(gameLabel)}</span>` : '';
-  const onclk  = isGlobal ? `labGlobalSelectPlayer(${player.id},${gamePk})` : `labSelectPlayer(${player.id})`;
-  return `<div class="lab-elite-card">
-    <label class="lab-player-check-wrap" onclick="event.stopPropagation()" style="margin-right:2px;padding-top:0">
+function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal, pitcher, pf) {
+  const onclk    = isGlobal ? `labGlobalSelectPlayer(${player.id},${gamePk})` : `labSelectPlayer(${player.id})`;
+  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const gameBadge = gameLabel ? `<span class="lab-global-game-badge">${escHtml(gameLabel)}</span>` : '';
+
+  const pills = [];
+  if (pitcher?.era != null) pills.push(`<span class="bts-score-pill bts-pill-era">ERA ${(+pitcher.era).toFixed(2)}</span>`);
+  if (pf && pf > 1.04) pills.push(`<span class="bts-score-pill bts-pill-park">PF +${((pf-1)*100).toFixed(0)}%</span>`);
+  else if (pf && pf < 0.96) pills.push(`<span class="bts-score-pill bts-pill-park">PF ${((pf-1)*100).toFixed(0)}%</span>`);
+
+  const pitcherTag = pitcher?.name ? `vs ${escHtml(pitcher.name)}` : '';
+  const reasonText = reasons.length ? reasons.join(' · ') : 'Multiple positive signals';
+
+  return `<div class="bts-card" style="cursor:default">
+    <label class="lab-player-check-wrap" onclick="event.stopPropagation()" style="position:absolute;top:12px;left:12px;padding:0;margin:0;z-index:1">
       <input type="checkbox" class="lab-player-check" id="chk_${player.id}" value="${player.id}" onchange="toggleComparePlayer(${player.id},this.checked)">
     </label>
-    <div class="lab-elite-score">${score}</div>
-    <div class="lab-elite-info">
-      <div class="lab-elite-name">${escHtml(player.name)} · ${escHtml(player.teamAbbr||'')}${badge}</div>
-      <div class="lab-elite-reason">${escHtml(reasons.length ? reasons.join(' · ') : 'Multiple positive signals')}</div>
+    <div class="bts-card-rank" style="color:#a78bfa">${score}</div>
+    <div class="bts-card-header" style="padding-left:22px;padding-right:48px">
+      <img class="bts-card-photo" src="${photoUrl}" alt="${escHtml(player.name)}">
+      <div>
+        <div class="bts-card-name">${escHtml(player.name)}</div>
+        <div class="bts-card-meta">${escHtml(player.teamAbbr||'')}${gameBadge}</div>
+      </div>
     </div>
-    <button class="lab-elite-analyze-btn" onclick="${onclk}">Full Analysis →</button>
+    <div class="bts-score-bar-wrap">
+      <div class="bts-score-label"><span>Matchup Score</span><span>${score}/100</span></div>
+      <div class="bts-score-bar-track"><div class="bts-score-bar-fill" style="width:${score}%"></div></div>
+    </div>
+    ${pills.length ? `<div class="bts-card-scores" style="margin:8px 0 4px">${pills.join('')}</div>` : ''}
+    ${pitcherTag ? `<div class="bts-matchup-tag">${pitcherTag}</div>` : ''}
+    <div class="bts-card-reasons" style="margin-top:8px">${escHtml(reasonText)}</div>
+    <button class="lab-elite-analyze-btn" style="width:100%;margin-top:12px;text-align:center" onclick="${onclk}">Full Analysis →</button>
   </div>`;
 }
 
@@ -11466,6 +11554,8 @@ async function runGlobalEliteScan(onProgress) {
       if (data.score >= 90) {
         results.push({
           player, score: data.score,
+          pitcher: data.pitcher,
+          pf: data.pf,
           reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
           gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
           gamePk:    gd.gamePk,
@@ -11513,8 +11603,8 @@ async function handleGlobalScan() {
     if (elites.length === 0) {
       cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitter reached 90+ across today\'s slate — check individual game analyses for the best available options.</div>';
     } else {
-      cards.innerHTML = elites.map(({ player, score, reasons, gameLabel, gamePk }) =>
-        _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, true)
+      cards.innerHTML = elites.map(({ player, score, reasons, gameLabel, gamePk, pitcher, pf }) =>
+        _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, true, pitcher, pf)
       ).join('');
     }
     _labShow('labScreenGlobalScan');
@@ -11858,23 +11948,55 @@ async function runLabAnalysis() {
   document.getElementById('labAnalysisCrumb').innerHTML =
     `<strong>${escHtml(player.name)}</strong> vs <strong>${pitcher?.fullName?escHtml(pitcher.fullName):`${pitcherHand}HP`}</strong>`;
 
+  // ── Live indicator for hitter card ───────────────────────────────────────
+  const _labLd = (state.allGamesLiveData || {})[_labState.gamePk];
+  const _labLs = _labLd?.statsMap?.[player.id];
+  const _labAB = _labLs?.atBats || 0;
+  let _labLiveHTML = '';
+  if (_labLs && (_labAB > 0 || (_labLs.hits || 0) > 0)) {
+    const _pip = _labLd.isLive
+      ? `<span class="bb-live-pip">● LIVE</span>`
+      : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+    const _hitBadge = (_labLs.hits || 0) > 0
+      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_labLs.hits}/${_labAB})</span>`
+      : _labAB > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_labAB})</span>` : '';
+    _labLiveHTML = `<div class="bb-achieve-row" style="margin:8px 0 2px">${_pip}${_hitBadge}</div>`;
+  }
+  // ── Stat pills for hitter card ────────────────────────────────────────────
+  const _labPills = [];
+  if (seasAvg > 0) _labPills.push(`<span class="bts-score-pill bts-pill-hit">AVG ${fmt3(seasAvg)}${(l10?.avg||0)>0?' · L10 '+fmt3(l10.avg):''}</span>`);
+  if (era > 0) _labPills.push(`<span class="bts-score-pill bts-pill-era">vs ERA ${era.toFixed(2)}</span>`);
+  if ((pf.overall||1) >= 1.03) _labPills.push(`<span class="bts-score-pill bts-pill-park">Park ${(pf.overall).toFixed(2)}× ↑</span>`);
+  else if ((pf.overall||1) <= 0.97) _labPills.push(`<span class="bts-score-pill bts-pill-park" style="color:#94a3b8;border-color:#94a3b830">Park ${(pf.overall).toFixed(2)}× ↓</span>`);
+  if ((player.hitStreak||0) >= 1) _labPills.push(`<span class="bts-score-pill bts-pill-streak">${player.hitStreak}-game hit streak 🔥</span>`);
+  if (ghp != null && ghp >= 0.70) _labPills.push(`<span class="bts-score-pill bts-pill-hit">GHP ${Math.round(ghp*100)}%</span>`);
+  const _labPillsHTML = _labPills.length ? `<div class="bts-card-scores" style="flex-wrap:wrap;margin:10px 0 4px">${_labPills.join('')}</div>` : '';
+  // Lineup badge (shown as BTS-style rank)
+  const _labOrderLabel = player.orderPos === 1 ? '🥇' : player.orderPos === 2 ? '🥈' : player.orderPos === 3 ? '🥉' : player.orderPos ? `#${player.orderPos}` : '';
+
   // ── Card 1: Hitter Deep Dive ──────────────────────────────────────────────
   document.getElementById('labHitterCard').innerHTML = `
   <div class="lab-deep-card">
-    <div class="lab-deep-header">
+    <div class="lab-deep-header" style="display:flex;align-items:center;justify-content:space-between">
       <span class="lab-deep-title">🎯 Hitter Profile — ${escHtml(player.name)}</span>
+      ${score > 0 ? `<span style="font-family:'Bebas Neue',cursive;font-size:26px;color:${score>=90?'#22c55e':score>=75?'#a78bfa':score>=60?'#f59e0b':'#94a3b8'};line-height:1" title="Matchup Score">${score}</span>` : ''}
     </div>
     <div class="lab-deep-body">
       <div class="lab-hero-row">
         <img class="lab-hero-photo-lg" src="${photoUrl}" onerror="this.style.display='none'" alt="">
         <div style="flex:1">
-          <div class="lab-hero-name">${escHtml(player.name)}</div>
+          <div class="lab-hero-name" style="display:flex;align-items:center;gap:8px">
+            ${escHtml(player.name)}
+            ${_labOrderLabel ? `<span style="font-family:'Bebas Neue',cursive;font-size:20px;color:#7c3aed;line-height:1" title="Batting order">${_labOrderLabel}</span>` : ''}
+          </div>
           <div class="lab-hero-meta">
             ${slug?`<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:14px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`:''}
-            ${escHtml((ti.city||'')+(ti.nick?' '+ti.nick:''))} · ${escHtml(player.position||'')} · Bats ${escHtml(player.batSide||'?')} · ${player.orderPos?'#'+player.orderPos+' in lineup':'Order TBD'}
+            ${escHtml((ti.city||'')+(ti.nick?' '+ti.nick:''))} · ${escHtml(player.position||'')} · Bats ${escHtml(player.batSide||'?')}
           </div>
         </div>
       </div>
+      ${_labLiveHTML}
+      ${_labPillsHTML}
       <!-- Season stats grid -->
       <div class="lab-section-label">2026 Season Stats</div>
       <div class="lab-stat-grid">
@@ -12151,6 +12273,8 @@ async function runLabAnalysis() {
   if (_lBar) _lBar.style.display = 'block';
   const _lNI = document.getElementById('labNativeShareItem');
   if (_lNI) _lNI.style.display = navigator.share ? '' : 'none';
+  const _rBtn = document.querySelector('#labScreenAnalysis .lab-back-btn:first-child');
+  if (_rBtn) _rBtn.textContent = _labState.fromGlobalScan ? '← Elite Picks' : '← Roster';
 
   _labShow('labScreenAnalysis');
 }
