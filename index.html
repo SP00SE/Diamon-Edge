@@ -9209,16 +9209,30 @@ async function _labCopyCompareSummary() {
   const d = _lastCompareData;
   const fmt3 = v => v != null && v > 0 ? v.toFixed(3).replace(/^0/,'') : '—';
   const fmtE = v => v != null && v > 0 ? v.toFixed(2) : '—';
+  const pct  = v => v != null ? Math.round(v * 100) + '%' : '—';
+  const _cPitIPa = d.dataA.pitcher?.seasonStats?.inningsPitched||0;
+  const _cPitIPb = d.dataB.pitcher?.seasonStats?.inningsPitched||0;
+  const _cPitKa  = d.dataA.pitcher?.seasonStats?.strikeOuts||0;
+  const _cPitKb  = d.dataB.pitcher?.seasonStats?.strikeOuts||0;
+  const cPitKpctA = _cPitIPa > 0 ? Math.round(_cPitKa / (_cPitIPa * 4.3) * 100) + '%' : '—';
+  const cPitKpctB = _cPitIPb > 0 ? Math.round(_cPitKb / (_cPitIPb * 4.3) * 100) + '%' : '—';
   const lines = [
     `⚾ Diamond Edge — Player Comparison`,
     `${pA.name} vs ${pB.name}`,
     ``,
-    `Matchup Score: ${d.dataA.matchupScore ?? '—'} vs ${d.dataB.matchupScore ?? '—'}`,
-    `AVG: ${fmt3(d.dataA.avg)} vs ${fmt3(d.dataB.avg)}`,
-    `OBP: ${fmt3(d.dataA.obp)} vs ${fmt3(d.dataB.obp)}`,
-    `SLG: ${fmt3(d.dataA.slg)} vs ${fmt3(d.dataB.slg)}`,
-    `HR: ${d.dataA.hr ?? '—'} vs ${d.dataB.hr ?? '—'}`,
-    `RBI: ${d.dataA.rbi ?? '—'} vs ${d.dataB.rbi ?? '—'}`,
+    `Matchup Score:  ${d.dataA.matchupScore ?? '—'} vs ${d.dataB.matchupScore ?? '—'}`,
+    `AVG:            ${fmt3(d.dataA.avg)} vs ${fmt3(d.dataB.avg)}`,
+    `OBP:            ${fmt3(d.dataA.obp)} vs ${fmt3(d.dataB.obp)}`,
+    `SLG:            ${fmt3(d.dataA.slg)} vs ${fmt3(d.dataB.slg)}`,
+    `GHP (season):   ${d.dataA.ghp!=null?pct(d.dataA.ghp):'—'} vs ${d.dataB.ghp!=null?pct(d.dataB.ghp):'—'}`,
+    `GHP (L7):       ${pA.hitGames7!=null?pct(pA.hitGames7/7):'—'} vs ${pB.hitGames7!=null?pct(pB.hitGames7/7):'—'}`,
+    `HR:             ${d.dataA.hr ?? '—'} vs ${d.dataB.hr ?? '—'}`,
+    `RBI:            ${d.dataA.rbi ?? '—'} vs ${d.dataB.rbi ?? '—'}`,
+    ``,
+    `Opp Starter ERA: ${fmtE(d.dataA.pitcher?.seasonStats?.era||0)} vs ${fmtE(d.dataB.pitcher?.seasonStats?.era||0)}`,
+    `Opp Starter K%:  ${cPitKpctA} vs ${cPitKpctB}`,
+    `Opp Bullpen ERA: ${fmtE(d.dataA.bullpenEra||0)} vs ${fmtE(d.dataB.bullpenEra||0)}`,
+    `— Diamond Edge MLB Analysis  🔬`,
   ];
   const text = lines.join('\n');
   try {
@@ -9386,7 +9400,7 @@ function buildPlayerAnalysisShareText() {
     : isLab
       ? (d.matchupScore >= 70 ? `${d.pickEmoji} Strong Matchup Lean`
         : d.matchupScore >= 55 ? `${d.pickEmoji} Moderate Matchup Lean`
-        : d.matchupScore >= 40 ? `${d.pickEmoji} Weak Matchup`
+        : d.matchupScore >= 40 ? `${d.pickEmoji} Neutral Matchup`
         : `${d.pickEmoji} Avoid`)
       : `${d.pickEmoji} ${d.pickLabel}`;
 
@@ -9411,7 +9425,8 @@ function buildPlayerAnalysisShareText() {
   if (d.ssBabip != null || d.ssBacon != null) batLines.push(`  • BABIP ${f3(d.ssBabip)} | BACON ${f3(d.ssBacon)}`);
   const recentAvg = d.l10Avg ?? d.l7Avg;
   if (recentAvg != null) batLines.push(`  • Recent AVG (L${d.l10Avg != null ? '10' : '7'}): ${f3(recentAvg)}`);
-  if (d.ghp7 != null) batLines.push(`  • GHP (last 7): ${pct(d.ghp7)}`);
+  if (d.ghpSeason != null) batLines.push(`  • GHP (season): ${pct(d.ghpSeason)}`);
+  if (d.ghpL10 != null)    batLines.push(`  • GHP (last 10): ${pct(d.ghpL10)}`);
   if ((d.hitStreak || 0) >= 2) batLines.push(`  • Hit streak: ${d.hitStreak} games`);
   if (batLines.length > 1) { lines.push(...batLines); lines.push(''); }
 
@@ -9441,10 +9456,11 @@ function buildPlayerAnalysisShareText() {
   // ── Pitcher matchup ───────────────────────────────────────────────────────
   const pitLines = ['Pitcher Matchup:'];
   if (d.pitcherName && d.pitcherName !== '—') pitLines.push(`  • Opposing Starter: ${d.pitcherName} (${d.pitcherHand}HP)`);
+  if (d.pitcherProfileLabel)                  pitLines.push(`  • Profile: ${d.pitcherProfileLabel}`);
   if (d.pEra != null)   pitLines.push(`  • ERA: ${d.pEra.toFixed(2)}`);
+  if (d.pKpct > 0)      pitLines.push(`  • K%: ${(d.pKpct * 100).toFixed(1)}%`);
   if (d.pH9 != null)    pitLines.push(`  • H/9: ${d.pH9.toFixed(1)}`);
   if (d.pHBF > 0)       pitLines.push(`  • H/BF%: ${(d.pHBF * 100).toFixed(1)}%`);
-  if (d.pKpct > 0)      pitLines.push(`  • K%: ${(d.pKpct * 100).toFixed(1)}%`);
   if (d.pBabip != null) pitLines.push(`  • BABIP Allowed: ${f3(d.pBabip)}`);
   if (d.pBacon != null) pitLines.push(`  • BACON Allowed: ${f3(d.pBacon)}`);
   if (pitLines.length > 1) { lines.push(...pitLines); lines.push(''); }
@@ -11152,13 +11168,19 @@ async function copyLabCompareText() {
   const splAbA  = phA ? ((phA==='L'?pA.vsLHP?.atBats:pA.vsRHP?.atBats)||0) : 0;
   const splAvgB = phB ? ((phB==='L'?pB.vsLHP?.avg:pB.vsRHP?.avg) ?? null) : null;
   const splAbB  = phB ? ((phB==='L'?pB.vsLHP?.atBats:pB.vsRHP?.atBats)||0) : 0;
-  const ghpA = pA.hitGames7 != null ? Math.round(pA.hitGames7/7*100)+'%' : '—';
-  const ghpB = pB.hitGames7 != null ? Math.round(pB.hitGames7/7*100)+'%' : '—';
+  const ghpA    = pA.hitGames7 != null ? Math.round(pA.hitGames7/7*100)+'%' : '—';
+  const ghpB    = pB.hitGames7 != null ? Math.round(pB.hitGames7/7*100)+'%' : '—';
+  const ghpSeasonA = dataA.ghp != null ? Math.round(dataA.ghp*100)+'%' : '—';
+  const ghpSeasonB = dataB.ghp != null ? Math.round(dataB.ghp*100)+'%' : '—';
   const penH9A  = pA.isAway ? (dataA.gd?.homeBullpenH9||0)  : (dataA.gd?.awayBullpenH9||0);
   const penH9B  = pB.isAway ? (dataB.gd?.homeBullpenH9||0)  : (dataB.gd?.awayBullpenH9||0);
   const penHBFA = pA.isAway ? (dataA.gd?.homeBullpenHBF||0) : (dataA.gd?.awayBullpenHBF||0);
   const penHBFB = pB.isAway ? (dataB.gd?.homeBullpenHBF||0) : (dataB.gd?.awayBullpenHBF||0);
   const eraA = dataA.pitcher?.seasonStats?.era||0, eraB = dataB.pitcher?.seasonStats?.era||0;
+  const _pitIPa = dataA.pitcher?.seasonStats?.inningsPitched||0, _pitIPb = dataB.pitcher?.seasonStats?.inningsPitched||0;
+  const _pitKa  = dataA.pitcher?.seasonStats?.strikeOuts||0,    _pitKb  = dataB.pitcher?.seasonStats?.strikeOuts||0;
+  const pitKpctA = _pitIPa > 0 ? _pitKa / (_pitIPa * 4.3) : 0;
+  const pitKpctB = _pitIPb > 0 ? _pitKb / (_pitIPb * 4.3) : 0;
   const h2hDispA = dataA.h2h?.ab>=1 ? `${fmt3(dataA.h2h.avg)} (${dataA.h2h.ab}AB)` : '—';
   const h2hDispB = dataB.h2h?.ab>=1 ? `${fmt3(dataB.h2h.avg)} (${dataB.h2h.ab}AB)` : '—';
   const pkDispA  = dataA.parkStats?.ab>=1 ? `${fmt3(dataA.parkStats.avg)} (${dataA.parkStats.games}G)` : '—';
@@ -11179,11 +11201,13 @@ async function copyLabCompareText() {
     line(fmt3(pA.seasonStats?.slg),     'SLG',                fmt3(pB.seasonStats?.slg),     gt(pA.seasonStats?.slg,pB.seasonStats?.slg)),
     line(fmt3(pA.seasonStats?.babip),   'BABIP',              fmt3(pB.seasonStats?.babip),   gt(pA.seasonStats?.babip,pB.seasonStats?.babip)),
     line(fmt3(pA.seasonStats?.bacon),   'BACON',              fmt3(pB.seasonStats?.bacon),   gt(pA.seasonStats?.bacon,pB.seasonStats?.bacon)),
-    line(fmt3(pA.last7Stats?.avg),      'L7 AVG',             fmt3(pB.last7Stats?.avg),      gt(pA.last7Stats?.avg,pB.last7Stats?.avg)),
+    line(fmt3(pA.last10Stats?.avg||pA.last7Stats?.avg), `L${pA.last10Stats?.avg!=null?'10':'7'} AVG`, fmt3(pB.last10Stats?.avg||pB.last7Stats?.avg), gt(pA.last10Stats?.avg||pA.last7Stats?.avg,pB.last10Stats?.avg||pB.last7Stats?.avg)),
+    line(ghpSeasonA,                    'GHP (season)',        ghpSeasonB,                    gt(dataA.ghp,dataB.ghp)),
     line(ghpA,                          'GHP (L7)',            ghpB,                          gt(pA.hitGames7,pB.hitGames7)),
     line((pA.hitStreak||0)>0?`${pA.hitStreak}G`:'—', 'Hit Streak', (pB.hitStreak||0)>0?`${pB.hitStreak}G`:'—', gt(pA.hitStreak||0,pB.hitStreak||0)),
     line(splAvgA!=null?`${fmt3(splAvgA)} (${splAbA}AB vs ${phA}HP)`:'—', 'Split vs Pitcher', splAvgB!=null?`${fmt3(splAvgB)} (${splAbB}AB vs ${phB}HP)`:'—', splAbA>=20&&splAbB>=20?gt(splAvgA,splAvgB):null),
     line(fmtE(eraA||null),             'Opp ERA',             fmtE(eraB||null),              gt(eraA,eraB)),
+    line(pitKpctA>0?Math.round(pitKpctA*100)+'%':'—', 'Opp Starter K%', pitKpctB>0?Math.round(pitKpctB*100)+'%':'—', lt(pitKpctA||null,pitKpctB||null)),
     line(h2hDispA,                      'H2H vs Pitcher',     h2hDispB,                      dataA.h2h?.ab>=5&&dataB.h2h?.ab>=5?gt(dataA.h2h.avg,dataB.h2h.avg):null),
     line(pkDispA,                       'Park AVG',           pkDispB,                       dataA.parkStats?.ab>=5&&dataB.parkStats?.ab>=5?gt(dataA.parkStats.avg,dataB.parkStats.avg):null),
     line((dataA.pf?.overall||1).toFixed(2)+'×', 'Park Factor', (dataB.pf?.overall||1).toFixed(2)+'×', gt(dataA.pf?.overall||1,dataB.pf?.overall||1)),
@@ -12275,7 +12299,7 @@ async function runLabAnalysis() {
   const _lKpct= _lBF > 0 ? _lK / _lBF : 0;
   const _lPCls= score>=70?'pa-verdict-good':score>=55?'pa-verdict-mixed':score>=40?'pa-verdict-risky':'pa-verdict-poor';
   const _lEmoj= score>=70?'✅':score>=55?'🟡':score>=40?'⚠️':'❌';
-  const _lLbl = score>=70?'Strong Matchup Lean':score>=55?'Moderate Matchup Lean':score>=40?'Weak Matchup':'Avoid';
+  const _lLbl = score>=70?'Strong Matchup Lean':score>=55?'Moderate Matchup Lean':score>=40?'Neutral Matchup':'Avoid';
   const _lAct = score>=70?'Strong matchup lean — good hit candidate today.'
     : score>=55?'Playable — moderate lean, verify lineup before committing.'
     : score>=40?'Caution — notable risks in this matchup.'
@@ -12333,7 +12357,10 @@ async function runLabAnalysis() {
     ssBabip: player.seasonStats?.babip ?? null,
     ssBacon: player.seasonStats?.bacon ?? null,
     l7Avg: player.last7Stats?.avg ?? null,
-    ghp7: ghp,
+    l10Avg: player.last10Stats?.avg ?? null,
+    ghpSeason: ghp ?? null,
+    ghpL10: ghpL10 ?? null,
+    pitcherProfileLabel: profile?.eraTier?.label || null,
     splitAvg: _lSplitAv || null,
     splitAB: _lSplitAB || 0,
     splitDiff: _lDiff || 0,
