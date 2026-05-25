@@ -10629,7 +10629,7 @@ function labSelectGame(gamePk) {
           <span class="lps-cell"><span class="lps-label">SLG</span><span class="lps-val">${slg}</span></span>
           <span class="lps-cell"><span class="lps-label">HR</span><span class="lps-val">${hr}</span></span>
           <span class="lps-cell"><span class="lps-label">H</span><span class="lps-val">${hits}</span></span>
-          <span class="lps-cell"><span class="lps-label">Matchup</span><span class="lps-val" style="color:${msCol}">${ms}</span></span>
+          <span class="lps-cell"><span class="lps-label">Matchup</span><span class="lps-val" id="ms_${p.id}" style="color:${msCol}">${ms}</span></span>
         </div>
       </div>
     </div>`;
@@ -10654,6 +10654,18 @@ function labSelectGame(gamePk) {
       ${colHeader(hmTi, hmSlug, 'HOME')}
       ${homePlayers.length ? homePlayers.map(playerCard).join('') : '<div style="color:var(--text-muted);font-size:12px;padding:12px">No lineup posted</div>'}
     </div>`;
+
+  // Background: update each player's matchup score with full fetched data so it matches the full analysis
+  const _rosterAll = [...awayPlayers, ...homePlayers];
+  _rosterAll.forEach(async p => {
+    try {
+      const data  = await fetchElitePlayerData(p, gd);
+      const _msEl = document.getElementById(`ms_${p.id}`);
+      if (!_msEl) return;
+      _msEl.textContent = data.score;
+      _msEl.style.color = data.score >= 80 ? '#22c55e' : data.score >= 65 ? '#f59e0b' : data.score >= 45 ? '#94a3b8' : '#ef4444';
+    } catch {}
+  });
 
   // Reset elite scan state on game (re-)selection
   const _scanBtn = document.getElementById('labScanBtn');
