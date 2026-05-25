@@ -9294,13 +9294,14 @@ function generateSmartMatchupSummary(ctx) {
   if (p1) {
     parts.push(`This matchup carries conflicting pitcher signals — the ERA (${f2s(pEra)}) looks hittable, but a ${pcs(pKpct)} K rate means bat-to-ball contact won't come as freely as the ERA number alone suggests.`);
   } else if (matchupScore >= 70 && fv(pEra) && pEra >= 5.0) {
-    parts.push(`The ${matchupScore}/100 rating reflects a genuine hitter edge — a starter ERA of ${f2s(pEra)} creates real opportunities for any disciplined hitter making contact.`);
+    const _h9Part = fv(pH9) && pH9 >= 8.0 ? ` and a hit-prone H/9 of ${pH9.toFixed(1)}` : '';
+    parts.push(`The ${matchupScore}/100 rating reflects a genuine hitter advantage — elevated ERA (${f2s(pEra)})${_h9Part} points to real contact opportunity based on multiple profile indicators.`);
   } else if (matchupScore >= 70 && fv(pH9) && pH9 >= 8.5) {
     parts.push(`The ${matchupScore}/100 rating is built on contact opportunity — the starter's H/9 of ${pH9.toFixed(1)} confirms a pattern of allowing hits at an above-average rate.`);
   } else if (matchupScore >= 70 && splitAB >= 20 && splitDiff > 0.030) {
     parts.push(`The ${matchupScore}/100 rating is anchored by a confirmed platoon edge — ${f3s(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB is meaningful data, not a small-sample projection.`);
   } else if (matchupScore >= 55 && fv(pEra) && pEra >= 4.50) {
-    parts.push(`The ${matchupScore}/100 score identifies the starter's ERA (${f2s(pEra)}) as the primary edge — real, but not every factor aligns cleanly enough for a strong lean.`);
+    parts.push(`The ${matchupScore}/100 score reflects some hitter-edge indicators — the starter's contact profile (ERA ${f2s(pEra)}) is among them, though not every factor points the same direction.`);
   } else if (matchupScore >= 55) {
     parts.push(`The ${matchupScore}/100 score reflects a modest overall edge with no dominant driver — conditions are playable but not ideal.`);
   } else {
@@ -9315,14 +9316,14 @@ function generateSmartMatchupSummary(ctx) {
   if (fv(pEra) && pEra >= 4.50 && !p1 && !(fv(pKpct) && pKpct >= 0.28)) posSignals.push(`a hittable starter ERA (${f2s(pEra)})`);
   if (fv(pH9) && pH9 >= 8.5)                                posSignals.push(`a hit-prone H/9 (${pH9.toFixed(1)})`);
   if (fv(parkFactor) && parkFactor >= 1.06)                  posSignals.push(`a hitter-friendly park (${f2s(parkFactor)}×)`);
-  if (fv(bullpenEra) && bullpenEra >= 4.50 && !p3)          posSignals.push(`a weak opposing bullpen (ERA ${f2s(bullpenEra)})`);
+  if (fv(bullpenEra) && bullpenEra >= 4.50 && !p3)          posSignals.push(`a vulnerable bullpen (ERA ${f2s(bullpenEra)} — late-game hit opportunity)`);
   if (posSignals.length > 0) {
     parts.push(`Working in the hitter's favor: ${posSignals.slice(0, 2).join(' and ')}.`);
   }
 
   // ── Sentence 3: Trap / conflicting signal (single most impactful) ────────
   if (p1) {
-    parts.push(`Trap: the ERA is weak, but ${pitcherName || 'this pitcher'}'s ${pcs(pKpct)} strikeout rate keeps this from being a clean contact spot — swing-and-miss risk is real regardless of the ERA.`);
+    parts.push(`Trap: the ERA (${f2s(pEra)}) looks hittable, but ${pitcherName || 'this pitcher'}'s ${pcs(pKpct)} strikeout rate keeps this from being a clean contact spot — swing-and-miss risk is real regardless of what the ERA number implies.`);
   } else if (p2) {
     parts.push(`Trap: the ERA looks exploitable, but H/9 of ${fv(pH9) ? pH9.toFixed(1) : '—'} shows the starter doesn't allow hits freely — damage is coming via walks or home runs, not consistent contact.`);
   } else if (p6) {
@@ -11224,14 +11225,17 @@ function buildPitcherProfile(pitcher) {
   const hDer = ip > 0 && whip > 0 ? Math.max(0, whip * ip - bb) : 0;
   const h9   = ip > 0 && hDer > 0 ? (hDer / ip) * 9 : 0;
 
+  const pitBABIP = ss.babip || 0;
+  const pitBACON = ss.bacon || 0;
+
   let eraTier = !era ? { label:'Unknown',      cls:'score-neutral', desc:'No 2026 stats available — treat as a neutral matchup.' }
     : era <= 2.50 ? { label:'Elite Ace',          cls:'score-great',   desc:'Commands multiple pitches with elite precision. Mistake pitches are rare.' }
     : era <= 3.30 ? { label:'Strong',             cls:'score-good',    desc:'Above-average effectiveness with solid command. Keeps hitters off-balance.' }
     : era <= 4.20 ? { label:'Average',            cls:'score-neutral', desc:'Serviceable but attackable when behind in counts. Disciplined hitters find opportunities.' }
     : era <= 5.00 ? { label:'Below Average',      cls:'score-bad',     desc:'Prone to leaving pitches in the zone. Patient hitters can exploit count leverage.' }
-    :               { label:'Weak',               cls:'score-poor',    desc:'Significant source of run production. Mistake pitches are frequent.' };
+    :               { label:'Elevated ERA',        cls:'score-poor',    desc:'Elevated ERA — contact opportunity varies by H/9, K rate, and BABIP. Check the full profile.' };
 
-  // K%-aware overrides — ERA alone does not capture swing-and-miss danger
+  // K%, H/9, BABIP, BACON overrides — ERA alone does not capture the full hit-profile picture
   const kpct = ip > 0 ? k / (ip * 4.3) : 0;
   if (era > 5.00) {
     if (kpct >= 0.32) {
@@ -11240,10 +11244,11 @@ function buildPitcherProfile(pitcher) {
     } else if (kpct >= 0.28) {
       eraTier = { label:'Mixed Profile', cls:'score-bad',
         desc:'Elevated ERA but strong strikeout ability — more dangerous than the ERA alone implies.' };
-    } else if (h9 >= 8.5 && kpct < 0.20) {
-      eraTier = { label:'Hit-Friendly', cls:'score-poor',
-        desc:'High ERA, low strikeout rate, and hit-prone — a genuine contact and BTS target.' };
+    } else if ((h9 >= 8.5 || pitBABIP >= 0.310 || pitBACON >= 0.295) && kpct < 0.25) {
+      eraTier = { label:'Hit-Friendly Profile', cls:'score-poor',
+        desc:'Elevated ERA with favorable contact-allowed metrics — hitters put balls in play and see results. Genuine contact opportunity.' };
     }
+    // else: stays as "Elevated ERA" — mixed contact signals, ERA not the full story
   } else if (era > 4.20 && kpct >= 0.28) {
     eraTier = { label:'ERA Trap', cls:'score-bad',
       desc:'Surface-level ERA vulnerability, but strikeout rate keeps this from being a clean contact spot.' };
@@ -11516,11 +11521,13 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp) {
   const lbl_ = profile_?.eraTier?.label || '';
   if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
     reasons.push(`ERA-vulnerable but strikeout-dangerous (${era.toFixed(2)} ERA / ${Math.round(_kpct*100)}% K rate)`);
+  } else if (lbl_ === 'Hit-Friendly Profile') {
+    reasons.push(`Hit-friendly contact profile (${era.toFixed(2)} ERA)`);
   } else if (era > 5.00) {
-    const _kNote = _kpct >= 0.28 ? ` / ${Math.round(_kpct*100)}% K rate` : '';
-    reasons.push(`ERA-vulnerable starter (${era.toFixed(2)}${_kNote})`);
+    const _kNote = _kpct >= 0.22 ? ` / ${Math.round(_kpct*100)}% K rate` : '';
+    reasons.push(`Elevated ERA (${era.toFixed(2)}${_kNote}) — contact outcome varies`);
   } else if (era > 4.20) {
-    reasons.push(`Hit-friendly profile (${era.toFixed(2)} ERA)`);
+    reasons.push(`Contact opportunity (${era.toFixed(2)} ERA)`);
   }
   const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
   const split = player[splitKey];
@@ -11928,10 +11935,12 @@ async function runLabAnalysis() {
     let pitDesc;
     if (lbl.includes('ERA Trap') || lbl.includes('Mixed Profile')) {
       pitDesc = `${pitcher.fullName}'s ${era.toFixed(2)} ERA creates surface-level vulnerability, but a ${Math.round(_labKpct*100)}% K rate makes this a mixed matchup — not a clean contact spot.`;
-    } else if (lbl === 'Hit-Friendly') {
-      pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) — contact-friendly with low strikeout threat and a hit-prone pattern.`;
+    } else if (lbl === 'Hit-Friendly Profile') {
+      pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) shows a hit-friendly contact profile — favorable H/9 and contact-allowed metrics despite the elevated ERA.`;
+    } else if (lbl === 'Elevated ERA') {
+      pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) — elevated ERA, but contact opportunity depends on K rate (${Math.round(_labKpct*100)}%) and H/9 (${profile.h9 > 0 ? profile.h9.toFixed(1) : '—'}).`;
     } else {
-      pitDesc = `${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}) — ${lbl.toLowerCase()} pitcher.`;
+      pitDesc = `${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}) — ${lbl.toLowerCase()} arm.`;
     }
     narrative.push(pitDesc);
   }
