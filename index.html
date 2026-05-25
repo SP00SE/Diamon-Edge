@@ -11396,7 +11396,7 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
   bhp = clamp(bhp, -8, 8);
 
   // TOTAL
-  let score = 40 + php + hme + hcp + pc + bhp;
+  let score = 50 + php + hme + hcp + pc + bhp;
 
   // K% CEILING — existing logic preserved exactly
   if (kpct_ >= 0.32) {
