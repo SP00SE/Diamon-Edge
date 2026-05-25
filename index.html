@@ -11764,6 +11764,8 @@ async function runLabAnalysis() {
   const seasAB   = player.seasonStats?.atBats || 0;
   const seasBABIP = player.seasonStats?.babip || 0;
   const seasBACON = player.seasonStats?.bacon || 0;
+  const seasPA    = player.seasonStats?.plateAppearances || 0;
+  const seasKpct  = seasPA > 0 ? (player.seasonStats?.strikeOuts || 0) / seasPA : null;
   _labStep('ls1','done');
 
   // Step 2: Pitcher & park context
@@ -11811,7 +11813,7 @@ async function runLabAnalysis() {
 
   // Step 4: Park history (2026 game log filtered by venue) + bullpen
   _labStep('ls4','active');
-  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, ghp = null, ghpGames = 0, ghpHitGames = 0;
+  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, ghp = null, ghpGames = 0, ghpHitGames = 0, ghpL10 = null, ghpL10HitGames = 0, ghpL10Games = 0;
   await Promise.all([
     (async () => {
       try {
@@ -11820,6 +11822,10 @@ async function runLabAnalysis() {
         ghpGames    = fullLog.length;
         ghpHitGames = fullLog.filter(g => (g.stat?.hits || 0) >= 1).length;
         if (ghpGames >= 10) ghp = ghpHitGames / ghpGames;
+        const _l10Log    = fullLog.slice(0, 10);
+        ghpL10Games    = _l10Log.length;
+        ghpL10HitGames = _l10Log.filter(g => (g.stat?.hits || 0) >= 1).length;
+        if (ghpL10Games >= 5) ghpL10 = ghpL10HitGames / ghpL10Games;
         const parkGames = fullLog.filter(g => {
           const vn = g.game?.venue?.name || g.venue?.name || '';
           return vn && vn === venue;
@@ -12044,23 +12050,26 @@ async function runLabAnalysis() {
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OPS</div><div class="lab-stat-cell-val ${seasOPS>=0.800?'good':seasOPS>=0.700?'avg':seasOPS>0?'bad':''}">${fmt3(seasOPS)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">BABIP</div><div class="lab-stat-cell-val ${seasBABIP>=0.320?'good':seasBABIP>=0.280?'avg':seasBABIP>0?'bad':''}">${fmt3(seasBABIP)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">BACON</div><div class="lab-stat-cell-val ${seasBACON>=0.320?'good':seasBACON>=0.280?'avg':seasBACON>0?'bad':''}">${fmt3(seasBACON)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">K%</div><div class="lab-stat-cell-val ${seasKpct!=null&&seasKpct<0.15?'good':seasKpct!=null&&seasKpct<0.22?'avg':seasKpct!=null?'bad':''}">${seasKpct!=null?Math.round(seasKpct*100)+'%':'—'}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">GHP</div><div class="lab-stat-cell-val ${ghp>=0.70?'good':ghp>=0.55?'avg':ghp!=null?'bad':''}">${ghp!=null?Math.round(ghp*100)+'%':'—'}</div><div class="lab-stat-cell-sub">${ghp!=null?ghpHitGames+'/'+ghpGames+' G':''}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${seasHR||'—'}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">Streak</div><div class="lab-stat-cell-val">${player.hitStreak?player.hitStreak+'g 🔥':'—'}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">GHP</div><div class="lab-stat-cell-val ${ghp>=0.70?'good':ghp>=0.55?'avg':ghp!=null?'bad':''}">${ghp!=null?Math.round(ghp*100)+'%':'—'}</div><div class="lab-stat-cell-sub">${ghp!=null?ghpHitGames+'/'+ghpGames+' G':''}</div></div>
       </div>
       <!-- Today's split highlight -->
       <div class="lab-split-banner ${splitBannerCls}">${splitBannerTxt}</div>
       <!-- L10 form -->
       <div class="lab-section-label">Last 10 Games</div>
       <div class="lab-stat-grid">
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(l10.avg||0)>=0.300?'good':(l10.avg||0)>=0.220?'avg':(l10.avg||0)>0?'bad':''}">${fmt3(l10.avg)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(l10.avg||0)>=0.300?'good':(l10.avg||0)>=0.220?'avg':(l10.avg||0)>0?'bad':''}">${fmt3(l10.avg)}</div><div class="lab-stat-cell-sub">${l10.atBats??'—'} AB</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val ${(l10.obp||0)>=0.370?'good':(l10.obp||0)>=0.310?'avg':(l10.obp||0)>0?'bad':''}">${fmt3(l10.obp)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val ${(l10.slg||0)>=0.500?'good':(l10.slg||0)>=0.380?'avg':(l10.slg||0)>0?'bad':''}">${fmt3(l10.slg)}</div></div>
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">OPS</div><div class="lab-stat-cell-val ${(l10.ops||0)>=0.850?'good':(l10.ops||0)>=0.700?'avg':(l10.ops||0)>0?'bad':''}">${fmt3(l10.ops)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">BABIP</div><div class="lab-stat-cell-val ${(l10.babip||0)>=0.350?'good':(l10.babip||0)>=0.280?'avg':(l10.babip||0)>0?'bad':''}">${fmt3(l10.babip)}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">BACON</div><div class="lab-stat-cell-val ${(l10.bacon||0)>=0.350?'good':(l10.bacon||0)>=0.280?'avg':(l10.bacon||0)>0?'bad':''}">${fmt3(l10.bacon)}</div></div>
+        ${(()=>{const _k10pa=l10.plateAppearances||l10.atBats||0;const _k10=_k10pa>0?(l10.strikeOuts||0)/_k10pa:null;return`<div class="lab-stat-cell"><div class="lab-stat-cell-label">K%</div><div class="lab-stat-cell-val ${_k10!=null&&_k10<0.15?'good':_k10!=null&&_k10<0.22?'avg':_k10!=null?'bad':''}">${_k10!=null?Math.round(_k10*100)+'%':'—'}</div></div>`})()}
+        <div class="lab-stat-cell"><div class="lab-stat-cell-label">GHP</div><div class="lab-stat-cell-val ${ghpL10>=0.80?'good':ghpL10>=0.60?'avg':ghpL10!=null?'bad':''}">${ghpL10!=null?Math.round(ghpL10*100)+'%':'—'}</div><div class="lab-stat-cell-sub">${ghpL10!=null?ghpL10HitGames+'/'+ghpL10Games+' G':''}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">Hits</div><div class="lab-stat-cell-val">${l10.hits??'—'}</div></div>
         <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${l10.homeRuns??'—'}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val ${(l10.slg||0)>=0.500?'good':(l10.slg||0)>=0.380?'avg':(l10.slg||0)>0?'bad':''}">${fmt3(l10.slg)}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AB</div><div class="lab-stat-cell-val">${l10.atBats??'—'}</div></div>
       </div>
       <!-- Head-to-head vs pitcher -->
       <div class="lab-section-label">Career vs ${pitcher?.fullName?escHtml(pitcher.fullName):`This Pitcher`} (${pitcherHand}HP)</div>
