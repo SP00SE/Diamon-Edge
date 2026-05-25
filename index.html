@@ -11624,7 +11624,16 @@ async function runGlobalEliteScan(onProgress) {
 
 async function handleGlobalScan() {
   const btn = document.getElementById('labGlobalScanBtn');
-  if (!btn || btn.disabled) return;
+  if (!btn) return;
+
+  // If results are already loaded, just navigate back to them — don't re-scan
+  const _existingCards = document.getElementById('labGlobalEliteCards');
+  if (_existingCards && _existingCards.children.length > 0) {
+    _labShow('labScreenGlobalScan');
+    return;
+  }
+
+  if (btn.disabled) return;
   btn.disabled = true;
 
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
@@ -11651,6 +11660,7 @@ async function handleGlobalScan() {
     _labStep('scan_s2', 'done');
     await new Promise(r => setTimeout(r, 150));
     btn.textContent = `✅ Top ${elites.length} Pick${elites.length !== 1 ? 's' : ''} Found`;
+    btn.disabled = false;
     _scanRestoreLoading();
 
     const cards = document.getElementById('labGlobalEliteCards');
