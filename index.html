@@ -10604,6 +10604,7 @@ function labSelectGame(gamePk) {
   document.getElementById('labGameCrumb').innerHTML =
     `<strong>${escHtml(gd.awayAbbr||'')} @ ${escHtml(gd.homeAbbr||'')}</strong>`;
 
+  const _rosterPf = getParkFactor(gd.venueName || '');
   const playerCard = p => {
     const photo  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
     const avg    = p.seasonStats?.avg  ? p.seasonStats.avg.toFixed(3)  : '—';
@@ -10611,8 +10612,9 @@ function labSelectGame(gamePk) {
     const slg    = p.seasonStats?.slg  ? p.seasonStats.slg.toFixed(3)  : '—';
     const hr     = p.seasonStats?.homeRuns ?? '—';
     const hits   = p.seasonStats?.hits ?? (p.seasonStats?.atBats && p.seasonStats?.avg ? Math.round(p.seasonStats.atBats * p.seasonStats.avg) : '—');
-    const hs     = p.hitScore != null ? p.hitScore : null;
-    const hsCol  = hs >= 75 ? '#22c55e' : hs >= 60 ? '#f59e0b' : hs >= 45 ? '#94a3b8' : '#ef4444';
+    const _ptch  = p.isAway ? (gd.homePitcher || null) : (gd.awayPitcher || null);
+    const ms     = computeLabMatchupScore(p, _ptch, _rosterPf, 0, null, null, null, 0, 0);
+    const msCol  = ms >= 80 ? '#22c55e' : ms >= 65 ? '#f59e0b' : ms >= 45 ? '#94a3b8' : '#ef4444';
     return `<div class="lab-player-card" id="lpc_${p.id}">
       <label class="lab-player-check-wrap" onclick="event.stopPropagation()">
         <input type="checkbox" class="lab-player-check" id="chk_${p.id}" value="${p.id}" onchange="toggleComparePlayer(${p.id},this.checked)">
@@ -10627,7 +10629,7 @@ function labSelectGame(gamePk) {
           <span class="lps-cell"><span class="lps-label">SLG</span><span class="lps-val">${slg}</span></span>
           <span class="lps-cell"><span class="lps-label">HR</span><span class="lps-val">${hr}</span></span>
           <span class="lps-cell"><span class="lps-label">H</span><span class="lps-val">${hits}</span></span>
-          ${hs != null ? `<span class="lps-cell"><span class="lps-label">Score</span><span class="lps-val" style="color:${hsCol}">${hs}</span></span>` : ''}
+          <span class="lps-cell"><span class="lps-label">Matchup</span><span class="lps-val" style="color:${msCol}">${ms}</span></span>
         </div>
       </div>
     </div>`;
