@@ -12058,10 +12058,11 @@ function _parkWeatherScore(pf, weather) {
     const { temp, windSpeed, windDir } = weather;
     if (temp >= 85) sc += 3;
     else if (temp <= 45) sc -= 3;
-    const dir = (windDir || '').toLowerCase();
-    if (dir.includes('out') || dir.includes('blowing out')) {
+    const isWindOut = windSpeed >= 10 && windDir >= 135 && windDir <= 315;
+    const isWindIn  = windSpeed >= 10 && (windDir < 135 || windDir > 315);
+    if (isWindOut) {
       sc += (windSpeed >= 15) ? 8 : (windSpeed >= 10) ? 5 : 2;
-    } else if (dir.includes('in') || dir.includes('blowing in')) {
+    } else if (isWindIn) {
       sc -= (windSpeed >= 15) ? 6 : (windSpeed >= 10) ? 3 : 1;
     }
   }
@@ -12106,11 +12107,10 @@ function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, hom
 
   const w = gd.weather;
   if (w) {
-    const dir = (w.windDir || '').toLowerCase();
-    if ((dir.includes('out') || dir.includes('blowing out')) && w.windSpeed >= 10)
-      parts.push(`Wind blowing out at ${w.windSpeed}mph — lean over`);
-    else if ((dir.includes('in') || dir.includes('blowing in')) && w.windSpeed >= 10)
-      parts.push(`Wind blowing in at ${w.windSpeed}mph — lean under`);
+    const isOut = w.windSpeed >= 10 && w.windDir >= 135 && w.windDir <= 315;
+    const isIn  = w.windSpeed >= 10 && (w.windDir < 135 || w.windDir > 315);
+    if (isOut)  parts.push(`Wind blowing out at ${w.windSpeed}mph — lean over`);
+    else if (isIn) parts.push(`Wind blowing in at ${w.windSpeed}mph — lean under`);
   }
 
   if (!parts.length && winnerAbbr) parts.push(`${winnerAbbr} edge driven by lineup quality and pitching matchup`);
