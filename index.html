@@ -513,8 +513,39 @@ main { padding: 28px 0 60px; }
 .lab-global-scan-btn:hover:not(:disabled) { background:#1e1133; border-style:solid; }
 .lab-global-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
 .lab-global-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#a78bfa; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #7c3aed33; margin-bottom:10px; margin-top:14px; }
+.lab-period-tabs { display:flex; gap:4px; }
+.lab-period-tab { background:var(--bg-hover); border:1px solid var(--border); border-radius:5px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:background .15s; }
+.lab-period-tab.active { background:#3b0764; border-color:#7c3aed; color:#c4b5fd; }
 .lab-global-game-badge { display:inline-block; font-size:10px; color:#c4b5fd; font-weight:600; background:#2e1065; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
-#labGlobalEliteCards, #labEliteCards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-top:4px; }
+#labGlobalEliteCards, #labEliteCards, #labLeaderScanCards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-top:4px; }
+.team-pred-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
+.team-pred-body { display:flex; align-items:stretch; gap:10px; margin:12px 0 8px; }
+.team-pred-side { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:12px 8px; border-radius:8px; border:1px solid transparent; }
+.team-pred-side.winner { border-color:#22c55e55; background:#052e1633; }
+.team-pred-logo { width:40px; height:40px; object-fit:contain; }
+.team-pred-name { font-size:11px; color:var(--text-muted); text-align:center; font-weight:600; line-height:1.3; }
+.team-pred-score { font-size:26px; font-weight:800; color:#e2e8f0; line-height:1; }
+.team-pred-score.winner { color:#22c55e; }
+.team-pred-count { font-size:10px; color:var(--text-muted); }
+.team-pred-vs { font-size:11px; color:var(--text-muted); font-weight:700; flex-shrink:0; align-self:center; }
+.team-pred-winner-row { text-align:center; font-size:12px; font-weight:700; color:#86efac; padding:7px 0 5px; border-top:1px solid var(--border); }
+.team-pred-margin-lbl { font-size:11px; color:var(--text-muted); font-weight:400; }
+.team-pred-expand-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:7px 0 0; margin-top:6px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
+.team-pred-breakdown { margin-top:10px; display:flex; gap:12px; }
+.team-pred-col { flex:1; min-width:0; }
+.team-pred-col-header { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+.team-pred-player-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:11px; }
+.team-pred-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100px; }
+.team-pred-player-score { font-weight:700; flex-shrink:0; margin-left:4px; }
+.team-pred-conf-badge { font-size:10px; font-weight:600; border-radius:3px; padding:1px 5px; margin-top:2px; display:inline-block; }
+.team-pred-proj-runs  { font-size:11px; color:var(--text-muted); margin-top:1px; }
+.team-pred-summary    { font-size:11px; color:var(--text-muted); padding:6px 10px; border-top:1px solid var(--border); line-height:1.4; }
+.team-pred-comp-section { margin-bottom:8px; }
+.team-pred-comp-row   { display:flex; align-items:center; gap:6px; margin:2px 0; }
+.team-pred-comp-label { font-size:10px; color:var(--text-muted); width:52px; flex-shrink:0; }
+.team-pred-comp-bar-bg{ flex:1; height:6px; background:var(--bg-hover); border-radius:3px; overflow:hidden; }
+.team-pred-comp-bar   { height:100%; border-radius:3px; }
+.team-pred-comp-val   { font-size:10px; color:var(--text-muted); width:22px; text-align:right; flex-shrink:0; }
 .lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
 .lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-compare-table th:first-child  { text-align:right; width:40%; }
@@ -2396,6 +2427,8 @@ main { padding: 28px 0 60px; }
       <div id="labScreenGame" class="lab-screen">
         <div class="lab-step-label">Select a Game</div>
         <button id="labGlobalScanBtn" class="lab-global-scan-btn" onclick="handleGlobalScan()">🌐 Scan All Games for Top Picks</button>
+        <button id="labLeaderScanBtn" class="lab-global-scan-btn" onclick="handleLeaderboardScan()" style="margin-top:8px">🏆 Scan Hit Leaderboard</button>
+        <button id="labTeamScanBtn" class="lab-global-scan-btn" onclick="handleTeamScan()" style="margin-top:8px">🏟️ Team Win Predictor</button>
         <div class="lab-game-grid" id="labGameGrid"></div>
       </div>
       <!-- Screen 1b: Global Elite Scan Results -->
@@ -2411,6 +2444,29 @@ main { padding: 28px 0 60px; }
           <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
         </div>
         <div id="labGlobalEliteCards"></div>
+      </div>
+      <!-- Screen 1c: Hit Leaderboard Scan Results -->
+      <div id="labScreenLeaderScan" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
+          <span class="lab-back-crumb">Hit Leaderboard — Today's Matchups</span>
+        </div>
+        <div class="lab-global-elite-header">🏆 Hit Leaderboard · Today's Matchups · Ranked by Score</div>
+        <div class="lab-compare-bar" id="labLeaderCompareBar" style="display:none;">
+          <span id="labLeaderCompareCount">0 of 2 selected</span>
+          <button class="lab-compare-btn" id="labLeaderCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
+          <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
+        </div>
+        <div id="labLeaderScanCards"></div>
+      </div>
+      <!-- Screen 1d: Team Win Predictor Results -->
+      <div id="labScreenTeamScan" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
+          <span class="lab-back-crumb">Team Win Predictor — All Games</span>
+        </div>
+        <div class="lab-global-elite-header">🏟️ Team Win Predictor · Sorted by Game Time</div>
+        <div id="labTeamScanCards"></div>
       </div>
       <!-- Screen 2: Player Picker (both rosters) -->
       <div id="labScreenPlayer" class="lab-screen" style="display:none;">
@@ -4389,6 +4445,7 @@ async function processGame(game) {
     const seasonStats = mapHitterStats(stats.season);
     const last7Stats  = mapHitterStats(stats.last7);
     const last10Stats = mapHitterStats(stats.last10);
+    const last30Stats = mapHitterStats(stats.last30);
     const hitStreak    = stats.hitStreak    || 0;
     const hrStreak     = stats.hrStreak     || 0;
     const recentStarts = stats.recentStarts ?? null;
@@ -4405,7 +4462,7 @@ async function processGame(game) {
     const playerObj = {
       ...batter,
       gamePk,
-      seasonStats, last7Stats, last10Stats,
+      seasonStats, last7Stats, last10Stats, last30Stats,
       hitStreak, hrStreak, recentStarts, hitGames7,
       vsRHP, vsLHP,
       teamPAList: teamPAs,
@@ -4519,10 +4576,12 @@ async function fetchStreaks(playerId) {
     const last7Agg  = aggGames(last7Games);
     const last10Games = splits.slice(-10);
     const last10Agg = aggGames(last10Games);
+    const last30Games = splits.slice(-30);
+    const last30Agg = aggGames(last30Games);
 
     // Store 7 games in shared cache — sections needing more pass limit directly to fetchGameLog
     gameLogCache.set(playerId, splits.slice(-7).reverse());
-    return { hitStreak, hrStreak, recentStarts, hitGames7, last7Agg, last10Agg };
+    return { hitStreak, hrStreak, recentStarts, hitGames7, last7Agg, last10Agg, last30Agg };
   } catch { return { hitStreak: 0, hrStreak: 0, recentStarts: null, hitGames7: null }; }
 }
 
@@ -4550,13 +4609,14 @@ async function batchFetchBatterStats(batters) {
       if (!b.id) return;
       const [season, streaks, splits] = await Promise.all([
         fetchPlayerHittingStats(b.id).catch(()=>null),
-        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null, last7Agg:null, last10Agg:null })),
+        fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null, last7Agg:null, last10Agg:null, last30Agg:null })),
         fetchHandednessSplits(b.id).catch(()=>({ vsRHP:null, vsLHP:null })),
       ]);
       result[b.id] = {
         season,
         last7:  streaks.last7Agg  || null,
         last10: streaks.last10Agg || null,
+        last30: streaks.last30Agg || null,
         hitStreak: streaks.hitStreak, hrStreak: streaks.hrStreak,
         recentStarts: streaks.recentStarts, hitGames7: streaks.hitGames7,
         vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
@@ -6479,6 +6539,7 @@ function computeBtsScore(player, gameData) {
     if      (pHBF >= 0.27) { starterMatchup += 4; reasons.push(`H/BF% ${hbfPct}% — High Starter H/BF%`); }
     else if (pHBF >= 0.25) { starterMatchup += 2; reasons.push(`H/BF% ${hbfPct}%`); }
     else if (pHBF >= 0.23) { starterMatchup += 1; }
+    else if (pHBF <= 0.17) { starterMatchup -= 4; }
     else if (pHBF <= 0.20) { starterMatchup -= 2; }
 
     const kpPct = Math.round(pKpct * 100);
@@ -6487,20 +6548,28 @@ function computeBtsScore(player, gameData) {
     else if (pKpct > 0.32) { starterMatchup -= 5; reasons.push(`Starter K% ${kpPct}% — High-K Starter`); }
     else if (pKpct > 0.28) { starterMatchup -= 3; reasons.push(`Starter K% ${kpPct}% — High-K Starter`); }
 
-    if      (pConPct >= 0.78) { starterMatchup += 2; }
-    else if (pConPct >= 0.75) { starterMatchup += 1; }
+    if      (pConPct >= 0.78) { starterMatchup += 4; }
+    else if (pConPct >= 0.75) { starterMatchup += 2; }
+    else if (pConPct >= 0.72) { starterMatchup += 1; }
+    else if (pConPct  < 0.60) { starterMatchup -= 4; }
     else if (pConPct  < 0.65) { starterMatchup -= 2; }
   }
 
   if (pBacon > 0) {
-    if      (pBacon >= 0.310) { starterMatchup += 2; reasons.push(`P-BACON ${fmt(pBacon)} — Starter Allows Hits`); }
+    if      (pBacon >= 0.320) { starterMatchup += 4; reasons.push(`P-BACON ${fmt(pBacon)} — Starter Allows Hits`); }
+    else if (pBacon >= 0.310) { starterMatchup += 2; }
     else if (pBacon >= 0.290) { starterMatchup += 1; }
+    else if (pBacon  < 0.240) { starterMatchup -= 4; }
     else if (pBacon  < 0.250) { starterMatchup -= 2; }
     else if (pBacon  < 0.270) { starterMatchup -= 1; }
   }
 
   if (pBabip > 0) {
-    if      (pBabip >= 0.320) { starterMatchup += 1; }
+    if      (pBabip >= 0.350) { starterMatchup += 4; }
+    else if (pBabip >= 0.330) { starterMatchup += 2; }
+    else if (pBabip >= 0.310) { starterMatchup += 1; }
+    else if (pBabip  < 0.250) { starterMatchup -= 4; }
+    else if (pBabip  < 0.260) { starterMatchup -= 2; }
     else if (pBabip  < 0.270) { starterMatchup -= 1; }
   }
 
@@ -6518,16 +6587,19 @@ function computeBtsScore(player, gameData) {
   let bullpenScore = 0;
 
   if (penH9 > 0) {
-    if      (penH9 >= 9.5) { bullpenScore += 2; reasons.push(`Bullpen H/9 ${penH9.toFixed(1)} — Bullpen Hit Risk`); }
-    else if (penH9 >= 8.5) { bullpenScore += 1; }
-    else if (penH9 <= 6.3) { bullpenScore -= 1; }
-    else if (penH9 <= 6.9) { bullpenScore -= 1; }
+    if      (penH9 >= 9.5) { bullpenScore += 4; reasons.push(`Bullpen H/9 ${penH9.toFixed(1)} — Bullpen Hit Risk`); }
+    else if (penH9 >= 8.5) { bullpenScore += 2; }
+    else if (penH9 >= 8.0) { bullpenScore += 1; }
+    else if (penH9 <= 6.3) { bullpenScore -= 4; }
+    else if (penH9 <= 6.9) { bullpenScore -= 2; }
   }
 
   if (penHBF > 0) {
-    if      (penHBF >= 0.27) { bullpenScore += 2; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — High Opp Bullpen H/BF%`); }
-    else if (penHBF >= 0.25) { bullpenScore += 1; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — Bullpen Allows Hits`); }
-    else if (penHBF <= 0.20) { bullpenScore -= 1; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — Low Opp Bullpen H/BF%`); }
+    if      (penHBF >= 0.27) { bullpenScore += 4; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — High Opp Bullpen H/BF%`); }
+    else if (penHBF >= 0.25) { bullpenScore += 2; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — Bullpen Allows Hits`); }
+    else if (penHBF >= 0.23) { bullpenScore += 1; }
+    else if (penHBF <= 0.17) { bullpenScore -= 4; reasons.push(`Opp Bullpen H/BF% ${Math.round(penHBF*100)}% — Low Opp Bullpen H/BF%`); }
+    else if (penHBF <= 0.20) { bullpenScore -= 2; }
   }
 
   if (penEra > 0) {
@@ -6535,7 +6607,7 @@ function computeBtsScore(player, gameData) {
     else if (penEra <= 3.25) { bullpenScore -= 1; }
   }
 
-  bullpenScore = clamp(bullpenScore, -5, 5);
+  bullpenScore = clamp(bullpenScore, -8, 8);
 
   // ─── 6. PARK / ENVIRONMENT  (cap −4 / +4) ──────────────────────────────────
   let parkScore = 0;
@@ -10509,7 +10581,7 @@ let _labCompareSet = new Set();
 let _lastCompareData = null;
 
 function _labShow(screenId) {
-  ['labScreenGame','labScreenGlobalScan','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
+  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenTeamScan','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
   window.scrollTo(0, 0);
 }
@@ -10555,6 +10627,16 @@ function labInit() {
   if (_gsBtn)  { _gsBtn.disabled = false; _gsBtn.textContent = '🌐 Scan All Games for Top Picks'; }
   if (_gcards) _gcards.innerHTML = '';
   if (_gcBar)  _gcBar.style.display = 'none';
+  const _lsBtn   = document.getElementById('labLeaderScanBtn');
+  const _lscards = document.getElementById('labLeaderScanCards');
+  const _lsBar   = document.getElementById('labLeaderCompareBar');
+  if (_lsBtn)   { _lsBtn.disabled = false; _lsBtn.textContent = '🏆 Scan Hit Leaderboard'; }
+  if (_lscards) _lscards.innerHTML = '';
+  if (_lsBar)   _lsBar.style.display = 'none';
+  const _tsBtn   = document.getElementById('labTeamScanBtn');
+  const _tscards = document.getElementById('labTeamScanCards');
+  if (_tsBtn)   { _tsBtn.disabled = false; _tsBtn.textContent = '🏟️ Team Win Predictor'; }
+  if (_tscards) _tscards.innerHTML = '';
   const grid = document.getElementById('labGameGrid');
   const games = Object.values(state.predictions).sort((a, b) => new Date(a.gameDate || 0) - new Date(b.gameDate || 0));
   if (!games.length) {
@@ -10716,9 +10798,15 @@ function labGoRoster() {
   if (_labState.fromGlobalScan) {
     _labState.fromGlobalScan = false;
     _labShow('labScreenGlobalScan');
+  } else if (_labState.fromLeaderScan) {
+    _labState.fromLeaderScan = false;
+    _labShow('labScreenLeaderScan');
   } else if (_labState.compareReturnScreen === 'labScreenGlobalScan') {
     clearCompareSelection();
     _labShow('labScreenGlobalScan');
+  } else if (_labState.compareReturnScreen === 'labScreenLeaderScan') {
+    clearCompareSelection();
+    _labShow('labScreenLeaderScan');
   } else if (_labState.gamePk) {
     labSelectGame(_labState.gamePk);
   } else {
@@ -10787,6 +10875,12 @@ function updateCompareBar() {
   if (gBar) { gBar.style.display = n > 0 ? 'flex' : 'none'; }
   if (gCnt) gCnt.textContent = `${n} of 2 selected`;
   if (gBtn) gBtn.disabled    = n !== 2;
+  const lBar = document.getElementById('labLeaderCompareBar');
+  const lBtn = document.getElementById('labLeaderCompareBtn');
+  const lCnt = document.getElementById('labLeaderCompareCount');
+  if (lBar) { lBar.style.display = n > 0 ? 'flex' : 'none'; }
+  if (lCnt) lCnt.textContent = `${n} of 2 selected`;
+  if (lBtn) lBtn.disabled    = n !== 2;
   if (n === 2) _showCompareConfirm();
 }
 
@@ -10921,9 +11015,9 @@ async function runLabCompare() {
   _lastCompareData = { dataA, dataB };
   document.getElementById('labCompareCrumb').textContent = `${pA.name} vs ${pB.name}`;
   document.getElementById('labCompareContent').innerHTML = buildCompareHTML(dataA, dataB);
-  _labState.compareReturnScreen = _labState.fromGlobalScan ? 'labScreenGlobalScan' : (_labState.gamePk ? 'labScreenPlayer' : 'labScreenGame');
+  _labState.compareReturnScreen = _labState.fromGlobalScan ? 'labScreenGlobalScan' : _labState.fromLeaderScan ? 'labScreenLeaderScan' : (_labState.gamePk ? 'labScreenPlayer' : 'labScreenGame');
   const _cBackBtn = document.querySelector('#labScreenCompare .lab-back-btn');
-  if (_cBackBtn) _cBackBtn.textContent = _labState.fromGlobalScan || !_labState.gamePk ? '← Elite Picks' : '← Roster';
+  if (_cBackBtn) _cBackBtn.textContent = _labState.fromGlobalScan ? '← Elite Picks' : _labState.fromLeaderScan ? '← Leaderboard Picks' : !_labState.gamePk ? '← Elite Picks' : '← Roster';
   const _csBar = document.getElementById('labCompareShareBar');
   if (_csBar) _csBar.style.display = 'block';
   _labShow('labScreenCompare');
@@ -11476,6 +11570,23 @@ function labGlobalSelectPlayer(playerId, gamePk) {
   labSelectPlayer(playerId);
 }
 
+function _labPeriodTab(period, btn) {
+  ['labFormL7','labFormL10','labFormL30'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById('labForm' + period);
+  if (target) target.style.display = '';
+  document.querySelectorAll('.lab-period-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function labLeaderSelectPlayer(playerId, gamePk) {
+  _labState.gamePk = gamePk;
+  _labState.fromLeaderScan = true;
+  labSelectPlayer(playerId);
+}
+
 // Full data fetch for one player: H2H + game log (GHP + park history) + bullpen.
 // Produces the same score as runLabAnalysis so scan and individual analysis match.
 async function fetchElitePlayerData(player, gd) {
@@ -11574,7 +11685,7 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp) {
 }
 
 function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal, pitcher, pf) {
-  const onclk    = isGlobal ? `labGlobalSelectPlayer(${player.id},${gamePk})` : `labSelectPlayer(${player.id})`;
+  const onclk    = isGlobal === 'leader' ? `labLeaderSelectPlayer(${player.id},${gamePk})` : isGlobal ? `labGlobalSelectPlayer(${player.id},${gamePk})` : `labSelectPlayer(${player.id})`;
   const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
   const gameBadge = gameLabel ? `<span class="lab-global-game-badge">${escHtml(gameLabel)}</span>` : '';
 
@@ -11703,6 +11814,476 @@ async function handleGlobalScan() {
     btn.disabled = false;
     btn.textContent = '🌐 Scan All Games for Top Picks';
   }
+}
+
+async function handleLeaderboardScan() {
+  const btn = document.getElementById('labLeaderScanBtn');
+  if (!btn) return;
+
+  // If results are already loaded, navigate back to them
+  const _existingCards = document.getElementById('labLeaderScanCards');
+  if (_existingCards && _existingCards.children.length > 0) {
+    _labShow('labScreenLeaderScan');
+    return;
+  }
+
+  if (btn.disabled) return;
+  btn.disabled = true;
+
+  // Ensure leaderboard data is populated
+  if (!leaderboardLoaded) await renderLeaderboard();
+
+  const leaderIds = new Set(seasonLeaderRanks.hits.keys());
+  if (leaderIds.size === 0) {
+    btn.disabled = false;
+    btn.textContent = '🏆 Scan Hit Leaderboard';
+    return;
+  }
+
+  // Find today's players that appear in the hit leaderboard
+  const allGames   = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const allEntries = allGames.flatMap(gd =>
+    (gd.players||[]).filter(p => p.id && leaderIds.has(p.id)).map(p => ({ player: p, gd }))
+  );
+  const total = allEntries.length;
+
+  if (!total) {
+    btn.disabled = false;
+    const cards = document.getElementById('labLeaderScanCards');
+    if (cards) cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hit leaderboard players found in today\'s lineup data — check back once lineups are posted.</div>';
+    _labShow('labScreenLeaderScan');
+    return;
+  }
+
+  _scanShowLoading(
+    '🏆 Scanning Hit Leaderboard',
+    `Fetching matchup data for ${total} leaderboard player${total !== 1 ? 's' : ''} today…`,
+    'Ranking by matchup score…'
+  );
+
+  try {
+    let done = 0;
+    const results = await runLeaderboardScan(allEntries, () => {
+      done++;
+      const el = document.getElementById('scan_s1');
+      if (el) el.childNodes[1].textContent = `Analyzing… ${done} of ${total} complete`;
+    });
+
+    _labStep('scan_s1', 'done');
+    _labStep('scan_s2', 'active');
+    await new Promise(r => setTimeout(r, 200));
+    _labStep('scan_s2', 'done');
+    await new Promise(r => setTimeout(r, 150));
+    btn.textContent = `✅ ${results.length} Player${results.length !== 1 ? 's' : ''} Found`;
+    btn.disabled = false;
+    _scanRestoreLoading();
+
+    const cards = document.getElementById('labLeaderScanCards');
+    if (!cards) return;
+    if (results.length === 0) {
+      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No leaderboard players have matchup data available — check back once lineups are posted.</div>';
+    } else {
+      cards.innerHTML = results.map(({ player, score, reasons, gameLabel, gamePk, pitcher, pf }) =>
+        _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, 'leader', pitcher, pf)
+      ).join('');
+    }
+    _labShow('labScreenLeaderScan');
+  } catch {
+    _scanRestoreLoading();
+    _labShow('labScreenGame');
+    btn.disabled = false;
+    btn.textContent = '🏆 Scan Hit Leaderboard';
+  }
+}
+
+async function runLeaderboardScan(entries, onProgress) {
+  const results = [];
+  await Promise.allSettled(entries.map(async ({ player, gd }) => {
+    try {
+      const data = await fetchElitePlayerData(player, gd);
+      onProgress?.();
+      const rank = seasonLeaderRanks.hits.get(player.id);
+      const rankLabel = rank ? `#${rank} Hits · ` : '';
+      results.push({
+        player, score: data.score,
+        pitcher: data.pitcher,
+        pf: data.pf,
+        reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
+        gameLabel: `${rankLabel}${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
+        gamePk:    gd.gamePk,
+      });
+    } catch {}
+  }));
+  return results.sort((a, b) => b.score - a.score);
+}
+
+async function handleTeamScan() {
+  const btn = document.getElementById('labTeamScanBtn');
+  if (!btn) return;
+
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Scanning…';
+
+  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const total    = allGames.reduce((s, gd) => s + (gd.players||[]).filter(p => p.id).length, 0);
+  if (!allGames.length || !total) {
+    btn.disabled = false;
+    const _cards = document.getElementById('labTeamScanCards');
+    if (_cards) _cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">Game data is still loading — try again in a moment or refresh the page.</div>';
+    _labShow('labScreenTeamScan');
+    return;
+  }
+
+  try {
+    _scanShowLoading(
+      '🏟️ Team Win Predictor',
+      `Scoring ${total} players across ${allGames.length} game${allGames.length !== 1 ? 's' : ''}…`,
+      'Calculating team averages…'
+    );
+    let done = 0;
+    const results = await runTeamScan(() => {
+      done++;
+      const el = document.getElementById('scan_s1');
+      if (el) el.childNodes[1].textContent = `Scoring players… ${done} of ${total} complete`;
+    });
+
+    _labStep('scan_s1', 'done');
+    _labStep('scan_s2', 'active');
+    await new Promise(r => setTimeout(r, 200));
+    _labStep('scan_s2', 'done');
+    await new Promise(r => setTimeout(r, 150));
+    btn.textContent = `✅ ${results.length} Game${results.length !== 1 ? 's' : ''} Predicted`;
+    btn.disabled = false;
+    _scanRestoreLoading();
+
+    const cards = document.getElementById('labTeamScanCards');
+    if (!cards) return;
+    if (results.length === 0) {
+      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No complete game data available — check back once lineups are posted.</div>';
+    } else {
+      cards.innerHTML = results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
+    }
+    _labShow('labScreenTeamScan');
+  } catch(e) {
+    _scanRestoreLoading();
+    btn.disabled = false;
+    btn.textContent = '🏟️ Team Win Predictor';
+    const cards = document.getElementById('labTeamScanCards');
+    if (cards) cards.innerHTML = `<div style="color:#ef4444;font-size:12px;padding:8px 0">Error: ${e?.message || e}</div>`;
+    _labShow('labScreenTeamScan');
+  }
+}
+
+const LINEUP_WEIGHTS = [1.15, 1.10, 1.05, 1.05, 1.00, 1.00, 0.95, 0.92, 0.90];
+
+function _lineupScore(results) {
+  if (!results.length) return 50;
+  let wSum = 0, wTotal = 0;
+  results.forEach(r => {
+    const pos = Math.max(0, Math.min(8, (r.player.orderPos || 5) - 1));
+    const w = LINEUP_WEIGHTS[pos];
+    wSum += r.score * w;
+    wTotal += w;
+  });
+  return wTotal > 0 ? wSum / wTotal : 50;
+}
+
+function _starterEdge(sp) {
+  if (!sp?.seasonStats) return 50;
+  const s = sp.seasonStats;
+  let sc = 50;
+  if (s.era != null) {
+    if (s.era >= 5.00) sc += 12;
+    else if (s.era >= 4.50) sc += 8;
+    else if (s.era >= 4.00) sc += 4;
+    else if (s.era <= 3.00) sc -= 12;
+    else if (s.era <= 3.50) sc -= 8;
+    else if (s.era <= 4.00) sc -= 4;
+  }
+  if (s.whip != null) {
+    if (s.whip >= 1.40) sc += 5;
+    else if (s.whip >= 1.25) sc += 2;
+    else if (s.whip <= 1.00) sc -= 5;
+    else if (s.whip <= 1.10) sc -= 2;
+  }
+  if (s.inningsPitched > 0) {
+    const kRate = s.strikeOuts / s.inningsPitched;
+    if (kRate >= 1.20) sc -= 8;
+    else if (kRate >= 1.00) sc -= 4;
+    else if (kRate <= 0.70) sc += 6;
+    else if (kRate <= 0.85) sc += 3;
+  }
+  if (s.bbBfPct != null) {
+    if (s.bbBfPct >= 0.10) sc += 4;
+    else if (s.bbBfPct >= 0.08) sc += 2;
+    else if (s.bbBfPct <= 0.05) sc -= 3;
+  }
+  return Math.max(20, Math.min(80, sc));
+}
+
+function _bullpenEdge(era, h9, hbf) {
+  let sc = 50;
+  if (era != null && era > 0) {
+    if (era >= 5.00) sc += 10;
+    else if (era >= 4.50) sc += 5;
+    else if (era >= 4.00) sc += 2;
+    else if (era <= 3.00) sc -= 8;
+    else if (era <= 3.50) sc -= 4;
+  }
+  if (h9 != null) {
+    if (h9 >= 10.0) sc += 7;
+    else if (h9 >= 9.0) sc += 3;
+    else if (h9 <= 7.0) sc -= 6;
+    else if (h9 <= 8.0) sc -= 2;
+  }
+  if (hbf != null) {
+    if (hbf >= 0.28) sc += 6;
+    else if (hbf >= 0.25) sc += 3;
+    else if (hbf <= 0.18) sc -= 5;
+    else if (hbf <= 0.20) sc -= 2;
+  }
+  return Math.max(20, Math.min(80, sc));
+}
+
+function _parkWeatherScore(pf, weather) {
+  let sc = 50;
+  if (pf?.overall != null) {
+    if (pf.overall >= 110) sc += 10;
+    else if (pf.overall >= 105) sc += 5;
+    else if (pf.overall <= 90)  sc -= 8;
+    else if (pf.overall <= 95)  sc -= 4;
+  }
+  if (weather) {
+    const { temp, windSpeed, windDir } = weather;
+    if (temp >= 85) sc += 3;
+    else if (temp <= 45) sc -= 3;
+    const dir = (windDir || '').toLowerCase();
+    if (dir.includes('out') || dir.includes('blowing out')) {
+      sc += (windSpeed >= 15) ? 8 : (windSpeed >= 10) ? 5 : 2;
+    } else if (dir.includes('in') || dir.includes('blowing in')) {
+      sc -= (windSpeed >= 15) ? 6 : (windSpeed >= 10) ? 3 : 1;
+    }
+  }
+  return Math.max(20, Math.min(80, sc));
+}
+
+function _confidenceBoost(lineupPosted, count) {
+  if (lineupPosted && count >= 8) return 70;
+  if (lineupPosted || count >= 5) return 55;
+  return 40;
+}
+
+function _confidenceLabel(lineupPosted, count) {
+  if (lineupPosted && count >= 8) return 'High';
+  if (lineupPosted || count >= 5) return 'Medium';
+  return 'Preliminary';
+}
+
+function _projRuns(composite) {
+  return Math.max(1.5, 4.5 + ((composite - 50) / 30) * 2.5);
+}
+
+function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc) {
+  const parts = [];
+  const awayAbbr = gd.awayAbbr || 'Away';
+  const homeAbbr = gd.homeAbbr || 'Home';
+  const winnerAbbr = winner === 'away' ? awayAbbr : winner === 'home' ? homeAbbr : null;
+
+  if (winner === 'away' && awayStarterSc <= 38)
+    parts.push(`⚠️ Trap: ${awayAbbr} bats against an elite starter — verify before betting`);
+  else if (winner === 'home' && homeStarterSc <= 38)
+    parts.push(`⚠️ Trap: ${homeAbbr} bats against an elite starter — verify before betting`);
+
+  if (winner === 'away' && awayStarterSc >= 65) parts.push(`${awayAbbr} faces a hittable starter`);
+  if (winner === 'home' && homeStarterSc >= 65) parts.push(`${homeAbbr} faces a hittable starter`);
+
+  if (winner === 'away' && awayBullpenSc <= 38) parts.push(`${homeAbbr} pen is elite — late-inning risk`);
+  if (winner === 'home' && homeBullpenSc <= 38) parts.push(`${awayAbbr} pen is elite — late-inning risk`);
+
+  if (pf?.isHitter) parts.push('Hitter-friendly park — lean over on total');
+  else if (pf?.overall != null && pf.overall <= 95) parts.push('Pitcher-friendly park — lean under on total');
+
+  const w = gd.weather;
+  if (w) {
+    const dir = (w.windDir || '').toLowerCase();
+    if ((dir.includes('out') || dir.includes('blowing out')) && w.windSpeed >= 10)
+      parts.push(`Wind blowing out at ${w.windSpeed}mph — lean over`);
+    else if ((dir.includes('in') || dir.includes('blowing in')) && w.windSpeed >= 10)
+      parts.push(`Wind blowing in at ${w.windSpeed}mph — lean under`);
+  }
+
+  if (!parts.length && winnerAbbr) parts.push(`${winnerAbbr} edge driven by lineup quality and pitching matchup`);
+  if (!parts.length) parts.push('Toss-up — no strong edge detected');
+  return parts.join(' · ');
+}
+
+function _starterBonus(pitcher) {
+  const s = pitcher?.seasonStats;
+  if (!s) return 0;
+  const era = parseFloat(s.era) || 0;
+  const whip = parseFloat(s.whip) || 0;
+  if (!era) return 0;
+  if (era <= 2.75 && whip <= 1.10) return 20;
+  if (era <= 2.75) return 15;
+  if (era <= 3.50) return 10;
+  if (era <= 4.00) return 5;
+  if (era <= 4.75) return 0;
+  if (era <= 5.25) return -5;
+  return -10;
+}
+
+function _bullpenBonus(era) {
+  if (!era || era <= 0) return 0;
+  if (era <= 3.00) return 15;
+  if (era <= 3.50) return 10;
+  if (era <= 4.00) return 5;
+  if (era <= 4.50) return 0;
+  return -10;
+}
+
+function runTeamScan(onProgress) {
+  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const results  = [];
+
+  for (const gd of allGames) {
+    const awayPlayers = (gd.players||[]).filter(p => p.id && p.isAway);
+    const homePlayers = (gd.players||[]).filter(p => p.id && !p.isAway);
+    if (!awayPlayers.length || !homePlayers.length) { onProgress?.(); continue; }
+
+    const awayRes = awayPlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
+    const homeRes = homePlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
+
+    const awayLineup  = _lineupScore(awayRes);
+    const awayStarter = _starterBonus(gd.awayPitcher);
+    const awayBullpen = _bullpenBonus(gd.awayBullpenEra);
+    const awayScore   = awayLineup + awayStarter + awayBullpen;
+
+    const homeLineup  = _lineupScore(homeRes);
+    const homeStarter = _starterBonus(gd.homePitcher);
+    const homeBullpen = _bullpenBonus(gd.homeBullpenEra);
+    const homeScore   = homeLineup + homeStarter + homeBullpen;
+
+    const pf     = gd.parkFactor || getParkFactor(gd.venueName);
+    const margin = Math.abs(awayScore - homeScore);
+    const winner = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
+
+    results.push({
+      gamePk: gd.gamePk,
+      gameDate: gd.gameDate,
+      gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
+      awayAbbr: gd.awayAbbr, homeAbbr: gd.homeAbbr,
+      awayTeamId: gd.awayTeamId, homeTeamId: gd.homeTeamId,
+      awayAvg: awayScore, homeAvg: homeScore,
+      margin, winner,
+      awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
+      homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
+      awayComponents: { lineup: awayLineup, starter: awayStarter, bullpen: awayBullpen },
+      homeComponents: { lineup: homeLineup, starter: homeStarter, bullpen: homeBullpen },
+      awayProjRuns: _projRuns(awayLineup),
+      homeProjRuns: _projRuns(homeLineup),
+      predTotal: _projRuns(awayLineup) + _projRuns(homeLineup),
+      summaryText: _teamScanSummary(gd, winner, awayScore, homeScore, pf,
+        _starterEdge(gd.homePitcher), _starterEdge(gd.awayPitcher),
+        _bullpenEdge(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF),
+        _bullpenEdge(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF)),
+    });
+    onProgress?.();
+  }
+
+  return results.sort((a, b) => new Date(a.gameDate || 0) - new Date(b.gameDate || 0));
+}
+
+function _teamScanCardHTML(r) {
+  const {
+    gamePk, gameLabel, awayAbbr, homeAbbr, awayTeamId, homeTeamId,
+    awayAvg, homeAvg, margin, winner, awayPlayers, homePlayers,
+    awayProjRuns, homeProjRuns, predTotal,
+    summaryText, awayComponents, homeComponents,
+  } = r;
+  const awayTi   = TEAM_INFO[awayTeamId] || {};
+  const homeTi   = TEAM_INFO[homeTeamId] || {};
+  const awayLogo = awayTi.espn ? `<img class="team-pred-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayTi.espn}.png" onerror="this.style.display='none'" alt="">` : '<div style="width:40px;height:40px"></div>';
+  const homeLogo = homeTi.espn ? `<img class="team-pred-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeTi.espn}.png" onerror="this.style.display='none'" alt="">` : '<div style="width:40px;height:40px"></div>';
+  const awayName = awayTi.city ? `${awayTi.city} ${awayTi.nick}` : (awayAbbr || '?');
+  const homeName = homeTi.city ? `${homeTi.city} ${homeTi.nick}` : (homeAbbr || '?');
+
+  const winnerName  = winner === 'away' ? awayName : winner === 'home' ? homeName : null;
+  const winnerLabel = winner === 'tie' ? '⚖️ Toss-Up' : `🏆 Predicted: ${escHtml(winnerName)}`;
+  const marginLabel = winner !== 'tie' ? `<span class="team-pred-margin-lbl">(+${margin.toFixed(1)} composite pts)</span>` : '';
+
+  const _sc = s => s >= 70 ? '#22c55e' : s >= 55 ? '#f59e0b' : '#ef4444';
+  const _rows = arr => arr.map(p =>
+    `<div class="team-pred-player-row"><span class="team-pred-player-name">${escHtml(p.name)}</span><span class="team-pred-player-score" style="color:${_sc(p.score)}">${p.score}</span></div>`
+  ).join('');
+
+  const _compBar = (val, label) => {
+    const pct = Math.round(Math.max(0, Math.min(100, val)));
+    const clr = val >= 60 ? '#22c55e' : val >= 45 ? '#f59e0b' : '#ef4444';
+    return `<div class="team-pred-comp-row"><span class="team-pred-comp-label">${label}</span><div class="team-pred-comp-bar-bg"><div class="team-pred-comp-bar" style="width:${pct}%;background:${clr}"></div></div><span class="team-pred-comp-val">${pct}</span></div>`;
+  };
+
+  const bkId  = `tp_bk_${gamePk}`;
+  const btnId = `tp_btn_${gamePk}`;
+
+  const awayBars = awayComponents ? [
+    _compBar(awayComponents.lineup,          'Lineup'),
+    _compBar(awayComponents.starter + 50,    'Starter'),
+    _compBar(awayComponents.bullpen + 50,    'Bullpen'),
+  ].join('') : '';
+  const homeBars = homeComponents ? [
+    _compBar(homeComponents.lineup,          'Lineup'),
+    _compBar(homeComponents.starter + 50,    'Starter'),
+    _compBar(homeComponents.bullpen + 50,    'Bullpen'),
+  ].join('') : '';
+
+  return `<div class="team-pred-card">
+    <span class="lab-global-game-badge" style="display:inline-block;margin-bottom:2px">${escHtml(gameLabel)}</span>
+    <div class="team-pred-body">
+      <div class="team-pred-side${winner==='away'?' winner':''}">
+        ${awayLogo}
+        <div class="team-pred-name">${escHtml(awayName)}</div>
+        <div class="team-pred-score${winner==='away'?' winner':''}">${awayAvg.toFixed(1)}</div>
+        ${awayProjRuns != null ? `<div class="team-pred-proj-runs">~${awayProjRuns.toFixed(1)} R proj</div>` : ''}
+        <div class="team-pred-count">${awayPlayers.length} player${awayPlayers.length!==1?'s':''}</div>
+      </div>
+      <div class="team-pred-vs">
+        VS
+        ${predTotal != null ? `<div style="font-size:9px;color:var(--text-muted);margin-top:4px;text-align:center">Total<br>${predTotal.toFixed(1)}</div>` : ''}
+      </div>
+      <div class="team-pred-side${winner==='home'?' winner':''}">
+        ${homeLogo}
+        <div class="team-pred-name">${escHtml(homeName)}</div>
+        <div class="team-pred-score${winner==='home'?' winner':''}">${homeAvg.toFixed(1)}</div>
+        ${homeProjRuns != null ? `<div class="team-pred-proj-runs">~${homeProjRuns.toFixed(1)} R proj</div>` : ''}
+        <div class="team-pred-count">${homePlayers.length} player${homePlayers.length!==1?'s':''}</div>
+      </div>
+    </div>
+    <div class="team-pred-winner-row">${winnerLabel} ${marginLabel}</div>
+    ${summaryText ? `<div class="team-pred-summary">${escHtml(summaryText)}</div>` : ''}
+    <button class="team-pred-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">▼ Breakdown</button>
+    <div class="team-pred-breakdown" id="${bkId}" style="display:none">
+      <div class="team-pred-col">
+        <div class="team-pred-col-header">${escHtml(awayAbbr||'Away')}</div>
+        ${awayBars ? `<div class="team-pred-comp-section">${awayBars}</div>` : ''}
+        ${_rows(awayPlayers)}
+      </div>
+      <div class="team-pred-col">
+        <div class="team-pred-col-header">${escHtml(homeAbbr||'Home')}</div>
+        ${homeBars ? `<div class="team-pred-comp-section">${homeBars}</div>` : ''}
+        ${_rows(homePlayers)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleTeamPredExpand(bkId, btnId) {
+  const bk  = document.getElementById(bkId);
+  const btn = document.getElementById(btnId);
+  if (!bk || !btn) return;
+  const open = bk.style.display !== 'none';
+  bk.style.display  = open ? 'none' : 'block';
+  btn.textContent   = open ? '▼ Player Breakdown' : '▲ Player Breakdown';
 }
 
 async function runLabEliteScan(onProgress) {
@@ -11863,6 +12444,7 @@ async function runLabAnalysis() {
   // Step 4: Park history (2026 game log filtered by venue) + bullpen
   _labStep('ls4','active');
   let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, ghp = null, ghpGames = 0, ghpHitGames = 0, ghpL10 = null, ghpL10HitGames = 0, ghpL10Games = 0;
+  let ghpL7 = null, ghpL7HitGames = 0, ghpL7Games = 0, ghpL30 = null, ghpL30HitGames = 0, ghpL30Games = 0;
   await Promise.all([
     (async () => {
       try {
@@ -11871,10 +12453,18 @@ async function runLabAnalysis() {
         ghpGames    = fullLog.length;
         ghpHitGames = fullLog.filter(g => (g.stat?.hits || 0) >= 1).length;
         if (ghpGames >= 10) ghp = ghpHitGames / ghpGames;
+        const _l7Log      = fullLog.slice(0, 7);
+        ghpL7Games      = _l7Log.length;
+        ghpL7HitGames   = _l7Log.filter(g => (g.stat?.hits || 0) >= 1).length;
+        if (ghpL7Games >= 3) ghpL7 = ghpL7HitGames / ghpL7Games;
         const _l10Log    = fullLog.slice(0, 10);
         ghpL10Games    = _l10Log.length;
         ghpL10HitGames = _l10Log.filter(g => (g.stat?.hits || 0) >= 1).length;
         if (ghpL10Games >= 5) ghpL10 = ghpL10HitGames / ghpL10Games;
+        const _l30Log     = fullLog.slice(0, 30);
+        ghpL30Games     = _l30Log.length;
+        ghpL30HitGames  = _l30Log.filter(g => (g.stat?.hits || 0) >= 1).length;
+        if (ghpL30Games >= 10) ghpL30 = ghpL30HitGames / ghpL30Games;
         const parkGames = fullLog.filter(g => {
           const vn = g.game?.venue?.name || g.venue?.name || '';
           return vn && vn === venue;
@@ -11926,7 +12516,9 @@ async function runLabAnalysis() {
      : `➡️ Neutral — ${fmt3(splitAvg)} vs ${pitcherHand}HP (within range of ${fmt3(seasAvg)} season avg, ${splitAB} AB)`)
     : `vs ${pitcherHand}HP — insufficient split sample (<20 AB)`;
 
+  const l7   = player.last7Stats  || {};
   const l10  = player.last10Stats || player.last7Stats || {};
+  const l30  = player.last30Stats || {};
   const era  = profile.era, whip = profile.whip;
   const k9n  = parseFloat(profile.k9), bb9n = parseFloat(profile.bb9), hr9n = parseFloat(profile.hr9);
 
@@ -12070,6 +12662,23 @@ async function runLabAnalysis() {
   const _labOrderLabel = player.orderPos === 1 ? '🥇' : player.orderPos === 2 ? '🥈' : player.orderPos === 3 ? '🥉' : player.orderPos ? `#${player.orderPos}` : '';
 
   // ── Card 1: Hitter Deep Dive ──────────────────────────────────────────────
+  function _rfGrid(s, ghpVal, ghpHit, ghpTotal) {
+    const _kpa = s.plateAppearances || s.atBats || 0;
+    const _k   = _kpa > 0 ? (s.strikeOuts || 0) / _kpa : null;
+    return `<div class="lab-stat-grid">
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(s.avg||0)>=0.300?'good':(s.avg||0)>=0.220?'avg':(s.avg||0)>0?'bad':''}">${fmt3(s.avg)}</div><div class="lab-stat-cell-sub">${s.atBats??'—'} AB</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val ${(s.obp||0)>=0.370?'good':(s.obp||0)>=0.310?'avg':(s.obp||0)>0?'bad':''}">${fmt3(s.obp)}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val ${(s.slg||0)>=0.500?'good':(s.slg||0)>=0.380?'avg':(s.slg||0)>0?'bad':''}">${fmt3(s.slg)}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">OPS</div><div class="lab-stat-cell-val ${(s.ops||0)>=0.850?'good':(s.ops||0)>=0.700?'avg':(s.ops||0)>0?'bad':''}">${fmt3(s.ops)}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">BABIP</div><div class="lab-stat-cell-val ${(s.babip||0)>=0.350?'good':(s.babip||0)>=0.280?'avg':(s.babip||0)>0?'bad':''}">${fmt3(s.babip)}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">BACON</div><div class="lab-stat-cell-val ${(s.bacon||0)>=0.350?'good':(s.bacon||0)>=0.280?'avg':(s.bacon||0)>0?'bad':''}">${fmt3(s.bacon)}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">K%</div><div class="lab-stat-cell-val ${_k!=null&&_k<0.15?'good':_k!=null&&_k<0.22?'avg':_k!=null?'bad':''}">${_k!=null?Math.round(_k*100)+'%':'—'}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">GHP</div><div class="lab-stat-cell-val ${ghpVal>=0.80?'good':ghpVal>=0.60?'avg':ghpVal!=null?'bad':''}">${ghpVal!=null?Math.round(ghpVal*100)+'%':'—'}</div><div class="lab-stat-cell-sub">${ghpVal!=null?ghpHit+'/'+ghpTotal+' G':''}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">Hits</div><div class="lab-stat-cell-val">${s.hits??'—'}</div></div>
+      <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${s.homeRuns??'—'}</div></div>
+    </div>`;
+  }
+
   document.getElementById('labHitterCard').innerHTML = `
   <div class="lab-deep-card">
     <div class="lab-deep-header" style="display:flex;align-items:center;justify-content:space-between">
@@ -12108,20 +12717,18 @@ async function runLabAnalysis() {
       </div>
       <!-- Today's split highlight -->
       <div class="lab-split-banner ${splitBannerCls}">${splitBannerTxt}</div>
-      <!-- L10 form -->
-      <div class="lab-section-label">Last 10 Games</div>
-      <div class="lab-stat-grid">
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">AVG</div><div class="lab-stat-cell-val ${(l10.avg||0)>=0.300?'good':(l10.avg||0)>=0.220?'avg':(l10.avg||0)>0?'bad':''}">${fmt3(l10.avg)}</div><div class="lab-stat-cell-sub">${l10.atBats??'—'} AB</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">OBP</div><div class="lab-stat-cell-val ${(l10.obp||0)>=0.370?'good':(l10.obp||0)>=0.310?'avg':(l10.obp||0)>0?'bad':''}">${fmt3(l10.obp)}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">SLG</div><div class="lab-stat-cell-val ${(l10.slg||0)>=0.500?'good':(l10.slg||0)>=0.380?'avg':(l10.slg||0)>0?'bad':''}">${fmt3(l10.slg)}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">OPS</div><div class="lab-stat-cell-val ${(l10.ops||0)>=0.850?'good':(l10.ops||0)>=0.700?'avg':(l10.ops||0)>0?'bad':''}">${fmt3(l10.ops)}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">BABIP</div><div class="lab-stat-cell-val ${(l10.babip||0)>=0.350?'good':(l10.babip||0)>=0.280?'avg':(l10.babip||0)>0?'bad':''}">${fmt3(l10.babip)}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">BACON</div><div class="lab-stat-cell-val ${(l10.bacon||0)>=0.350?'good':(l10.bacon||0)>=0.280?'avg':(l10.bacon||0)>0?'bad':''}">${fmt3(l10.bacon)}</div></div>
-        ${(()=>{const _k10pa=l10.plateAppearances||l10.atBats||0;const _k10=_k10pa>0?(l10.strikeOuts||0)/_k10pa:null;return`<div class="lab-stat-cell"><div class="lab-stat-cell-label">K%</div><div class="lab-stat-cell-val ${_k10!=null&&_k10<0.15?'good':_k10!=null&&_k10<0.22?'avg':_k10!=null?'bad':''}">${_k10!=null?Math.round(_k10*100)+'%':'—'}</div></div>`})()}
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">GHP</div><div class="lab-stat-cell-val ${ghpL10>=0.80?'good':ghpL10>=0.60?'avg':ghpL10!=null?'bad':''}">${ghpL10!=null?Math.round(ghpL10*100)+'%':'—'}</div><div class="lab-stat-cell-sub">${ghpL10!=null?ghpL10HitGames+'/'+ghpL10Games+' G':''}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">Hits</div><div class="lab-stat-cell-val">${l10.hits??'—'}</div></div>
-        <div class="lab-stat-cell"><div class="lab-stat-cell-label">HR</div><div class="lab-stat-cell-val">${l10.homeRuns??'—'}</div></div>
+      <!-- Recent form toggle: L7 / L10 / L30 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px">
+        <span class="lab-section-label" style="margin:0">Recent Form</span>
+        <div class="lab-period-tabs">
+          <button class="lab-period-tab" onclick="_labPeriodTab('L7',this)">L7</button>
+          <button class="lab-period-tab active" onclick="_labPeriodTab('L10',this)">L10</button>
+          <button class="lab-period-tab" onclick="_labPeriodTab('L30',this)">L30</button>
+        </div>
       </div>
+      <div id="labFormL7"  style="display:none">${_rfGrid(l7,  ghpL7,  ghpL7HitGames,  ghpL7Games)}</div>
+      <div id="labFormL10"                    >${_rfGrid(l10, ghpL10, ghpL10HitGames, ghpL10Games)}</div>
+      <div id="labFormL30" style="display:none">${_rfGrid(l30, ghpL30, ghpL30HitGames, ghpL30Games)}</div>
       <!-- Head-to-head vs pitcher -->
       <div class="lab-section-label">Career vs ${pitcher?.fullName?escHtml(pitcher.fullName):`This Pitcher`} (${pitcherHand}HP)</div>
       ${h2h?.ab >= 1 ? `
@@ -12375,7 +12982,7 @@ async function runLabAnalysis() {
   const _lNI = document.getElementById('labNativeShareItem');
   if (_lNI) _lNI.style.display = navigator.share ? '' : 'none';
   const _rBtn = document.querySelector('#labScreenAnalysis .lab-back-btn:first-child');
-  if (_rBtn) _rBtn.textContent = _labState.fromGlobalScan ? '← Elite Picks' : '← Roster';
+  if (_rBtn) _rBtn.textContent = _labState.fromGlobalScan ? '← Elite Picks' : _labState.fromLeaderScan ? '← Leaderboard Picks' : '← Roster';
 
   _labShow('labScreenAnalysis');
 }
