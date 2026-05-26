@@ -933,6 +933,14 @@ main { padding: 28px 0 60px; }
 .bts-pill-opp  { background: var(--accent-amber-dim);  color: var(--accent-amber);  border: 1px solid #fbbf2430; }
 .bts-pill-streak { background: #fb923c15; color: var(--accent-orange); border: 1px solid #fb923c30; }
 .bts-card-reasons { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+.bts-reasons-wrap { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.bts-reason-chip { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:14px; font-size:11px; font-weight:600; line-height:1.3; }
+.bts-chip-pos { background:rgba(74,222,128,0.10); color:#4ade80; border:1px solid rgba(74,222,128,0.28); }
+.bts-chip-neg { background:rgba(248,113,113,0.10); color:#f87171; border:1px solid rgba(248,113,113,0.28); }
+.bts-chip-neu { background:rgba(148,163,184,0.08); color:#94a3b8; border:1px solid rgba(148,163,184,0.22); }
+.bts-tip-btn { background:none; border:1px solid currentColor; border-radius:50%; width:13px; height:13px; font-size:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; opacity:0.60; padding:0; line-height:1; color:inherit; flex-shrink:0; vertical-align:middle; }
+.bts-tip-btn:hover { opacity:1; }
+.bts-tip-popup { position:absolute; background:#1a1e2a; border:1px solid #2e3448; border-radius:8px; padding:10px 13px; font-size:12px; color:#c8cdd8; max-width:230px; z-index:9999; box-shadow:0 4px 24px rgba(0,0,0,0.65); line-height:1.5; pointer-events:none; }
 .bts-score-bar-wrap { margin: 8px 0 4px; }
 .bts-score-bar-track {
   height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
@@ -6414,6 +6422,76 @@ function _btsLineupBadge(status) {
   return map[status] || '';
 }
 
+// ─── BTS FACTOR CHIP SYSTEM ───────────────────────────────────────────────────
+const BTS_TIPS = {
+  'Strong Season Skill':      { type:'pos', tip:'Season batting average above .310 signals consistent elite contact. Higher averages mean a stronger daily hit floor.' },
+  'Weak Season Skill':        { type:'neg', tip:'Season batting average below .220 shows poor contact consistency. Low-average hitters have a reduced daily hit probability.' },
+  'elite plate discipline':   { type:'pos', tip:'OBP above .380 shows elite plate discipline — this hitter works counts, draws walks, and finds ways on base frequently.' },
+  'Elite Contact':            { type:'pos', tip:'K% below 15% means this hitter makes contact on nearly every swing. Low strikeout hitters consistently put the ball in play.' },
+  'High Batter K%':           { type:'neg', tip:'High strikeout rate means this hitter frequently fails to make contact. Every strikeout is a guaranteed non-hit.' },
+  'Strong Contact':           { type:'pos', tip:'BACON above .320 means batted balls turn into hits at an elite rate — this hitter makes quality contact.' },
+  'season stats unreliable':  { type:'neg', tip:'Fewer than 15 season at-bats makes stats statistically unreliable. Strong rates on a tiny sample are often noise, not signal.' },
+  'Hot Recent Consistency':   { type:'pos', tip:'Batting .350+ over the last 7 days shows red-hot recent form. Recent performance is the strongest short-term predictor of hit probability.' },
+  '(hot)':                    { type:'pos', tip:'Batting .300+ in the last 7 days shows solid recent form. Hot stretches tend to carry momentum into upcoming games.' },
+  'Poor Recent Consistency':  { type:'neg', tip:'Batting below .200 over the last 7 days signals a slump. Cold streaks are a meaningful negative signal for today.' },
+  'High Hit Game Rate':       { type:'pos', tip:'Getting a hit in 5+ of the last 7 games shows consistent daily reliability — this hitter rarely goes hitless.' },
+  'Low Hit Game Rate':        { type:'neg', tip:'Getting a hit in 2 or fewer of the last 7 games is a serious consistency concern — this hitter frequently goes hitless.' },
+  'hit streak':               { type:'pos', tip:'An active hitting streak shows this hitter is locked in. Streaking players tend to maintain their momentum.' },
+  'Limited Opportunity':      { type:'neg', tip:'Batting 8th or 9th means fewer plate appearances per game and less run-producing opportunity vs top-of-the-order spots.' },
+  'Low AB Volume':            { type:'neg', tip:'Fewer than 10 at-bats in the last 7 days suggests limited playing time — fewer plate appearances means fewer chances to record a hit.' },
+  'Lineup Not Confirmed':     { type:'neg', tip:"This player's lineup spot has not been officially confirmed. It could change — verify before making any decisions." },
+  'Starter Allows Hits':      { type:'pos', tip:'H/9 above 9.5 means this pitcher gives up hits at a very high rate — more daily opportunities to record a hit against them.' },
+  'Starter Suppresses Hits':  { type:'neg', tip:'H/9 below 6.3 means this pitcher is elite at preventing hits. Fewer hits allowed = a much tougher matchup for batters.' },
+  'High Starter H/BF%':      { type:'pos', tip:'H/BF above 27% means this pitcher allows a hit on more than 1 in 4 plate appearances — a very hitter-friendly contact ratio.' },
+  'H/BF%':                   { type:'pos', tip:'Hits per batter faced shows how often this pitcher allows hits across all plate appearances. Higher = better opportunity for the batter.' },
+  'Low-K Starter':            { type:'pos', tip:'Low strikeout rate means this pitcher relies on contact to get outs. More balls in play = more hit opportunities for batters.' },
+  'High-K Starter':           { type:'neg', tip:'High strikeout rate means this pitcher records outs without the ball being put in play. Strikeouts eliminate hit opportunities entirely.' },
+  'Weak Starter':             { type:'pos', tip:'High H/9 indicates this pitcher has been vulnerable this season — hitters reach base at an above-average rate.' },
+  'Elite Starter':            { type:'neg', tip:'Low H/9 indicates this pitcher has been dominant — hitters have very little success getting on base against them.' },
+  'Bullpen Hit Risk':         { type:'pos', tip:'The opposing bullpen allows 9.5+ H/9 — when the starter exits, relief pitchers continue to allow hits freely, extending scoring opportunity.' },
+  'High Opp Bullpen H/BF%':  { type:'pos', tip:'Opposing bullpen hit rate above 27% per batter means relief pitchers are prone to giving up hits even in the late innings.' },
+  'Bullpen Allows Hits':      { type:'pos', tip:'Opposing bullpen allows hits at an above-average rate — late-game plate appearances come against vulnerable relief pitching.' },
+  'Low Opp Bullpen H/BF%':   { type:'neg', tip:'Opposing bullpen is stingy with hits — even if the starter tires, relief pitchers suppress hit rates effectively.' },
+  'Favorable Platoon Split':  { type:'pos', tip:'Strong career batting average against this pitcher handedness with a meaningful sample size. Platoon advantages consistently improve hit rates.' },
+  'Weak Split vs Hand':       { type:'neg', tip:'Poor career average against this pitcher handedness — unfavorable platoon matchups are persistent and significantly reduce hit probability.' },
+  'Very low recent AB volume':{ type:'neg', tip:'Very few plate appearances in the last 7 days suggests recent injury or rest — limited recent action makes stats less predictive.' },
+  'Low recent AB volume':     { type:'neg', tip:'Below-average plate appearances in the last 7 days. Less recent activity reduces reliability of recent form data.' },
+  'Below-avg recent AB volume':{ type:'neg', tip:'Fewer than 24 at-bats in the last 7 days is below the expected playing-time threshold. Recent stats carry reduced predictive weight.' },
+};
+
+function showBtsTip(btn, text) {
+  document.querySelectorAll('.bts-tip-popup').forEach(el => el.remove());
+  const popup = document.createElement('div');
+  popup.className = 'bts-tip-popup';
+  popup.textContent = text;
+  document.body.appendChild(popup);
+  const rect = btn.getBoundingClientRect();
+  let top  = rect.bottom + window.scrollY + 6;
+  let left = rect.left + window.scrollX - 100;
+  left = Math.max(8, Math.min(left, window.innerWidth - 244));
+  popup.style.top  = top  + 'px';
+  popup.style.left = left + 'px';
+  const close = e => {
+    if (!popup.contains(e.target) && e.target !== btn) {
+      popup.remove();
+      document.removeEventListener('click', close);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', close), 10);
+}
+
+function _btsReasonChipHTML(reason) {
+  const txt = typeof reason === 'string' ? reason : (reason.text || String(reason));
+  let type = 'neu', tip = '';
+  for (const [key, val] of Object.entries(BTS_TIPS)) {
+    if (txt.includes(key)) { type = val.type; tip = val.tip; break; }
+  }
+  const tipBtn = tip
+    ? `<button class="bts-tip-btn" onclick="event.stopPropagation();showBtsTip(this,${JSON.stringify(tip)})" aria-label="What does this mean?">?</button>`
+    : '';
+  return `<span class="bts-reason-chip bts-chip-${type}">${escHtml(txt)}${tipBtn}</span>`;
+}
+
 function computeBtsScore(player, gameData) {
   const reasons = [];
   const ss    = player.seasonStats || {};
@@ -7122,7 +7200,7 @@ function renderBeatTheStreak() {
         <div class="bts-matchup-tag">
           ⚾ vs ${pName} (ERA ${pEra}) · ${player.teamId === gd.homeTeamId ? 'HOME' : 'AWAY'} vs ${oppAbbr}
         </div>
-        ${reasons.length ? `<div class="bts-card-reasons" style="margin-top:8px">+ ${reasons.slice(0,4).join(' · ')}</div>` : ''}
+        ${reasons.length ? `<div class="bts-reasons-wrap">${reasons.slice(0,5).map(_btsReasonChipHTML).join('')}</div>` : ''}
         <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'bts')">🔬 Lab Analysis</button></div>
         <div class="streak-expand-btn" onclick="toggleStreakGameLog(${player.id},this,'bts-gl-${player.id}',false,7)">
           <span>Last 7 Games</span><span class="chevron">▼</span>
@@ -11730,7 +11808,7 @@ function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal,
   else if (pf && pf < 0.96) pills.push(`<span class="bts-score-pill bts-pill-park">PF ${((pf-1)*100).toFixed(0)}%</span>`);
 
   const pitcherTag = pitcher?.name ? `vs ${escHtml(pitcher.name)}` : '';
-  const reasonText = reasons.length ? reasons.join(' · ') : 'Multiple positive signals';
+  const reasonText = reasons.length ? reasons.map(r => typeof r === 'string' ? r : r.text).join(' · ') : 'Multiple positive signals';
 
   return `<div class="bts-card" style="cursor:default">
     <label class="lab-player-check-wrap" onclick="event.stopPropagation()" style="position:absolute;top:12px;left:12px;padding:0;margin:0;z-index:1">
@@ -11750,7 +11828,7 @@ function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal,
     </div>
     ${pills.length ? `<div class="bts-card-scores" style="margin:8px 0 4px">${pills.join('')}</div>` : ''}
     ${pitcherTag ? `<div class="bts-matchup-tag">${pitcherTag}</div>` : ''}
-    <div class="bts-card-reasons" style="margin-top:8px">${escHtml(reasonText)}</div>
+    <div class="bts-reasons-wrap">${reasons.slice(0,4).map(_btsReasonChipHTML).join('')}</div>
     <button class="lab-elite-analyze-btn" style="width:100%;margin-top:12px;text-align:center" onclick="${onclk}">Full Analysis →</button>
   </div>`;
 }
