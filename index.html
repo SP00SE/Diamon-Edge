@@ -6511,6 +6511,12 @@ function computeBtsScore(player, gameData) {
     else if (ghp7  < 0.50) { consistency -= 2; reasons.push(`Low Hit Game Rate (${hg7}/7)`); }
   }
 
+  // L7 AB volume guard — low recent plate time makes all recent stats unreliable
+  const l7abVol = l7.atBats || 0;
+  if      (l7abVol > 0 && l7abVol < 8)  { consistency -= 8; reasons.push(`Very low recent AB volume (${l7abVol} last 7 days) — stats unreliable`); }
+  else if (l7abVol > 0 && l7abVol < 15) { consistency -= 6; reasons.push(`Low recent AB volume (${l7abVol} last 7 days)`); }
+  else if (l7abVol > 0 && l7abVol < 24) { consistency -= 5; reasons.push(`Below-avg recent AB volume (${l7abVol} last 7 days)`); }
+
   consistency = clamp(consistency, -6, 10);
 
   // ─── 3. OPPORTUNITY  (cap −12 / +8) ────────────────────────────────────────
