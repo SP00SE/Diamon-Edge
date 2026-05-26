@@ -6475,6 +6475,14 @@ function computeBtsScore(player, gameData) {
   if      (babip >= 0.320)             { skill += 1; }
   else if (babip > 0 && babip < 0.270) { skill -= 1; }
 
+  // Sample size guard — small season samples inflate per-AB stats
+  if (ssAB > 0 && ssAB < 15) {
+    skill = Math.min(skill, -3);
+    reasons.push(`Very small sample (${ssAB} AB) — season stats unreliable`);
+  } else if (ssAB > 0 && ssAB < 30) {
+    skill = Math.min(skill, 1);
+  }
+
   skill = clamp(skill, -8, 12);
 
   // ─── 2. RECENT CONSISTENCY  (cap −6 / +10) ─────────────────────────────────
