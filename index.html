@@ -3831,16 +3831,17 @@ function _hitMatchupScore(batter, pitcher, factors) {
   return Math.min(14, Math.max(-14, s));
 }
 
-function _hitBullpenScore(bullpenEra, factors) {
+function _hitBullpenScore(bullpenEra, factors, bullpenH9 = 0) {
   if (!(bullpenEra > 0)) return 0;
+  const dispH9 = bullpenH9 > 0 ? `H/9 ${bullpenH9.toFixed(1)}` : `ERA ${bullpenEra.toFixed(2)}`;
   let s = 0;
-  if      (bullpenEra <= 3.00) { s = -4; factors.push({ label: `Opp pen ERA ${bullpenEra.toFixed(2)} (elite)`,    type:'neg', pts: -4 }); }
-  else if (bullpenEra <= 3.50) { s = -3; factors.push({ label: `Opp pen ERA ${bullpenEra.toFixed(2)} (strong)`,   type:'neg', pts: -3 }); }
-  else if (bullpenEra <= 4.00) { s = -2; factors.push({ label: `Opp pen ERA ${bullpenEra.toFixed(2)} (above avg)`,type:'neg', pts: -2 }); }
+  if      (bullpenEra <= 3.00) { s = -4; factors.push({ label: `Opp pen ${dispH9} (elite)`,    type:'neg', pts: -4 }); }
+  else if (bullpenEra <= 3.50) { s = -3; factors.push({ label: `Opp pen ${dispH9} (strong)`,   type:'neg', pts: -3 }); }
+  else if (bullpenEra <= 4.00) { s = -2; factors.push({ label: `Opp pen ${dispH9} (above avg)`,type:'neg', pts: -2 }); }
   else if (bullpenEra <= 4.50) { /* neutral */ }
-  else if (bullpenEra <= 5.00) { s =  2; factors.push({ label: `Opp pen ERA ${bullpenEra.toFixed(2)} (weak)`,     type:'pos', pts:  2 }); }
-  else if (bullpenEra <= 5.50) { s =  3; factors.push({ label: `Opp pen ERA ${bullpenEra.toFixed(2)} (poor)`,     type:'pos', pts:  3 }); }
-  else                         { s =  4; factors.push({ label: `Opp pen ERA ${bullpenEra.toFixed(2)} (terrible)`, type:'pos', pts:  4 }); }
+  else if (bullpenEra <= 5.00) { s =  2; factors.push({ label: `Opp pen ${dispH9} (weak)`,     type:'pos', pts:  2 }); }
+  else if (bullpenEra <= 5.50) { s =  3; factors.push({ label: `Opp pen ${dispH9} (poor)`,     type:'pos', pts:  3 }); }
+  else                         { s =  4; factors.push({ label: `Opp pen ${dispH9} (terrible)`, type:'pos', pts:  4 }); }
   return s;
 }
 
@@ -3860,13 +3861,13 @@ function _hitWeatherScore(weather, factors) {
   return Math.min(3, Math.max(-3, s));
 }
 
-function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0) {
+function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
   const factors      = [];
   const skill        = _hitSkillScore(batter, factors);
   const form         = _hitRecentFormScore(batter, factors);
   const opp          = _hitOpportunityScore(batter, orderPos, factors);
   const matchup      = _hitMatchupScore(batter, pitcher, factors);
-  const bullpen      = _hitBullpenScore(bullpenEra, factors);
+  const bullpen      = _hitBullpenScore(bullpenEra, factors, bullpenH9);
   const weatherScore = _hitWeatherScore(weather, factors);
 
   // Park factor — capped ±4
@@ -4048,16 +4049,17 @@ function _hrPitchTypeMatchupScore(_batter, _pitcher, _factors) {
 }
 
 // 6. Bullpen HR Matchup — cap −6 to +6
-function _hrBullpenMatchupScore(bullpenEra, factors) {
+function _hrBullpenMatchupScore(bullpenEra, factors, bullpenH9 = 0) {
   if (!(bullpenEra > 0)) return 0;
+  const dispH9 = bullpenH9 > 0 ? `H/9 ${bullpenH9.toFixed(1)}` : `ERA ${bullpenEra.toFixed(2)}`;
   let s = 0;
-  if      (bullpenEra <= 3.00) { s = -6; factors.push({ label:`Opp pen ERA ${bullpenEra.toFixed(2)} (elite, HR suppressor)`,  type:'neg', pts:-6 }); }
-  else if (bullpenEra <= 3.50) { s = -4; factors.push({ label:`Opp pen ERA ${bullpenEra.toFixed(2)} (strong pen)`,            type:'neg', pts:-4 }); }
-  else if (bullpenEra <= 4.00) { s = -2; factors.push({ label:`Opp pen ERA ${bullpenEra.toFixed(2)} (above avg)`,             type:'neg', pts:-2 }); }
+  if      (bullpenEra <= 3.00) { s = -6; factors.push({ label:`Opp pen ${dispH9} (elite, HR suppressor)`,  type:'neg', pts:-6 }); }
+  else if (bullpenEra <= 3.50) { s = -4; factors.push({ label:`Opp pen ${dispH9} (strong pen)`,            type:'neg', pts:-4 }); }
+  else if (bullpenEra <= 4.00) { s = -2; factors.push({ label:`Opp pen ${dispH9} (above avg)`,             type:'neg', pts:-2 }); }
   else if (bullpenEra <= 4.50) { /* neutral */ }
-  else if (bullpenEra <= 5.00) { s =  2; factors.push({ label:`Opp pen ERA ${bullpenEra.toFixed(2)} (weak pen)`,              type:'pos', pts: 2 }); }
-  else if (bullpenEra <= 5.50) { s =  4; factors.push({ label:`Opp pen ERA ${bullpenEra.toFixed(2)} (poor pen)`,              type:'pos', pts: 4 }); }
-  else                         { s =  6; factors.push({ label:`Opp pen ERA ${bullpenEra.toFixed(2)} (terrible pen)`,           type:'pos', pts: 6 }); }
+  else if (bullpenEra <= 5.00) { s =  2; factors.push({ label:`Opp pen ${dispH9} (weak pen)`,              type:'pos', pts: 2 }); }
+  else if (bullpenEra <= 5.50) { s =  4; factors.push({ label:`Opp pen ${dispH9} (poor pen)`,              type:'pos', pts: 4 }); }
+  else                         { s =  6; factors.push({ label:`Opp pen ${dispH9} (terrible pen)`,           type:'pos', pts: 6 }); }
   return s;
 }
 
@@ -4098,14 +4100,14 @@ function _hrParkWeatherScore(batter, weather, parkFactor, factors) {
 }
 
 // ─── HR SCORE ORCHESTRATOR ────────────────────────────────────────────────────
-function computeHRScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0) {
+function computeHRScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
   const factors   = [];
   const power     = _hrPowerSkillScore(batter, factors);
   const form      = _hrRecentPowerFormScore(batter, factors);
   const opp       = _hrOpportunityScore(batter, orderPos, factors);
   const starter   = _hrStarterMatchupScore(batter, pitcher, factors);
   const pitchType = _hrPitchTypeMatchupScore(batter, pitcher, factors);
-  const bullpen   = _hrBullpenMatchupScore(bullpenEra, factors);
+  const bullpen   = _hrBullpenMatchupScore(bullpenEra, factors, bullpenH9);
   const parkWx    = _hrParkWeatherScore(batter, weather, parkFactor, factors);
   const raw = 40 + power + form + opp + starter + pitchType + bullpen + parkWx;
   return { score: clamp(Math.round(raw), 5, 95), factors };
@@ -4467,8 +4469,9 @@ async function processGame(game) {
 
     const batterObj = { ...batter, seasonStats, last7Stats, last10Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
     const oppBullpenEra = batter.isAway ? homeBullpenEra : awayBullpenEra;
-    const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra);
-    const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra);
+    const oppBullpenH9  = batter.isAway ? homeBullpenH9  : awayBullpenH9;
+    const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra, oppBullpenH9);
+    const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra, oppBullpenH9);
 
     const playerObj = {
       ...batter,
@@ -6594,9 +6597,9 @@ function computeBtsScore(player, gameData) {
 
   // ERA: secondary context only — max ±2
   if (pEra > 0) {
-    if      (pEra >= 5.00) { starterMatchup += 2; reasons.push(`ERA ${pEra.toFixed(2)} — Weak Starter`); }
+    if      (pEra >= 5.00) { starterMatchup += 2; reasons.push(`H/9 ${pH9.toFixed(1)} — Weak Starter`); }
     else if (pEra >= 4.25) { starterMatchup += 1; }
-    else if (pEra <= 3.00) { starterMatchup -= 2; reasons.push(`ERA ${pEra.toFixed(2)} — Elite Starter`); }
+    else if (pEra <= 3.00) { starterMatchup -= 2; reasons.push(`H/9 ${pH9.toFixed(1)} — Elite Starter`); }
     else if (pEra <= 3.50) { starterMatchup -= 1; }
   }
 
@@ -11672,23 +11675,29 @@ async function fetchElitePlayerData(player, gd) {
 }
 
 // Shared reason builder for elite pick cards
-function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp) {
+function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0) {
   const reasons = [];
   const era = pitcher?.seasonStats?.era || 0;
   const _pK   = pitcher?.seasonStats?.strikeOuts     || 0;
   const _pIP  = pitcher?.seasonStats?.inningsPitched || 0;
+  const _pBB  = pitcher?.seasonStats?.baseOnBalls    || 0;
+  const _pWhip = pitcher?.seasonStats?.whip          || 0;
   const _kpct = _pIP > 0 ? _pK / (_pIP * 4.3) : 0;
+  const _pH   = _pIP > 0 ? Math.max(0, _pWhip * _pIP - _pBB) : 0;
+  const _h9   = _pIP > 0 ? (_pH / _pIP) * 9 : 0;
+  const h9Disp = _h9 > 0 ? `H/9 ${_h9.toFixed(1)}` : `ERA ${era.toFixed(2)}`;
+  const penDisp = bullpenH9 > 0 ? `H/9 ${bullpenH9.toFixed(1)}` : `ERA ${bullpenEra.toFixed(2)}`;
   const profile_ = pitcher ? buildPitcherProfile(pitcher) : null;
   const lbl_ = profile_?.eraTier?.label || '';
   if (lbl_.includes('ERA Trap') || lbl_.includes('Mixed Profile')) {
-    reasons.push(`ERA-vulnerable but strikeout-dangerous (${era.toFixed(2)} ERA / ${Math.round(_kpct*100)}% K rate)`);
+    reasons.push(`${h9Disp} — contact risk despite strikeout rate (K% ${Math.round(_kpct*100)}%)`);
   } else if (lbl_ === 'Hit-Friendly Profile') {
-    reasons.push(`Hit-friendly contact profile (${era.toFixed(2)} ERA)`);
+    reasons.push(`Hit-friendly contact profile (${h9Disp})`);
   } else if (era > 5.00) {
     const _kNote = _kpct >= 0.22 ? ` / ${Math.round(_kpct*100)}% K rate` : '';
-    reasons.push(`Elevated ERA (${era.toFixed(2)}${_kNote}) — contact outcome varies`);
+    reasons.push(`${h9Disp}${_kNote} — contact outcome varies`);
   } else if (era > 4.20) {
-    reasons.push(`Contact opportunity (${era.toFixed(2)} ERA)`);
+    reasons.push(`Contact opportunity (${h9Disp})`);
   }
   const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
   const split = player[splitKey];
@@ -11699,8 +11708,8 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp) {
   }
   if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
   else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
-  if      (bullpenEra > 5.00) reasons.push(`Bullpen hit opportunity (${bullpenEra.toFixed(2)} ERA)`);
-  else if (bullpenEra > 4.50) reasons.push(`Late-game hit upside (${bullpenEra.toFixed(2)} ERA)`);
+  if      (bullpenEra > 5.00) reasons.push(`Bullpen hit opportunity (${penDisp})`);
+  else if (bullpenEra > 4.50) reasons.push(`Late-game hit upside (${penDisp})`);
   const l10avg = (player.last10Stats||player.last7Stats)?.avg || 0;
   if      (l10avg > 0.350) reasons.push(`On fire recently (${l10avg.toFixed(3)})`);
   else if (l10avg > 0.300) reasons.push(`Hot recent form (${l10avg.toFixed(3)})`);
