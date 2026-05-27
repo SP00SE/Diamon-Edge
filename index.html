@@ -2888,13 +2888,18 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Batter K% 19–24% — league average (neutral)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Batter K% 25–31% — high strikeout rate</span></div>
           <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Batter K% &gt; 31% — free swinger</span></div>
-          <div class="formula-divider">Batter BABIP &amp; BACON <span class="formula-divider-sub">contact quality — BABIP is luck-driven (±1 only); BACON is skill signal</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">BABIP ≥ .340 — elite balls-in-play hit rate</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">BABIP &lt; .265 — weak contact or bad luck</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">BACON ≥ .320 — elite contact-to-hit conversion</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">BACON ≥ .295</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">BACON &lt; .280 — consistently weak contact</span></div>
+          <div class="formula-divider">Batter BABIP &amp; BACON <span class="formula-divider-sub">contact quality — BABIP ±6 · BACON ±6</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">BABIP ≥ .340 — elite balls-in-play hit rate</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">BABIP ≥ .310</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">BABIP ≥ .290</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">BABIP &lt; .265 — weak contact or bad luck</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">BABIP &lt; .240 — very low</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">BACON ≥ .320 — elite contact-to-hit conversion</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">BACON ≥ .295</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">BACON ≥ .280</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">BACON &lt; .280 — below average contact</span></div>
           <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">BACON &lt; .265</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">BACON &lt; .250 — consistently weak contact</span></div>
           <div class="formula-divider">Recent Form <span class="formula-divider-sub">capped +8/−6 — hot week can't override season stats, cold spell is penalized</span></div>
           <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">L7 AVG &gt; .350 🔥</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">L7 AVG .300–.349</span></div>
@@ -2911,28 +2916,37 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batting 3rd or 4th</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2/−3</span><span class="fr-text">Batting 8th or 9th</span></div>
           <div class="formula-divider">Pitcher Matchup <span class="formula-divider-sub">vs opposing starter · capped ±10</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher WHIP ≥ 1.40</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher WHIP &lt; 1.10</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher WHIP ≥ 1.40 (weak)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Pitcher WHIP ≥ 1.30</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Pitcher WHIP ≥ 1.20</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Pitcher WHIP &lt; 1.10 (sharp)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher K% &lt; 16% — contact-prone (requires pitcher IP data)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher K% 16–20% — low K rate</span></div>
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Pitcher K% 21–24% — league average (neutral)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher K% 25–28% — above average K rate</span></div>
           <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% 29–32% — high K rate (strikeout threat)</span></div>
           <div class="formula-row"><span class="fr-sign neg">−7</span><span class="fr-text">Pitcher K% &gt; 32% — elite K (Cole/deGrom-tier)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher contact allowed &gt; 75% — requires pitcher IP data</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Batter AVG vs pitcher hand &gt; .300 (min 20 AB)</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Batter AVG vs pitcher hand .270–.299 (min 20 AB)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">Batter AVG vs pitcher hand .220–.249 (min 20 AB)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter AVG vs pitcher hand &lt; .220 (min 20 AB)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher contact allowed ≥ 82% — very high (requires IP data)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Pitcher contact allowed ≥ 78%</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Pitcher contact allowed ≥ 75%</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher contact allowed &lt; 65% — strikeout specialist</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">AVG vs pitcher hand &gt; .300 (20+ AB)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">AVG vs pitcher hand ≥ .270 (20+ AB)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">AVG vs pitcher hand &lt; .250 (20+ AB)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">AVG vs pitcher hand &lt; .220 (20+ AB)</span></div>
+          <div class="formula-row"><span class="fr-sign">±2</span><span class="fr-text">Same splits at half weight for 10–19 AB small sample</span></div>
           <div class="formula-divider">Pitcher BABIP &amp; BACON Allowed <span class="formula-divider-sub">contact quality allowed by starter — requires pitcher IP data</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">P-BABIP ≥ .330 — allows lots of hits on balls in play</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">P-BABIP ≥ .310</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">P-BABIP ≤ .280 — below average contact allowed</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">P-BABIP ≤ .260 — induces weak contact</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">P-BACON ≥ .310 — hitters make hard contact off him</span></div>
-          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">P-BACON ≥ .290</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">P-BACON ≤ .270 — limits hard contact</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">P-BACON ≤ .250 — elite contact suppressor</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+7</span><span class="fr-text">P-BABIP ≥ .330 — allows lots of hits on balls in play</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">P-BABIP ≥ .310</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">P-BABIP ≥ .295</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">P-BABIP ≤ .280 — below average contact allowed</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−7</span><span class="fr-text">P-BABIP ≤ .260 — induces weak contact</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">P-BACON ≥ .310 — hitters make hard contact off him</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">P-BACON ≥ .290</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">P-BACON ≥ .275</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">P-BACON ≤ .275 — limits hard contact</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">P-BACON ≤ .265</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">P-BACON ≤ .250 — elite contact suppressor</span></div>
           <div class="formula-divider">Park Factor <span class="formula-divider-sub">overall hit environment · capped ±4</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Park ≥ 1.10× — strong hitter's park (Coors-tier)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Park ≥ 1.05× — hitter-friendly</span></div>
