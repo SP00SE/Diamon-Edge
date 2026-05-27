@@ -2886,8 +2886,8 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Batter K% &lt; 10% — elite contact (Arraez-tier)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Batter K% 10–18% — good contact</span></div>
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Batter K% 19–24% — league average (neutral)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Batter K% 25–31% — high strikeout rate</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Batter K% &gt; 31% — free swinger</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Batter K% 25–31% — high strikeout rate</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−10</span><span class="fr-text">Batter K% &gt; 31% — free swinger</span></div>
           <div class="formula-divider">Batter BABIP &amp; BACON <span class="formula-divider-sub">contact quality — BABIP ±6 · BACON ±6</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">BABIP ≥ .340 — elite balls-in-play hit rate</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">BABIP ≥ .310</span></div>
@@ -2923,9 +2923,9 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Pitcher K% &lt; 16% — contact-prone (requires pitcher IP data)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Pitcher K% 16–20% — low K rate</span></div>
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Pitcher K% 21–24% — league average (neutral)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Pitcher K% 25–28% — above average K rate</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% 29–32% — high K rate (strikeout threat)</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−7</span><span class="fr-text">Pitcher K% &gt; 32% — elite K (Cole/deGrom-tier)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−5</span><span class="fr-text">Pitcher K% 25–28% — above average K rate</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−7</span><span class="fr-text">Pitcher K% 29–32% — high K rate (strikeout threat)</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−10</span><span class="fr-text">Pitcher K% &gt; 32% — elite K (Cole/deGrom-tier)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">Pitcher contact allowed ≥ 82% — very high (requires IP data)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">Pitcher contact allowed ≥ 78%</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">Pitcher contact allowed ≥ 75%</span></div>
@@ -2981,11 +2981,11 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign" style="font-size:10px">Recent AB</span><span class="fr-text">Total AB in last 7 game log entries — realistic MLB weekly volume indicator</span></div>
           <div class="formula-row"><span class="fr-sign pos">+6</span><span class="fr-text">29+ AB — very strong everyday usage</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">23–28 AB — strong everyday usage</span></div>
-          <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">17–22 AB — acceptable / lower-end normal</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">11–16 AB — below-average opportunity</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">6–10 AB — limited role / bench / platoon</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−10</span><span class="fr-text">1–5 AB — bench / platoon / injury concern</span></div>
-          <div class="formula-row"><span class="fr-sign neg">−12</span><span class="fr-text">0 AB — not playing</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">17–22 AB — below-avg volume</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">11–16 AB — below-average opportunity</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−10</span><span class="fr-text">6–10 AB — limited role / bench / platoon</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−12</span><span class="fr-text">1–5 AB — bench / platoon / injury concern</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−18</span><span class="fr-text">0 AB — not playing</span></div>
         </div>
         <div class="formula-col">
           <h3 class="section-title orange">HR SCORE</h3>
@@ -3614,13 +3614,13 @@ const PA_CFG = {
     { min: 0,    score: -4 },
   ],
   recentUsage: [
-    { min: 29, score:  6 },  // 29+ AB — very strong everyday usage
-    { min: 23, score:  3 },  // 23–28 AB — strong everyday usage
-    { min: 17, score:  0 },  // 17–22 AB — acceptable / lower-end normal
-    { min: 11, score: -3 },  // 11–16 AB — below-avg opportunity
-    { min:  6, score: -6 },  // 6–10 AB — limited role / bench
-    { min:  1, score: -10 }, // 1–5 AB — bench/platoon/injury concern
-    { min:  0, score: -12 }, // 0 AB — not playing
+    { min: 29, score:   6 },  // 29+ AB — very strong everyday usage
+    { min: 23, score:   3 },  // 23–28 AB — strong everyday usage
+    { min: 17, score:  -3 },  // 17–22 AB — below-avg volume
+    { min: 11, score:  -6 },  // 11–16 AB — below-avg opportunity
+    { min:  6, score: -10 },  // 6–10 AB — limited role / bench
+    { min:  1, score: -12 },  // 1–5 AB — bench/platoon/injury concern
+    { min:  0, score: -18 },  // 0 AB — not playing
   ],
 };
 
@@ -3688,8 +3688,8 @@ function _hitSkillScore(batter, factors) {
   if      (kPct < .10)  { s += 6; factors.push({ label: `K% ${kp}% (elite contact)`,  type:'pos', pts:  6 }); }
   else if (kPct < .19)  { s += 4; factors.push({ label: `K% ${kp}% (good contact)`,   type:'pos', pts:  4 }); }
   else if (kPct < .25)  {         /* neutral — league average */                                               }
-  else if (kPct < .32)  { s -= 3; factors.push({ label: `K% ${kp}% (high K)`,         type:'neg', pts: -3 }); }
-  else if (kPct > 0)    { s -= 5; factors.push({ label: `K% ${kp}% (free swinger)`,   type:'neg', pts: -5 }); }
+  else if (kPct < .32)  { s -= 5;  factors.push({ label: `K% ${kp}% (high K)`,         type:'neg', pts:  -5 }); }
+  else if (kPct > 0)    { s -= 10; factors.push({ label: `K% ${kp}% (free swinger)`,   type:'neg', pts: -10 }); }
 
   // BABIP ±6
   const babip = batter.seasonStats?.babip || 0;
@@ -3794,9 +3794,9 @@ function _hitMatchupScore(batter, pitcher, factors) {
     if      (pKpct < .16)   { s += 5; factors.push({ label: `P K% ${pKp}% (contact-prone)`,     type:'pos', pts:  5 }); }
     else if (pKpct < .21)   { s += 3; factors.push({ label: `P K% ${pKp}% (low K)`,             type:'pos', pts:  3 }); }
     else if (pKpct < .25)   {         /* neutral — league average */ }
-    else if (pKpct < .29)   { s -= 3; factors.push({ label: `P K% ${pKp}% (above avg K)`,       type:'neg', pts: -3 }); }
-    else if (pKpct < .33)   { s -= 5; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts: -5 }); }
-    else if (pKpct > 0)     { s -= 7; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -7 }); }
+    else if (pKpct < .29)   { s -=  5; factors.push({ label: `P K% ${pKp}% (above avg K)`,       type:'neg', pts:  -5 }); }
+    else if (pKpct < .33)   { s -=  7; factors.push({ label: `P K% ${pKp}% (high K)`,            type:'neg', pts:  -7 }); }
+    else if (pKpct > 0)     { s -= 10; factors.push({ label: `P K% ${pKp}% (elite K)`,           type:'neg', pts: -10 }); }
 
     // Contact allowed (increased weight)
     const contactAllowed = 1 - pKpct;
