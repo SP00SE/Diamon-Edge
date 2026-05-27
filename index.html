@@ -880,7 +880,10 @@ main { padding: 28px 0 60px; }
   border-radius: var(--radius-md);
 }
 .bts-filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 110px; }
-.bts-filter-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.bts-filter-label { font-size: 10px; color: #7dd3fc; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; display:flex; align-items:center; gap:5px; }
+.bts-filter-tip-btn { background:none; border:1px solid #7dd3fc55; border-radius:50%; width:13px; height:13px; font-size:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:#7dd3fc; opacity:0.65; padding:0; line-height:1; flex-shrink:0; }
+.bts-filter-tip-btn:hover { opacity:1; background:#7dd3fc15; }
+.bts-filter-tip-popup { position:absolute; background:#1a1e2a; border:1px solid #7dd3fc33; border-radius:8px; padding:10px 13px; font-size:12px; color:#c8cdd8; max-width:230px; z-index:9999; box-shadow:0 4px 24px rgba(0,0,0,0.65); line-height:1.5; }
 .bts-filter-btns { display: flex; flex-wrap: wrap; gap: 4px; }
 .bts-filter-btn {
   padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
@@ -963,7 +966,7 @@ main { padding: 28px 0 60px; }
 .bts-advanced-toggle:hover { border-color:var(--accent-blue); color:var(--accent-blue); }
 .bts-show-more-btn { background:transparent; border:1px solid var(--accent-blue); border-radius:6px; padding:6px 18px; color:var(--accent-blue); font-size:13px; cursor:pointer; }
 .bts-show-more-btn:hover { background:var(--accent-blue); color:#000; }
-.bts-filter-section-label { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin:8px 0 4px; display:block; width:100%; flex-shrink:0; }
+.bts-filter-section-label { font-size:10px; font-weight:700; color:#a78bfa; text-transform:uppercase; letter-spacing:.08em; margin:8px 0 4px; display:block; width:100%; flex-shrink:0; border-bottom:1px solid #a78bfa33; padding-bottom:3px; }
 
 @media (max-width: 768px) {
   .bts-grid { grid-template-columns: 1fr; }
@@ -2162,7 +2165,7 @@ main { padding: 28px 0 60px; }
         <!-- BATTER FILTERS -->
         <span class="bts-filter-section-label">Batter</span>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Min AVG</span>
+          <span class="bts-filter-label">Min AVG <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Minimum season batting average. Only shows batters hitting at or above this threshold. Higher AVG = more consistent daily hit production.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-avgfilter="0" onclick="setBtsFilter(this,'avgfilter')">Any</button>
             <button class="bts-filter-btn" data-avgfilter="0.270" onclick="setBtsFilter(this,'avgfilter')">.270+</button>
@@ -2170,7 +2173,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Lineup Status</span>
+          <span class="bts-filter-label">Lineup Status <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'How official this player\'s lineup spot is. Confirmed = officially posted. Projected = expected based on history. Use Confirmed Only to avoid lineup scratches.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-lineupstatus="any" onclick="setBtsFilter(this,'lineupstatus')">Any</button>
             <button class="bts-filter-btn" data-lineupstatus="projconf" onclick="setBtsFilter(this,'lineupstatus')">Projected/Confirmed</button>
@@ -2178,7 +2181,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Lineup Spot</span>
+          <span class="bts-filter-label">Lineup Spot <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Batting order position. Top 3 = cleanup and protection hitters with the most RBI opportunity. Top 5 = all premium lineup spots with the most plate appearances.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-lineupspot="any" onclick="setBtsFilter(this,'lineupspot')">Any</button>
             <button class="bts-filter-btn" data-lineupspot="top5" onclick="setBtsFilter(this,'lineupspot')">Top 5</button>
@@ -2186,7 +2189,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Batter K%</span>
+          <span class="bts-filter-label">Batter K% <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Batter strikeout rate. Lower K% = better contact hitter. Below 15% is elite — these players rarely strike out and almost always put the ball in play.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-kpct="1" onclick="setBtsFilter(this,'kpct')">Any</button>
             <button class="bts-filter-btn" data-kpct="0.22" onclick="setBtsFilter(this,'kpct')">Below 22%</button>
@@ -2194,7 +2197,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Hit Game Rate</span>
+          <span class="bts-filter-label">Hit Game Rate <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'% of the last 7 games where the player got at least one hit (GHP). 70%+ means getting a hit in 5 of 7 games — a strong consistency signal for Beat the Streak.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-ghp7="0" onclick="setBtsFilter(this,'ghp7')">Any</button>
             <button class="bts-filter-btn" data-ghp7="0.60" onclick="setBtsFilter(this,'ghp7')">60%+ (L7)</button>
@@ -2202,7 +2205,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Hit Streak</span>
+          <span class="bts-filter-label">Hit Streak <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Active consecutive games with at least one hit. Streaking players are locked in and seeing the ball well — momentum tends to carry into the next game.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-streak="0" onclick="setBtsFilter(this,'streak')">Any</button>
             <button class="bts-filter-btn" data-streak="3" onclick="setBtsFilter(this,'streak')">3+ Games</button>
@@ -2210,7 +2213,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">AVG vs Pitcher Hand</span>
+          <span class="bts-filter-label">AVG vs Pitcher Hand <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Career batting average against today\'s pitcher\'s throwing hand (Left or Right). A strong split means this batter has historically hit well against this arm type.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-avgvshand="0" onclick="setBtsFilter(this,'avgvshand')">Any</button>
             <button class="bts-filter-btn" data-avgvshand="0.275" onclick="setBtsFilter(this,'avgvshand')">.275+ (20+ AB)</button>
@@ -2218,7 +2221,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">OBP vs Pitcher Hand</span>
+          <span class="bts-filter-label">OBP vs Pitcher Hand <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Career on-base percentage against today\'s pitcher handedness. High OBP vs hand means this batter gets on base frequently in this matchup — walks count too.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-obpvshand="0" onclick="setBtsFilter(this,'obpvshand')">Any</button>
             <button class="bts-filter-btn" data-obpvshand="0.340" onclick="setBtsFilter(this,'obpvshand')">.340+ (20+ AB)</button>
@@ -2226,7 +2229,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Recent AB Volume</span>
+          <span class="bts-filter-label">Recent AB Volume <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'At-bats in the last 7 days. Ensures the player is actually getting regular playing time. Low recent AB volume may indicate injury, rest, or reduced role.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-abvolume="0" onclick="setBtsFilter(this,'abvolume')">Any</button>
             <button class="bts-filter-btn" data-abvolume="20" onclick="setBtsFilter(this,'abvolume')">20+ AB (L7)</button>
@@ -2234,7 +2237,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">BABIP</span>
+          <span class="bts-filter-label">BABIP <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Batting Average on Balls In Play. Measures how often balls put in play fall for hits. Elite hitters above .320 consistently make hard contact that finds holes.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-babip="0" onclick="setBtsFilter(this,'babip')">Any</button>
             <button class="bts-filter-btn" data-babip="0.300" onclick="setBtsFilter(this,'babip')">.300+</button>
@@ -2242,7 +2245,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">BACON</span>
+          <span class="bts-filter-label">BACON <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Batting Average on Contact — hit rate across all batted balls including home runs. Above .320 means elite quality of contact. These hitters turn batted balls into hits at an elite rate.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-bacon="0" onclick="setBtsFilter(this,'bacon')">Any</button>
             <button class="bts-filter-btn" data-bacon="0.295" onclick="setBtsFilter(this,'bacon')">.295+</button>
@@ -2253,7 +2256,7 @@ main { padding: 28px 0 60px; }
         <!-- PITCHER & FIELD FILTERS -->
         <span class="bts-filter-section-label">Pitcher &amp; Field</span>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Starter H/9</span>
+          <span class="bts-filter-label">Starter H/9 <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Hits allowed per 9 innings by the opposing starter. Higher = pitcher gives up hits freely. 9.5+ is very hitter-friendly — this pitcher is getting hit hard on average.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-starterh9="0" onclick="setBtsFilter(this,'starterh9')">Any</button>
             <button class="bts-filter-btn" data-starterh9="8.5" onclick="setBtsFilter(this,'starterh9')">8.5+</button>
@@ -2261,7 +2264,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Pitcher K%</span>
+          <span class="bts-filter-label">Pitcher K% <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Opposing starter strikeout rate. Lower K% = contact-friendly pitcher who relies on fielders to get outs. Below 18% means almost every batter puts the ball in play.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-pitcherkpct="1" onclick="setBtsFilter(this,'pitcherkpct')">Any</button>
             <button class="bts-filter-btn" data-pitcherkpct="0.22" onclick="setBtsFilter(this,'pitcherkpct')">Below 22%</button>
@@ -2269,7 +2272,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Starter H/BF%</span>
+          <span class="bts-filter-label">Starter H/BF% <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Hits per batter faced by the starter. 27%+ means this pitcher allows a hit on more than 1 in 4 plate appearances — an extremely high rate that benefits all batters in the lineup.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-starterhbf="0" onclick="setBtsFilter(this,'starterhbf')">Any</button>
             <button class="bts-filter-btn" data-starterhbf="0.23" onclick="setBtsFilter(this,'starterhbf')">23%+</button>
@@ -2277,7 +2280,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Pitcher ERA</span>
+          <span class="bts-filter-label">Pitcher ERA <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Opposing starter earned run average. Higher ERA = weaker pitcher overall. Use alongside H/9 and K% for a fuller picture — a high ERA pitcher with low K% is the ideal target.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-era="0" onclick="setBtsFilter(this,'era')">Any</button>
             <button class="bts-filter-btn" data-era="4.25" onclick="setBtsFilter(this,'era')">4.25+</button>
@@ -2285,7 +2288,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Pitcher Contact %</span>
+          <span class="bts-filter-label">Pitcher Contact % <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Rate of batters who make contact against this pitcher (1 minus K%). 80%+ means very few batters strike out — almost everyone puts the ball in play, creating more hit opportunities.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-contactpct="0" onclick="setBtsFilter(this,'contactpct')">Any</button>
             <button class="bts-filter-btn" data-contactpct="0.75" onclick="setBtsFilter(this,'contactpct')">75%+</button>
@@ -2293,7 +2296,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Pitcher BACON Allowed</span>
+          <span class="bts-filter-label">Pitcher BACON Allowed <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Hit rate on all contact against this pitcher. High BACON Allowed means batters are making hard contact that becomes hits. Above .310 = pitcher is getting barreled up regularly.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-baconallowed="0" onclick="setBtsFilter(this,'baconallowed')">Any</button>
             <button class="bts-filter-btn" data-baconallowed="0.290" onclick="setBtsFilter(this,'baconallowed')">.290+</button>
@@ -2301,7 +2304,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Pitcher BABIP Allowed</span>
+          <span class="bts-filter-label">Pitcher BABIP Allowed <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Pitcher ball-in-play hit rate — how often batted balls against this pitcher become hits. Above .320 = weak contact management. Pairs well with low K% for strong contact matchups.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-babipallowed="0" onclick="setBtsFilter(this,'babipallowed')">Any</button>
             <button class="bts-filter-btn" data-babipallowed="0.300" onclick="setBtsFilter(this,'babipallowed')">.300+</button>
@@ -2309,7 +2312,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Pitcher Handedness</span>
+          <span class="bts-filter-label">Pitcher Handedness <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Filter by platoon split data availability. Split Available = batter has 10+ AB vs this arm type. Strong Split = 20+ AB with a meaningful AVG difference — most reliable platoon signal.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-pitcherhand="any" onclick="setBtsFilter(this,'pitcherhand')">Any</button>
             <button class="bts-filter-btn" data-pitcherhand="split" onclick="setBtsFilter(this,'pitcherhand')">Split Available</button>
@@ -2317,7 +2320,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Bullpen ERA</span>
+          <span class="bts-filter-label">Bullpen ERA <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Opposing bullpen earned run average. A weak bullpen (4.50+ ERA) means late-game plate appearances come against vulnerable relief pitching — extra hit opportunities in the 7th inning and beyond.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-bullpen="0" onclick="setBtsFilter(this,'bullpen')">Any</button>
             <button class="bts-filter-btn" data-bullpen="4.50" onclick="setBtsFilter(this,'bullpen')">4.50+</button>
@@ -2325,7 +2328,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Bullpen H/9</span>
+          <span class="bts-filter-label">Bullpen H/9 <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Hits allowed per 9 innings by the opposing bullpen. 9.5+ means relief pitchers are giving up hits freely — a strong signal for late-game hit opportunity regardless of how the starter performs.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-bullpenh9="0" onclick="setBtsFilter(this,'bullpenh9')">Any</button>
             <button class="bts-filter-btn" data-bullpenh9="8.5" onclick="setBtsFilter(this,'bullpenh9')">8.5+</button>
@@ -2333,7 +2336,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Opp Bullpen H/BF%</span>
+          <span class="bts-filter-label">Opp Bullpen H/BF% <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Opposing bullpen hits per batter faced. 27%+ means relief pitchers allow a hit on more than 1 in 4 appearances — the most precise measure of bullpen hit vulnerability.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-bullpenhbf="0" onclick="setBtsFilter(this,'bullpenhbf')">Any</button>
             <button class="bts-filter-btn" data-bullpenhbf="0.25" onclick="setBtsFilter(this,'bullpenhbf')">25%+</button>
@@ -2341,7 +2344,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Park Factor</span>
+          <span class="bts-filter-label">Park Factor <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Stadium run-scoring environment. Above 1.03× = hitter-friendly park where balls carry well and hits occur at a higher rate. Above 1.10× = elite hitter park like Coors Field.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-park="0" onclick="setBtsFilter(this,'park')">Any</button>
             <button class="bts-filter-btn" data-park="1.03" onclick="setBtsFilter(this,'park')">Hitter-Friendly</button>
@@ -2349,7 +2352,7 @@ main { padding: 28px 0 60px; }
           </div>
         </div>
         <div class="bts-filter-group">
-          <span class="bts-filter-label">Game Location</span>
+          <span class="bts-filter-label">Game Location <button class="bts-filter-tip-btn" onclick="event.stopPropagation();showBtsFilterTip(this,'Filter by home or away game. Some hitters perform significantly better at home vs on the road. Combining location with lineup spot (e.g. Home + Top 5) targets the most high-usage spots.')">?</button></span>
           <div class="bts-filter-btns">
             <button class="bts-filter-btn active" data-active="true" data-homeaway="any" onclick="setBtsFilter(this,'homeAway')">Any</button>
             <button class="bts-filter-btn" data-homeaway="away" onclick="setBtsFilter(this,'homeAway')">Away</button>
@@ -6353,6 +6356,27 @@ function toggleBtsAdvanced() {
   const open = el.style.display !== 'none';
   el.style.display = open ? 'none' : 'block';
   btn.textContent  = open ? '▼ Advanced Filters' : '▲ Hide Advanced';
+}
+
+function showBtsFilterTip(btn, text) {
+  document.querySelectorAll('.bts-filter-tip-popup').forEach(el => el.remove());
+  const popup = document.createElement('div');
+  popup.className = 'bts-filter-tip-popup';
+  popup.textContent = text;
+  document.body.appendChild(popup);
+  const rect = btn.getBoundingClientRect();
+  let top  = rect.bottom + window.scrollY + 6;
+  let left = rect.left + window.scrollX - 100;
+  left = Math.max(8, Math.min(left, window.innerWidth - 244));
+  popup.style.top  = top  + 'px';
+  popup.style.left = left + 'px';
+  const close = e => {
+    if (!popup.contains(e.target) && e.target !== btn) {
+      popup.remove();
+      document.removeEventListener('click', close);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', close), 10);
 }
 
 function setBtsFilter(btn, type) {
