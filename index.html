@@ -11999,8 +11999,8 @@ async function handleTeamScan() {
   btn.textContent = '⏳ Scanning…';
 
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
-  const total    = allGames.reduce((s, gd) => s + (gd.players||[]).filter(p => p.id).length, 0);
-  if (!allGames.length || !total) {
+  const total    = allGames.length;
+  if (!total) {
     btn.disabled = false;
     const _cards = document.getElementById('labTeamScanCards');
     if (_cards) _cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">Game data is still loading — try again in a moment or refresh the page.</div>';
@@ -12011,14 +12011,14 @@ async function handleTeamScan() {
   try {
     _scanShowLoading(
       '🏟️ Team Win Predictor',
-      `Scoring ${total} players across ${allGames.length} game${allGames.length !== 1 ? 's' : ''}…`,
+      `Scoring ${total} game${total !== 1 ? 's' : ''}…`,
       'Calculating team averages…'
     );
     let done = 0;
     const results = await runTeamScan(() => {
       done++;
       const el = document.getElementById('scan_s1');
-      if (el) el.childNodes[1].textContent = `Scoring players… ${done} of ${total} complete`;
+      if (el) el.childNodes[1].textContent = `Scoring games… ${done} of ${total} complete`;
     });
 
     _labStep('scan_s1', 'done');
@@ -12069,7 +12069,7 @@ function _starterEdge(sp) {
   if (s.era != null) {
     if (s.era >= 5.00) sc += 12;
     else if (s.era >= 4.50) sc += 8;
-    else if (s.era >= 4.00) sc += 4;
+    else if (s.era >= 4.01) sc += 4;
     else if (s.era <= 3.00) sc -= 12;
     else if (s.era <= 3.50) sc -= 8;
     else if (s.era <= 4.00) sc -= 4;
@@ -12172,11 +12172,11 @@ function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, hom
   if (winner === 'away' && awayStarterSc >= 65) parts.push(`${awayAbbr} faces a hittable starter`);
   if (winner === 'home' && homeStarterSc >= 65) parts.push(`${homeAbbr} faces a hittable starter`);
 
-  if (winner === 'away' && awayBullpenSc <= 38) parts.push(`${homeAbbr} pen is elite — late-inning risk`);
-  if (winner === 'home' && homeBullpenSc <= 38) parts.push(`${awayAbbr} pen is elite — late-inning risk`);
+  if (winner === 'away' && homeBullpenSc <= 38) parts.push(`${homeAbbr} pen is elite — late-inning risk`);
+  if (winner === 'home' && awayBullpenSc <= 38) parts.push(`${awayAbbr} pen is elite — late-inning risk`);
 
   if (pf?.isHitter) parts.push('Hitter-friendly park — lean over on total');
-  else if (pf?.overall != null && pf.overall <= 95) parts.push('Pitcher-friendly park — lean under on total');
+  else if (pf?.overall != null && pf.overall < 0.95) parts.push('Pitcher-friendly park — lean under on total');
 
   const w = gd.weather;
   if (w) {
@@ -12194,9 +12194,9 @@ function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, hom
 function _starterBonus(pitcher) {
   const s = pitcher?.seasonStats;
   if (!s) return 0;
-  const era = parseFloat(s.era) || 0;
+  const era = s.era != null ? parseFloat(s.era) : null;
   const whip = parseFloat(s.whip) || 0;
-  if (!era) return 0;
+  if (era == null) return 0;
   if (era <= 2.75 && whip <= 1.10) return 20;
   if (era <= 2.75) return 15;
   if (era <= 3.50) return 10;
@@ -12212,6 +12212,7 @@ function _bullpenBonus(era) {
   if (era <= 3.50) return 10;
   if (era <= 4.00) return 5;
   if (era <= 4.50) return 0;
+  if (era <= 5.00) return -5;
   return -10;
 }
 
@@ -12334,7 +12335,7 @@ function _teamScanCardHTML(r) {
     </div>
     <div class="team-pred-winner-row">${winnerLabel} ${marginLabel}</div>
     ${summaryText ? `<div class="team-pred-summary">${escHtml(summaryText)}</div>` : ''}
-    <button class="team-pred-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">▼ Breakdown</button>
+    <button class="team-pred-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">▼ Player Breakdown</button>
     <div class="team-pred-breakdown" id="${bkId}" style="display:none">
       <div class="team-pred-col">
         <div class="team-pred-col-header">${escHtml(awayAbbr||'Away')}</div>
