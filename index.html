@@ -551,6 +551,56 @@ main { padding: 28px 0 60px; }
 .team-pred-comp-bar-bg{ flex:1; height:6px; background:var(--bg-hover); border-radius:3px; overflow:hidden; }
 .team-pred-comp-bar   { height:100%; border-radius:3px; }
 .team-pred-comp-val   { font-size:10px; color:var(--text-muted); width:22px; text-align:right; flex-shrink:0; }
+/* ── Team Win Predictor redesign (twp-*) ──────────────── */
+.twp-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
+.twp-header { display:flex; justify-content:space-between; align-items:center; padding:9px 14px 8px; border-bottom:1px solid var(--border); }
+.twp-game-info { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.twp-game-date { font-size:10px; color:var(--text-muted); }
+.twp-grade { font-size:10px; font-weight:800; border-radius:4px; padding:2px 8px; letter-spacing:.5px; text-transform:uppercase; flex-shrink:0; }
+.twp-grade-A { background:#22c55e22; color:#22c55e; border:1px solid #22c55e44; }
+.twp-grade-B { background:#f59e0b22; color:#f59e0b; border:1px solid #f59e0b44; }
+.twp-grade-C { background:#94a3b822; color:#94a3b8; border:1px solid #94a3b844; }
+.twp-grade-D { background:#ef444422; color:#ef4444; border:1px solid #ef444444; }
+.twp-body { display:flex; align-items:stretch; }
+.twp-team { flex:1; display:flex; flex-direction:column; align-items:center; padding:14px 8px 12px; gap:3px; border-bottom:2px solid transparent; min-width:0; }
+.twp-team.twp-winner { background:#052e1633; border-bottom-color:#22c55e55; }
+.twp-logo { width:44px; height:44px; object-fit:contain; }
+.twp-team-name { font-size:10px; color:var(--text-muted); font-weight:600; text-align:center; line-height:1.3; }
+.twp-prob-num { font-size:30px; font-weight:900; line-height:1; color:#cbd5e1; letter-spacing:-1px; }
+.twp-prob-num.twp-win { color:#22c55e; }
+.twp-prob-lbl { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+.twp-lineup-badge { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:2px 7px; border-radius:3px; margin-top:2px; }
+.twp-confirmed { background:#22c55e22; color:#22c55e; border:1px solid #22c55e33; }
+.twp-projected { background:#f59e0b22; color:#f59e0b; border:1px solid #f59e0b33; }
+.twp-proj-runs { font-size:10px; color:var(--text-muted); margin-top:1px; }
+.twp-center { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; flex-shrink:0; border-bottom:2px solid transparent; }
+.twp-vs { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:1px; }
+.twp-ou { font-size:9px; color:var(--text-muted); text-align:center; margin-top:6px; line-height:1.5; }
+.twp-split-bar { display:flex; height:5px; }
+.twp-split-away { background:#f59e0b; transition:width .5s ease; }
+.twp-split-home { background:#22c55e; transition:width .5s ease; }
+.twp-split-labels { display:flex; justify-content:space-between; padding:3px 14px 0; font-size:9px; }
+.twp-edges { padding:10px 14px 8px; border-top:1px solid var(--border); }
+.twp-edges-hdr { font-size:9px; text-transform:uppercase; letter-spacing:.7px; color:var(--text-muted); font-weight:700; margin-bottom:8px; }
+.twp-edge-row { display:flex; align-items:center; gap:8px; margin:5px 0; }
+.twp-edge-label { font-size:10px; color:var(--text-muted); width:62px; flex-shrink:0; }
+.twp-edge-track { flex:1; height:4px; background:var(--bg-hover); border-radius:2px; position:relative; overflow:hidden; }
+.twp-edge-center { position:absolute; left:50%; top:0; width:1px; height:100%; background:#334155; z-index:1; transform:translateX(-50%); }
+.twp-edge-fill { position:absolute; height:100%; top:0; border-radius:2px; }
+.twp-edge-val { font-size:10px; font-weight:700; width:64px; text-align:right; flex-shrink:0; white-space:nowrap; }
+.twp-sp-sub { font-size:9px; color:var(--text-muted); padding:0 0 4px 70px; line-height:1.3; }
+.twp-winner-strip { padding:9px 14px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); background:linear-gradient(to right,#052e1630,transparent); }
+.twp-winner-name { font-size:13px; font-weight:800; color:#22c55e; }
+.twp-winner-tie { font-size:13px; font-weight:800; color:var(--text-muted); }
+.twp-winner-conf { font-size:10px; color:var(--text-muted); }
+.twp-reasoning { padding:6px 14px 8px; font-size:11px; color:var(--text-muted); line-height:1.45; border-top:1px solid var(--border); }
+.twp-expand-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
+.twp-breakdown { padding:10px 14px; display:flex; gap:12px; border-top:1px solid var(--border); }
+.twp-breakdown-col { flex:1; min-width:0; }
+.twp-breakdown-col-hdr { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+.twp-player-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:11px; }
+.twp-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100px; }
+.twp-player-score { font-weight:700; flex-shrink:0; margin-left:4px; }
 .lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
 .lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-compare-table th:first-child  { text-align:right; width:40%; }
@@ -12453,6 +12503,11 @@ function runTeamScan(onProgress) {
       awayTeamId: gd.awayTeamId, homeTeamId: gd.homeTeamId,
       awayAvg: awayScore, homeAvg: homeScore,
       margin, winner, awayWinProb, homeWinProb, grade,
+      awayPosted, homePosted,
+      awayPitcherName: gd.awayPitcher?.name || gd.awayPitcher?.fullName || null,
+      homePitcherName: gd.homePitcher?.name || gd.homePitcher?.fullName || null,
+      awayPitcherEra:  gd.awayPitcher?.seasonStats?.era  || null,
+      homePitcherEra:  gd.homePitcher?.seasonStats?.era  || null,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
       awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf },
@@ -12473,98 +12528,176 @@ function runTeamScan(onProgress) {
 
 function _teamScanCardHTML(r) {
   const {
-    gamePk, gameLabel, awayAbbr, homeAbbr, awayTeamId, homeTeamId,
-    awayAvg, homeAvg, margin, winner, awayPlayers, homePlayers,
+    gamePk, gameDate, gameLabel, awayAbbr, homeAbbr, awayTeamId, homeTeamId,
+    winner, awayPlayers, homePlayers,
     awayProjRuns, homeProjRuns, predTotal,
     summaryText, awayComponents, homeComponents,
     awayWinProb, homeWinProb, grade,
+    awayPosted, homePosted,
+    awayPitcherName, homePitcherName, awayPitcherEra, homePitcherEra,
   } = r;
+
   const awayTi   = TEAM_INFO[awayTeamId] || {};
   const homeTi   = TEAM_INFO[homeTeamId] || {};
-  const awayLogo = awayTi.espn ? `<img class="team-pred-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayTi.espn}.png" onerror="this.style.display='none'" alt="">` : '<div style="width:40px;height:40px"></div>';
-  const homeLogo = homeTi.espn ? `<img class="team-pred-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeTi.espn}.png" onerror="this.style.display='none'" alt="">` : '<div style="width:40px;height:40px"></div>';
-  const awayName = awayTi.city ? `${awayTi.city} ${awayTi.nick}` : (awayAbbr || '?');
-  const homeName = homeTi.city ? `${homeTi.city} ${homeTi.nick}` : (homeAbbr || '?');
+  const awayLogo = awayTi.espn
+    ? `<img class="twp-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayTi.espn}.png" onerror="this.style.display='none'" alt="">`
+    : '<div style="width:44px;height:44px"></div>';
+  const homeLogo = homeTi.espn
+    ? `<img class="twp-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeTi.espn}.png" onerror="this.style.display='none'" alt="">`
+    : '<div style="width:44px;height:44px"></div>';
+  const awayName   = awayTi.city ? `${awayTi.city} ${awayTi.nick}` : (awayAbbr || '?');
+  const homeName   = homeTi.city ? `${homeTi.city} ${homeTi.nick}` : (homeAbbr || '?');
+  const winnerName = winner === 'away' ? awayName : winner === 'home' ? homeName : null;
+  const winnerProb = winner === 'away' ? awayWinProb : winner === 'home' ? homeWinProb : 50;
 
-  const winnerName  = winner === 'away' ? awayName : winner === 'home' ? homeName : null;
-  const winnerProb  = winner === 'away' ? awayWinProb : winner === 'home' ? homeWinProb : 50;
-  const winnerLabel = winner === 'tie' ? '⚖️ Toss-Up' : `🏆 ${escHtml(winnerName)} — ${winnerProb}% win probability`;
-  const gradeColor  = grade === 'A' ? '#22c55e' : grade === 'B' ? '#f59e0b' : grade === 'C' ? '#94a3b8' : '#ef4444';
-  const gradeBadge  = grade ? `<span class="team-pred-conf-badge" style="background:${gradeColor}22;color:${gradeColor};border:1px solid ${gradeColor}44">${grade}</span>` : '';
+  // Grade badge
+  const gradeCls = grade ? `twp-grade twp-grade-${grade}` : '';
+  const gradeBadge = grade ? `<span class="${gradeCls}">Grade: ${grade}</span>` : '';
 
-  const _sc = s => s >= 70 ? '#22c55e' : s >= 55 ? '#f59e0b' : '#ef4444';
-  const _rows = arr => arr.map(p =>
-    `<div class="team-pred-player-row"><span class="team-pred-player-name">${escHtml(p.name)}</span><span class="team-pred-player-score" style="color:${_sc(p.score)}">${p.score}</span></div>`
-  ).join('');
+  // Date label
+  let dateLbl = '';
+  if (gameDate) {
+    try { dateLbl = new Date(gameDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'numeric', day:'numeric' }); } catch {}
+  }
 
-  const _compBar = (val, label, raw = false) => {
-    const pct     = raw ? Math.round(Math.max(0, Math.min(100, val)))
-                        : Math.round(Math.max(0, Math.min(100, 50 + val * 2)));
-    const clr     = pct >= 62 ? '#22c55e' : pct >= 45 ? '#f59e0b' : '#ef4444';
-    const display = raw ? String(Math.round(val)) : (val > 0 ? `+${val}` : String(val));
-    return `<div class="team-pred-comp-row"><span class="team-pred-comp-label">${label}</span><div class="team-pred-comp-bar-bg"><div class="team-pred-comp-bar" style="width:${pct}%;background:${clr}"></div></div><span class="team-pred-comp-val">${display}</span></div>`;
+  // Lineup status badges
+  const awayBadge = awayPosted
+    ? `<div class="twp-lineup-badge twp-confirmed">Confirmed</div>`
+    : `<div class="twp-lineup-badge twp-projected">Projected</div>`;
+  const homeBadge = homePosted
+    ? `<div class="twp-lineup-badge twp-confirmed">Confirmed</div>`
+    : `<div class="twp-lineup-badge twp-projected">Projected</div>`;
+
+  // Edge deltas — positive = home team has the edge
+  const offDelta = ((homeComponents?.lineup ?? 50) + (homeComponents?.form ?? 0))
+                 - ((awayComponents?.lineup ?? 50) + (awayComponents?.form ?? 0));
+  const spDelta  = (homeComponents?.starter ?? 0) - (awayComponents?.starter ?? 0);
+  const bpDelta  = (homeComponents?.bullpen ?? 0) - (awayComponents?.bullpen ?? 0);
+  const ctxDelta = (homeComponents?.context ?? 0) - (awayComponents?.context ?? 0);
+
+  const _edgeVal = (delta) => {
+    if (Math.abs(delta) <= 2) return `<span style="color:var(--text-muted)">EVEN</span>`;
+    const side = delta > 0 ? homeAbbr : awayAbbr;
+    const clr  = delta > 0 ? '#22c55e' : '#f59e0b';
+    return `<span style="color:${clr}">${escHtml(side||'')} +${Math.abs(Math.round(delta))}</span>`;
   };
+
+  const _edgeBar = (delta) => {
+    if (Math.abs(delta) <= 2)
+      return `<div class="twp-edge-center"></div>`;
+    const pct  = Math.min(Math.abs(delta) / 20 * 40, 40);
+    const clr  = delta > 0 ? '#22c55e' : '#f59e0b';
+    const fill = delta > 0
+      ? `style="left:50%;width:${pct.toFixed(1)}%;background:${clr}"`
+      : `style="right:50%;width:${pct.toFixed(1)}%;background:${clr}"`;
+    return `<div class="twp-edge-center"></div><div class="twp-edge-fill" ${fill}></div>`;
+  };
+
+  // SP sub-label (pitcher names + ERA)
+  const _fmtSp = (name, era) => name
+    ? escHtml(name) + (era != null && parseFloat(era) > 0 ? ` <span style="color:var(--text-muted)">(${parseFloat(era).toFixed(2)} ERA)</span>` : '')
+    : '';
+  const awaySpStr = _fmtSp(awayPitcherName, awayPitcherEra);
+  const homeSpStr = _fmtSp(homePitcherName, homePitcherEra);
+  const spSubLabel = (awaySpStr || homeSpStr)
+    ? `<div class="twp-sp-sub">${awaySpStr}${awaySpStr && homeSpStr ? ' <span style="color:#334155">vs</span> ' : ''}${homeSpStr}</div>` : '';
+
+  // Player rows
+  const _sc   = s => s >= 70 ? '#22c55e' : s >= 55 ? '#f59e0b' : '#ef4444';
+  const _rows = arr => arr.map(p =>
+    `<div class="twp-player-row"><span class="twp-player-name">${escHtml(p.name)}</span><span class="twp-player-score" style="color:${_sc(p.score)}">${p.score}</span></div>`
+  ).join('');
 
   const bkId  = `tp_bk_${gamePk}`;
   const btnId = `tp_btn_${gamePk}`;
 
-  const awayBars = awayComponents ? [
-    _compBar(awayComponents.lineup,   'Lineup',  true),
-    _compBar(awayComponents.form,     'Form'),
-    _compBar(awayComponents.starter,  'Starter'),
-    _compBar(awayComponents.bullpen,  'Bullpen'),
-    _compBar(awayComponents.context,  'Context'),
-  ].join('') : '';
-  const homeBars = homeComponents ? [
-    _compBar(homeComponents.lineup,   'Lineup',  true),
-    _compBar(homeComponents.form,     'Form'),
-    _compBar(homeComponents.starter,  'Starter'),
-    _compBar(homeComponents.bullpen,  'Bullpen'),
-    _compBar(homeComponents.context,  'Context'),
-  ].join('') : '';
+  return `<div class="twp-card">
 
-  return `<div class="team-pred-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>
+    <div class="twp-header">
+      <div class="twp-game-info">
+        <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>
+        ${dateLbl ? `<span class="twp-game-date">${escHtml(dateLbl)}</span>` : ''}
+      </div>
       ${gradeBadge}
     </div>
-    <div class="team-pred-body">
-      <div class="team-pred-side${winner==='away'?' winner':''}">
+
+    <div class="twp-body">
+      <div class="twp-team${winner==='away' ? ' twp-winner' : ''}">
         ${awayLogo}
-        <div class="team-pred-name">${escHtml(awayName)}</div>
-        <div class="team-pred-score${winner==='away'?' winner':''}">${awayWinProb != null ? awayWinProb + '%' : '--'}</div>
-        <div class="team-pred-count" style="font-size:9px">Win Prob</div>
-        ${awayProjRuns != null ? `<div class="team-pred-proj-runs">~${awayProjRuns.toFixed(1)} R proj</div>` : ''}
-        <div class="team-pred-count">${awayPlayers.length} player${awayPlayers.length!==1?'s':''}</div>
+        <div class="twp-team-name">${escHtml(awayName)}</div>
+        <div class="twp-prob-num${winner==='away' ? ' twp-win' : ''}">${awayWinProb != null ? awayWinProb : '--'}%</div>
+        <div class="twp-prob-lbl">Win Prob</div>
+        ${awayBadge}
+        ${awayProjRuns != null ? `<div class="twp-proj-runs">~${awayProjRuns.toFixed(1)} R proj</div>` : ''}
       </div>
-      <div class="team-pred-vs">
-        VS
-        ${predTotal != null ? `<div style="font-size:9px;color:var(--text-muted);margin-top:4px;text-align:center">O/U<br>${predTotal.toFixed(1)}</div>` : ''}
+      <div class="twp-center">
+        <div class="twp-vs">VS</div>
+        ${predTotal != null ? `<div class="twp-ou">O/U<br><strong style="color:#cbd5e1;font-size:13px">${predTotal.toFixed(1)}</strong></div>` : ''}
       </div>
-      <div class="team-pred-side${winner==='home'?' winner':''}">
+      <div class="twp-team${winner==='home' ? ' twp-winner' : ''}">
         ${homeLogo}
-        <div class="team-pred-name">${escHtml(homeName)}</div>
-        <div class="team-pred-score${winner==='home'?' winner':''}">${homeWinProb != null ? homeWinProb + '%' : '--'}</div>
-        <div class="team-pred-count" style="font-size:9px">Win Prob</div>
-        ${homeProjRuns != null ? `<div class="team-pred-proj-runs">~${homeProjRuns.toFixed(1)} R proj</div>` : ''}
-        <div class="team-pred-count">${homePlayers.length} player${homePlayers.length!==1?'s':''}</div>
+        <div class="twp-team-name">${escHtml(homeName)}</div>
+        <div class="twp-prob-num${winner==='home' ? ' twp-win' : ''}">${homeWinProb != null ? homeWinProb : '--'}%</div>
+        <div class="twp-prob-lbl">Win Prob</div>
+        ${homeBadge}
+        ${homeProjRuns != null ? `<div class="twp-proj-runs">~${homeProjRuns.toFixed(1)} R proj</div>` : ''}
       </div>
     </div>
-    <div class="team-pred-winner-row">${winnerLabel}</div>
-    ${summaryText ? `<div class="team-pred-summary">${escHtml(summaryText)}</div>` : ''}
-    <button class="team-pred-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">▼ Player Breakdown</button>
-    <div class="team-pred-breakdown" id="${bkId}" style="display:none">
-      <div class="team-pred-col">
-        <div class="team-pred-col-header">${escHtml(awayAbbr||'Away')}</div>
-        ${awayBars ? `<div class="team-pred-comp-section">${awayBars}</div>` : ''}
+
+    <div class="twp-split-bar">
+      <div class="twp-split-away" style="width:${awayWinProb ?? 50}%"></div>
+      <div class="twp-split-home" style="width:${homeWinProb ?? 50}%"></div>
+    </div>
+    <div class="twp-split-labels">
+      <span style="color:#f59e0b">${escHtml(awayAbbr||'Away')} ${awayWinProb ?? '--'}%</span>
+      <span style="color:#22c55e">${escHtml(homeAbbr||'Home')} ${homeWinProb ?? '--'}%</span>
+    </div>
+
+    <div class="twp-edges">
+      <div class="twp-edges-hdr">Edge Breakdown</div>
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">Offense</div>
+        <div class="twp-edge-track">${_edgeBar(offDelta)}</div>
+        <div class="twp-edge-val">${_edgeVal(offDelta)}</div>
+      </div>
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">Starter</div>
+        <div class="twp-edge-track">${_edgeBar(spDelta)}</div>
+        <div class="twp-edge-val">${_edgeVal(spDelta)}</div>
+      </div>
+      ${spSubLabel}
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">Bullpen</div>
+        <div class="twp-edge-track">${_edgeBar(bpDelta)}</div>
+        <div class="twp-edge-val">${_edgeVal(bpDelta)}</div>
+      </div>
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">Situation</div>
+        <div class="twp-edge-track">${_edgeBar(ctxDelta)}</div>
+        <div class="twp-edge-val">${_edgeVal(ctxDelta)}</div>
+      </div>
+    </div>
+
+    <div class="twp-winner-strip">
+      ${winner !== 'tie'
+        ? `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-winner-conf">${winnerProb}% confidence</span>`
+        : `<span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-winner-conf">50% confidence</span>`}
+    </div>
+
+    ${summaryText ? `<div class="twp-reasoning">${escHtml(summaryText)}</div>` : ''}
+
+    <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
+    <div class="twp-breakdown" id="${bkId}" style="display:none">
+      <div class="twp-breakdown-col">
+        <div class="twp-breakdown-col-hdr">${escHtml(awayAbbr||'Away')}</div>
         ${_rows(awayPlayers)}
       </div>
-      <div class="team-pred-col">
-        <div class="team-pred-col-header">${escHtml(homeAbbr||'Home')}</div>
-        ${homeBars ? `<div class="team-pred-comp-section">${homeBars}</div>` : ''}
+      <div class="twp-breakdown-col">
+        <div class="twp-breakdown-col-hdr">${escHtml(homeAbbr||'Home')}</div>
         ${_rows(homePlayers)}
       </div>
     </div>
+
   </div>`;
 }
 
@@ -12573,8 +12706,8 @@ function toggleTeamPredExpand(bkId, btnId) {
   const btn = document.getElementById(btnId);
   if (!bk || !btn) return;
   const open = bk.style.display !== 'none';
-  bk.style.display  = open ? 'none' : 'block';
-  btn.textContent   = open ? '▼ Player Breakdown' : '▲ Player Breakdown';
+  bk.style.display  = open ? 'none' : 'flex';
+  btn.innerHTML     = open ? '&#9660; Player Breakdown' : '&#9650; Player Breakdown';
 }
 
 async function runLabEliteScan(onProgress) {
