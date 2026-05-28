@@ -11486,7 +11486,7 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     if      (pitBBpct <= 0.07 && _hitSig)                               php += 2;
     else if (pitBBpct >= 0.11 && pitBABIP < 0.315 && pitBACON < 0.305) php -= 2;
   }
-  php = clamp(php, -18, 18);
+  php = clamp(php, -10, 10);
 
   // 2. HITTER MATCHUP EDGE  cap -10/+12
   let hme = 0;
@@ -11535,13 +11535,13 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
   else if (l10avg >  0)     hcp -= 5;
 
   if (ghp != null) {
-    if      (ghp >= 0.72) hcp += 7;
-    else if (ghp >= 0.67) hcp += 5;
-    else if (ghp >= 0.60) hcp += 3;
-    else if (ghp >= 0.55) hcp += 1;
-    else if (ghp >= 0.50) hcp += 0;
-    else if (ghp >= 0.40) hcp -= 4;
-    else                  hcp -= 7;
+    if      (ghp >= 0.72) hcp += 10;
+    else if (ghp >= 0.67) hcp +=  7;
+    else if (ghp >= 0.60) hcp +=  4;
+    else if (ghp >= 0.55) hcp +=  2;
+    else if (ghp >= 0.50) hcp +=  0;
+    else if (ghp >= 0.40) hcp -=  5;
+    else                  hcp -=  9;
   }
 
   const seasBabip = player.seasonStats?.babip || 0;
@@ -11563,7 +11563,7 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     else if (seasBacon >= 0.255) hcp -= 3;
     else                         hcp -= 6;
   }
-  hcp = clamp(hcp, -15, 17);
+  hcp = clamp(hcp, -17, 20);
 
   // 4. PARK CONTEXT  cap ±6
   let pc = clamp(Math.round((pf.overall - 1.0) * 60), -5, 5);
@@ -11597,7 +11597,7 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     else if (bullpenHBF >= 0.19) bhp -= 3;
     else                         bhp -= 5;
   }
-  bhp = clamp(bhp, -8, 8);
+  bhp = clamp(bhp, -5, 5);
 
   // TOTAL
   let score = 50 + php + hme + hcp + pc + bhp;
