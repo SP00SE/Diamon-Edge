@@ -12455,14 +12455,16 @@ function _winProbability(scoreDiff) {
   return Math.round(100 / (1 + Math.exp(-0.08 * scoreDiff)));
 }
 
-function _predictionGrade(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather) {
+function _predictionGrade(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra) {
   let pts = 0;
   if (awayPosted) pts += 3;
   if (homePosted) pts += 3;
   if (awayPitcher?.seasonStats?.era > 0) pts += 1;
   if (homePitcher?.seasonStats?.era > 0) pts += 1;
+  if (awayBullpenEra > 0) pts += 1;
+  if (homeBullpenEra > 0) pts += 1;
   if (hasWeather) pts += 1;
-  return pts >= 8 ? 'A' : pts >= 6 ? 'B' : pts >= 3 ? 'C' : 'D';
+  return pts >= 9 ? 'A' : pts >= 7 ? 'B' : pts >= 4 ? 'C' : 'D';
 }
 
 function runTeamScan(onProgress) {
@@ -12501,7 +12503,7 @@ function runTeamScan(onProgress) {
     const winner      = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
     const homeWinProb = _winProbability(homeScore - awayScore);
     const awayWinProb = 100 - homeWinProb;
-    const grade       = _predictionGrade(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!weather);
+    const grade       = _predictionGrade(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!weather, gd.awayBullpenEra, gd.homeBullpenEra);
 
     const _rawGame    = (state.games || []).find(g => g.gamePk === gd.gamePk);
     const _isFinal    = _rawGame?.status?.abstractGameState === 'Final';
