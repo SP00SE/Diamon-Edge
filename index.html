@@ -12705,18 +12705,24 @@ function _teamScanCardHTML(r) {
     </div>
 
     ${isFinal && actualWinner ? (() => {
-      const predCorrect   = winner === actualWinner || winner === 'tie';
-      const actualName    = actualWinner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
-      const scoreLine     = `${escHtml(awayAbbr||'Away')} ${actualAwayScore} – ${actualHomeScore} ${escHtml(homeAbbr||'Home')}`;
-      const resultBadge   = predCorrect
-        ? `<span class="twp-result-badge twp-result-correct">&#10003; Correct</span>`
-        : `<span class="twp-result-badge twp-result-wrong">&#10007; Missed</span>`;
+      // Bug 2: tie is a no-call, not a correct prediction
+      const predTie     = winner === 'tie';
+      const predCorrect = !predTie && winner === actualWinner;
+      const actualName  = actualWinner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
+      const scoreLine   = `${escHtml(awayAbbr||'Away')} ${actualAwayScore} – ${actualHomeScore} ${escHtml(homeAbbr||'Home')}`;
+      const resultBadge = predTie
+        ? `<span class="twp-result-badge twp-result-neutral">— No Call</span>`
+        : predCorrect
+          ? `<span class="twp-result-badge twp-result-correct">&#10003; Correct</span>`
+          : `<span class="twp-result-badge twp-result-wrong">&#10007; Missed</span>`;
+
+      // Bug 5: explicit three-way — when winner==='tie', predComps is null, no postmortem
+      const predComps   = winner === 'away' ? awayComponents : winner === 'home' ? homeComponents : null;
+      const actualComps = actualWinner === 'away' ? awayComponents : homeComponents;
 
       let postmortem = '';
-      if (!predCorrect) {
-        const predComps    = winner === 'away' ? awayComponents : homeComponents;
-        const actualComps  = winner === 'away' ? homeComponents : awayComponents;
-        const predAbbr     = winner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
+      if (!predCorrect && !predTie && predComps) {
+        const predAbbr = winner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
         const diffs = [
           { name: 'offense',  delta: (predComps.lineup + (predComps.form||0)) - (actualComps.lineup + (actualComps.form||0)) },
           { name: 'starting pitcher', delta: (predComps.starter||0) - (actualComps.starter||0) },
@@ -12726,7 +12732,8 @@ function _teamScanCardHTML(r) {
           ? `${diffs[0].name} and ${diffs[1].name}`
           : diffs.length === 1 ? diffs[0].name : 'overall model metrics';
         const predProb = winner === 'away' ? awayWinProb : homeWinProb;
-        postmortem = `<div class="twp-postmortem">Model favored ${predAbbr} (${predProb}%) on ${driver}, but ${actualName} took it ${actualAwayScore > actualHomeScore ? actualAwayScore + '–' + actualHomeScore : actualHomeScore + '–' + actualAwayScore}. Pre-game lineup and pitcher projections drove the edge — outcome may reflect bullpen usage, in-game adjustments, or untracked factors.</div>`;
+        // Bug 4: reuse scoreLine — keeps team-labeled context instead of recomputing without labels
+        postmortem = `<div class="twp-postmortem">Model favored ${predAbbr} (${predProb}%) on ${driver}, but ${actualName} won (${scoreLine}). Pre-game lineup and pitcher projections drove the edge — outcome may reflect bullpen usage, in-game adjustments, or untracked factors.</div>`;
       }
 
       return `<div class="twp-result-strip">
