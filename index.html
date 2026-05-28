@@ -3580,6 +3580,10 @@ let state = {
   streakConsecMin: 0,
   streakPtsDiffMin: 0,
   allGamesLiveData: {}, // gamePk -> { statsMap, isLive, isFinal }
+  savantPitcher: null,  // Map<playerId, row[]> — loaded once per session from Baseball Savant
+  savantBatter:  null,  // Map<playerId, row[]>
+  savantLoading: false,
+  savantYear:    null,
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────
@@ -4060,8 +4064,22 @@ function _hrStarterMatchupScore(batter, pitcher, factors) {
   return clamp(s, -16, 16);
 }
 
-// 5. Pitch-Type Matchup — not available via MLB Stats API (neutral)
-function _hrPitchTypeMatchupScore(_batter, _pitcher, _factors) {
+// 5. Pitch-Type Matchup — fastball wOBA from Baseball Savant (loaded lazily)
+function _hrPitchTypeMatchupScore(batter, pitcher, _factors) {
+  const pitcherRows = state.savantPitcher?.get(String(pitcher?.id));
+  if (!pitcherRows?.length) return 0;
+  const fbRow = pitcherRows.find(r => r.pitch_type === 'FF' || r.pitch_type === 'SI');
+  if (!fbRow) return 0;
+  const fbUsage = parseFloat(fbRow.pitch_usage) / 100;
+  if (fbUsage < 0.30) return 0;
+  const batterRows = state.savantBatter?.get(String(batter?.id));
+  const bFB = batterRows?.find(r => r.pitch_type === 'FF' || r.pitch_type === 'SI');
+  if (!bFB) return 0;
+  const bWoba = parseFloat(bFB.woba) || 0;
+  if (bWoba >= 0.500) return 5;
+  if (bWoba >= 0.420) return 3;
+  if (bWoba >= 0.370) return 1;
+  if (bWoba <= 0.220) return -3;
   return 0;
 }
 
@@ -11446,7 +11464,103 @@ function buildPitcherProfile(pitcher) {
   return { era, whip, h9, ip: Math.floor(ip), k9: k9.toFixed(1), bb9: bb9.toFixed(1), hr9: hr9.toFixed(2), eraTier, kTend, h9Tend, hrTend };
 }
 
-function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp = null, bullpenH9 = 0, bullpenHBF = 0) {
+// ─── BASEBALL SAVANT PITCH ARSENAL ───────────────────────────────────────────
+
+function parseSavantCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+  return lines.slice(1).map(line => {
+    const vals = line.split(',');
+    const row = {};
+    headers.forEach((h, i) => { row[h] = (vals[i] || '').replace(/"/g, '').trim(); });
+    return row;
+  });
+}
+
+async function ensureSavantData(year) {
+  if (state.savantPitcher && state.savantBatter && state.savantYear === year) return;
+  if (state.savantLoading) {
+    while (state.savantLoading) await new Promise(r => setTimeout(r, 100));
+    return;
+  }
+  state.savantLoading = true;
+  try {
+    const base = 'https://baseballsavant.mlb.com/leaderboard/pitch-arsenal-stats';
+    const [pitcherCSV, batterCSV] = await Promise.all([
+      fetch(`${base}?type=pitcher&year=${year}&min=10&csv=true`).then(r => r.text()),
+      fetch(`${base}?type=batter&year=${year}&min=10&csv=true`).then(r => r.text()),
+    ]);
+    const buildMap = rows => {
+      const m = new Map();
+      for (const row of rows) {
+        if (!row.player_id) continue;
+        if (!m.has(row.player_id)) m.set(row.player_id, []);
+        m.get(row.player_id).push(row);
+      }
+      return m;
+    };
+    state.savantPitcher = buildMap(parseSavantCSV(pitcherCSV));
+    state.savantBatter  = buildMap(parseSavantCSV(batterCSV));
+    state.savantYear    = year;
+  } catch { /* silent — pmatch returns 0 if unavailable */ }
+  finally { state.savantLoading = false; }
+}
+
+function computePitchMixMatchup(batterId, pitcherId) {
+  const pitcherRows = state.savantPitcher?.get(String(pitcherId));
+  const batterRows  = state.savantBatter?.get(String(batterId));
+  if (!pitcherRows?.length || !batterRows?.length) return { score: 0, reasons: [] };
+
+  const bMap = new Map(batterRows.map(r => [r.pitch_type, r]));
+  let raw = 0;
+  const highlights = [];
+
+  for (const p of pitcherRows) {
+    const usage  = parseFloat(p.pitch_usage) / 100;
+    if (usage < 0.10) continue;
+    const b = bMap.get(p.pitch_type);
+    if (!b) continue;
+
+    const ba     = parseFloat(b.ba)            || 0;
+    const bWhiff = parseFloat(b.whiff_percent) / 100 || 0;
+    const pWhiff = parseFloat(p.whiff_percent) / 100 || 0;
+
+    let pts = 0;
+    if      (ba >= 0.340) pts += 8;
+    else if (ba >= 0.310) pts += 5;
+    else if (ba >= 0.275) pts += 2;
+    else if (ba <= 0.160) pts -= 8;
+    else if (ba <= 0.200) pts -= 5;
+    else if (ba <= 0.230) pts -= 2;
+
+    if      (pWhiff >= 0.30 && bWhiff >= 0.30) pts -= 3;
+    else if (pWhiff >= 0.25 && bWhiff >= 0.25) pts -= 1;
+
+    const weighted = pts * usage;
+    raw += weighted;
+    if (Math.abs(weighted) >= 0.8)
+      highlights.push({ pitchName: p.pitch_name || p.pitch_type, usage, ba, pts: weighted });
+  }
+
+  const score = clamp(Math.round(raw), -8, 8);
+  const reasons = [];
+  const sorted = highlights.sort((a, b) => Math.abs(b.pts) - Math.abs(a.pts));
+  if (sorted[0]) {
+    const h = sorted[0];
+    const pct   = Math.round(h.usage * 100);
+    const baStr = '.' + Math.round(h.ba * 1000).toString().padStart(3, '0');
+    if (h.pts > 0)
+      reasons.push(`Hits ${h.pitchName} well (${baStr} BA) — SP's ${pct}% pitch`);
+    else
+      reasons.push(`Struggles vs ${h.pitchName} (${baStr} BA) — SP's ${pct}% pitch`);
+  }
+  return { score, reasons };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp = null, bullpenH9 = 0, bullpenHBF = 0, pmatch = 0) {
   const era      = pitcher?.seasonStats?.era            || 0;
   const pK_      = pitcher?.seasonStats?.strikeOuts     || 0;
   const pIP_     = pitcher?.seasonStats?.inningsPitched || 0;
@@ -11600,7 +11714,7 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
   bhp = clamp(bhp, -5, 5);
 
   // TOTAL
-  let score = 50 + php + hme + hcp + pc + bhp;
+  let score = 50 + php + hme + hcp + pc + bhp + pmatch;
 
   // K% CEILING — existing logic preserved exactly
   if (kpct_ >= 0.32) {
@@ -11657,6 +11771,8 @@ function labLeaderSelectPlayer(playerId, gamePk) {
 // Full data fetch for one player: H2H + game log (GHP + park history) + bullpen.
 // Produces the same score as runLabAnalysis so scan and individual analysis match.
 async function fetchElitePlayerData(player, gd) {
+  await ensureSavantData(new Date().getFullYear());
+
   const pitcher   = player.isAway ? gd.homePitcher : gd.awayPitcher;
   const oppTeamId = player.isAway ? gd.homeTeamId  : gd.awayTeamId;
   const venue     = gd.venueName || '';
@@ -11708,12 +11824,13 @@ async function fetchElitePlayerData(player, gd) {
     })(),
   ]);
 
-  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF);
-  return { player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF };
+  const pitchMatchup = computePitchMixMatchup(player.id, pitcher?.id);
+  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF, pitchMatchup.score);
+  return { player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF, pitchMatchup };
 }
 
 // Shared reason builder for elite pick cards
-function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0) {
+function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0, pitchReasons = []) {
   const reasons = [];
   const era = pitcher?.seasonStats?.era || 0;
   const _pK   = pitcher?.seasonStats?.strikeOuts     || 0;
@@ -11754,7 +11871,8 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0)
   const hg7 = player.hitGames7;
   if      (ghp != null && ghp >= 0.72 && hg7 != null) reasons.push(`Hits in ${hg7}/7 recent games`);
   else if (ghp != null && ghp >= 0.57 && hg7 != null) reasons.push(`Consistent contact (${hg7}/7 games)`);
-  return reasons.slice(0, 3);
+  if (pitchReasons?.length) reasons.push(...pitchReasons);
+  return reasons.slice(0, 4);
 }
 
 function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal, pitcher, pf) {
@@ -11820,7 +11938,7 @@ async function runGlobalEliteScan(onProgress) {
         player, score: data.score,
         pitcher: data.pitcher,
         pf: data.pf,
-        reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
+        reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp, data.bullpenH9, data.pitchMatchup?.reasons),
         gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
         gamePk:    gd.gamePk,
       });
@@ -11981,7 +12099,7 @@ async function runLeaderboardScan(entries, onProgress) {
         player, score: data.score,
         pitcher: data.pitcher,
         pf: data.pf,
-        reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
+        reasons:   _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp, data.bullpenH9, data.pitchMatchup?.reasons),
         gameLabel: `${rankLabel}${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
         gamePk:    gd.gamePk,
       });
@@ -12374,7 +12492,7 @@ async function runLabEliteScan(onProgress) {
       onProgress?.();
       results.push({
         player, score: data.score,
-        reasons: _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp),
+        reasons: _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp, data.bullpenH9, data.pitchMatchup?.reasons),
       });
     } catch {}
   }));
