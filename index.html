@@ -12913,12 +12913,92 @@ async function runLabAnalysis() {
         try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
       }
     })(),
+    (async () => { try { await ensureSavantData(new Date().getFullYear()); } catch {} })(),
   ]);
   _labStep('ls4','done');
 
   // Step 5: Score + render
   _labStep('ls5','active');
-  const score    = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF);
+  const pitchMatchup = computePitchMixMatchup(player.id, pitcher?.id);
+
+  const _savantPitchArsenal = (() => {
+    if (!pitcher?.id) return '';
+    const pRows = state.savantPitcher?.get(String(pitcher.id)) || [];
+    if (!pRows.length) return '';
+    const bRows = state.savantBatter?.get(String(player.id)) || [];
+    const bMap  = new Map(bRows.map(r => [r.pitch_type, r]));
+    const pitches = [...pRows].filter(p => parseFloat(p.pitch_usage) >= 5).sort((a, b) => parseFloat(b.pitch_usage) - parseFloat(a.pitch_usage));
+    if (!pitches.length) return '';
+    const tRows = pitches.map(p => {
+      const usage  = parseFloat(p.pitch_usage);
+      const pWhiff = parseFloat(p.whiff_percent) || 0;
+      const b      = bMap.get(p.pitch_type);
+      const ba     = b ? (parseFloat(b.ba) || 0) : null;
+      const bWhiff = b ? (parseFloat(b.whiff_percent) || 0) : null;
+      const baStr     = ba != null && ba > 0 ? '.' + Math.round(ba * 1000).toString().padStart(3,'0') : '—';
+      const bWhiffStr = bWhiff != null ? Math.round(bWhiff) + '%' : '—';
+      const baColor = ba == null ? 'var(--text-muted)' : ba >= 0.290 ? '#22c55e' : ba <= 0.210 ? '#ef4444' : ba <= 0.240 ? '#f59e0b' : 'var(--text-primary)';
+      const bWhiffColor = bWhiff == null ? 'var(--text-muted)' : bWhiff >= 35 ? '#ef4444' : bWhiff >= 25 ? '#f59e0b' : '#22c55e';
+      const batEdge = ba != null && ba >= 0.290;
+      const spEdge  = ba != null && (ba <= 0.210 || (pWhiff >= 28 && bWhiff != null && bWhiff >= 28));
+      const edgeText = batEdge
+        ? `<span style="color:#22c55e;font-weight:700">Batter ↑</span>`
+        : spEdge ? `<span style="color:#ef4444;font-weight:700">SP ↑</span>`
+        : `<span style="color:var(--text-muted)">Even</span>`;
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:5px 4px;font-weight:600;color:#e2e8f0;white-space:nowrap">${escHtml(p.pitch_name || p.pitch_type)}</td>
+        <td style="padding:5px 4px;text-align:center;color:#94a3b8">${usage.toFixed(0)}%</td>
+        <td style="padding:5px 4px;text-align:center;color:#64748b;font-size:10px">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</td>
+        <td style="padding:5px 4px;text-align:center;font-weight:700;color:${baColor}">${baStr}</td>
+        <td style="padding:5px 4px;text-align:center;color:${bWhiffColor}">${bWhiffStr}</td>
+        <td style="padding:5px 4px;text-align:center;font-size:10px">${edgeText}</td>
+      </tr>`;
+    }).join('');
+    const summaryCallout = pitchMatchup.reasons.length
+      ? `<div style="margin-top:8px;padding:7px 10px;background:#0f172a;border-radius:6px;border-left:3px solid ${pitchMatchup.score > 0 ? '#22c55e' : pitchMatchup.score < 0 ? '#ef4444' : '#334155'};font-size:11px;color:#e2e8f0">${pitchMatchup.score > 0 ? '📈' : pitchMatchup.score < 0 ? '📉' : '→'} ${escHtml(pitchMatchup.reasons[0])}</div>` : '';
+    return `<div class="lab-section-label" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px"><span>SP Pitch Arsenal vs ${escHtml(player.name)}</span><span style="font-size:9px;color:var(--text-muted)">Baseball Savant 2026</span></div>
+    <div style="overflow-x:auto;margin-bottom:4px"><table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Pitch</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">SP Use</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">SP Whiff</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat BA</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat Whiff</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Edge</th>
+      </tr></thead>
+      <tbody>${tRows}</tbody>
+    </table></div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:2px">SP Use = share of pitches thrown. Bat BA/Whiff = ${escHtml(player.name)}'s 2026 numbers vs this pitch type league-wide.</div>
+    ${summaryCallout}`;
+  })();
+
+  const _savantBatterPitches = (() => {
+    const bRows = state.savantBatter?.get(String(player.id)) || [];
+    if (!bRows.length) return '';
+    const withBA = bRows.filter(r => parseFloat(r.ba) > 0).sort((a, b) => parseFloat(b.ba) - parseFloat(a.ba));
+    if (!withBA.length) return '';
+    const best  = withBA.slice(0, 4);
+    const worst = [...withBA].sort((a, b) => parseFloat(a.ba) - parseFloat(b.ba)).slice(0, 3).filter(r => parseFloat(r.ba) < 0.280);
+    const _pill = (r, kind) => {
+      const ba = parseFloat(r.ba);
+      const baStr = ba > 0 ? '.' + Math.round(ba * 1000).toString().padStart(3,'0') : '---';
+      const whiff = parseFloat(r.whiff_percent) || 0;
+      const clr = kind === 'good' ? '#22c55e' : '#ef4444';
+      const bg  = kind === 'good' ? '#22c55e15' : '#ef444415';
+      const bdr = kind === 'good' ? '#22c55e30' : '#ef444430';
+      return `<div style="background:${bg};border:1px solid ${bdr};border-radius:6px;padding:5px 10px;font-size:11px;display:inline-block">
+        <div style="color:#e2e8f0;font-weight:600;font-size:11px">${escHtml(r.pitch_name || r.pitch_type)}</div>
+        <div style="color:${clr};font-weight:800;font-size:14px;line-height:1.1">${baStr}</div>
+        ${whiff > 0 ? `<div style="color:var(--text-muted);font-size:9px">${Math.round(whiff)}% whiff</div>` : ''}
+      </div>`;
+    };
+    let html = `<div class="lab-section-label" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px"><span>Batter Pitch Performance (2026)</span><span style="font-size:9px;color:var(--text-muted)">Baseball Savant</span></div>`;
+    if (best.length)  html += `<div style="font-size:10px;font-weight:700;color:#22c55e;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Strongest vs</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${best.map(r => _pill(r,'good')).join('')}</div>`;
+    if (worst.length) html += `<div style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Struggles vs</div><div style="display:flex;flex-wrap:wrap;gap:5px">${worst.map(r => _pill(r,'bad')).join('')}</div>`;
+    return html;
+  })();
+
+  const score    = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF, pitchMatchup.score);
   const scoreCls = score>=80?'score-great':score>=65?'score-good':score>=45?'score-neutral':score>=30?'score-bad':'score-poor';
   const scoreLbl = score>=80?'Strong Hitter Edge':score>=65?'Hitter Leaning':score>=45?'Neutral Matchup':score>=30?'Pitcher Leaning':'Strong Pitcher Edge';
   const barColor = score>=65?'#22c55e':score>=45?'#94a3b8':'#ef4444';
@@ -13188,6 +13268,7 @@ async function runLabAnalysis() {
       <div class="lab-chips">${hStrengths.map(s=>`<span class="lab-chip str">${escHtml(s)}</span>`).join('')||'<span class="lab-chip neu">None identified</span>'}</div>
       <div class="lab-section-label">Weaknesses</div>
       <div class="lab-chips">${hWeaknesses.map(w=>`<span class="lab-chip wk">${escHtml(w)}</span>`).join('')||'<span class="lab-chip neu">None identified</span>'}</div>
+      ${_savantBatterPitches}
     </div>
   </div>`;
 
@@ -13223,6 +13304,7 @@ async function runLabAnalysis() {
         <div class="lab-pstat"><div class="lab-pstat-label">BB/BF%</div><div class="lab-pstat-val ${(pitcher?.seasonStats?.bbBfPct||0)>0&&(pitcher?.seasonStats?.bbBfPct||0)<=0.07?'good':(pitcher?.seasonStats?.bbBfPct||0)>0&&(pitcher?.seasonStats?.bbBfPct||0)<0.12?'avg':(pitcher?.seasonStats?.bbBfPct||0)>=0.12?'bad':''}">${pitcher?.seasonStats?.bbBfPct>0?(pitcher.seasonStats.bbBfPct*100).toFixed(1)+'%':'—'}</div><div class="lab-pstat-tier">${(pitcher?.seasonStats?.bbBfPct||0)>0&&(pitcher?.seasonStats?.bbBfPct||0)<=0.06?'Elite Cmd':(pitcher?.seasonStats?.bbBfPct||0)>=0.12?'Wild':''}</div></div>
       </div>
       <div style="font-size:12px;color:var(--text-muted);line-height:1.6;margin:10px 0 4px">${profile.eraTier.desc}</div>
+      ${_savantPitchArsenal}
       <!-- vs this batter -->
       <div class="lab-section-label">vs ${escHtml(player.name)} (career)</div>
       ${h2h?.ab>=1 ? `<div style="font-size:12px;color:var(--text-secondary);line-height:1.6">Has faced ${escHtml(player.name)} ${h2h.ab} times — batter is hitting <strong class="${h2h.avg>=0.300?'good':h2h.avg<0.200?'bad':''}">${fmt3(h2h.avg)}</strong> (${h2h.k} K, ${h2h.bb} BB, ${h2h.hr} HR). ${(() => {
