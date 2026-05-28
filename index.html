@@ -12700,8 +12700,8 @@ function _teamScanCardHTML(r) {
 
     <div class="twp-winner-strip">
       ${winner !== 'tie'
-        ? `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-winner-conf">${winnerProb}% confidence</span>`
-        : `<span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-winner-conf">50% confidence</span>`}
+        ? `<span class="twp-pred-label">Prediction</span><span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-winner-conf">${winnerProb}% confidence</span>`
+        : `<span class="twp-pred-label">Prediction</span><span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-winner-conf">${homeWinProb}% confidence</span>`}
     </div>
 
     ${isFinal && actualWinner ? (() => {
