@@ -601,6 +601,12 @@ main { padding: 28px 0 60px; }
 .twp-player-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:11px; }
 .twp-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100px; }
 .twp-player-score { font-weight:700; flex-shrink:0; margin-left:4px; }
+.twp-result-strip { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-top:1px solid var(--border); background:#0f172a; }
+.twp-result-score { font-size:12px; font-weight:700; color:#e2e8f0; letter-spacing:.3px; }
+.twp-result-badge { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:3px 9px; border-radius:4px; flex-shrink:0; }
+.twp-result-correct { background:#22c55e22; color:#22c55e; border:1px solid #22c55e44; }
+.twp-result-wrong { background:#ef444422; color:#ef4444; border:1px solid #ef444444; }
+.twp-postmortem { padding:7px 14px 9px; font-size:11px; color:#94a3b8; line-height:1.5; border-top:1px solid #1e293b; background:#0f172a; }
 .lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
 .lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-compare-table th:first-child  { text-align:right; width:40%; }
@@ -12495,6 +12501,13 @@ function runTeamScan(onProgress) {
     const awayWinProb = 100 - homeWinProb;
     const grade       = _predictionGrade(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!weather);
 
+    const _rawGame    = (state.games || []).find(g => g.gamePk === gd.gamePk);
+    const _isFinal    = _rawGame?.status?.abstractGameState === 'Final';
+    const _actAway    = _isFinal ? (_rawGame?.teams?.away?.score ?? null) : null;
+    const _actHome    = _isFinal ? (_rawGame?.teams?.home?.score ?? null) : null;
+    const _actWinner  = (_actAway != null && _actHome != null)
+      ? (_actAway > _actHome ? 'away' : _actAway < _actHome ? 'home' : 'tie') : null;
+
     results.push({
       gamePk: gd.gamePk,
       gameDate: gd.gameDate,
@@ -12504,6 +12517,10 @@ function runTeamScan(onProgress) {
       awayAvg: awayScore, homeAvg: homeScore,
       margin, winner, awayWinProb, homeWinProb, grade,
       awayPosted, homePosted,
+      isFinal: _isFinal,
+      actualAwayScore: _actAway,
+      actualHomeScore: _actHome,
+      actualWinner: _actWinner,
       awayPitcherName: gd.awayPitcher?.name || gd.awayPitcher?.fullName || null,
       homePitcherName: gd.homePitcher?.name || gd.homePitcher?.fullName || null,
       awayPitcherEra:  gd.awayPitcher?.seasonStats?.era  || null,
@@ -12535,6 +12552,7 @@ function _teamScanCardHTML(r) {
     awayWinProb, homeWinProb, grade,
     awayPosted, homePosted,
     awayPitcherName, homePitcherName, awayPitcherEra, homePitcherEra,
+    isFinal, actualAwayScore, actualHomeScore, actualWinner,
   } = r;
 
   const awayTi   = TEAM_INFO[awayTeamId] || {};
@@ -12683,6 +12701,37 @@ function _teamScanCardHTML(r) {
         ? `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-winner-conf">${winnerProb}% confidence</span>`
         : `<span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-winner-conf">50% confidence</span>`}
     </div>
+
+    ${isFinal && actualWinner ? (() => {
+      const predCorrect   = winner === actualWinner || winner === 'tie';
+      const actualName    = actualWinner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
+      const scoreLine     = `${escHtml(awayAbbr||'Away')} ${actualAwayScore} – ${actualHomeScore} ${escHtml(homeAbbr||'Home')}`;
+      const resultBadge   = predCorrect
+        ? `<span class="twp-result-badge twp-result-correct">&#10003; Correct</span>`
+        : `<span class="twp-result-badge twp-result-wrong">&#10007; Missed</span>`;
+
+      let postmortem = '';
+      if (!predCorrect) {
+        const predComps    = winner === 'away' ? awayComponents : homeComponents;
+        const actualComps  = winner === 'away' ? homeComponents : awayComponents;
+        const predAbbr     = winner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
+        const diffs = [
+          { name: 'offense',  delta: (predComps.lineup + (predComps.form||0)) - (actualComps.lineup + (actualComps.form||0)) },
+          { name: 'starting pitcher', delta: (predComps.starter||0) - (actualComps.starter||0) },
+          { name: 'bullpen',  delta: (predComps.bullpen||0) - (actualComps.bullpen||0) },
+        ].filter(d => d.delta > 0).sort((a, b) => b.delta - a.delta);
+        const driver = diffs.length >= 2
+          ? `${diffs[0].name} and ${diffs[1].name}`
+          : diffs.length === 1 ? diffs[0].name : 'overall model metrics';
+        const predProb = winner === 'away' ? awayWinProb : homeWinProb;
+        postmortem = `<div class="twp-postmortem">Model favored ${predAbbr} (${predProb}%) on ${driver}, but ${actualName} took it ${actualAwayScore > actualHomeScore ? actualAwayScore + '–' + actualHomeScore : actualHomeScore + '–' + actualAwayScore}. Pre-game lineup and pitcher projections drove the edge — outcome may reflect bullpen usage, in-game adjustments, or untracked factors.</div>`;
+      }
+
+      return `<div class="twp-result-strip">
+        <span class="twp-result-score">${scoreLine}</span>
+        ${resultBadge}
+      </div>${postmortem}`;
+    })() : ''}
 
     ${summaryText ? `<div class="twp-reasoning">${escHtml(summaryText)}</div>` : ''}
 
