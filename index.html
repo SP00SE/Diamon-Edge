@@ -12202,6 +12202,7 @@ async function handleTeamScan() {
   }
 
   try {
+    await ensureSavantData(new Date().getFullYear());
     _scanShowLoading(
       '🏟️ Team Win Predictor',
       `Scoring ${total} game${total !== 1 ? 's' : ''}…`,
@@ -12386,11 +12387,32 @@ function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, hom
   return parts.join(' · ');
 }
 
-function _starterBonus(pitcher) {
+function _starterBonus(pitcher, gameLog = null) {
+  if (!pitcher) return 0;
   const s = pitcher?.seasonStats;
-  if (!s) return 0;
-  const era = s.era != null ? parseFloat(s.era) : null;
-  if (era == null) return 0;
+
+  // 1. Savant pitch-mix scoring (primary)
+  const savantRows = state.savantPitcher?.get(String(pitcher.id)) ?? [];
+  const pitches    = savantRows.filter(r => parseFloat(r.pitch_usage) >= 10);
+  if (pitches.length) {
+    const weightedWhiff = pitches.reduce((acc, r) =>
+      acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.whiff_percent) / 100), 0);
+    const weightedWOBA  = pitches.reduce((acc, r) =>
+      acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.woba) || 0), 0);
+    const whiffPts =
+      weightedWhiff >= 0.30 ? 12 : weightedWhiff >= 0.25 ? 6 :
+      weightedWhiff >= 0.20 ? 2  : weightedWhiff >= 0.15 ? 0 : -8;
+    const wobaPts =
+      weightedWOBA <= 0.250 ? 8  : weightedWOBA <= 0.290 ? 3 :
+      weightedWOBA <= 0.330 ? 0  : weightedWOBA <= 0.370 ? -4 : -10;
+    return Math.max(-15, Math.min(20, whiffPts + wobaPts));
+  }
+
+  // 2. Debut / no MLB data penalty
+  const era = s?.era != null ? parseFloat(s.era) : null;
+  if (!era || era <= 0) return -8;
+
+  // 3. ERA bracket fallback (recency blending wired in Task 3)
   let eraScore;
   if      (era <= 2.50) eraScore = 15;
   else if (era <= 3.25) eraScore = 10;
