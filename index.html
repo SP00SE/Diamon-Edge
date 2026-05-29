@@ -12472,17 +12472,31 @@ function _bullpenBonus(era, h9 = 0, hbf = 0) {
   return Math.max(-12, Math.min(15, eraScore + h9Score + hbfScore));
 }
 
+function _playerOps(stats) {
+  if (!stats) return null;
+  if (stats.ops != null) return parseFloat(stats.ops) || null;
+  const ab  = parseFloat(stats.atBats)   || 0;
+  const h   = parseFloat(stats.hits)     || 0;
+  const d   = parseFloat(stats.doubles)  || 0;
+  const t   = parseFloat(stats.triples)  || 0;
+  const hr  = parseFloat(stats.homeRuns) || 0;
+  const obp = parseFloat(stats.obp)      || null;
+  if (ab === 0) return null;
+  const slg = (h + d + 2 * t + 3 * hr) / ab;
+  return obp != null ? obp + slg : null;
+}
+
 function _teamRecentForm(players) {
   if (!players.length) return 0;
   let delta = 0, count = 0;
   for (const p of players) {
-    const l7  = p.last7Stats?.avg  || 0;
-    const sea = p.seasonStats?.avg || 0;
-    if (l7 > 0 && sea > 0) { delta += (l7 - sea); count++; }
+    const l7ops  = _playerOps(p.last7Stats);
+    const seaOps = _playerOps(p.seasonStats);
+    if (l7ops != null && seaOps != null && seaOps > 0) { delta += (l7ops - seaOps); count++; }
   }
   if (!count) return 0;
   const avg = delta / count;
-  return avg >= 0.060 ? 8 : avg >= 0.035 ? 5 : avg >= 0.015 ? 2 : avg >= -0.015 ? 0 : avg >= -0.035 ? -2 : avg >= -0.060 ? -5 : -8;
+  return avg >= 0.180 ? 8 : avg >= 0.100 ? 5 : avg >= 0.040 ? 2 : avg >= -0.040 ? 0 : avg >= -0.100 ? -2 : avg >= -0.180 ? -5 : -8;
 }
 
 function _gameContextAdj(pf, weather) {
