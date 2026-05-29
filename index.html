@@ -3647,6 +3647,7 @@ let state = {
   savantBatter:  null,  // Map<playerId, row[]>
   savantLoading: false,
   savantYear:    null,
+  sigmoidSlope:  null,
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────
@@ -3950,8 +3951,6 @@ function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpen
   const skill        = _hitSkillScore(batter, factors);
   const form         = _hitRecentFormScore(batter, factors);
   const opp          = _hitOpportunityScore(batter, orderPos, factors);
-  const matchup      = _hitMatchupScore(batter, pitcher, factors);
-  const bullpen      = _hitBullpenScore(bullpenEra, factors, bullpenH9);
   const weatherScore = _hitWeatherScore(weather, factors);
 
   // Park factor — capped ±4
@@ -3964,7 +3963,7 @@ function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpen
   else if (pfOverall <= 0.93) { parkScore = -3; factors.push({ label: `Pitcher-friendly park ${pfOverall.toFixed(2)}×`,type:'neg', pts: -3 }); }
   else if (pfOverall <= 0.97) { parkScore = -2; factors.push({ label: `Slight pitcher edge ${pfOverall.toFixed(2)}×`,  type:'neg', pts: -2 }); }
 
-  const raw = 50 + skill + form + opp + matchup + bullpen + weatherScore + parkScore;
+  const raw = 50 + skill + form + opp + weatherScore + parkScore;
   return { score: clamp(Math.round(raw), 15, 95), factors };
 }
 
