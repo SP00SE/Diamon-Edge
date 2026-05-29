@@ -12256,6 +12256,8 @@ async function handleTeamScan() {
     } else {
       cards.innerHTML = results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
     }
+    const _finalForCalib = results.filter(r => r.isFinal && r.actualWinner);
+    state.sigmoidSlope = _calibrateSigmoidSlope(_finalForCalib);
     _labShow('labScreenTeamScan');
   } catch(e) {
     _scanRestoreLoading();
@@ -12525,8 +12527,26 @@ function _lineupConfidenceAdj(isPosted, playerCount) {
   return playerCount >= 7 ? -3 : playerCount >= 5 ? -6 : -12;
 }
 
+function _calibrateSigmoidSlope(finalResults) {
+  if (finalResults.length < 5) return 0.023;
+  let lo = 0.005, hi = 0.5;
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    let grad = 0;
+    for (const r of finalResults) {
+      const diff = r.homeScore - r.awayScore;
+      const p    = 1 / (1 + Math.exp(-mid * diff));
+      const y    = r.actualWinner === 'home' ? 1 : r.actualWinner === 'away' ? 0 : 0.5;
+      grad += diff * (p - y);
+    }
+    if (grad > 0) hi = mid; else lo = mid;
+  }
+  return (lo + hi) / 2;
+}
+
 function _winProbability(scoreDiff) {
-  return Math.round(100 / (1 + Math.exp(-0.08 * scoreDiff)));
+  const k = state.sigmoidSlope ?? 0.023;
+  return Math.round(100 / (1 + Math.exp(-k * scoreDiff)));
 }
 
 function _predictionGrade(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra) {
