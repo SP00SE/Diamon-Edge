@@ -12819,17 +12819,61 @@ function _teamScanCardHTML(r) {
       let postmortem = '';
       if (!predCorrect && !predTie && predComps) {
         const predAbbr = winner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
-        const diffs = [
-          { name: 'offense',  delta: (predComps.lineup + (predComps.form||0)) - (actualComps.lineup + (actualComps.form||0)) },
-          { name: 'starting pitcher', delta: (predComps.starter||0) - (actualComps.starter||0) },
-          { name: 'bullpen',  delta: (predComps.bullpen||0) - (actualComps.bullpen||0) },
-        ].filter(d => d.delta > 0).sort((a, b) => b.delta - a.delta);
-        const driver = diffs.length >= 2
-          ? `${diffs[0].name} and ${diffs[1].name}`
-          : diffs.length === 1 ? diffs[0].name : 'overall model metrics';
         const predProb = winner === 'away' ? awayWinProb : homeWinProb;
-        // Bug 4: reuse scoreLine — keeps team-labeled context instead of recomputing without labels
-        postmortem = `<div class="twp-postmortem">Model favored ${predAbbr} (${predProb}%) on ${driver}, but ${actualName} won (${scoreLine}). Pre-game lineup and pitcher projections drove the edge — outcome may reflect bullpen usage, in-game adjustments, or untracked factors.</div>`;
+
+        // Component deltas — positive = predicted team had edge, negative = actual winner led
+        const components = [
+          { label: 'Offense & Form',   delta: (predComps.lineup + (predComps.form||0)) - (actualComps.lineup + (actualComps.form||0)) },
+          { label: 'Starting Pitcher', delta: (predComps.starter||0) - (actualComps.starter||0) },
+          { label: 'Bullpen',          delta: (predComps.bullpen||0) - (actualComps.bullpen||0) },
+          { label: 'Situation / Park', delta: (predComps.context||0) - (actualComps.context||0) },
+        ];
+        const meaningful = components.filter(d => Math.abs(d.delta) >= 2);
+        const wrongEdges  = meaningful.filter(d => d.delta > 0).sort((a, b) => b.delta - a.delta);
+        const missedEdges = meaningful.filter(d => d.delta < 0).sort((a, b) => a.delta - b.delta);
+
+        // Component bar rows
+        const compRows = meaningful.map(d => {
+          const pct  = Math.min(Math.abs(d.delta) / 25 * 100, 100).toFixed(0);
+          const clr  = d.delta > 0 ? '#f59e0b' : '#22c55e';
+          const side = d.delta > 0 ? predAbbr : actualName;
+          return `<div style="display:flex;align-items:center;gap:8px;margin:3px 0">
+            <span style="width:108px;font-size:10px;color:var(--text-muted);flex-shrink:0">${d.label}</span>
+            <div style="flex:1;height:3px;background:#1e293b;border-radius:2px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${clr};border-radius:2px"></div></div>
+            <span style="font-size:10px;font-weight:700;color:${clr};width:56px;text-align:right;flex-shrink:0">${side} +${Math.abs(Math.round(d.delta))}</span>
+          </div>`;
+        }).join('');
+
+        // Actionable tips
+        const tips = [];
+        const spName = winner === 'away' ? awayPitcherName : homePitcherName;
+        if (wrongEdges.some(d => d.label === 'Starting Pitcher'))
+          tips.push(`${spName ? escHtml(spName) + "'s" : "SP's"} season ERA drove the model — verify last 3 starts and days of rest before next bet`);
+        if (wrongEdges.some(d => d.label === 'Offense & Form'))
+          tips.push('Lineup edge looked real pre-game — check matchup-specific wRC+ and how this lineup performs vs this SP handedness');
+        if (wrongEdges.some(d => d.label === 'Bullpen') || missedEdges.some(d => d.label === 'Bullpen'))
+          tips.push('Bullpen rest and workload not in model — check prior 2-day usage before flagging a pen as an edge');
+        if (missedEdges.some(d => d.label === 'Starting Pitcher'))
+          tips.push(`${actualName}'s starter outperformed their ERA — look at Savant whiff% and pitch mix for better early reads`);
+        if (missedEdges.some(d => d.label === 'Offense & Form'))
+          tips.push(`${actualName}'s offense was underrated — OPS last-7 and platoon splits vs the opposing SP were likely underweighted`);
+        if (grade === 'C' || grade === 'D')
+          tips.push('Grade ' + grade + ' prediction — lineup was projected, not confirmed; unconfirmed orders amplify model error');
+        if (!tips.length)
+          tips.push('Marginal prediction — both teams were evenly matched; double-check lineup confirmation and SP rest before wagering');
+
+        const tipsHtml = tips.slice(0, 3).map(t => `<div style="display:flex;gap:6px;padding:2px 0"><span style="color:#f59e0b;flex-shrink:0">→</span><span style="color:#94a3b8;font-size:10px;line-height:1.4">${t}</span></div>`).join('');
+
+        postmortem = `<div class="twp-postmortem">
+          <div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Why the model missed</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">Model gave ${predAbbr} a ${predProb}% edge (Grade ${escHtml(grade||'?')}). ${actualName} won — ${scoreLine}.</div>
+          ${compRows}
+          ${missedEdges.length ? `<div style="font-size:10px;color:#22c55e;margin-top:6px">&#10003; ${actualName} held hidden edges in: ${missedEdges.map(d => d.label.toLowerCase()).join(', ')}</div>` : ''}
+          <div style="margin-top:8px;padding-top:7px;border-top:1px solid #1e293b">
+            <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">What to look at next time</div>
+            ${tipsHtml}
+          </div>
+        </div>`;
       }
 
       return `<div class="twp-result-strip">
