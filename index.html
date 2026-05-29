@@ -12348,8 +12348,10 @@ function _confidenceLabel(lineupPosted, count) {
   return 'Preliminary';
 }
 
-function _projRuns(composite) {
-  return Math.max(1.5, 4.5 + ((composite - 50) / 30) * 2.5);
+function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0) {
+  const batting     = 4.5 + ((lineupComposite - 50) / 30) * 2.0;
+  const suppression = (oppSpBonus + oppBullpenBonus) / 33;
+  return Math.max(1.0, (batting - suppression) * pfVal);
 }
 
 function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc) {
@@ -12533,9 +12535,9 @@ function runTeamScan(onProgress) {
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
       awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf },
       homeComponents: { lineup: homeLineup, form: homeForm, starter: homeStarter, bullpen: homeBullpen, context: context + 3 + homeConf },
-      awayProjRuns: _projRuns(awayLineup),
-      homeProjRuns: _projRuns(homeLineup),
-      predTotal: _projRuns(awayLineup) + _projRuns(homeLineup),
+      awayProjRuns: _projRuns(awayLineup, homeStarter, homeBullpen, pf?.overall ?? 1.0),
+      homeProjRuns: _projRuns(homeLineup, awayStarter, awayBullpen, pf?.overall ?? 1.0),
+      predTotal: _projRuns(awayLineup, homeStarter, homeBullpen, pf?.overall ?? 1.0) + _projRuns(homeLineup, awayStarter, awayBullpen, pf?.overall ?? 1.0),
       summaryText: _teamScanSummary(gd, winner, awayScore, homeScore, pf,
         _starterEdge(gd.homePitcher), _starterEdge(gd.awayPitcher),
         _bullpenEdge(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF),
