@@ -4594,6 +4594,9 @@ async function processGame(game) {
   const processedAwayPitcher = { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats?.stat), pitchHand: awayPitcherStats?.pitchHand || null };
   const processedHomePitcher = { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats?.stat), pitchHand: homePitcherStats?.pitchHand || null };
 
+  const awayPitcherGameLog = processedAwayPitcher?.id ? await fetchPitcherGameLog(processedAwayPitcher.id) : [];
+  const homePitcherGameLog = processedHomePitcher?.id ? await fetchPitcherGameLog(processedHomePitcher.id) : [];
+
   // Attach confidence to every player (uses gameLogCache if already populated)
   const gameCtx = { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId, awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9, awayBullpenHBF, homeBullpenHBF, parkFactor, weather };
   for (const p of players) {
@@ -4618,6 +4621,8 @@ async function processGame(game) {
     homeLineupPosted: homeLineup.some(p => !p._projected),
     awayPitcher: processedAwayPitcher,
     homePitcher: processedHomePitcher,
+    awayPitcherGameLog,
+    homePitcherGameLog,
     awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9, awayBullpenHBF, homeBullpenHBF,
     gameDate,
     players,
@@ -4625,6 +4630,26 @@ async function processGame(game) {
     lockedBestBetHit,
     lockedBestBetHR,
   };
+}
+
+async function fetchPitcherGameLog(pitcherId) {
+  const season = new Date().getFullYear();
+  const url = `https://statsapi.mlb.com/api/v1/people/${pitcherId}/stats?stats=gameLog&season=${season}&group=pitching&gameType=R`;
+  try {
+    const data = await cachedFetch(url);
+    const statsArr = data?.stats || [];
+    let splits = [];
+    for (const s of statsArr) {
+      if (Array.isArray(s.splits) && s.splits.length > 0) { splits = s.splits; break; }
+    }
+    return splits
+      .filter(g => g.date !== state.date)
+      .map(g => ({
+        date:           g.date,
+        inningsPitched: g.stat?.inningsPitched || '0',
+        earnedRuns:     g.stat?.earnedRuns     || 0,
+      }));
+  } catch { return []; }
 }
 
 async function fetchStreaks(playerId) {
@@ -12348,6 +12373,17 @@ function _confidenceLabel(lineupPosted, count) {
   return 'Preliminary';
 }
 
+function _recentEra(gameLog, seasonEra) {
+  const starts = (gameLog || [])
+    .filter(g => parseFloat(g.inningsPitched) > 0)
+    .slice(-3);
+  if (starts.length < 2) return seasonEra;
+  const er = starts.reduce((s, g) => s + (parseFloat(g.earnedRuns)     || 0), 0);
+  const ip = starts.reduce((s, g) => s + (parseFloat(g.inningsPitched) || 0), 0);
+  const recentEra = ip > 0 ? (er / ip) * 9 : seasonEra;
+  return 0.4 * recentEra + 0.6 * seasonEra;
+}
+
 function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0) {
   const batting     = 4.5 + ((lineupComposite - 50) / 30) * 2.0;
   const suppression = (oppSpBonus + oppBullpenBonus) / 33;
@@ -12412,14 +12448,15 @@ function _starterBonus(pitcher, gameLog = null) {
   const era = s?.era != null ? parseFloat(s.era) : null;
   if (!era || era <= 0) return -8;
 
-  // 3. ERA bracket fallback (recency blending wired in Task 3)
+  // 3. ERA bracket fallback with last-3-starts recency blend
+  const blendedEra = _recentEra(gameLog, era);
   let eraScore;
-  if      (era <= 2.50) eraScore = 15;
-  else if (era <= 3.25) eraScore = 10;
-  else if (era <= 3.75) eraScore =  5;
-  else if (era <= 4.50) eraScore =  0;
-  else if (era <= 5.25) eraScore = -5;
-  else                  eraScore = -10;
+  if      (blendedEra <= 2.50) eraScore = 15;
+  else if (blendedEra <= 3.25) eraScore = 10;
+  else if (blendedEra <= 3.75) eraScore =  5;
+  else if (blendedEra <= 4.50) eraScore =  0;
+  else if (blendedEra <= 5.25) eraScore = -5;
+  else                         eraScore = -10;
   const ip = parseFloat(s.inningsPitched) || 0;
   const k9 = ip > 0 ? (parseFloat(s.strikeOuts) || 0) / ip * 9 : 0;
   const k9Score  = k9 >= 11 ? 5 : k9 >= 9.5 ? 3 : k9 >= 8 ? 1 : k9 >= 6.5 ? 0 : k9 >= 5 ? -2 : ip > 0 ? -5 : 0;
@@ -12510,14 +12547,14 @@ function runTeamScan(onProgress) {
     const context      = _gameContextAdj(pf, weather);
     const awayLineup   = _lineupScore(awayRes);
     const awayForm     = _teamRecentForm(awayPlayers);
-    const awayStarter  = _starterBonus(gd.awayPitcher);
+    const awayStarter  = _starterBonus(gd.awayPitcher, gd.awayPitcherGameLog);
     const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF);
     const awayConf     = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
     const awayScore    = awayLineup + awayForm + context + awayStarter + awayBullpen + awayConf;
 
     const homeLineup   = _lineupScore(homeRes);
     const homeForm     = _teamRecentForm(homePlayers);
-    const homeStarter  = _starterBonus(gd.homePitcher);
+    const homeStarter  = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
     const homeBullpen  = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF);
     const homeConf     = _lineupConfidenceAdj(homePosted, homePlayers.length);
     const homeScore    = homeLineup + homeForm + context + 3 + homeStarter + homeBullpen + homeConf;
