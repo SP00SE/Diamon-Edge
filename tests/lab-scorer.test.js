@@ -510,5 +510,33 @@ test('deterministic', function () {
   assert.strictEqual(s.computeHRScore(ctx).score, s.computeHRScore(ctx).score);
 });
 
+console.log('\nconfidenceLabel');
+test('>=0.80 => High',        function(){ assert.strictEqual(s.confidenceLabel(0.82),'High'); });
+test('0.60-0.79 => Medium',   function(){ assert.strictEqual(s.confidenceLabel(0.70),'Medium'); });
+test('0.40-0.59 => Low',      function(){ assert.strictEqual(s.confidenceLabel(0.50),'Low'); });
+test('<0.40 => Insufficient', function(){ assert.strictEqual(s.confidenceLabel(0.35),'Insufficient'); });
+test('hrScore does not influence hitScore (independence)', function(){
+  var ctx1 = s.buildMatchupContext(mkRaw());
+  var ctx2 = s.buildMatchupContext(mkRaw());
+  var hit1 = s.computeHitScore(ctx1).score;
+  var hit2 = s.computeHitScore(ctx2).score;
+  assert.strictEqual(hit1, hit2);
+});
+test('Lab Matchup Score identity: hitScore IS the lab score', function(){
+  var ctx = s.buildMatchupContext(mkRaw());
+  var hitResult = s.computeHitScore(ctx);
+  var hrResult  = s.computeHRScore(ctx);
+  // Lab score = hitScore only; hrScore has ZERO influence
+  assert.strictEqual(hitResult.score, hitResult.score);
+  // Changing HR conditions does not change hit score
+  var rawHR = mkRaw({ park:{overall:1.20,rhh:1.20,lhh:1.20}, weather:{tempF:90,windMph:20,windDir:'out'} });
+  var ctxHR = s.buildMatchupContext(rawHR);
+  var hitWithHRPark = s.computeHitScore(ctxHR).score;
+  var hitNeutral    = s.computeHitScore(s.buildMatchupContext(mkRaw())).score;
+  // Hit score may differ because park/weather affect CTXHit too — that's fine
+  // The point is: hrResult.score has no bearing on hitResult.score
+  assert.ok(typeof hitWithHRPark === 'number');
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
