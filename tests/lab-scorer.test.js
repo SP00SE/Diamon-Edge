@@ -236,5 +236,52 @@ test('last 3 hitless reduces vs same without hitless', function () {
   assert.ok(rHitless.value < rNormal.value);
 });
 
+console.log('\ncomputePBE');
+
+test('platoon +.080 diff (40+ AB) gives +6', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.250 }),
+    vsRHP: { atBats: 50, avg: 0.330, obp: 0.380 },
+  });
+  assert.ok(s.computePBE(s.buildMatchupContext(raw)).value >= 6);
+});
+test('platoon -.090 diff (40+ AB) gives -7', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.290 }),
+    vsRHP: { atBats: 50, avg: 0.200, obp: 0.260 },
+  });
+  assert.ok(s.computePBE(s.buildMatchupContext(raw)).value <= -7);
+});
+test('platoon below 20 AB returns 0', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.250 }),
+    vsRHP: { atBats: 15, avg: 0.400 },
+  });
+  assert.strictEqual(s.computePBE(s.buildMatchupContext(raw)).value, 0);
+});
+test('H2H .150 avg in 80 AB gives negative delta (bug fix)', function () {
+  var raw = mkRaw({ h2h: { ab: 80, avg: 0.150, hr: 1 } });
+  assert.ok(s.computePBE(s.buildMatchupContext(raw)).value <= -5);
+});
+test('H2H .380 avg in 35 AB gives +5', function () {
+  var raw = mkRaw({ h2h: { ab: 35, avg: 0.380, hr: 2 } });
+  assert.ok(s.computePBE(s.buildMatchupContext(raw)).value >= 5);
+});
+test('H2H below 5 AB ignored entirely', function () {
+  var raw = mkRaw({ h2h: { ab: 3, avg: 0.100, hr: 0 } });
+  assert.strictEqual(s.computePBE(s.buildMatchupContext(raw)).value, 0);
+});
+test('clamped to +8 max', function () {
+  var raw = mkRaw({ h2h: { ab: 40, avg: 0.420, hr: 3 } });
+  raw.player = Object.assign({}, raw.player, {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.200 }),
+    vsRHP: { atBats: 60, avg: 0.380 },
+  });
+  assert.ok(s.computePBE(s.buildMatchupContext(raw)).value <= 8);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
