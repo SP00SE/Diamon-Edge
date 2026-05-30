@@ -41,9 +41,9 @@ One `buildMatchupContext()` assembles all data once. Three pure functions each r
 
 ```
 buildMatchupContext() → MatchupContext
-computeHitScore(ctx)  → ScoreResult
-computeHRScore(ctx)   → ScoreResult
-labMatchupScore       = round(0.60 × hitScore + 0.40 × hrScore)
+computeHitScore(ctx)  → ScoreResult   ← this IS the Lab Matchup Score
+computeHRScore(ctx)   → ScoreResult   ← displayed separately, informational only
+labMatchupScore       = hitScore       (no HR weighting)
 ```
 
 ---
@@ -352,10 +352,10 @@ Uses `rhh` park factor for right-handed batters, `lhh` for left-handed. The exis
 ## Lab Matchup Score (Refactored)
 
 ```
-labMatchupScore = round(0.60 × hitScore + 0.40 × hrScore)
+labMatchupScore = hitScore
 ```
 
-60/40 weighting: hits are more frequent and more predictable per-game than home runs. The composite score improves naturally when either subscoring model improves.
+The Lab is focused on hit likelihood. The Lab Matchup Score is the Hit Score — no HR weighting. The HR Score is calculated and displayed as a separate informational panel for users who also want power context, but it has zero influence on the Lab Matchup Score.
 
 **Labels:**
 
@@ -452,16 +452,17 @@ Projected lineups do not suppress scores — they reduce confidence. The lineup 
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  ⚠ PROJECTED LINEUP — scores are preliminary   |  Data: Medium           │
 ├──────────────────────┬──────────────────────────┬────────────────────────┤
-│  LAB MATCHUP SCORE   │  HIT SCORE               │  HOME RUN SCORE        │
-│  [ 72 ]  Favorable   │  [ 68 ]  Favorable       │  [ 59 ]  Neutral       │
-│                      │                          │                        │
-│  Overall matchup     │  ✓ Low K% pitcher        │  ✓ .245 ISO            │
-│  quality             │  ✓ L7 AVG .333           │  ✓ 2 HR last 14 days   │
-│                      │  ✓ .382 OBP              │  ✓ Hitter park (lhh)   │
-│  60% Hit · 40% HR    │  ⚠ 28% Whiff rate        │  ⚠ Wind 10 mph in      │
-│                      │                          │                        │
-│                      │  Confidence: Medium       │  Confidence: Medium    │
-│                      │  [Breakdown ▾]            │  [Breakdown ▾]         │
+│  LAB MATCHUP SCORE            │  HOME RUN SCORE (info only)   │
+│  (= Hit Score)                │                               │
+│  [ 68 ]  Favorable            │  [ 59 ]  Neutral              │
+│                               │                               │
+│  ✓ Low K% pitcher             │  ✓ .245 ISO                   │
+│  ✓ L7 AVG .333                │  ✓ 2 HR last 14 days          │
+│  ✓ .382 OBP                   │  ✓ Hitter park (lhh)          │
+│  ⚠ 28% Whiff rate             │  ⚠ Wind 10 mph in             │
+│                               │                               │
+│  Confidence: Medium            │  Confidence: Medium           │
+│  [Breakdown ▾]                 │  [Breakdown ▾]                │
 └──────────────────────┴──────────────────────────┴────────────────────────┘
 ```
 
@@ -600,9 +601,9 @@ Safe to deploy; no regressions. All existing behavior preserved.
 
 ### Phase 3 — Lab Matchup Score Refactor
 
-- Replace `computeLabMatchupScore()` with `round(0.60 × hitScore + 0.40 × hrScore)`
-- Update Lab Matchup Score card to show composite label and formula
-- Update `generateSmartMatchupSummary()` to receive both subscores
+- Replace `computeLabMatchupScore()` with `computeHitScore()` — Lab Matchup Score is now the Hit Score directly
+- HR Score card is rendered as a separate, clearly labeled informational panel with no bearing on the main score
+- Update `generateSmartMatchupSummary()` to receive both scores; narrative focuses on hit likelihood but may reference HR context when both scores are high
 
 ### Phase 4 — Confidence and Polish
 
@@ -649,13 +650,13 @@ Five real player/pitcher combos. Call existing `computeLabMatchupScore()`, recor
 | Wind direction 'cross' | CTX_hr wind delta = 0 |
 | LHH batter, pf.lhh = 1.18 | CTX_hr uses lhh, not overall |
 
-### Unit Tests: Lab Matchup Composite
+### Unit Tests: Lab Matchup Score Identity
 
 | Test | Expected |
 |---|---|
-| hitScore=70, hrScore=55 | labScore = round(42 + 22) = 64 |
-| hitScore=98, hrScore=96 | labScore = round(58.8 + 38.4) = 97 |
-| hitScore=8, hrScore=12 | labScore = round(4.8 + 4.8) = 10 |
+| hitScore=70 | labMatchupScore = 70 (not influenced by hrScore) |
+| hitScore=98, hrScore=10 | labMatchupScore = 98 (hrScore has zero effect) |
+| hitScore=8, hrScore=95 | labMatchupScore = 8 (hrScore has zero effect) |
 | Same inputs called twice | Same output (deterministic) |
 
 ### Unit Tests: Confidence
