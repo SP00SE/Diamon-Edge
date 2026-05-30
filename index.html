@@ -10430,12 +10430,12 @@ async function openPlayerAnalyzer(playerId, source) {
   const rawData = await fetchElitePlayerData(p, gd);
   const lineupStatus = p.lineupPosted ? 'confirmed'
                      : (p.orderPos > 0  ? 'projected' : 'unknown');
-  const ctx = buildMatchupContext(Object.assign({}, rawData,
+  const ctx = LabScorer.buildMatchupContext(Object.assign({}, rawData,
                 { lineupStatus, battingOrder: p.orderPos || null }));
   ctx.dataFlags.bullpenMissing = !(rawData.bullpenEra > 0);
   ctx.dataFlags.ghpMissing     = rawData.ghp == null;
-  const hitResult = computeHitScore(ctx);
-  const hrResult  = computeHRScore(ctx);
+  const hitResult = LabScorer.computeHitScore(ctx);
+  const hrResult  = LabScorer.computeHRScore(ctx);
 
   const panelContent =
     renderLabLineupBanner(ctx.lineupStatus) +
