@@ -186,5 +186,55 @@ test('clamped to +12 max', function () {
   assert.ok(r.value <= 12);
 });
 
+console.log('\ncomputeRF');
+
+test('hot L7 (.360) scores >= +5', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, { last7Stats: { avg: 0.360 } });
+  var r = s.computeRF(s.buildMatchupContext(raw));
+  assert.ok(r.value >= 5);
+  assert.strictEqual(r.hasData, true);
+});
+test('cold L7 (.160) and hitless log scores <= -4', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, {
+    last7Stats: { avg: 0.160 },
+    gameLog: (function () { var g = []; for (var i = 0; i < 14; i++) g.push({ hr: 0, hits: 0, atBats: 4 }); return g; }()),
+  });
+  var r = s.computeRF(s.buildMatchupContext(raw));
+  assert.ok(r.value <= -4);
+});
+test('GHP scaled with only 4 recent games', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, {
+    gameLog: [{ hr:0,hits:1,atBats:3 },{ hr:0,hits:1,atBats:3 },
+              { hr:0,hits:1,atBats:3 },{ hr:0,hits:1,atBats:3 }],
+    last7Stats: { avg: 0.333 },
+  });
+  var r = s.computeRF(s.buildMatchupContext(raw));
+  assert.ok(r.value > 0 && r.value < 10);
+});
+test('7-game hit streak adds +2', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, { hitStreak: 7, last7Stats: { avg: 0.300 } });
+  var r = s.computeRF(s.buildMatchupContext(raw));
+  assert.ok(r.value >= 5);
+});
+test('last 3 hitless reduces vs same without hitless', function () {
+  var makeLog = function (lastHitless) {
+    var g = [];
+    for (var i = 0; i < 11; i++) g.push({ hr:0,hits:1,atBats:4 });
+    for (var j = 0; j < 3; j++) g.push({ hr:0,hits:lastHitless?0:1,atBats:4 });
+    return g;
+  };
+  var rawHitless = mkRaw();
+  rawHitless.player = Object.assign({}, rawHitless.player, { gameLog: makeLog(true),  last7Stats:{avg:0.265},hitStreak:0 });
+  var rawNormal  = mkRaw();
+  rawNormal.player  = Object.assign({}, rawNormal.player,  { gameLog: makeLog(false), last7Stats:{avg:0.265},hitStreak:0 });
+  var rHitless = s.computeRF(s.buildMatchupContext(rawHitless));
+  var rNormal  = s.computeRF(s.buildMatchupContext(rawNormal));
+  assert.ok(rHitless.value < rNormal.value);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
