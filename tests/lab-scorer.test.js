@@ -338,5 +338,53 @@ test('no bullpen stats returns hasData false', function () {
   assert.strictEqual(r.value, 0);
 });
 
+console.log('\ncomputeHitScore');
+
+test('neutral inputs produce score 45-55', function () {
+  var r = s.computeHitScore(s.buildMatchupContext(mkRaw()));
+  assert.ok(r.score >= 45 && r.score <= 55, 'Expected 45-55, got ' + r.score);
+});
+test('breakdown sum equals rawTotal and clamp check', function () {
+  var r = s.computeHitScore(s.buildMatchupContext(mkRaw()));
+  var bSum = Object.keys(r.breakdown).reduce(function(a,k){ return a + (r.breakdown[k]||0); }, 0);
+  assert.strictEqual(bSum, r.rawTotal);
+  assert.strictEqual(Math.max(0,Math.min(100,50+r.rawTotal)), r.score);
+});
+test('hot hitter vs weak pitcher scores > 65', function () {
+  var raw = mkRaw();
+  raw.player  = Object.assign({}, raw.player,  {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg:0.310, obp:0.380 }),
+    last7Stats:  { avg: 0.360 },
+    gameLog: (function(){ var g=[]; for(var i=0;i<14;i++) g.push({hr:0,hits:1,atBats:3}); return g; }()),
+  });
+  raw.pitcher = { pitchHand:'R', seasonStats:{ kpct:0.17, babip:0.335, whip:1.50, ip:60 } };
+  assert.ok(s.computeHitScore(s.buildMatchupContext(raw)).score > 65);
+});
+test('cold hitter vs elite pitcher scores < 35', function () {
+  var raw = mkRaw();
+  raw.player  = Object.assign({}, raw.player,  {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg:0.210, obp:0.270 }),
+    last7Stats:  { avg: 0.160 },
+    gameLog: (function(){ var g=[]; for(var i=0;i<14;i++) g.push({hr:0,hits:0,atBats:4}); return g; }()),
+  });
+  raw.pitcher = { pitchHand:'R', seasonStats:{ kpct:0.33, babip:0.250, whip:0.90, ip:60 } };
+  assert.ok(s.computeHitScore(s.buildMatchupContext(raw)).score < 35);
+});
+test('deterministic', function () {
+  var ctx = s.buildMatchupContext(mkRaw());
+  assert.strictEqual(s.computeHitScore(ctx).score, s.computeHitScore(ctx).score);
+});
+test('missing pitcher stats gives null in breakdown', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand:'R', seasonStats:{} };
+  var r = s.computeHitScore(s.buildMatchupContext(raw));
+  assert.strictEqual(r.breakdown.pitcherContactProfile, null);
+});
+test('projected lineup reduces confidence vs confirmed', function () {
+  var r1 = s.computeHitScore(s.buildMatchupContext(mkRaw({ lineupStatus:'confirmed' })));
+  var r2 = s.computeHitScore(s.buildMatchupContext(mkRaw({ lineupStatus:'projected' })));
+  assert.ok(r2.confidence < r1.confidence);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
