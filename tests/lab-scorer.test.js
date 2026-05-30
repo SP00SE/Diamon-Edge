@@ -386,5 +386,129 @@ test('projected lineup reduces confidence vs confirmed', function () {
   assert.ok(r2.confidence < r1.confidence);
 });
 
+console.log('\ncomputeBPP');
+test('ISO .270 + BACON .320 gives +10', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player,
+    { seasonStats: Object.assign({}, raw.player.seasonStats, { avg:0.270, slg:0.540, bacon:0.320 }) });
+  assert.strictEqual(s.computeBPP(s.buildMatchupContext(raw)).value, 10);
+});
+test('ISO .080 + BACON .260 gives <= -6', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player,
+    { seasonStats: Object.assign({}, raw.player.seasonStats, { avg:0.260, slg:0.340, bacon:0.260 }) });
+  assert.ok(s.computeBPP(s.buildMatchupContext(raw)).value <= -6);
+});
+test('no slg/bacon returns hasData false', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, { seasonStats: { atBats:100 } });
+  var r = s.computeBPP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.hasData, false);
+});
+
+console.log('\ncomputeRPF');
+test('4 HR in last 14 days gives >= +6', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, {
+    gameLog: (function(){ var g=[]; for(var i=0;i<14;i++) g.push({hr:i<4?1:0,hits:1,atBats:4}); return g; }()),
+  });
+  assert.ok(s.computeRPF(s.buildMatchupContext(raw)).value >= 6);
+});
+test('0 HR in 14 games gives -2', function () {
+  assert.ok(s.computeRPF(s.buildMatchupContext(mkRaw())).value <= -2);
+});
+test('fewer than 7 games returns hasData false', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, { gameLog: [{hr:1,hits:1,atBats:4}] });
+  assert.strictEqual(s.computeRPF(s.buildMatchupContext(raw)).hasData, false);
+});
+
+console.log('\ncomputePHS');
+test('HR/9 1.55 gives +6', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand:'R', seasonStats:{ kpct:0.22, babip:0.300, bacon:0.290, whip:1.30, ip:60, hr9:1.55 } };
+  assert.strictEqual(s.computePHS(s.buildMatchupContext(raw)).value, 6);
+});
+test('HR/9 0.55 gives -6', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand:'R', seasonStats:{ kpct:0.22, babip:0.300, bacon:0.290, whip:1.30, ip:60, hr9:0.55 } };
+  assert.strictEqual(s.computePHS(s.buildMatchupContext(raw)).value, -6);
+});
+test('missing HR/9 falls back to K%+BACON proxy', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand:'R', seasonStats:{ kpct:0.16, bacon:0.315, ip:60 } };
+  assert.strictEqual(s.computePHS(s.buildMatchupContext(raw)).value, 4);
+});
+
+console.log('\ncomputeBvPH');
+test('4 HR in 30 AB gives +5', function () {
+  assert.strictEqual(s.computeBvPH(mkCtx({ h2h:{ab:30,avg:0.300,hr:4} })).value, 5);
+});
+test('0 HR in 32 AB gives -3', function () {
+  assert.strictEqual(s.computeBvPH(mkCtx({ h2h:{ab:32,avg:0.250,hr:0} })).value, -3);
+});
+test('below 15 AB gives 0 and hasData false', function () {
+  var r = s.computeBvPH(mkCtx({ h2h:{ab:12,avg:0.500,hr:3} }));
+  assert.strictEqual(r.value, 0);
+  assert.strictEqual(r.hasData, false);
+});
+
+console.log('\ncomputeCTXHR');
+test('lhh park 1.18 for LHH batter gives >= +4', function () {
+  var raw = mkRaw({ park:{overall:1.05,rhh:1.05,lhh:1.18} });
+  raw.player = Object.assign({}, raw.player, { bats:'L' });
+  assert.ok(s.computeCTXHR(s.buildMatchupContext(raw)).value >= 4);
+});
+test('82F gives >= +2', function () {
+  assert.ok(s.computeCTXHR(mkCtx({ weather:{tempF:82,windMph:3,windDir:'cross'} })).value >= 2);
+});
+test('42F gives <= -2', function () {
+  assert.ok(s.computeCTXHR(mkCtx({ weather:{tempF:42,windMph:3,windDir:'cross'} })).value <= -2);
+});
+test('wind out 18mph gives >= +2', function () {
+  assert.ok(s.computeCTXHR(mkCtx({ weather:{tempF:70,windMph:18,windDir:'out'} })).value >= 2);
+});
+test('wind in 18mph gives <= -2', function () {
+  assert.ok(s.computeCTXHR(mkCtx({ weather:{tempF:70,windMph:18,windDir:'in'} })).value <= -2);
+});
+
+console.log('\ncomputeBHS');
+test('bullpen HR/9 1.45 gives +3', function () {
+  assert.strictEqual(s.computeBHS(mkCtx({ bullpen:{era:4.5,h9:9.0,hbf:0.230,hr9:1.45} })).value, 3);
+});
+test('bullpen HR/9 0.60 gives -2', function () {
+  assert.strictEqual(s.computeBHS(mkCtx({ bullpen:{era:3.2,h9:7.5,hbf:0.210,hr9:0.60} })).value, -2);
+});
+test('ERA fallback when HR/9 missing', function () {
+  assert.ok(s.computeBHS(mkCtx({ bullpen:{era:5.5,h9:9.0,hbf:0.250,hr9:0} })).value >= 2);
+});
+
+console.log('\ncomputeHRScore');
+test('neutral inputs 40-60', function () {
+  var r = s.computeHRScore(s.buildMatchupContext(mkRaw()));
+  assert.ok(r.score >= 40 && r.score <= 60, 'Expected 40-60, got '+r.score);
+});
+test('breakdown sum equals rawTotal', function () {
+  var r = s.computeHRScore(s.buildMatchupContext(mkRaw()));
+  var bSum = Object.keys(r.breakdown).reduce(function(a,k){ return a+(r.breakdown[k]||0); },0);
+  assert.strictEqual(bSum, r.rawTotal);
+  assert.strictEqual(Math.max(0,Math.min(100,50+r.rawTotal)), r.score);
+});
+test('power hitter in favorable conditions > 70', function () {
+  var raw = mkRaw();
+  raw.player  = Object.assign({}, raw.player, {
+    seasonStats: Object.assign({}, raw.player.seasonStats, { avg:0.265, slg:0.550, bacon:0.330 }),
+    gameLog: (function(){ var g=[]; for(var i=0;i<14;i++) g.push({hr:i<4?1:0,hits:1,atBats:4}); return g; }()),
+  });
+  raw.pitcher = { pitchHand:'R', seasonStats:{ kpct:0.20,babip:0.300,bacon:0.315,whip:1.35,ip:60,hr9:1.55 } };
+  raw.park    = { overall:1.10, rhh:1.16, lhh:1.10 };
+  raw.weather = { tempF:82, windMph:16, windDir:'out' };
+  assert.ok(s.computeHRScore(s.buildMatchupContext(raw)).score > 70);
+});
+test('deterministic', function () {
+  var ctx = s.buildMatchupContext(mkRaw());
+  assert.strictEqual(s.computeHRScore(ctx).score, s.computeHRScore(ctx).score);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);

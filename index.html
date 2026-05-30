@@ -10431,8 +10431,7 @@ async function openPlayerAnalyzer(playerId, source) {
   const ctx       = buildMatchupContext(Object.assign({}, rawData,
                       { lineupStatus, battingOrder: p.orderPos || null }));
   const hitResult = computeHitScore(ctx);
-  const hrResult  = { score:50, rawTotal:0, breakdown:{}, confidence:0.5,
-                      label:'Neutral', reasons:[], warnings:[] };
+  const hrResult  = computeHRScore(ctx);
 
   const panelContent =
     renderLabLineupBanner(ctx.lineupStatus) +
