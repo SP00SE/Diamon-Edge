@@ -283,5 +283,60 @@ test('clamped to +8 max', function () {
   assert.ok(s.computePBE(s.buildMatchupContext(raw)).value <= 8);
 });
 
+console.log('\ncomputeCTXHit');
+
+test('hitter park (1.08) gives >= +1', function () {
+  var r = s.computeCTXHit(mkCtx({ park: { overall:1.08,rhh:1.08,lhh:1.06 } }));
+  assert.ok(r.value >= 1);
+});
+test('pitcher park (0.91) gives <= -1', function () {
+  var r = s.computeCTXHit(mkCtx({ park: { overall:0.91,rhh:0.91,lhh:0.93 } }));
+  assert.ok(r.value <= -1);
+});
+test('batting order 2 gives >= +1', function () {
+  assert.ok(s.computeCTXHit(mkCtx({ battingOrder: 2 })).value >= 1);
+});
+test('batting order 8 gives <= -1', function () {
+  assert.ok(s.computeCTXHit(mkCtx({ battingOrder: 8 })).value <= -1);
+});
+test('wind out 14mph gives >= +1', function () {
+  var r = s.computeCTXHit(mkCtx({ weather: { tempF:70, windMph:14, windDir:'out' } }));
+  assert.ok(r.value >= 1);
+});
+test('wind in 14mph gives <= -1', function () {
+  var r = s.computeCTXHit(mkCtx({ weather: { tempF:70, windMph:14, windDir:'in' } }));
+  assert.ok(r.value <= -1);
+});
+test('temp < 45F gives <= -1', function () {
+  var r = s.computeCTXHit(mkCtx({ weather: { tempF:40, windMph:2, windDir:'cross' } }));
+  assert.ok(r.value <= -1);
+});
+test('clamped to +5 max', function () {
+  var raw = mkRaw({ park:{overall:1.10,rhh:1.10,lhh:1.10}, battingOrder:1,
+                    weather:{tempF:72,windMph:16,windDir:'out'} });
+  raw.player = Object.assign({}, raw.player, { parkStats:{ ab:20, avg:0.380 } });
+  assert.ok(s.computeCTXHit(s.buildMatchupContext(raw)).value <= 5);
+});
+
+console.log('\ncomputeBCP');
+
+test('H/BF% 0.270 gives +4', function () {
+  var r = s.computeBCP(mkCtx({ bullpen:{ era:4.5, h9:9.0, hbf:0.270, hr9:1.1 } }));
+  assert.strictEqual(r.value, 4);
+});
+test('H/BF% 0.185 gives -4', function () {
+  var r = s.computeBCP(mkCtx({ bullpen:{ era:3.0, h9:7.0, hbf:0.185, hr9:0.8 } }));
+  assert.strictEqual(r.value, -4);
+});
+test('H/9 fallback when H/BF% missing', function () {
+  var r = s.computeBCP(mkCtx({ bullpen:{ era:4.0, h9:9.8, hbf:0, hr9:1.0 } }));
+  assert.ok(r.value >= 2);
+});
+test('no bullpen stats returns hasData false', function () {
+  var r = s.computeBCP(mkCtx({ bullpen:{} }));
+  assert.strictEqual(r.hasData, false);
+  assert.strictEqual(r.value, 0);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
