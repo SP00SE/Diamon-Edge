@@ -3681,6 +3681,7 @@ let state = {
   savantPitcher: null,  // Map<playerId, row[]> — loaded once per session from Baseball Savant
   savantBatter:  null,  // Map<playerId, row[]>
   savantLoading: false,
+  savantFailed:  false, // true after a session-level fetch failure — prevents retry storm
   savantYear:    null,
   sigmoidSlope:  null,
 };
@@ -3998,8 +3999,10 @@ function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpen
   else if (pfOverall <= 0.93) { parkScore = -3; factors.push({ label: `Pitcher-friendly park ${pfOverall.toFixed(2)}×`,type:'neg', pts: -3 }); }
   else if (pfOverall <= 0.97) { parkScore = -2; factors.push({ label: `Slight pitcher edge ${pfOverall.toFixed(2)}×`,  type:'neg', pts: -2 }); }
 
-  const raw = 50 + skill + form + opp + weatherScore + parkScore;
-  return { score: clamp(Math.round(raw), 15, 95), factors };
+  const matchup  = _hitMatchupScore(batter, pitcher, factors);
+  const bullpen  = _hitBullpenScore(bullpenEra, factors, bullpenH9);
+  const raw = 50 + skill + form + opp + weatherScore + parkScore + matchup + bullpen;
+  return { score: clamp(Math.round(raw), 10, 95), factors };
 }
 
 // ─── HR SCORE — REBALANCED ────────────────────────────────────────────────────
@@ -4027,13 +4030,7 @@ function _hrPowerSkillScore(batter, factors) {
   else if (iso >= 0.090) { s -= 3; factors.push({ label:`ISO ${safe(iso)} (below avg power)`,      type:'neg', pts:-3 }); }
   else if (iso  > 0)     { s -= 5; factors.push({ label:`ISO ${safe(iso)} (no power)`,             type:'neg', pts:-5 }); }
 
-  // Fly-ball/HR profile via HR/PA — Barrel%/HardHit% not in MLB Stats API
-  if (pa >= 30) {
-    const hrPct = hrs / pa;
-    if      (hrPct >= 0.065) { s += 3; factors.push({ label:`HR/PA ${(hrPct*100).toFixed(1)}% (elite HR profile)`,    type:'pos', pts: 3 }); }
-    else if (hrPct >= 0.045) { s += 1; factors.push({ label:`HR/PA ${(hrPct*100).toFixed(1)}% (solid HR profile)`,    type:'pos', pts: 1 }); }
-    else if (hrPct  < 0.015) { s -= 3; factors.push({ label:`HR/PA ${(hrPct*100).toFixed(1)}% (contact/GB profile)`,  type:'neg', pts:-3 }); }
-  }
+  // HR/PA removed here — scored in _hrOpportunityScore to avoid double-count
 
   return clamp(s, -14, 16);
 }
@@ -10247,6 +10244,8 @@ function buildMatchupContext(data) {
       smallBatterSample: pa < 50,
       noBvpHistory: !h2h || (h2h.ab || 0) < 5,
       lineupProjected: lineupStatus !== 'confirmed',
+      bullpenMissing: !(bullpenEra > 0),
+      ghpMissing: ghp == null,
     },
   };
 }
@@ -10260,9 +10259,23 @@ function _buildLabCardResult(score, rawFactors, textReasons, ctx, isHR) {
 
   const reasons  = Array.isArray(textReasons) ? textReasons.slice(0, 4) : [];
   const warnings = [];
-  if (Array.isArray(rawFactors)) {
+  const hasFactors = Array.isArray(rawFactors) && rawFactors.length > 0;
+  if (hasFactors) {
     rawFactors.filter(f => f.pts < 0).sort((a, b) => a.pts - b.pts).slice(0, 3)
               .forEach(f => warnings.push(f.label));
+  } else if (!isHR) {
+    // hitFactors not populated by fetchElitePlayerData — derive warnings from ctx
+    const pIP_  = pitcher?.seasonStats?.inningsPitched || 0;
+    const kpct  = pIP_ > 0 ? (pitcher.seasonStats?.strikeOuts || 0) / (pIP_ * 4.3) : 0;
+    if (kpct >= 0.28) warnings.push(`High-K pitcher (${Math.round(kpct * 100)}% K rate) — strikeout risk`);
+    const pfVal = ctx?.pf?.overall ?? 1.0;
+    if (pfVal <= 0.93) warnings.push(`Pitcher-friendly park (${pfVal.toFixed(2)}×)`);
+    const l10avg = (player?.last10Stats || player?.last7Stats)?.avg || 0;
+    if (l10avg > 0 && l10avg < 0.200) warnings.push(`Cold recent form (${l10avg.toFixed(3)} last 10)`);
+    if (ctx?.ghp != null && ctx.ghp < 0.43)
+      warnings.push(`Hit in only ${Math.round(ctx.ghp * 7)}/7 recent games`);
+    if ((ctx?.bullpenEra || 0) > 0 && ctx.bullpenEra <= 3.25)
+      warnings.push(`Strong opposing bullpen (${ctx.bullpenEra.toFixed(2)} ERA)`);
   }
 
   const breakdown = {};
@@ -10273,9 +10286,14 @@ function _buildLabCardResult(score, rawFactors, textReasons, ctx, isHR) {
   if (hasRecent)  conf = Math.min(0.90, conf + 0.05);
   if (isHR && (player?.seasonStats?.homeRuns || 0) < 2) conf = Math.min(conf, 0.55);
 
-  const finalScore = clamp(Math.round(score), isHR ? 5 : 0, 100);
+  // NaN guard — bad upstream input should not render as literal "NaN" in DOM
+  const safeScore  = isNaN(score) || score == null ? (isHR ? 40 : 50) : score;
+  const finalScore = clamp(Math.round(safeScore), isHR ? 5 : 0, 100);
   const rawTotal   = finalScore - (isHR ? 40 : 50);
-  const label = finalScore >= 78 ? 'Strong' : finalScore >= 65 ? 'Good' : finalScore >= 55 ? 'Fair' : finalScore >= 45 ? 'Neutral' : finalScore >= 35 ? 'Weak' : 'Poor';
+  // HR card baseline is 40, so thresholds shift -10 vs Lab card (baseline 50)
+  const label = isHR
+    ? (finalScore >= 68 ? 'Strong' : finalScore >= 55 ? 'Good' : finalScore >= 45 ? 'Fair' : finalScore >= 35 ? 'Neutral' : finalScore >= 25 ? 'Weak' : 'Poor')
+    : (finalScore >= 78 ? 'Strong' : finalScore >= 65 ? 'Good' : finalScore >= 55 ? 'Fair' : finalScore >= 45 ? 'Neutral' : finalScore >= 35 ? 'Weak' : 'Poor');
 
   return { score: finalScore, confidence: conf, label, reasons, warnings, breakdown, rawTotal };
 }
@@ -10294,7 +10312,9 @@ function renderLabBreakdownTable(breakdown, rawTotal, score) {
 function renderLabDataFlags(dataFlags) {
   var defs = [['savantMissing','⚠ Savant data unavailable'],['pitcherHR9Estimated','⚠ Pitcher HR/9 estimated'],
               ['barrelMissing','⚠ Barrel% unavailable'],['smallBatterSample','⚠ Small batter sample'],
-              ['noBvpHistory','⚠ No BvP history'],['lineupProjected','⚠ Projected lineup']];
+              ['noBvpHistory','⚠ No BvP history'],['lineupProjected','⚠ Projected lineup'],
+              ['bullpenMissing','⚠ Bullpen data unavailable — scored as neutral'],
+              ['ghpMissing','⚠ Game hit rate unavailable — fewer than 10 games logged']];
   return '<div class="lab-data-flags">'+
     defs.filter(function(f){ return dataFlags[f[0]]; })
         .map(function(f){ return '<span class="lab-flag">'+f[1]+'</span>'; }).join('')+
@@ -10490,8 +10510,8 @@ async function openPlayerAnalyzer(playerId, source) {
 
   // ── New two-card scoring UI ────────────────────────────────────────────
   const rawData = await fetchElitePlayerData(p, gd);
-  const lineupStatus = p.lineupConfirmed ? 'confirmed'
-                     : (p.orderPos > 0   ? 'projected' : 'unknown');
+  const lineupStatus = p.lineupPosted ? 'confirmed'
+                     : (p.orderPos > 0  ? 'projected' : 'unknown');
   const ctx     = buildMatchupContext(Object.assign({}, rawData,
                     { lineupStatus, battingOrder: p.orderPos || null }));
   const hitReasons = _buildEliteReasons(rawData.player, rawData.pitcher,
@@ -11385,6 +11405,9 @@ function parseSavantCSV(text) {
 
 async function ensureSavantData(year) {
   if (state.savantPitcher && state.savantBatter && state.savantYear === year) return;
+  // Reset failed flag when year changes (new season — try again)
+  if (state.savantFailed && state.savantYear !== year) state.savantFailed = false;
+  if (state.savantFailed) return; // don't retry within same session after a failure
   if (state.savantLoading) {
     while (state.savantLoading) await new Promise(r => setTimeout(r, 100));
     return;
@@ -11408,7 +11431,7 @@ async function ensureSavantData(year) {
     state.savantPitcher = buildMap(parseSavantCSV(pitcherCSV));
     state.savantBatter  = buildMap(parseSavantCSV(batterCSV));
     state.savantYear    = year;
-  } catch { /* silent — pmatch returns 0 if unavailable */ }
+  } catch { state.savantFailed = true; /* pmatch returns 0; all waiting callers skip retry */ }
   finally { state.savantLoading = false; }
 }
 
@@ -11473,11 +11496,22 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
   const pitBABIP = pitcher?.seasonStats?.babip   || 0;
   const pitBACON = pitcher?.seasonStats?.bacon   || 0;
   const pitBBpct = pitcher?.seasonStats?.bbBfPct || 0;
+  const pitWHIP  = pitcher?.seasonStats?.whip    || 0;
 
-  // 1. PITCHER HIT PROFILE  cap -18/+18
+  // 1. PITCHER HIT PROFILE  cap ±10  (WHIP ±3, K% ±7, BABIP ±6, BACON ±7, BB% ±2, debut -5)
   let php = 0;
   if      (era >= 5.00)            php += 1;
   else if (era <= 3.00 && era > 0) php -= 1;
+
+  // WHIP — most direct contact/walks-allowed indicator
+  if (pIP_ > 0 && pitWHIP > 0) {
+    if      (pitWHIP >= 1.50) php += 3;
+    else if (pitWHIP >= 1.35) php += 2;
+    else if (pitWHIP >= 1.20) php += 1;
+    else if (pitWHIP <= 0.95) php -= 3;
+    else if (pitWHIP <= 1.05) php -= 2;
+    else if (pitWHIP <= 1.13) php -= 1;
+  }
 
   if      (kpct_ < 0.18) php += 3;
   else if (kpct_ < 0.22) php += 2;
@@ -11505,6 +11539,8 @@ function computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats,
     if      (pitBBpct <= 0.07 && _hitSig)                               php += 2;
     else if (pitBBpct >= 0.11 && pitBABIP < 0.315 && pitBACON < 0.305) php -= 2;
   }
+  // Debut penalty — pitcher is named but has no 2026 stats (unknown quality = risk)
+  if (pitcher && pIP_ === 0 && era === 0) php -= 5;
   php = clamp(php, -10, 10);
 
   // 2. HITTER MATCHUP EDGE  cap -10/+12
@@ -11785,7 +11821,10 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0,
   if      (ghp != null && ghp >= 0.72 && hg7 != null) reasons.push(`Hits in ${hg7}/7 recent games`);
   else if (ghp != null && ghp >= 0.57 && hg7 != null) reasons.push(`Consistent contact (${hg7}/7 games)`);
   if (pitchReasons?.length) reasons.push(...pitchReasons);
-  return reasons.slice(0, 4);
+  // K% ceiling disclosure — when pitcher K% ≥ 28% the Lab score is capped at 88-96
+  if (_kpct >= 0.32 && _pIP > 0) reasons.push(`Score capped — elite K% pitcher (${Math.round(_kpct*100)}% strikeouts)`);
+  else if (_kpct >= 0.28 && _pIP > 0) reasons.push(`Score ceiling applied — high K% pitcher (${Math.round(_kpct*100)}%)`);
+  return reasons.slice(0, 5);
 }
 
 function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal, pitcher, pf, pitchHighlights = []) {
