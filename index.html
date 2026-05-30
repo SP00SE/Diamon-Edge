@@ -4488,6 +4488,8 @@ async function processGame(game) {
   const homeBullpenH9   = homeBullpenStats.h9;
   const awayBullpenHBF  = awayBullpenStats.hbf || 0;
   const homeBullpenHBF  = homeBullpenStats.hbf || 0;
+  const awayBullpenHR9  = awayBullpenStats.hr9 || 0;
+  const homeBullpenHR9  = homeBullpenStats.hr9 || 0;
 
   const weather = weatherData || { temp:70, windSpeed:0, windDir:180, humidity:50 };
 
@@ -4852,6 +4854,7 @@ function mapPitcherStats(raw) {
     babip:   bip > 0 ? (h - hr) / bip : 0,
     bacon:   con > 0 ? (h - hr) / con  : 0,
     bbBfPct: bf  > 0 ? bb / bf          : 0,
+    hr9:     ip > 0 ? (hr / ip) * 9     : 0,
   };
 }
 
@@ -8167,10 +8170,11 @@ async function fetchBullpenWhip(teamId) {
     const h9   = ip > 0 ? Math.round((hits / ip) * 9 * 10) / 10 : 0;
     const bf   = parseFloat(s.battersFaced)    || 0;
     const hbf  = bf > 0 ? hits / bf : 0;
-    const result = { whip, h9, hbf };
+    const hr9  = parseFloat(s.homeRunsPer9Inn) || 0;
+    const result = { whip, h9, hbf, hr9 };
     hfCache.set(key, result);
     return result;
-  } catch { return { whip:0, h9:0, hbf:0 }; }
+  } catch { return { whip:0, h9:0, hbf:0, hr9:0 }; }
 }
 
 async function fetchTeamHitAvg7(teamId) {
@@ -10886,7 +10890,7 @@ async function fetchLabAnalysisData(playerId) {
     } catch {}
   }
 
-  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0;
+  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, bullpenHR9 = 0;
   await Promise.all([
     (async () => {
       try {
@@ -10902,13 +10906,13 @@ async function fetchLabAnalysisData(playerId) {
     (async () => {
       if (oppTeamId) {
         try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
+        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; bullpenHR9 = bw.hr9||0; } catch {}
       }
     })(),
   ]);
 
   const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, null, bullpenH9, bullpenHBF);
-  return { player, pitcher, gd, pf, parkCtx, profile, h2h, parkStats, bullpenEra, bullpenH9, bullpenHBF, handHRFactor, score, venue };
+  return { player, pitcher, gd, pf, parkCtx, profile, h2h, parkStats, bullpenEra, bullpenH9, bullpenHBF, bullpenHR9, handHRFactor, score, venue };
 }
 
 async function runLabCompare() {
@@ -11614,7 +11618,7 @@ async function fetchElitePlayerData(player, gd) {
   const pf        = getParkFactor(venue);
 
   let h2h = null, parkStats = null, ghp = null;
-  let bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0;
+  let bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, bullpenHR9 = 0;
 
   await Promise.all([
     (async () => {
@@ -11655,7 +11659,7 @@ async function fetchElitePlayerData(player, gd) {
     (async () => {
       if (oppTeamId) {
         try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
+        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; bullpenHR9 = bw.hr9||0; } catch {}
       }
     })(),
   ]);
@@ -11663,8 +11667,8 @@ async function fetchElitePlayerData(player, gd) {
   const pitchMatchup = computePitchMixMatchup(player.id, pitcher?.id);
   const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF, pitchMatchup.score);
   return {
-    player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF, pitchMatchup,
-    bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: null },
+    player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF, bullpenHR9, pitchMatchup,
+    bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: bullpenHR9 },
     park:          pf,
     weather:       gd.weather || {},
     savantBatter:  state.savantBatter  ? (state.savantBatter.get(String(player.id))   || null) : null,
@@ -12822,7 +12826,7 @@ async function runLabAnalysis() {
 
   // Step 4: Park history (2026 game log filtered by venue) + bullpen
   _labStep('ls4','active');
-  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, ghp = null, ghpGames = 0, ghpHitGames = 0, ghpL10 = null, ghpL10HitGames = 0, ghpL10Games = 0;
+  let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, bullpenHR9 = 0, ghp = null, ghpGames = 0, ghpHitGames = 0, ghpL10 = null, ghpL10HitGames = 0, ghpL10Games = 0;
   let ghpL7 = null, ghpL7HitGames = 0, ghpL7Games = 0, ghpL30 = null, ghpL30HitGames = 0, ghpL30Games = 0;
   await Promise.all([
     (async () => {
@@ -12864,7 +12868,7 @@ async function runLabAnalysis() {
     (async () => {
       if (oppTeamId) {
         try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; } catch {}
+        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; bullpenHR9 = bw.hr9||0; } catch {}
       }
     })(),
     (async () => { try { await ensureSavantData(new Date().getFullYear()); } catch {} })(),
