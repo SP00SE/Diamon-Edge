@@ -9551,7 +9551,7 @@ function _paToast(msg) {
 }
 
 // ── Smart matchup summary: detects conflicting signals and explains traps ──
-function generateSmartMatchupSummary(ctx) {
+function generateSmartMatchupSummary(hitResult, hrResult, ctx) {
   const {
     playerName = 'The hitter',
     pitcherName,
@@ -9562,8 +9562,11 @@ function generateSmartMatchupSummary(ctx) {
     l10Avg, hitStreak = 0,
     splitAvg, splitAB = 0, splitDiff = 0,
     parkFactor,
-    hitScore, hrScore, matchupScore = 50,
   } = ctx;
+
+  const matchupScore = hitResult?.score ?? 50;
+  const hitScore = hitResult?.score ?? null;
+  const hrScore = hrResult?.score ?? null;
 
   const fv  = v => v != null && !isNaN(v) && +v > 0;
   const f3s = v => fv(v) ? (+v).toFixed(3).replace(/^0/, '') : null;
@@ -9886,7 +9889,9 @@ function buildPlayerAnalysisShareText() {
   lines.push('');
 
   // Smart analysis — appended after the Final Take
-  const _smartSummary = generateSmartMatchupSummary({
+  const hitResultObj = { score: d.matchupScore, label: null, reasons: [], warnings: [] };
+  const hrResultObj = { score: null, label: null, reasons: [], warnings: [] };
+  const ctxObj = {
     playerName: d.playerName,
     pitcherName: pitName,
     pitcherHand: d.pitcherHand,
@@ -9904,10 +9909,8 @@ function buildPlayerAnalysisShareText() {
     splitAB: d.splitAB,
     splitDiff: d.splitDiff,
     parkFactor: d.parkFactor,
-    hitScore: d.hitScore,
-    hrScore: d.hrScore,
-    matchupScore: d.matchupScore,
-  });
+  };
+  const _smartSummary = generateSmartMatchupSummary(hitResultObj, hrResultObj, ctxObj);
   if (_smartSummary) {
     lines.push('Smart Analysis:');
     _smartSummary.split('. ').filter(Boolean).forEach(s => lines.push(`  ${s.trim()}${s.trim().endsWith('.') ? '' : '.'}`));
@@ -13067,7 +13070,9 @@ async function runLabAnalysis() {
   }
 
   // Smart matchup summary — appended after existing narrative
-  const _labSmartSummary = generateSmartMatchupSummary({
+  const labHitResult = { score, label: scoreLbl, reasons: [], warnings: [] };
+  const labHrResult = { score: null, label: null, reasons: [], warnings: [] };
+  const labCtx = {
     playerName: player.name,
     pitcherName: pitcher?.fullName || pitcher?.name,
     pitcherHand,
@@ -13085,10 +13090,8 @@ async function runLabAnalysis() {
     splitAB: splitAB || 0,
     splitDiff: splitDiff || 0,
     parkFactor: pf.overall || null,
-    hitScore: player.hitScore || null,
-    hrScore: player.hrScore || null,
-    matchupScore: score,
-  });
+  };
+  const _labSmartSummary = generateSmartMatchupSummary(labHitResult, labHrResult, labCtx);
   if (_labSmartSummary) narrative.push(_labSmartSummary);
 
   await new Promise(r => setTimeout(r, 200));
