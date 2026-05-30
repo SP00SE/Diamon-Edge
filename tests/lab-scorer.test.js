@@ -100,5 +100,47 @@ test('park falls back to neutral when null', function () {
   assert.strictEqual(s.buildMatchupContext(mkRaw({ park: null })).park.overall, 1.0);
 });
 
+console.log('\ncomputePCP');
+function mkCtx(ov) { return s.buildMatchupContext(mkRaw(ov)); }
+
+test('elite K% (0.33) gives -6 from K component', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand: 'R', seasonStats: { kpct: 0.33, babip: 0.300, whip: 1.10, ip: 60 } };
+  var r = s.computePCP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, -6);
+  assert.strictEqual(r.hasData, true);
+});
+test('low K% (0.17) with good WHIP (1.50) gives +7', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand: 'R', seasonStats: { kpct: 0.17, babip: 0.300, whip: 1.50, ip: 60 } };
+  var r = s.computePCP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, 7);
+});
+test('high BABIP (.335) and WHIP (1.50) give +5', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand: 'R', seasonStats: { kpct: 0.22, babip: 0.335, whip: 1.50, ip: 60 } };
+  var r = s.computePCP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, 5);
+});
+test('low BABIP (.250) and WHIP (0.90) give -7', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand: 'R', seasonStats: { kpct: 0.22, babip: 0.250, whip: 0.90, ip: 60 } };
+  var r = s.computePCP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, -7);
+});
+test('clamped to -10', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand: 'R', seasonStats: { kpct: 0.35, babip: 0.250, whip: 0.85, ip: 60 } };
+  var r = s.computePCP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, -10);
+});
+test('empty pitcher stats returns hasData false', function () {
+  var raw = mkRaw();
+  raw.pitcher = { pitchHand: 'R', seasonStats: {} };
+  var r = s.computePCP(s.buildMatchupContext(raw));
+  assert.strictEqual(r.hasData, false);
+  assert.strictEqual(r.value, 0);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
