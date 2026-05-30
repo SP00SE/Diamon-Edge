@@ -10216,88 +10216,6 @@ async function _paScreenshot(source) {
   } catch { _paToast('Screenshot failed. Try Download Image instead.'); }
 }
 
-function confidenceLabel(conf) {
-  if (conf >= 0.80) return 'High';
-  if (conf >= 0.60) return 'Medium';
-  if (conf >= 0.40) return 'Low';
-  return 'Insufficient';
-}
-
-function formatBreakdownKey(k) {
-  return String(k).replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim();
-}
-
-function buildMatchupContext(data) {
-  const { player, pitcher, pf, bullpenEra, bullpenH9, bullpenHBF, h2h, parkStats, ghp, pitchMatchup, lineupStatus, battingOrder } = data;
-  const pa = player?.seasonStats?.plateAppearances || 0;
-  return {
-    player, pitcher,
-    pf: pf || { overall: 1.0 },
-    bullpenEra: bullpenEra || 0, bullpenH9: bullpenH9 || 0, bullpenHBF: bullpenHBF || 0,
-    h2h, parkStats, ghp, pitchMatchup,
-    lineupStatus: lineupStatus || 'unknown',
-    battingOrder: battingOrder || null,
-    dataFlags: {
-      savantMissing: !(pitchMatchup?.highlights?.length),
-      pitcherHR9Estimated: !(pitcher?.seasonStats?.inningsPitched > 5),
-      barrelMissing: true,
-      smallBatterSample: pa < 50,
-      noBvpHistory: !h2h || (h2h.ab || 0) < 5,
-      lineupProjected: lineupStatus !== 'confirmed',
-      bullpenMissing: !(bullpenEra > 0),
-      ghpMissing: ghp == null,
-    },
-  };
-}
-
-function _buildLabCardResult(score, rawFactors, textReasons, ctx, isHR) {
-  const player  = ctx.player;
-  const pitcher = ctx.pitcher;
-  const pa      = player?.seasonStats?.plateAppearances || 0;
-  const pIP     = pitcher?.seasonStats?.inningsPitched  || 0;
-  const hasRecent = !!(player?.last7Stats?.avg || player?.last10Stats?.avg);
-
-  const reasons  = Array.isArray(textReasons) ? textReasons.slice(0, 4) : [];
-  const warnings = [];
-  const hasFactors = Array.isArray(rawFactors) && rawFactors.length > 0;
-  if (hasFactors) {
-    rawFactors.filter(f => f.pts < 0).sort((a, b) => a.pts - b.pts).slice(0, 3)
-              .forEach(f => warnings.push(f.label));
-  } else if (!isHR) {
-    // hitFactors not populated by fetchElitePlayerData — derive warnings from ctx
-    const pIP_  = pitcher?.seasonStats?.inningsPitched || 0;
-    const kpct  = pIP_ > 0 ? (pitcher.seasonStats?.strikeOuts || 0) / (pIP_ * 4.3) : 0;
-    if (kpct >= 0.28) warnings.push(`High-K pitcher (${Math.round(kpct * 100)}% K rate) — strikeout risk`);
-    const pfVal = ctx?.pf?.overall ?? 1.0;
-    if (pfVal <= 0.93) warnings.push(`Pitcher-friendly park (${pfVal.toFixed(2)}×)`);
-    const l10avg = (player?.last10Stats || player?.last7Stats)?.avg || 0;
-    if (l10avg > 0 && l10avg < 0.200) warnings.push(`Cold recent form (${l10avg.toFixed(3)} last 10)`);
-    if (ctx?.ghp != null && ctx.ghp < 0.43)
-      warnings.push(`Hit in only ${Math.round(ctx.ghp * 7)}/7 recent games`);
-    if ((ctx?.bullpenEra || 0) > 0 && ctx.bullpenEra <= 3.25)
-      warnings.push(`Strong opposing bullpen (${ctx.bullpenEra.toFixed(2)} ERA)`);
-  }
-
-  const breakdown = {};
-  (rawFactors || []).forEach(f => { breakdown[f.label] = f.pts; });
-
-  let conf = pa >= 80 ? 0.80 : pa >= 50 ? 0.65 : pa >= 30 ? 0.50 : 0.35;
-  if (pIP > 5)    conf = Math.min(0.90, conf + 0.05);
-  if (hasRecent)  conf = Math.min(0.90, conf + 0.05);
-  if (isHR && (player?.seasonStats?.homeRuns || 0) < 2) conf = Math.min(conf, 0.55);
-
-  // NaN guard — bad upstream input should not render as literal "NaN" in DOM
-  const safeScore  = isNaN(score) || score == null ? (isHR ? 40 : 50) : score;
-  const finalScore = clamp(Math.round(safeScore), isHR ? 5 : 0, 100);
-  const rawTotal   = finalScore - (isHR ? 40 : 50);
-  // HR card baseline is 40, so thresholds shift -10 vs Lab card (baseline 50)
-  const label = isHR
-    ? (finalScore >= 68 ? 'Strong' : finalScore >= 55 ? 'Good' : finalScore >= 45 ? 'Fair' : finalScore >= 35 ? 'Neutral' : finalScore >= 25 ? 'Weak' : 'Poor')
-    : (finalScore >= 78 ? 'Strong' : finalScore >= 65 ? 'Good' : finalScore >= 55 ? 'Fair' : finalScore >= 45 ? 'Neutral' : finalScore >= 35 ? 'Weak' : 'Poor');
-
-  return { score: finalScore, confidence: conf, label, reasons, warnings, breakdown, rawTotal };
-}
-
 function renderLabBreakdownTable(breakdown, rawTotal, score) {
   var rows = Object.keys(breakdown).map(function(k) {
     var v = breakdown[k];
@@ -10512,13 +10430,12 @@ async function openPlayerAnalyzer(playerId, source) {
   const rawData = await fetchElitePlayerData(p, gd);
   const lineupStatus = p.lineupPosted ? 'confirmed'
                      : (p.orderPos > 0  ? 'projected' : 'unknown');
-  const ctx     = buildMatchupContext(Object.assign({}, rawData,
-                    { lineupStatus, battingOrder: p.orderPos || null }));
-  const hitReasons = _buildEliteReasons(rawData.player, rawData.pitcher,
-                       rawData.pf || { overall: 1.0 }, rawData.bullpenEra,
-                       rawData.ghp, rawData.bullpenH9, rawData.pitchMatchup?.reasons);
-  const hitResult = _buildLabCardResult(rawData.score, rawData.player?.hitFactors || [], hitReasons, ctx, false);
-  const hrResult  = _buildLabCardResult(rawData.player?.hrScore || 40, rawData.player?.hrFactors || [], [], ctx, true);
+  const ctx = buildMatchupContext(Object.assign({}, rawData,
+                { lineupStatus, battingOrder: p.orderPos || null }));
+  ctx.dataFlags.bullpenMissing = !(rawData.bullpenEra > 0);
+  ctx.dataFlags.ghpMissing     = rawData.ghp == null;
+  const hitResult = computeHitScore(ctx);
+  const hrResult  = computeHRScore(ctx);
 
   const panelContent =
     renderLabLineupBanner(ctx.lineupStatus) +
