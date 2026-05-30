@@ -11598,7 +11598,7 @@ async function ensureSavantData(year) {
 function computePitchMixMatchup(batterId, pitcherId) {
   const pitcherRows = state.savantPitcher?.get(String(pitcherId));
   const batterRows  = state.savantBatter?.get(String(batterId));
-  if (!pitcherRows?.length || !batterRows?.length) return { score: 0, reasons: [] };
+  if (!pitcherRows?.length || !batterRows?.length) return { score: 0, hasData: false, reasons: [] };
 
   const bMap = new Map(batterRows.map(r => [r.pitch_type, r]));
   let raw = 0;
@@ -11643,7 +11643,7 @@ function computePitchMixMatchup(batterId, pitcherId) {
       reasons.push(`Struggles vs ${h.pitchName} (${baStr} BA) — SP's ${pct}% pitch`);
   }
   const displayHighlights = [...highlights].sort((a, b) => b.usage - a.usage).slice(0, 4);
-  return { score, reasons, highlights: displayHighlights };
+  return { score, hasData: true, reasons, highlights: displayHighlights };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
