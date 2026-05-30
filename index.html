@@ -690,6 +690,40 @@ main { padding: 28px 0 60px; }
   .lab-team-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); }
 }
 
+/* ── Lab Score Cards ─────────────────────────────────────────────── */
+.lab-two-card-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+@media(max-width:600px){ .lab-two-card-row{ grid-template-columns:1fr; } }
+.lab-score-card.lab-hit-card { border-radius:12px; border:1px solid rgba(52,211,153,.3); background:rgba(52,211,153,.04); padding:14px; }
+.lab-score-card.lab-hr-card  { border-radius:12px; border:1px solid rgba(245,158,11,.3);  background:rgba(245,158,11,.04);  padding:14px; }
+.lab-card-title    { font-size:11px; font-family:monospace; letter-spacing:.06em;
+                     text-transform:uppercase; color:var(--text-muted); }
+.lab-card-subtitle { font-size:9px; font-family:monospace; color:var(--text-muted);
+                     margin-left:6px; opacity:.7; }
+.lab-hit-card .lab-score-num { color:#34d399; font-family:monospace; font-size:2rem; font-weight:700; line-height:1; }
+.lab-hr-card  .lab-score-num { color:#f59e0b; font-family:monospace; font-size:2rem; font-weight:700; line-height:1; }
+.lab-score-lbl { font-size:11px; font-family:monospace; margin-top:2px; color:var(--text-secondary); }
+.lab-reason-list { list-style:none; padding:0; margin:8px 0 0; }
+.lab-reason-list li { font-size:11px; line-height:1.5; }
+.lab-reason-pos  { color:#34d399; }
+.lab-reason-warn { color:#f59e0b; }
+.lab-breakdown-table { width:100%; border-collapse:collapse; font-size:10px;
+                       font-family:monospace; margin-top:6px; }
+.lab-breakdown-table td { padding:2px 4px; }
+.lab-breakdown-table td:last-child { text-align:right; }
+.lab-bd-pos  { color:#34d399; } .lab-bd-neg { color:#ef4444; }
+.lab-bd-zero { color:var(--text-muted); } .lab-bd-na { color:var(--text-muted); font-style:italic; }
+.lab-bd-total { border-top:1px solid rgba(148,163,184,.2); color:var(--text-secondary); }
+.lab-data-flags { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.lab-flag { font-size:9px; font-family:monospace; padding:2px 6px; border-radius:4px;
+            background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#f59e0b; }
+.lab-lineup-banner { border-radius:8px; padding:6px 10px; margin-bottom:10px;
+                     font-size:11px; font-family:monospace; display:flex; align-items:center; gap:6px; }
+.lab-lineup-confirmed { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25); color:#34d399; }
+.lab-lineup-projected { background:rgba(245,158,11,.08);  border:1px solid rgba(245,158,11,.25);  color:#f59e0b; }
+.lab-lineup-unknown   { background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.25); color:#94a3b8; }
+.lab-conf-high  { color:#34d399; } .lab-conf-medium { color:#f59e0b; }
+.lab-conf-low   { color:#ef4444; } .lab-conf-insufficient { color:#94a3b8; }
+
 /* ── LEADERBOARD ──────────────────────────────────── */
 .leaders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media(max-width:700px) { .leaders-grid { grid-template-columns: 1fr; } }
@@ -10178,6 +10212,59 @@ async function _paScreenshot(source) {
   } catch { _paToast('Screenshot failed. Try Download Image instead.'); }
 }
 
+function renderLabBreakdownTable(breakdown, rawTotal, score) {
+  var rows = Object.keys(breakdown).map(function(k) {
+    var v = breakdown[k];
+    if (v === null) return '<tr><td>'+formatBreakdownKey(k)+'</td><td class="lab-bd-na">N/A</td></tr>';
+    var cls = v > 0 ? 'lab-bd-pos' : v < 0 ? 'lab-bd-neg' : 'lab-bd-zero';
+    return '<tr><td>'+formatBreakdownKey(k)+'</td><td class="'+cls+'">'+(v>0?'+':'')+v+'</td></tr>';
+  }).join('');
+  return '<table class="lab-breakdown-table">'+rows+
+    '<tr class="lab-bd-total"><td>Raw total</td><td>'+(rawTotal>=0?'+':'')+rawTotal+'</td></tr>'+
+    '<tr class="lab-bd-total"><td>Score (50 + raw)</td><td>'+score+'</td></tr></table>';
+}
+function renderLabDataFlags(dataFlags) {
+  var defs = [['savantMissing','⚠ Savant data unavailable'],['pitcherHR9Estimated','⚠ Pitcher HR/9 estimated'],
+              ['barrelMissing','⚠ Barrel% unavailable'],['smallBatterSample','⚠ Small batter sample'],
+              ['noBvpHistory','⚠ No BvP history'],['lineupProjected','⚠ Projected lineup']];
+  return '<div class="lab-data-flags">'+
+    defs.filter(function(f){ return dataFlags[f[0]]; })
+        .map(function(f){ return '<span class="lab-flag">'+f[1]+'</span>'; }).join('')+
+    '</div>';
+}
+function renderLabScoreCard(result, ctx, isHR) {
+  var cardCls = isHR ? 'lab-hr-card' : 'lab-hit-card';
+  var title   = isHR ? 'Home Run Score <span class="lab-card-subtitle">info only</span>' : 'Lab Matchup Score';
+  var confLbl = confidenceLabel(result.confidence);
+  var confCls = 'lab-conf-' + confLbl.toLowerCase();
+  var insuf   = result.confidence < 0.40;
+  var scoreHtml = insuf
+    ? '<p style="color:var(--text-muted);font-size:12px;font-family:monospace">Not enough data</p>'
+    : '<div class="lab-score-num">'+result.score+'</div><div class="lab-score-lbl">'+result.label+'</div>';
+  var reasonsHtml = insuf ? '' :
+    '<ul class="lab-reason-list">'+
+    result.reasons.map(function(r){ return '<li class="lab-reason-pos">✓ '+r+'</li>'; }).join('')+
+    result.warnings.map(function(w){ return '<li class="lab-reason-warn">⚠ '+w+'</li>'; }).join('')+
+    '</ul>';
+  var bdHtml = insuf ? '' :
+    '<details style="margin-top:8px"><summary style="font-size:10px;font-family:monospace;cursor:pointer;color:var(--text-muted)">Breakdown ▾</summary>'+
+    renderLabBreakdownTable(result.breakdown, result.rawTotal, result.score)+'</details>';
+  return '<div class="lab-score-card '+cardCls+'">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+      '<span class="lab-card-title">'+title+'</span>'+
+      '<span class="'+confCls+'" style="font-size:9px;font-family:monospace">'+confLbl+'</span></div>'+
+    scoreHtml+reasonsHtml+bdHtml+renderLabDataFlags(ctx.dataFlags)+'</div>';
+}
+function renderLabLineupBanner(lineupStatus) {
+  var map = {
+    confirmed:{ cls:'lab-lineup-confirmed', text:'✓ Confirmed Lineup' },
+    projected:{ cls:'lab-lineup-projected', text:'⚠ Projected Lineup — scores are preliminary' },
+    unknown:  { cls:'lab-lineup-unknown',   text:'? Lineup Status Unknown' },
+  };
+  var b = map[lineupStatus] || map.unknown;
+  return '<div class="lab-lineup-banner '+b.cls+'">'+b.text+'</div>';
+}
+
 async function openPlayerAnalyzer(playerId, source) {
   const panel = document.getElementById('playerAnalyzerPanel');
   panel.style.display = 'block';
@@ -10333,369 +10420,27 @@ async function openPlayerAnalyzer(playerId, source) {
   const ghpL7cls = (ghp||0) >= 0.70 ? 'pa-sig-pos' : (ghp||1) < 0.45 ? 'pa-sig-neg' : 'pa-sig-neu';
   const ghpL10cls= (l10?.gamesWithHit||0) >= 7 ? 'pa-sig-pos' : (l10?.gamesWithHit||10) <= 4 ? 'pa-sig-neg' : 'pa-sig-neu';
 
-  // Matchup score
-  const matchupScore = computeLabMatchupScore(p, oppPitcher, pf.overall ? pf : {overall:1.0}, bullpenEra||0, null, null, ghp);
+  // ── New two-card scoring UI ────────────────────────────────────────────
+  const rawData = await fetchElitePlayerData(p, gd);
+  const lineupStatus = p.lineupConfirmed ? 'confirmed'
+                     : (p.orderPos > 0   ? 'projected' : 'unknown');
+  const ctx       = buildMatchupContext(Object.assign({}, rawData,
+                      { lineupStatus, battingOrder: p.orderPos || null }));
+  const hitResult = computeHitScore(ctx);
+  const hrResult  = { score:50, rawTotal:0, breakdown:{}, confidence:0.5,
+                      label:'Neutral', reasons:[], warnings:[] };
 
-  // Score breakdown display categories
-  const _brkPark  = pf.overall ? clamp(Math.round((pf.overall - 1.0) * 60), -15, 15) : 0;
-  const _brkEra   = !pEra ? 0 : pEra>5?20 : pEra>4.2?10 : pEra>3.3?0 : pEra>2.5?-10 : -20;
-  const _brkSplit = splitAB>=20 ? (splitDiff>0.04?15 : splitDiff>0.02?8 : splitDiff<-0.04?-15 : splitDiff<-0.02?-8 : 0) : 0;
-  const _brkBull  = !bullpenEra ? 0 : bullpenEra>5?8 : bullpenEra>4.5?4 : bullpenEra<=3?-12 : bullpenEra<=3.5?-8 : bullpenEra<=4?-4 : 0;
-  const _l10avg   = (p.last10Stats||p.last7Stats)?.avg || 0;
-  const _brkForm  = _l10avg>0.35?8 : _l10avg>0.3?4 : _l10avg<0.2?-8 : _l10avg<0.24?-4 : 0;
-  const _brkSkill = (() => {
-    let s=0;
-    const b=p.seasonStats?.babip||0, bc=p.seasonStats?.bacon||0;
-    if(b>0){if(b>=0.34)s+=5;else if(b>=0.31)s+=2;else if(b<0.265)s-=5;else if(b<0.285)s-=2;}
-    if(bc>0){if(bc>=0.32)s+=5;else if(bc>=0.295)s+=2;else if(bc<0.265)s-=5;else if(bc<0.28)s-=2;}
-    return s;
-  })();
-  const _brkGhp   = ghp==null?0 : ghp>=0.72?7 : ghp>=0.62?3 : ghp<0.45?-7 : ghp<0.52?-3 : 0;
-  const _brkPit   = matchupScore - 50 - _brkPark - _brkEra - _brkSplit - _brkBull - _brkForm - _brkSkill - _brkGhp;
+  const panelContent =
+    renderLabLineupBanner(ctx.lineupStatus) +
+    '<div class="lab-two-card-row">' +
+      renderLabScoreCard(hitResult, ctx, false) +
+      renderLabScoreCard(hrResult,  ctx, true)  +
+    '</div>';
 
-  function brkRow(lbl, delta) {
-    if (!delta) return `<div class="pa-breakdown-row"><span class="pa-breakdown-lbl">${lbl}</span><span class="pa-breakdown-delta pa-delta-neu">—</span></div>`;
-    const cls = delta > 0 ? 'pa-delta-pos' : 'pa-delta-neg';
-    return `<div class="pa-breakdown-row"><span class="pa-breakdown-lbl">${lbl}</span><span class="pa-breakdown-delta ${cls}">${delta>0?'+':''}${delta}</span></div>`;
-  }
+  document.getElementById('paContent').innerHTML = panelContent;
 
-  // WHY bullets
-  const whyBullets = [];
-  if (splitAB >= 20 && splitAvg >= 0.270) whyBullets.push(`Strong AVG vs ${pitcherHand}HP (${fmt3(splitAvg)} in ${splitAB} AB)`);
-  if (splitAB >= 20 && splitObp >= 0.340) whyBullets.push(`High OBP vs ${pitcherHand}HP (${fmt3(splitObp)})`);
-  if (ghp != null && ghp >= 0.60)         whyBullets.push(`Hits in ${Math.round(ghp*10)} of every 10 games (L7 rate)`);
-  if ((l10?.gamesWithHit||0) >= 7)        whyBullets.push(`Hit in ${l10.gamesWithHit} of last 10 games`);
-  if ((p.hitStreak||0) >= 3)              whyBullets.push(`Active ${p.hitStreak}-game hit streak 🔥`);
-  if (p.orderPos >= 1 && p.orderPos <= 4) whyBullets.push(`Batting ${p.orderPos} (premium lineup spot)`);
-  if (pH9 != null && pH9 >= 8.5)          whyBullets.push(`Starter allows ${pH9.toFixed(1)} H/9 (hit-prone)`);
-  if (pBF > 0 && pHBF >= 0.23)           whyBullets.push(`Starter allows hits at high rate (H/BF ${(pHBF*100).toFixed(1)}%)`);
-  if (pBF > 0 && pKpct < 0.18)           whyBullets.push(`Low pitcher K% — contact-friendly matchup`);
-  if ((bullpenH9||0) >= 8.5)              whyBullets.push(`Weak bullpen (H/9 ${(bullpenH9||0).toFixed(1)}) adds late-game upside`);
-  if ((pf.overall||1) >= 1.03)            whyBullets.push(`${gd.venueName||'Park'} favors hitters (${(pf.overall||1).toFixed(2)}×)`);
-
-  // RISK bullets
-  const riskBullets = [];
-  const lStatus = typeof _btsLineupStatus === 'function' ? _btsLineupStatus(p, gd) : null;
-  if (lStatus === 'unconfirmed' || lStatus === 'projected') riskBullets.push('Lineup not confirmed — spot may change');
-  if (splitAB < 20)                                         riskBullets.push(`Small split sample vs ${pitcherHand}HP (${splitAB} AB)`);
-  if (pEra != null && pEra <= 3.30)                         riskBullets.push(`Strong pitcher (ERA ${pEra.toFixed(2)})`);
-  if (pH9 != null && pH9 <= 7.0)                            riskBullets.push(`Starter suppresses hits (H/9 ${pH9.toFixed(1)})`);
-  if (pBF > 0 && pKpct >= 0.22)                             riskBullets.push(`Pitcher has high K% (${(pKpct*100).toFixed(0)}%) — strikeout risk`);
-  if ((pf.overall||1) <= 0.97)                              riskBullets.push(`${gd.venueName||'Park'} suppresses offense (${(pf.overall||1).toFixed(2)}×)`);
-  if (wx.temp != null && wx.temp < 50)                      riskBullets.push(`Cold weather (${Math.round(wx.temp)}°F) suppresses offense`);
-  if ((wx.windSpeed||0) > 15 && windDir)                    riskBullets.push(`Strong ${windDir} wind (${wx.windSpeed} mph) may suppress batted balls`);
-  if (l10?.avg != null && l10.avg < 0.220)                  riskBullets.push(`Recent slump — L10 AVG ${fmt3(l10.avg)}`);
-  if (l10?.gamesWithHit != null && l10.gamesWithHit <= 4)   riskBullets.push(`Hit in only ${l10.gamesWithHit} of last 10 games`);
-  if ((p.seasonStats?.atBats||0) < 50)                      riskBullets.push('Limited 2026 stats — small season sample');
-  if (!riskBullets.length) riskBullets.push('No major risk factors identified');
-
-  // Data confidence
-  let dcPoints = 0; const dcNotes = [];
-  const saAB = p.seasonStats?.atBats || 0;
-  if      (saAB >= 200) { dcPoints += 2; dcNotes.push('Good season sample'); }
-  else if (saAB >= 50)  { dcPoints += 1; dcNotes.push('Moderate season sample'); }
-  else                  { dcNotes.push('Very limited 2026 stats'); }
-  if      (splitAB >= 50) { dcPoints += 2; dcNotes.push(`Strong split sample vs ${pitcherHand}HP`); }
-  else if (splitAB >= 20) { dcPoints += 1; dcNotes.push(`Medium split sample vs ${pitcherHand}HP`); }
-  else                    { dcNotes.push(`Small split sample vs ${pitcherHand}HP (${splitAB} AB)`); }
-  if ((l10?.games||0) >= 10) { dcPoints += 1; dcNotes.push('Recent form data available (L10)'); }
-  else                       { dcNotes.push('Limited recent game log'); }
-  if (pEra && pIP > 20)   { dcPoints += 1; dcNotes.push('Pitcher has solid 2026 sample'); }
-  else if (!pEra || pIP < 5) { dcNotes.push('Pitcher has little/no 2026 data'); }
-  if (pf.overall)         { dcPoints += 1; dcNotes.push('Park factor data available'); }
-  else                    { dcNotes.push('Park factor unavailable'); }
-  dcNotes.push('No prior H2H history used');
-  const dcLabel = dcPoints >= 6 ? 'High' : dcPoints >= 3 ? 'Medium' : 'Low';
-  const dcCls   = dcPoints >= 6 ? 'pos'  : dcPoints >= 3 ? 'neu'    : 'neg';
-
-  // Top decision
-  let pickEmoji, pickLabel, pickCls, confidence, bestUse;
-  if (matchupScore >= 70) {
-    pickEmoji='✅'; pickLabel='Good Pick'; pickCls='pa-verdict-good';
-    confidence = dcPoints >= 5 ? 'High' : 'Medium';
-    bestUse = ((p.hitStreak||0)>=3 || (ghp!=null&&ghp>=0.65)) ? 'Beat the Streak / Hit Prop Lean' : 'Hit Prop Lean';
-  } else if (matchupScore >= 55) {
-    pickEmoji='🟡'; pickLabel='Monitor Lineup'; pickCls='pa-verdict-mixed';
-    confidence = 'Medium';
-    bestUse = 'Hit Prop Lean (verify lineup first)';
-  } else if (matchupScore >= 40) {
-    pickEmoji='⚠️'; pickLabel='Risky Pick'; pickCls='pa-verdict-risky';
-    confidence = 'Low';
-    bestUse = 'Avoid BTS — marginal hit prop only';
-  } else {
-    pickEmoji='❌'; pickLabel='Avoid'; pickCls='pa-verdict-poor';
-    confidence = 'Low';
-    bestUse = 'Skip today';
-  }
-
-  // Dynamic, data-driven action line
-  const _al = {
-    hasStrongSplit    : splitAB >= 30 && splitDiff >  0.050,
-    hasFavorableSplit : splitAB >= 20 && splitDiff >  0.025,
-    hasWeakSplit      : splitAB >= 20 && splitDiff < -0.030,
-    hasGoodH9         : pH9 != null   && pH9 >= 8.5,
-    hasBadH9          : pH9 != null   && pH9 <= 7.0,
-    hasLowK           : pBF > 0       && pKpct < 0.18,
-    hasHighK          : pBF > 0       && pKpct >= 0.25,
-    hasElitePitcher   : pEra != null  && pEra <= 3.00,
-    hasWeakPitcher    : pEra != null  && pEra >= 5.00,
-    hasHotStreak      : (p.hitStreak  || 0) >= 3,
-    hasHighGHP        : ghp != null   && ghp >= 0.65,
-    hasHotForm        : (l10?.avg     || 0) >= 0.300,
-    hasColdForm       : l10?.avg != null && l10.avg < 0.210,
-    hasWeakBullpen    : (bullpenH9    || 0) >= 8.5,
-    hasBadPark        : (pf.overall   || 1) <= 0.95,
-    lineupBad         : lStatus === 'unconfirmed' || lStatus === 'projected',
-    smallSample       : splitAB < 20,
-  };
-  const _pctAl = v => Math.round(v * 100) + '%';
-  const alParts = [];
-
-  if (matchupScore >= 70) {
-    if (_al.hasStrongSplit && _al.hasGoodH9) {
-      alParts.push(`Strong platoon edge (${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB) against a pitcher allowing ${pH9.toFixed(1)} H/9 — this is a premium hit environment and a legitimate BTS candidate.`);
-    } else if (_al.hasStrongSplit) {
-      alParts.push(`Clear platoon advantage (${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB, +${Math.round(splitDiff*1000)} pts above season average) is the primary driver — the matchup structure strongly favors a hit today.`);
-    } else if (_al.hasGoodH9 && _al.hasLowK) {
-      alParts.push(`Contact-friendly pitcher profile — ${pH9.toFixed(1)} H/9 and just ${_pctAl(pKpct)} K rate means batters regularly put the ball in play, giving this hitter genuine opportunities to reach base.`);
-    } else if (_al.hasGoodH9) {
-      alParts.push(`The opposing starter allows ${pH9.toFixed(1)} H/9 — above-average contact allowed — which is the main structural reason this matchup scores well for a hit.`);
-    } else if (_al.hasHotForm && _al.hasHighGHP) {
-      alParts.push(`Hot recent form (${fmt3(l10?.avg)} L10 AVG) backed by consistent production (${Math.round(ghp*100)}% GHP last 7) makes this a reliable pick even without a matchup standout today.`);
-    } else {
-      alParts.push(`Multiple positive indicators align — ${whyBullets[0] || 'favorable conditions across the board'} — producing a well-supported score.`);
-    }
-    if (_al.hasHotStreak && _al.hasHighGHP) {
-      alParts.push(`Active ${p.hitStreak}-game hit streak and ${Math.round(ghp*100)}% GHP over the last 7 games reinforce the matchup data with real recent evidence.`);
-    } else if (_al.hasHotStreak) {
-      alParts.push(`An active ${p.hitStreak}-game hit streak adds momentum — this hitter is producing right now.`);
-    } else if (_al.hasHighGHP) {
-      alParts.push(`Consistent hit production (${Math.round(ghp*100)}% GHP) means this hitter gets a hit in most games even without a perfect matchup.`);
-    } else if (_al.hasWeakPitcher) {
-      alParts.push(`The opposing starter (ERA ${pEra.toFixed(2)}) does not have the profile to suppress quality hitters on a given night.`);
-    }
-    if (_al.lineupBad) {
-      alParts.push(`Do not lock this pick until the official batting order is posted — lineup uncertainty is the one remaining risk.`);
-    } else if (_al.hasHighK && !_al.hasGoodH9) {
-      alParts.push(`Note: pitcher's ${_pctAl(pKpct)} K rate is elevated — this hitter must make contact to capitalize on the otherwise favorable conditions.`);
-    } else if (_al.smallSample) {
-      alParts.push(`Platoon split sample is limited (${splitAB} AB vs ${pitcherHand}HP) — weight that signal accordingly, but the rest of the profile holds up.`);
-    } else {
-      alParts.push(`Lineup confirmed — this is a strong BTS or hit prop play.`);
-    }
-
-  } else if (matchupScore >= 55) {
-    if (_al.hasFavorableSplit) {
-      alParts.push(`Playable matchup — ${fmt3(splitAvg)} vs ${pitcherHand}HP is a real edge, but the overall profile does not reach elite territory today.`);
-    } else if (_al.hasGoodH9) {
-      alParts.push(`The pitcher's contact rate (${pH9.toFixed(1)} H/9) gives this hitter a reasonable shot, but no single signal stands out as dominant.`);
-    } else if (_al.hasHotForm) {
-      alParts.push(`Recent form is the main positive here — ${fmt3(l10?.avg)} L10 AVG — but the matchup structure itself is not particularly favorable.`);
-    } else {
-      alParts.push(`Mixed signals — the matchup is playable but lacks a high-confidence primary driver today.`);
-    }
-    if (_al.hasElitePitcher) {
-      alParts.push(`The opposing pitcher is a legitimate ace (ERA ${pEra.toFixed(2)}) — that alone caps the ceiling on this pick regardless of other positives.`);
-    } else if (_al.hasBadH9 && _al.hasHighK) {
-      alParts.push(`Pitcher suppresses contact (${pH9.toFixed(1)} H/9, ${_pctAl(pKpct)} K rate) — getting a hit requires this hitter to exceed average expectations.`);
-    } else if (_al.hasWeakSplit) {
-      alParts.push(`Platoon disadvantage (${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB) is actively working against this pick.`);
-    } else if (_al.hasColdForm) {
-      alParts.push(`Cold recent stretch (${fmt3(l10?.avg)} L10 AVG) prevents a stronger recommendation despite a workable matchup.`);
-    } else if (_al.hasBadPark) {
-      alParts.push(`The park suppresses offense (${(pf.overall||1).toFixed(2)}×), limiting upside even in a neutral matchup.`);
-    }
-    if (_al.lineupBad) {
-      alParts.push(`Hold off — confirm the lineup is posted before committing to this pick.`);
-    } else {
-      alParts.push(`Use as a secondary pick only — this is a lean, not a lock, and stronger options should take priority today.`);
-    }
-
-  } else if (matchupScore >= 40) {
-    if (_al.hasElitePitcher && _al.hasBadH9) {
-      alParts.push(`Difficult matchup — the starter has a strong suppression profile (ERA ${pEra.toFixed(2)}, ${pH9.toFixed(1)} H/9) that limits contact opportunities across the board. This hitter will need to do something exceptional to reach base.`);
-    } else if (_al.hasBadH9 && _al.hasHighK) {
-      alParts.push(`The pitcher's numbers are unfavorable for hits — ${pH9.toFixed(1)} H/9 and ${_pctAl(pKpct)} K rate create a genuine contact suppression environment that limits even quality hitters.`);
-    } else if (_al.hasWeakSplit && !_al.smallSample) {
-      alParts.push(`Platoon disadvantage is the primary concern — ${fmt3(splitAvg)} vs ${pitcherHand}HP in ${splitAB} AB shows this hitter has historically struggled against this arm type.`);
-    } else if (_al.hasColdForm) {
-      alParts.push(`Recent form is a significant red flag — ${fmt3(l10?.avg)} L10 AVG signals a hitter currently out of sync at the plate, regardless of the matchup.`);
-    } else {
-      alParts.push(`Multiple moderate risk factors combine to make this a below-average hit environment without a clear offsetting positive.`);
-    }
-    if (_al.hasHotStreak || _al.hasFavorableSplit || _al.hasHighGHP) {
-      const bright = _al.hasHotStreak ? `a ${p.hitStreak}-game hit streak` : _al.hasFavorableSplit ? `the platoon split` : `the hit game rate (${Math.round(ghp*100)}% GHP)`;
-      alParts.push(`The one bright spot is ${bright} — but it is not enough to overcome the structural negatives today.`);
-    }
-    alParts.push(`Avoid for BTS. If considering a hit prop, reduce stake significantly and confirm the lineup first.`);
-
-  } else {
-    if (_al.hasElitePitcher && _al.hasBadH9 && _al.hasHighK) {
-      alParts.push(`Very difficult hit environment across every key metric — the starter combines a ${pH9.toFixed(1)} H/9, ${_pctAl(pKpct)} K rate, and ERA of ${pEra.toFixed(2)}. Batters are unlikely to produce hits at a normal clip today.`);
-    } else if (_al.hasBadH9 && _al.hasHighK) {
-      alParts.push(`Starter's ${pH9.toFixed(1)} H/9 and ${_pctAl(pKpct)} K rate point to near-elite contact suppression — not a BTS-viable environment for any hitter.`);
-    } else if (_al.hasColdForm && _al.hasWeakSplit) {
-      alParts.push(`Compounding risks — a cold recent stretch (${fmt3(l10?.avg)} L10 AVG) and a platoon disadvantage (${fmt3(splitAvg)} vs ${pitcherHand}HP) leave little to work with today.`);
-    } else {
-      alParts.push(`Score falls well below the playable threshold — the combination of risk factors today does not offer enough offsetting upside for a credible hit pick.`);
-    }
-    alParts.push(`Skip today. Revisit tomorrow or if the starting pitcher changes.`);
-  }
-
-  const actionLine = alParts.join(' ');
-  const mainReason = whyBullets[0] || 'No strong positive signals identified.';
-  const mainRisk   = riskBullets[0] || 'No major risks identified.';
-
-  // Bullpen verdict
-  const bullpenVerdict = (bullpenH9||0)>=9.5 ? 'Late-game hitter advantage — bullpen allows hits freely' :
-                         (bullpenH9||0)>=8.5 ? 'Slight late-game hitter advantage' :
-                         (bullpenEra||0)>=5.0 ? 'Late-game hitter advantage (high bullpen ERA)' :
-                         (bullpenH9||9)<=6.3  ? 'Late-game risk — bullpen suppresses hits well' :
-                         (bullpenEra||99)<=3.5 ? 'Late-game risk — elite bullpen ERA' : 'Neutral bullpen';
-
-  // Player K% for display
-  const seasSO = p.seasonStats?.strikeOuts; const seasPA = p.seasonStats?.plateAppearances || p.seasonStats?.atBats;
-  const seasKpct = (seasSO != null && seasPA) ? `${(seasSO/seasPA*100).toFixed(1)}%` : null;
-
-  document.getElementById('paContent').innerHTML = `
-
-    <!-- DECISION CARD -->
-    <div class="pa-decision-card ${pickCls}">
-      <div class="pa-decision-pick">${pickEmoji} ${pickLabel} <span class="pa-decision-score">Score ${matchupScore}</span></div>
-      <div class="pa-decision-grid">
-        <div class="pa-decision-cell"><div class="pa-decision-cell-lbl">Confidence</div><div class="pa-decision-cell-val">${confidence}</div></div>
-        <div class="pa-decision-cell"><div class="pa-decision-cell-lbl">Best Use</div><div class="pa-decision-cell-val">${bestUse}</div></div>
-        <div class="pa-decision-cell"><div class="pa-decision-cell-lbl">Main Reason</div><div class="pa-decision-cell-val">${mainReason}</div></div>
-        <div class="pa-decision-cell"><div class="pa-decision-cell-lbl">Main Risk</div><div class="pa-decision-cell-val">${mainRisk}</div></div>
-      </div>
-    </div>
-
-    <!-- WHY / RISK -->
-    <div class="pa-section">
-      <div class="pa-section-title">✅ <span>Why He Can Get a Hit Today</span></div>
-      ${whyBullets.length ? `<ul class="pa-bullet-list">${whyBullets.map(b=>`<li class="pa-bullet-item pos">${b}</li>`).join('')}</ul>` : `<ul class="pa-bullet-list"><li class="pa-bullet-item neu">No strong positive signals identified.</li></ul>`}
-    </div>
-    <div class="pa-section">
-      <div class="pa-section-title">⚠️ <span>What Could Go Wrong</span></div>
-      <ul class="pa-bullet-list">${riskBullets.map(b=>`<li class="pa-bullet-item neg">${b}</li>`).join('')}</ul>
-    </div>
-
-    <!-- HITTER PROFILE -->
-    <div class="pa-section">
-      <div class="pa-section-title">🏏 <span>Hitter Profile</span></div>
-      ${paRow('Season AVG', p.seasonStats?.avg>0?fmt3(p.seasonStats.avg):null, _sig(p.seasonStats?.avg,0.285,0.230))}
-      ${paRow('Season OBP', p.seasonStats?.obp>0?fmt3(p.seasonStats.obp):null, _sig(p.seasonStats?.obp,0.355,0.295))}
-      ${paRow('Season SLG', p.seasonStats?.slg>0?fmt3(p.seasonStats.slg):null)}
-      ${paRow('BABIP (Season)', p.seasonStats?.babip>0?p.seasonStats.babip.toFixed(3).replace(/^0/,''):null, _sig(p.seasonStats?.babip,0.320,0.265))}
-      ${paRow('BACON (Season)', p.seasonStats?.bacon>0?p.seasonStats.bacon.toFixed(3).replace(/^0/,''):null, _sig(p.seasonStats?.bacon,0.310,0.265))}
-      ${paRow('L10 AVG', l10?.avg!=null?l10.avg.toFixed(3).replace(/^0/,''):null, _sig(l10?.avg,0.300,0.200))}
-      ${paRow('K% (Season)', seasKpct)}
-      ${paRow('Active Hit Streak', p.hitStreak||0, (p.hitStreak||0)>=3?'<span class="pa-row-sig pa-sig-pos">🔥 Hot</span>':'')}
-      ${paRow('Avg Lineup Spot (L10)', avgOrder)}
-      <div class="pa-row"><span class="pa-row-lbl">Usage Trend</span><span class="pa-row-val"><span class="pa-row-sig ${usageTrendCls}">${usageTrend}</span></span></div>
-    </div>
-
-    <!-- HIT GAME RATE -->
-    <div class="pa-section">
-      <div class="pa-section-title">📈 <span>Hit Game Rate</span></div>
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">% of games with ≥1 hit — the core Beat the Streak metric</div>
-      <div class="pa-ghp-chips">
-        ${ghpL7  ? `<div class="pa-ghp-chip"><div class="pa-ghp-chip-lbl">Last 7</div><div class="pa-ghp-chip-val"><span class="pa-row-sig ${ghpL7cls}">${ghpL7}</span></div></div>` : ''}
-        ${ghpL10 ? `<div class="pa-ghp-chip"><div class="pa-ghp-chip-lbl">Last 10</div><div class="pa-ghp-chip-val"><span class="pa-row-sig ${ghpL10cls}">${ghpL10}</span></div></div>` : ''}
-        ${!ghpL7&&!ghpL10 ? `<div style="color:var(--text-muted);font-size:12px">Not available</div>` : ''}
-      </div>
-    </div>
-
-    <!-- ENVIRONMENT SPLIT -->
-    <div class="pa-section">
-      <div class="pa-section-title">🏠 <span>Environment Split (L10)</span></div>
-      <div class="pa-env-banner${todayStronger?'':' warn'}">
-        Today is a <strong>${todayEnvLabel}</strong> game — player's <strong>${todayStronger?'stronger':'weaker'}</strong> recent environment
-      </div>
-      <div class="pa-split-grid">
-        ${splitCard(`Last ${homeLog.slice(0,10).length} Home Games`, homeAgg, isHomeToday)}
-        ${splitCard(`Last ${awayLog.slice(0,10).length} Away Games`, awayAgg, !isHomeToday)}
-      </div>
-    </div>
-
-    <!-- PLATOON EDGE -->
-    <div class="pa-section">
-      <div class="pa-section-title">⚔️ <span>Platoon Edge vs ${pitcherHand}HP</span></div>
-      <div class="pa-platoon-row">
-        <span class="pa-platoon-badge ${platoonCls}">${platoonLabel}</span>
-        <span class="pa-platoon-reason">${platoonReason}</span>
-      </div>
-      <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">${sampleConf} · ${splitAB} AB vs ${pitcherHand}HP</div>
-      ${paRow(`AVG vs ${pitcherHand}HP`, splitAB>0?fmt3(splitAvg):null, _sig(splitAvg,0.285,0.230))}
-      ${paRow(`OBP vs ${pitcherHand}HP`, splitAB>0&&splitObp>0?fmt3(splitObp):null, _sig(splitObp,0.355,0.295))}
-      ${paRow(`SLG vs ${pitcherHand}HP`, splitAB>0&&splitSlg>0?fmt3(splitSlg):null)}
-      ${paRow('Season AVG (baseline)', fmt3(seasonAvg))}
-    </div>
-
-    <!-- PITCHER MATCHUP -->
-    <div class="pa-section">
-      <div class="pa-section-title">⚾ <span>Pitcher Matchup</span></div>
-      <div class="pa-platoon-row" style="margin-bottom:12px">
-        <span class="pa-platoon-badge ${pitHitMatchupCls}">${pitHitMatchup}</span>
-        <span class="pa-platoon-reason">${pitcherName} · ${pitcherHand}HP${pIP>0?' · '+Math.floor(pIP)+' IP':''}</span>
-      </div>
-      ${paRow('H/9',          pH9!=null?pH9.toFixed(1):null,               pH9!=null?_sig(pH9,9.5,7.0):'')}
-      ${paRow('H/BF%',        pBF>0?(pHBF*100).toFixed(1)+'%':null,        pBF>0?_sig(pHBF,0.23,0.17):'')}
-      ${paRow('K%',           pBF>0?(pKpct*100).toFixed(1)+'%':null,       pBF>0?(pKpct>=0.25?'<span class="pa-row-sig pa-sig-neg">▲ High K</span>':pKpct<=0.16?'<span class="pa-row-sig pa-sig-pos">▼ Low K</span>':'<span class="pa-row-sig pa-sig-neu">→ Avg</span>'):'')}
-      ${paRow('K/9',          pK9n)}
-      ${paRow('ERA',          pEra!=null?pEra.toFixed(2):null,              _sigEra(pEra))}
-      ${paRow('BABIP Allowed',pBabip>0?pBabip.toFixed(3).replace(/^0/,''):null, pBabip?_sig(pBabip,0.315,0.270):'')}
-      ${paRow('BACON Allowed',pBacon>0?pBacon.toFixed(3).replace(/^0/,''):null, pBacon?_sig(pBacon,0.305,0.265):'')}
-      ${paRow('BB/9',         pBB9n)}
-    </div>
-
-    <!-- BULLPEN -->
-    <div class="pa-section">
-      <div class="pa-section-title">🔥 <span>Opposing Bullpen</span></div>
-      ${paRow('Bullpen ERA', bullpenEra!=null?bullpenEra.toFixed(2):null, bullpenEra!=null?_sigEra(bullpenEra):'')}
-      ${paRow('Bullpen H/9', bullpenH9!=null?bullpenH9.toFixed(1):null,   bullpenH9!=null?_sig(bullpenH9,9.0,7.0):'')}
-      <div class="pa-row" style="border-bottom:none;padding-top:8px">
-        <span style="font-size:12px;color:var(--text-secondary)">${bullpenVerdict}</span>
-      </div>
-    </div>
-
-    <!-- PARK & WEATHER -->
-    <div class="pa-section">
-      <div class="pa-section-title">🏟️ <span>Park &amp; Weather</span></div>
-      <div class="pa-platoon-row" style="margin-bottom:12px">
-        <span class="pa-platoon-badge ${parkImpact.cls}">Park: ${parkImpact.lbl}</span>
-        <span class="pa-platoon-reason">${gd.venueName||'—'}</span>
-      </div>
-      ${paRow('Park Factor', pf.overall?pf.overall.toFixed(2):null, pf.overall?_sig(pf.overall,1.08,0.93):'')}
-      <div class="pa-row"><span class="pa-row-lbl">Weather</span><span class="pa-row-val" style="font-size:11px;font-family:inherit">${wxNote}</span></div>
-    </div>
-
-    <!-- SCORE BREAKDOWN -->
-    <div class="pa-section">
-      <div class="pa-section-title">🔢 <span>Score Breakdown</span></div>
-      <div class="pa-breakdown-row"><span class="pa-breakdown-lbl">Base</span><span class="pa-breakdown-delta pa-delta-neu">50</span></div>
-      ${brkRow('Batter Skill (BABIP / BACON)', _brkSkill)}
-      ${brkRow('Recent Form (L10 AVG)', _brkForm)}
-      ${brkRow('Hit Game Rate (GHP)', _brkGhp)}
-      ${brkRow('Platoon / Split Edge', _brkSplit)}
-      ${brkRow('Pitcher Matchup Quality', _brkEra + _brkPit)}
-      ${brkRow('Bullpen', _brkBull)}
-      ${brkRow('Park Factor', _brkPark)}
-      <div class="pa-breakdown-row total"><span class="pa-breakdown-lbl">Final Score</span><span class="pa-breakdown-delta ${matchupScore>=70?'pa-delta-pos':matchupScore>=40?'pa-delta-neu':'pa-delta-neg'}">${matchupScore}</span></div>
-    </div>
-
-    <!-- DATA CONFIDENCE -->
-    <div class="pa-section">
-      <div class="pa-section-title">🔍 <span>Data Confidence</span></div>
-      <span class="pa-confidence-badge ${dcCls}">${dcLabel} Confidence</span>
-      <div style="margin-top:6px">${dcNotes.map(n=>`<div class="pa-dc-note">${n}</div>`).join('')}</div>
-    </div>
-
-    <!-- ACTION LINE -->
-    <div class="pa-action-card">
-      <div class="pa-action-lbl">Action</div>
-      <div class="pa-action-line">${actionLine}</div>
-    </div>`;
+  // ── Share data (kept for screenshot/share feature) ─────────────────────
+  const matchupScore = rawData.score;
 
   // ── Save share data & reveal Share button ──────────────────────────────
   const _src = source || state.activeTab || 'general';
@@ -10704,12 +10449,14 @@ async function openPlayerAnalyzer(playerId, source) {
     playerName: p.name,
     team: p.team,
     matchup: p.matchup || (gd.awayAbbr + ' @ ' + gd.homeAbbr),
-    pickEmoji, pickLabel, pickCls, confidence, bestUse, actionLine,
+    pickEmoji: '🔬', pickLabel: 'Lab Analysis', pickCls: 'pa-verdict-mixed',
+    confidence: confidenceLabel(hitResult.confidence),
+    bestUse: '', actionLine: '',
     matchupScore,
-    hitScore: p.hitScore,
+    hitScore: hitResult.score,
     hrScore: p.hrScore,
-    whyBullets,
-    riskBullets,
+    whyBullets: hitResult.reasons,
+    riskBullets: hitResult.warnings,
     pitcherName,
     pitcherHand,
     pEra,
@@ -10726,7 +10473,7 @@ async function openPlayerAnalyzer(playerId, source) {
     bullpenEra,
     bullpenH9,
     bullpenHBF,
-    bullpenVerdict,
+    bullpenVerdict: '',
     ssAvg: p.seasonStats?.avg ?? null,
     ssObp: p.seasonStats?.obp ?? null,
     ssBabip: p.seasonStats?.babip ?? null,
@@ -11873,6 +11620,7 @@ async function fetchElitePlayerData(player, gd) {
     (async () => {
       try {
         const fullLog     = await fetchGameLog(player.id, false, 162);
+        player.gameLog    = fullLog;
         const ghpGames    = fullLog.length;
         const ghpHitGames = fullLog.filter(g => (g.stat?.hits || 0) >= 1).length;
         if (ghpGames >= 10) ghp = ghpHitGames / ghpGames;
@@ -11914,7 +11662,14 @@ async function fetchElitePlayerData(player, gd) {
 
   const pitchMatchup = computePitchMixMatchup(player.id, pitcher?.id);
   const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF, pitchMatchup.score);
-  return { player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF, pitchMatchup };
+  return {
+    player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF, pitchMatchup,
+    bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: null },
+    park:          pf,
+    weather:       gd.weather || {},
+    savantBatter:  state.savantBatter  ? (state.savantBatter.get(String(player.id))   || null) : null,
+    savantPitcher: state.savantPitcher ? (state.savantPitcher.get(String(pitcher?.id)) || null) : null,
+  };
 }
 
 // Shared reason builder for elite pick cards
