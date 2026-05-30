@@ -142,5 +142,49 @@ test('empty pitcher stats returns hasData false', function () {
   assert.strictEqual(r.value, 0);
 });
 
+console.log('\ncomputeBCQ');
+
+test('high AVG (.320) + OBP (.390) gives +7 (no Savant)', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player,
+    { seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.320, obp: 0.390 }) });
+  var r = s.computeBCQ(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, 7);
+});
+test('low AVG (.210) + OBP (.280) gives -6', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player,
+    { seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.210, obp: 0.280 }) });
+  var r = s.computeBCQ(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, -6);
+});
+test('low batter whiff% (15%) adds +3', function () {
+  var raw = mkRaw({ savantBatter: [{ pitch_usage: '100', whiff_percent: '15' }],
+                    savantPitcher: [{}] });
+  var r = s.computeBCQ(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, 3);
+});
+test('high batter whiff% (37%) adds -4', function () {
+  var raw = mkRaw({ savantBatter: [{ pitch_usage: '100', whiff_percent: '37' }],
+                    savantPitcher: [{}] });
+  var r = s.computeBCQ(s.buildMatchupContext(raw));
+  assert.strictEqual(r.value, -4);
+});
+test('no stats returns hasData false', function () {
+  var raw = mkRaw();
+  raw.player = Object.assign({}, raw.player, { seasonStats: {} });
+  var r = s.computeBCQ(s.buildMatchupContext(raw));
+  assert.strictEqual(r.hasData, false);
+  assert.strictEqual(r.value, 0);
+});
+test('clamped to +12 max', function () {
+  var raw = mkRaw({ savantBatter: [{ pitch_usage: '100', whiff_percent: '12' }],
+                    savantPitcher: [{}] });
+  raw.player = Object.assign({}, raw.player,
+    { seasonStats: Object.assign({}, raw.player.seasonStats, { avg: 0.350, obp: 0.420 }) });
+  var r = s.computeBCQ(s.buildMatchupContext(raw));
+  assert.ok(r.value <= 12);
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
