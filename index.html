@@ -10546,9 +10546,8 @@ function labSelectGame(gamePk) {
     const slg    = p.seasonStats?.slg  ? p.seasonStats.slg.toFixed(3)  : '—';
     const hr     = p.seasonStats?.homeRuns ?? '—';
     const hits   = p.seasonStats?.hits ?? (p.seasonStats?.atBats && p.seasonStats?.avg ? Math.round(p.seasonStats.atBats * p.seasonStats.avg) : '—');
-    const _ptch  = p.isAway ? (gd.homePitcher || null) : (gd.awayPitcher || null);
-    const ms     = computeLabMatchupScore(p, _ptch, _rosterPf, 0, null, null, null, 0, 0);
-    const msCol  = ms >= 80 ? '#22c55e' : ms >= 65 ? '#f59e0b' : ms >= 45 ? '#94a3b8' : '#ef4444';
+    const ms     = p.hitScore || 50;
+    const msCol  = ms >= 75 ? '#22c55e' : ms >= 62 ? '#f59e0b' : ms >= 48 ? '#94a3b8' : '#ef4444';
     return `<div class="lab-player-card" id="lpc_${p.id}">
       <label class="lab-player-check-wrap" onclick="event.stopPropagation()">
         <input type="checkbox" class="lab-player-check" id="chk_${p.id}" value="${p.id}" onchange="toggleComparePlayer(${p.id},this.checked)">
@@ -10563,7 +10562,7 @@ function labSelectGame(gamePk) {
           <span class="lps-cell"><span class="lps-label">SLG</span><span class="lps-val">${slg}</span></span>
           <span class="lps-cell"><span class="lps-label">HR</span><span class="lps-val">${hr}</span></span>
           <span class="lps-cell"><span class="lps-label">H</span><span class="lps-val">${hits}</span></span>
-          <span class="lps-cell"><span class="lps-label">Matchup</span><span class="lps-val" id="ms_${p.id}" style="color:${msCol}">${ms}</span></span>
+          <span class="lps-cell"><span class="lps-label">Hit Score</span><span class="lps-val" id="ms_${p.id}" style="color:${msCol}">${ms}</span></span>
         </div>
       </div>
     </div>`;

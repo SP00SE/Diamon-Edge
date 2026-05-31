@@ -571,12 +571,26 @@ console.log('\nbuildHRReasons and buildHRWarnings');
 
 test('elite batter ISO + high BACON generates HR reason', function () {
   var raw = mkRaw();
-  raw.player.seasonStats.slg  = 0.530;
-  raw.player.seasonStats.avg  = 0.275;  // ISO = 0.255 — elite
-  raw.player.seasonStats.bacon = 0.320; // high hard contact
+  raw.player.seasonStats.slg   = 0.530;
+  raw.player.seasonStats.avg   = 0.275;  // ISO = 0.255 — elite
+  raw.player.seasonStats.bacon = 0.320;  // high hard contact
   var ctx = s.buildMatchupContext(raw);
   var res = s.computeHRScore(ctx);
   assert.ok(res.reasons.length > 0, 'elite ISO + BACON should produce an HR reason');
+});
+
+test('HR-prone pitcher (hr9 >= 1.20) generates HR reason', function () {
+  var raw = {
+    player: { seasonStats: { atBats: 120, avg: 0.265, slg: 0.450, homeRuns: 12 }, gameLog: [] },
+    pitcher: { id: 'p1', pitchHand: 'R', seasonStats: { hr9: 1.55, kpct: 0.19, inningsPitched: 60 } },
+    bullpen: {}, park: { overall: 1.0, rhh: 1.0, lhh: 1.0 }, weather: {},
+    h2h: null, savantBatter: null, savantPitcher: null,
+    lineupStatus: 'confirmed', battingOrder: 4,
+  };
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHRScore(ctx);
+  var pitcherReason = res.reasons.find(function (r) { return r.includes('HR/9') || r.includes('HR-prone'); });
+  assert.ok(pitcherReason, 'pitcher with hr9=1.55 should appear in HR reasons (got: ' + JSON.stringify(res.reasons) + ')');
 });
 
 test('elite HR-suppressing pitcher generates warning', function () {
