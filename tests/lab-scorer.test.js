@@ -538,5 +538,102 @@ test('Lab Matchup Score identity: hitScore IS the lab score', function(){
   assert.ok(typeof hitWithHRPark === 'number');
 });
 
+// ── buildHitReasons / buildHitWarnings ────────────────────────────────────────
+console.log('\nbuildHitReasons and buildHitWarnings');
+
+test('hot pitcher generates positive reason', function () {
+  var raw = mkRaw({ pitcher: { id: 'p1', pitchHand: 'R',
+    seasonStats: { kpct: 0.15, babip: 0.340, whip: 1.50, inningsPitched: 60 } } });
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  assert.ok(res.reasons.length > 0, 'should have at least one positive reason vs contact-prone pitcher');
+});
+
+test('elite K% pitcher generates warning', function () {
+  var raw = mkRaw({ pitcher: { id: 'p1', pitchHand: 'R',
+    seasonStats: { kpct: 0.34, babip: 0.260, whip: 0.92, inningsPitched: 80 } } });
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  assert.ok(res.warnings.length > 0, 'should have at least one warning vs elite K% pitcher');
+});
+
+test('reasons and warnings are always arrays of strings', function () {
+  var ctx = s.buildMatchupContext(mkRaw());
+  var res = s.computeHitScore(ctx);
+  assert.ok(Array.isArray(res.reasons));
+  assert.ok(Array.isArray(res.warnings));
+  res.reasons.forEach(function (r) { assert.strictEqual(typeof r, 'string'); });
+  res.warnings.forEach(function (w) { assert.strictEqual(typeof w, 'string'); });
+});
+
+// ── buildHRReasons / buildHRWarnings ──────────────────────────────────────────
+console.log('\nbuildHRReasons and buildHRWarnings');
+
+test('elite batter ISO + high BACON generates HR reason', function () {
+  var raw = mkRaw();
+  raw.player.seasonStats.slg  = 0.530;
+  raw.player.seasonStats.avg  = 0.275;  // ISO = 0.255 — elite
+  raw.player.seasonStats.bacon = 0.320; // high hard contact
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHRScore(ctx);
+  assert.ok(res.reasons.length > 0, 'elite ISO + BACON should produce an HR reason');
+});
+
+test('elite HR-suppressing pitcher generates warning', function () {
+  var raw = mkRaw({ pitcher: { id: 'p1', pitchHand: 'R',
+    seasonStats: { hr9: 0.45, kpct: 0.31, bacon: 0.255, inningsPitched: 80 } } });
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHRScore(ctx);
+  assert.ok(res.warnings.length > 0, 'should warn when pitcher strongly suppresses HRs');
+});
+
+test('HR reasons and warnings are always arrays of strings', function () {
+  var ctx = s.buildMatchupContext(mkRaw());
+  var res = s.computeHRScore(ctx);
+  assert.ok(Array.isArray(res.reasons));
+  assert.ok(Array.isArray(res.warnings));
+  res.reasons.forEach(function (r) { assert.strictEqual(typeof r, 'string'); });
+  res.warnings.forEach(function (w) { assert.strictEqual(typeof w, 'string'); });
+});
+
+// ── computeConfidence edge cases ──────────────────────────────────────────────
+console.log('\ncomputeConfidence edge cases');
+
+test('zero AB with no other signals gives Insufficient confidence', function () {
+  // Use minimal raw — no pitcher, no game log, no recent stats
+  var raw = {
+    player: { seasonStats: { atBats: 0, avg: 0, obp: 0, slg: 0 }, gameLog: [] },
+    pitcher: null, bullpen: {}, park: { overall: 1.0, rhh: 1.0, lhh: 1.0 }, weather: {},
+    h2h: null, savantBatter: null, savantPitcher: null,
+    lineupStatus: 'unknown', battingOrder: null,
+  };
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  assert.ok(res.confidence < 0.40, 'player with 0 AB and no data should have Insufficient confidence (got ' + res.confidence + ')');
+});
+
+test('large sample with game log gives High confidence', function () {
+  var raw = mkRaw();
+  raw.player.seasonStats.atBats = 200;
+  raw.player.gameLog = new Array(20).fill({ stat: { hits: 1 } });
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  assert.ok(res.confidence >= 0.80, 'player with large sample should reach High confidence');
+});
+
+// ── formatBreakdownKey ────────────────────────────────────────────────────────
+console.log('\nformatBreakdownKey');
+
+test('maps known keys to human labels', function () {
+  assert.strictEqual(s.formatBreakdownKey('pitcherContactProfile'), 'Pitcher Contact');
+  assert.strictEqual(s.formatBreakdownKey('recentForm'),            'Recent Form');
+  assert.strictEqual(s.formatBreakdownKey('platoonBvpEdge'),        'Platoon / BvP');
+  assert.strictEqual(s.formatBreakdownKey('hrContext'),             'Park / Temp / Wind');
+});
+
+test('falls back to raw key for unknown keys', function () {
+  assert.strictEqual(s.formatBreakdownKey('unknownKey'), 'unknownKey');
+});
+
 console.log('\nResults:', pass, 'passed,', fail, 'failed');
 if (fail > 0) process.exit(1);
