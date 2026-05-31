@@ -12850,10 +12850,12 @@ async function runLabAnalysis() {
   _labStep('ls4','active');
   let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, bullpenHR9 = 0, ghp = null, ghpGames = 0, ghpHitGames = 0, ghpL10 = null, ghpL10HitGames = 0, ghpL10Games = 0;
   let ghpL7 = null, ghpL7HitGames = 0, ghpL7Games = 0, ghpL30 = null, ghpL30HitGames = 0, ghpL30Games = 0;
+  let _labFullLog = []; // hoisted so lib scorer can use game log for context enrichment
   await Promise.all([
     (async () => {
       try {
         const fullLog  = await fetchGameLog(player.id, false, 162);
+        _labFullLog    = fullLog;
         // GHP: games with ≥1 hit / total games played
         ghpGames    = fullLog.length;
         ghpHitGames = fullLog.filter(g => (g.stat?.hits || 0) >= 1).length;
@@ -12978,7 +12980,21 @@ async function runLabAnalysis() {
     return html;
   })();
 
-  const score    = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF, pitchMatchup.score);
+  const _labLibCtx = LabScorer.buildMatchupContext({
+    player:        Object.assign({}, player, { gameLog: _labFullLog }),
+    pitcher:       pitcher,
+    bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: bullpenHR9 },
+    park:          pf,
+    weather:       gd.weather || {},
+    h2h:           h2h,
+    savantBatter:  state.savantBatter  ? (state.savantBatter.get(String(player.id))   || null) : null,
+    savantPitcher: state.savantPitcher ? (state.savantPitcher.get(String(pitcher?.id)) || null) : null,
+    lineupStatus:  player.lineupPosted ? 'confirmed' : player.orderPos > 0 ? 'projected' : 'unknown',
+    battingOrder:  player.orderPos || null,
+  });
+  const _labLibHit = LabScorer.computeHitScore(_labLibCtx);
+  const _labLibHR  = LabScorer.computeHRScore(_labLibCtx);
+  const score    = _labLibHit.score;
   const scoreCls = score>=80?'score-great':score>=65?'score-good':score>=45?'score-neutral':score>=30?'score-bad':'score-poor';
   const scoreLbl = score>=80?'Strong Hitter Edge':score>=65?'Hitter Leaning':score>=45?'Neutral Matchup':score>=30?'Pitcher Leaning':'Strong Pitcher Edge';
   const barColor = score>=65?'#22c55e':score>=45?'#94a3b8':'#ef4444';
@@ -13090,8 +13106,8 @@ async function runLabAnalysis() {
   }
 
   // Smart matchup summary — appended after existing narrative
-  const labHitResult = { score, label: scoreLbl, reasons: [], warnings: [] };
-  const labHrResult = { score: null, label: null, reasons: [], warnings: [] };
+  const labHitResult = _labLibHit;
+  const labHrResult  = _labLibHR;
   const labCtx = {
     playerName: player.name,
     pitcherName: pitcher?.fullName || pitcher?.name,
