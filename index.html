@@ -10892,10 +10892,12 @@ async function fetchLabAnalysisData(playerId) {
   }
 
   let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, bullpenHR9 = 0;
+  let _fcaGameLog = []; // hoisted for LabScorer context enrichment
   await Promise.all([
     (async () => {
       try {
         const log  = await fetchGameLog(player.id, false, 162);
+        _fcaGameLog = log;
         const pg   = log.filter(g => (g.game?.venue?.name || g.venue?.name || '') === venue);
         if (pg.length > 0) {
           const agg = pg.reduce((a,g) => ({ ab:a.ab+(+g.stat?.atBats||0), h:a.h+(+g.stat?.hits||0), hr:a.hr+(+g.stat?.homeRuns||0), games:a.games+1 }), { ab:0,h:0,hr:0,games:0 });
@@ -10912,7 +10914,19 @@ async function fetchLabAnalysisData(playerId) {
     })(),
   ]);
 
-  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, null, bullpenH9, bullpenHBF);
+  const _fdCtx = LabScorer.buildMatchupContext({
+    player:        Object.assign({}, player, { gameLog: _fcaGameLog }),
+    pitcher:       pitcher,
+    bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: bullpenHR9 },
+    park:          pf,
+    weather:       gd?.weather || {},
+    h2h:           h2h,
+    savantBatter:  state.savantBatter  ? (state.savantBatter.get(String(player.id))   || null) : null,
+    savantPitcher: state.savantPitcher ? (state.savantPitcher.get(String(pitcher?.id)) || null) : null,
+    lineupStatus:  player.lineupPosted ? 'confirmed' : player.orderPos > 0 ? 'projected' : 'unknown',
+    battingOrder:  player.orderPos || null,
+  });
+  const score = LabScorer.computeHitScore(_fdCtx).score;
   return { player, pitcher, gd, pf, parkCtx, profile, h2h, parkStats, bullpenEra, bullpenH9, bullpenHBF, bullpenHR9, handHRFactor, score, venue };
 }
 
@@ -11682,7 +11696,20 @@ async function fetchElitePlayerData(player, gd) {
   ]);
 
   const pitchMatchup = computePitchMixMatchup(player.id, pitcher?.id);
-  const score = computeLabMatchupScore(player, pitcher, pf, bullpenEra, h2h, parkStats, ghp, bullpenH9, bullpenHBF, pitchMatchup.score);
+  // player.gameLog set above — LabScorer enriches recentHR, hitGames7, last3Hitless from it
+  const _feCtx = LabScorer.buildMatchupContext({
+    player:        player,
+    pitcher:       pitcher,
+    bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: bullpenHR9 },
+    park:          pf,
+    weather:       gd.weather || {},
+    h2h:           h2h,
+    savantBatter:  state.savantBatter  ? (state.savantBatter.get(String(player.id))   || null) : null,
+    savantPitcher: state.savantPitcher ? (state.savantPitcher.get(String(pitcher?.id)) || null) : null,
+    lineupStatus:  player.lineupPosted ? 'confirmed' : player.orderPos > 0 ? 'projected' : 'unknown',
+    battingOrder:  player.orderPos || null,
+  });
+  const score = LabScorer.computeHitScore(_feCtx).score;
   return {
     player, pitcher, score, pf, h2h, parkStats, ghp, bullpenEra, bullpenH9, bullpenHBF, bullpenHR9, pitchMatchup,
     bullpen:       { era: bullpenEra, h9: bullpenH9, hbf: bullpenHBF, hr9: bullpenHR9 },
