@@ -7992,6 +7992,19 @@ async function startFetch() {
         updateChipLineupStatus(game.gamePk, gameData.lineupPosted);
       } catch (err) {
         console.warn('Game processing error:', game.gamePk, err);
+        // Store a minimal stub so Team Win Predictor can still show the game
+        if (!state.predictions[game.gamePk]) {
+          const aw = game.teams?.away?.team;
+          const hw = game.teams?.home?.team;
+          state.predictions[game.gamePk] = {
+            gamePk: game.gamePk, gameDate: game.gameDate || state.date,
+            awayAbbr: aw?.abbreviation||'?', homeAbbr: hw?.abbreviation||'?',
+            awayTeamId: aw?.id, homeTeamId: hw?.id,
+            awayPitcher: null, homePitcher: null,
+            players: [], lineupPosted: false,
+            _loadError: err?.message || 'load failed',
+          };
+        }
       }
       _processed++;
       _setBar(Math.round((_processed / games.length) * 100));
@@ -11838,7 +11851,16 @@ async function handleTeamScan() {
     if (results.length === 0) {
       cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No complete game data available — check back once lineups are posted.</div>';
     } else {
-      cards.innerHTML = results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
+      // Show diagnostic if fewer games were scored than are in the schedule
+      const scheduleCount = (state.games || []).length;
+      const predCount     = Object.keys(state.predictions).length;
+      const missingCount  = scheduleCount - predCount;
+      const diagHtml = (missingCount > 0 || scheduleCount !== results.length)
+        ? `<div style="font-size:10px;color:#f59e0b;padding:4px 2px 8px;font-family:monospace">` +
+          `&#9888; ${scheduleCount} games on schedule · ${predCount} loaded · ${results.length} scored` +
+          (missingCount > 0 ? ` · ${missingCount} failed to load (see console)` : '') +
+          `</div>` : '';
+      cards.innerHTML = diagHtml + results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
     }
     const _finalForCalib = results.filter(r => r.isFinal && r.actualWinner);
     state.sigmoidSlope = _calibrateSigmoidSlope(_finalForCalib);
@@ -12243,7 +12265,8 @@ function runTeamScan(onProgress) {
   for (const gd of allGames) {
     const awayPlayers = (gd.players||[]).filter(p => p.id && p.isAway);
     const homePlayers = (gd.players||[]).filter(p => p.id && !p.isAway);
-    if (!awayPlayers.length || !homePlayers.length) { onProgress?.(); continue; }
+    // Keep games where at least one side has data — missing side scores at baseline (50)
+    if (!awayPlayers.length && !homePlayers.length) { onProgress?.(); continue; }
 
     const awayRes = awayPlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
     const homeRes = homePlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
@@ -12545,23 +12568,45 @@ function _teamScanCardHTML(r) {
           </div>`;
         }).join('');
 
-        // Actionable tips
+        // Specific, data-driven tips using actual names, scores, and components
         const tips = [];
-        const spName = winner === 'away' ? awayPitcherName : homePitcherName;
-        if (wrongEdges.some(d => d.label === 'Starting Pitcher'))
-          tips.push(`${spName ? escHtml(spName) + "'s" : "SP's"} season ERA drove the model — verify last 3 starts and days of rest before next bet`);
-        if (wrongEdges.some(d => d.label === 'Offense & Form'))
-          tips.push('Lineup edge looked real pre-game — check matchup-specific wRC+ and how this lineup performs vs this SP handedness');
-        if (wrongEdges.some(d => d.label === 'Bullpen') || missedEdges.some(d => d.label === 'Bullpen'))
-          tips.push('Bullpen rest and workload not in model — check prior 2-day usage before flagging a pen as an edge');
-        if (missedEdges.some(d => d.label === 'Starting Pitcher'))
-          tips.push(`${actualName}'s starter outperformed their ERA — look at Savant whiff% and pitch mix for better early reads`);
-        if (missedEdges.some(d => d.label === 'Offense & Form'))
-          tips.push(`${actualName}'s offense was underrated — OPS last-7 and platoon splits vs the opposing SP were likely underweighted`);
-        if (confidence === 'Low' || confidence === 'Preliminary')
-          tips.push(confidence + ' confidence — lineup was projected, not confirmed; unconfirmed orders amplify model error');
-        if (!tips.length)
-          tips.push('Marginal prediction — both teams were evenly matched; double-check lineup confirmation and SP rest before wagering');
+        const predSpName   = winner === 'away' ? awayPitcherName : homePitcherName;
+        const predSpEra    = winner === 'away' ? awayPitcherEra  : homePitcherEra;
+        const actualSpName = winner === 'away' ? homePitcherName : awayPitcherName;
+        const actualSpEra  = winner === 'away' ? homePitcherEra  : awayPitcherEra;
+        const predProjRuns = winner === 'away' ? awayProjRuns    : homeProjRuns;
+        const actProjRuns  = winner === 'away' ? actualAwayScore : actualHomeScore;
+        const actWinRuns   = winner === 'away' ? actualHomeScore : actualAwayScore;
+        const runMargin    = actWinRuns != null && actProjRuns != null ? actWinRuns - actProjRuns : null;
+
+        if (wrongEdges.some(d => d.label === 'Starting Pitcher')) {
+          const eraNote = predSpEra > 0 ? ` (${parseFloat(predSpEra).toFixed(2)} ERA)` : '';
+          tips.push(`The model overweighted ${predSpName ? escHtml(predSpName) + eraNote : 'the starter'} as a run-prevention edge. Next time, pair ERA with K% and last-3-start ERA — a starter with a high ERA but elite K% is an ERA trap, not a run target.`);
+        }
+        if (wrongEdges.some(d => d.label === 'Offense & Form')) {
+          const projNote = predProjRuns != null ? ` (projected ~${predProjRuns.toFixed(1)} R)` : '';
+          tips.push(`${predAbbr}'s lineup contact edge${projNote} did not translate into runs. Next time, check how the lineup's contact profile matches up against the opposing SP's specific pitch mix — high contact score against a high-K pitcher can be misleading.`);
+        }
+        if (wrongEdges.some(d => d.label === 'Bullpen')) {
+          tips.push(`${predAbbr}'s bullpen looked stronger on paper but didn't hold. Next time, reduce bullpen confidence when ERA/H9 data is from the season — bullpen rest and recent workload (prior 2 days) are not in the model and can flip this edge.`);
+        }
+        if (missedEdges.some(d => d.label === 'Starting Pitcher')) {
+          const aEra = actualSpEra > 0 ? ` (${parseFloat(actualSpEra).toFixed(2)} ERA)` : '';
+          tips.push(`${actualName}'s starter${actualSpName ? ' ' + escHtml(actualSpName) + aEra : ''} outperformed their ERA. Next time, check Savant whiff% and put-away pitch effectiveness — a high-ERA pitcher who generates whiffs suppresses scoring even when ERA says otherwise.`);
+        }
+        if (missedEdges.some(d => d.label === 'Offense & Form')) {
+          tips.push(`${actualName}'s offense was underweighted. Next time, check whether their lineup is hot in OPS terms (not just AVG) and whether the opposing SP has a weak platoon or poor BABIP suppression that rewards contact.`);
+        }
+        if (runMargin != null && runMargin >= 4) {
+          tips.push(`The actual margin (${actWinRuns}–${actProjRuns} runs) was much larger than projected. Large blow-outs often involve a collapse the model can't see: SP exit before 5th, bullpen overexposure, or a lineup scoring via the HR cluster. Model margin was ${Math.abs(Math.round((awayScore||0) - (homeScore||0)))} pts — actual was a blowout.`);
+        }
+        if (confidence === 'Low' || confidence === 'Preliminary') {
+          tips.push(`${confidence} confidence — at least one lineup was projected at game time. Unconfirmed lineups amplify model error; wait for official lineups before treating this as a high-confidence call.`);
+        }
+        if (!tips.length) {
+          const probStr = predProb >= 60 ? `The model showed ${predProb}% confidence` : `The model had only ${predProb}% confidence`;
+          tips.push(`${probStr} — a near-toss-up that flipped. Next time, verify lineup confirmation status and check whether the SP's recent form (last 3 starts) supports the season ERA assumption.`);
+        }
 
         const tipsHtml = tips.slice(0, 3).map(t => `<div style="display:flex;gap:6px;padding:2px 0"><span style="color:#f59e0b;flex-shrink:0">→</span><span style="color:#94a3b8;font-size:10px;line-height:1.4">${t}</span></div>`).join('');
 
