@@ -635,6 +635,143 @@ test('large sample with game log gives High confidence', function () {
   assert.ok(res.confidence >= 0.80, 'player with large sample should reach High confidence');
 });
 
+// ── computePitchTypeEdge ──────────────────────────────────────────────────────
+console.log('\ncomputePitchTypeEdge');
+
+function mkPteCtx(pitcherRows, batterRows) {
+  return {
+    player: { seasonStats: {}, last7Stats: {}, last7: {} },
+    pitcher: { seasonStats: {} },
+    bullpen: {},
+    park: { overall: 1.0, rhh: 1.0, lhh: 1.0 },
+    weather: {},
+    h2h: null,
+    savantPitcher: pitcherRows,
+    savantBatter:  batterRows,
+    lineupStatus: 'confirmed',
+    battingOrder: 3,
+    dataFlags: {},
+  };
+}
+
+test('batter strong vs primary pitch → positive PTE value', function() {
+  var ctx = mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam Fastball', pitch_usage:'55.0', whiff_percent:'22.0' },
+     { pitch_type:'SL', pitch_name:'Slider',          pitch_usage:'30.0', whiff_percent:'28.0' }],
+    [{ pitch_type:'FF', ba:'0.330', whiff_percent:'14.0' },
+     { pitch_type:'SL', ba:'0.285', whiff_percent:'20.0' }]
+  );
+  var res = s.computePitchTypeEdge(ctx);
+  assert.ok(res.hasData, 'should have data');
+  assert.ok(res.value > 0, 'batter who hits both pitches well should be positive (got ' + res.value + ')');
+});
+
+test('batter weak vs primary pitch → negative PTE value', function() {
+  var ctx = mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam Fastball', pitch_usage:'55.0', whiff_percent:'22.0' },
+     { pitch_type:'SL', pitch_name:'Slider',          pitch_usage:'30.0', whiff_percent:'35.0' }],
+    [{ pitch_type:'FF', ba:'0.195', whiff_percent:'32.0' },
+     { pitch_type:'SL', ba:'0.165', whiff_percent:'41.0' }]
+  );
+  var res = s.computePitchTypeEdge(ctx);
+  assert.ok(res.hasData, 'should have data');
+  assert.ok(res.value < 0, 'batter who struggles vs both pitches should be negative (got ' + res.value + ')');
+});
+
+test('neutral BA performance → near-zero PTE', function() {
+  var ctx = mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'50.0', whiff_percent:'20.0' },
+     { pitch_type:'CH', pitch_name:'Changeup', pitch_usage:'25.0', whiff_percent:'18.0' }],
+    [{ pitch_type:'FF', ba:'0.255', whiff_percent:'22.0' },
+     { pitch_type:'CH', ba:'0.248', whiff_percent:'24.0' }]
+  );
+  var res = s.computePitchTypeEdge(ctx);
+  assert.ok(res.hasData, 'should have data');
+  assert.ok(res.value >= -2 && res.value <= 2, 'neutral performance should be near zero (got ' + res.value + ')');
+});
+
+test('missing savant data → hasData false, value 0', function() {
+  var res = s.computePitchTypeEdge(mkPteCtx(null, null));
+  assert.strictEqual(res.hasData, false);
+  assert.strictEqual(res.value, 0);
+});
+
+test('fewer than 2 pitch types with batter data → hasData false', function() {
+  var ctx = mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'60.0', whiff_percent:'25.0' },
+     { pitch_type:'SL', pitch_name:'Slider', pitch_usage:'30.0', whiff_percent:'32.0' }],
+    [{ pitch_type:'FF', ba:'0.290', whiff_percent:'18.0' }]  // only 1 batter pitch row
+  );
+  var res = s.computePitchTypeEdge(ctx);
+  assert.strictEqual(res.hasData, false, 'requires >=2 pitch types with batter data');
+  assert.strictEqual(res.value, 0);
+});
+
+test('elite K pitch + high batter whiff → amplifier increases penalty', function() {
+  var withAmp = s.computePitchTypeEdge(mkPteCtx(
+    [{ pitch_type:'SL', pitch_name:'Slider', pitch_usage:'45.0', whiff_percent:'40.0' }, // pWhiff >= 0.35
+     { pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'40.0', whiff_percent:'20.0' }],
+    [{ pitch_type:'SL', ba:'0.190', whiff_percent:'38.0' }, // bWhiff >= 0.30
+     { pitch_type:'FF', ba:'0.255', whiff_percent:'22.0' }]
+  ));
+  var noAmp = s.computePitchTypeEdge(mkPteCtx(
+    [{ pitch_type:'SL', pitch_name:'Slider', pitch_usage:'45.0', whiff_percent:'14.0' }, // low pWhiff → 0.75×
+     { pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'40.0', whiff_percent:'20.0' }],
+    [{ pitch_type:'SL', ba:'0.190', whiff_percent:'38.0' },
+     { pitch_type:'FF', ba:'0.255', whiff_percent:'22.0' }]
+  ));
+  assert.ok(withAmp.value <= noAmp.value, 'elite K pitch amplifier should increase penalty (withAmp=' + withAmp.value + ' noAmp=' + noAmp.value + ')');
+});
+
+test('pitches array is sorted by usage descending', function() {
+  var ctx = mkPteCtx(
+    [{ pitch_type:'SL', pitch_name:'Slider', pitch_usage:'25.0', whiff_percent:'28.0' },
+     { pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'55.0', whiff_percent:'22.0' }],
+    [{ pitch_type:'SL', ba:'0.240', whiff_percent:'25.0' },
+     { pitch_type:'FF', ba:'0.270', whiff_percent:'20.0' }]
+  );
+  var res = s.computePitchTypeEdge(ctx);
+  assert.ok(res.pitches.length >= 2, 'should return pitches array');
+  assert.ok(res.pitches[0].usage >= res.pitches[1].usage, 'pitches sorted by usage desc');
+});
+
+test('computeHitScore uses PTE when savant data present (batter strong vs primary pitch)', function() {
+  var withSavant = mkRaw();
+  withSavant.savantPitcher = [
+    { pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'60.0', whiff_percent:'22.0' },
+    { pitch_type:'SL', pitch_name:'Slider', pitch_usage:'30.0', whiff_percent:'28.0' },
+  ];
+  withSavant.savantBatter = [
+    { pitch_type:'FF', ba:'0.355', whiff_percent:'12.0' },
+    { pitch_type:'SL', ba:'0.300', whiff_percent:'18.0' },
+  ];
+  var withoutSavant = mkRaw();
+  withoutSavant.savantPitcher = null;
+  withoutSavant.savantBatter  = null;
+
+  var scoreWith    = s.computeHitScore(s.buildMatchupContext(withSavant)).score;
+  var scoreWithout = s.computeHitScore(s.buildMatchupContext(withoutSavant)).score;
+  assert.ok(scoreWith > scoreWithout, 'PTE should give higher score for batter hitting primary pitch well (with=' + scoreWith + ' without=' + scoreWithout + ')');
+});
+
+test('buildHitWarnings generates pitch-specific warning when batter weak vs primary pitch', function() {
+  var raw = mkRaw();
+  raw.savantPitcher = [
+    { pitch_type:'SL', pitch_name:'Slider', pitch_usage:'50.0', whiff_percent:'35.0' },
+    { pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'35.0', whiff_percent:'22.0' },
+  ];
+  raw.savantBatter = [
+    { pitch_type:'SL', ba:'0.165', whiff_percent:'40.0' },
+    { pitch_type:'FF', ba:'0.255', whiff_percent:'22.0' },
+  ];
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  var hasPitchWarning = res.warnings.some(function(w) {
+    return w.indexOf('Slider') !== -1 || w.indexOf('Weak') !== -1 || w.indexOf('weak') !== -1 || w.indexOf('K risk') !== -1;
+  });
+  assert.ok(hasPitchWarning, 'warning should mention the specific pitch the batter struggles against. Got: ' + JSON.stringify(res.warnings));
+});
+
 // ── Integration: raw MLB API data shapes ──────────────────────────────────────
 // These tests use the exact field names the MLB Stats API returns.
 // Before Phase 1 enrichment, K%, hr9, and ip were always 0 from real data.
