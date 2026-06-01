@@ -11875,7 +11875,8 @@ async function handleTeamScan() {
   }
 }
 
-const LINEUP_WEIGHTS = [1.15, 1.10, 1.05, 1.05, 1.00, 1.00, 0.95, 0.92, 0.90];
+// Batting order weights: top of order weighted more; positions 2-5 upgraded per spec
+const LINEUP_WEIGHTS = [1.15, 1.12, 1.10, 1.08, 1.05, 1.00, 0.95, 0.92, 0.90];
 
 function _lineupScore(results) {
   if (!results.length) return 50;
@@ -12242,7 +12243,7 @@ function _teamPitchArsenalEdge(batters, pitcherId) {
   if (!state.savantPitcher || !state.savantBatter || !pitcherId) return 0;
   const pitcherRows = state.savantPitcher.get(String(pitcherId)) || [];
   if (!pitcherRows.some(r => parseFloat(r.pitch_usage) >= 10)) return 0;
-  const LINEUP_W = [1.15, 1.10, 1.05, 1.05, 1.00, 1.00, 0.95, 0.92, 0.90];
+  const LINEUP_W = LINEUP_WEIGHTS;
   let wSum = 0, wTotal = 0, withData = 0;
   for (const b of batters) {
     if (!b.id) continue;
@@ -12568,6 +12569,27 @@ function _teamScanCardHTML(r) {
           </div>`;
         }).join('');
 
+        // Classify the miss type for the header
+        const biggestWrong = wrongEdges[0]?.label || null;
+        const biggestMissed = missedEdges[0]?.label || null;
+        let missType = '';
+        if (biggestWrong === 'Starting Pitcher' && wrongEdges[0].delta >= 8)
+          missType = 'ERA Trap — starter edge overestimated';
+        else if (biggestWrong === 'Bullpen' && wrongEdges[0].delta >= 6)
+          missType = 'Bullpen Collapse — late-game relief failed';
+        else if (biggestWrong === 'Offense & Form' && missedEdges[0]?.label === 'Starting Pitcher')
+          missType = 'Pitcher Dominance — offense overrated vs strong SP';
+        else if (biggestMissed === 'Starting Pitcher')
+          missType = 'SP Outperformance — opposing starter exceeded projection';
+        else if (biggestMissed === 'Bullpen')
+          missType = 'Bullpen Dominance — opposing pen shut down offense';
+        else if (biggestMissed === 'Offense & Form')
+          missType = 'Lineup Underrated — actual winner offense was stronger';
+        else if (!awayPosted && !homePosted)
+          missType = 'Lineup Uncertainty — both sides were projected';
+        else
+          missType = 'Marginal Miss — no single dominant factor';
+
         // Specific, data-driven tips using actual names, scores, and components
         const tips = [];
         const predSpName   = winner === 'away' ? awayPitcherName : homePitcherName;
@@ -12611,7 +12633,10 @@ function _teamScanCardHTML(r) {
         const tipsHtml = tips.slice(0, 3).map(t => `<div style="display:flex;gap:6px;padding:2px 0"><span style="color:#f59e0b;flex-shrink:0">→</span><span style="color:#94a3b8;font-size:10px;line-height:1.4">${t}</span></div>`).join('');
 
         postmortem = `<div class="twp-postmortem">
-          <div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Why the model missed</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:11px;font-weight:700;color:#e2e8f0">Why the model missed</span>
+            <span style="font-size:9px;font-weight:700;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:4px;padding:1px 6px">${escHtml(missType)}</span>
+          </div>
           <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">Model gave ${predAbbr} a ${predProb}% edge (${escHtml(confidence||'Low')} confidence). ${actualName} won — ${scoreLine}.</div>
           ${compRows}
           ${missedEdges.length ? `<div style="font-size:10px;color:#22c55e;margin-top:6px">&#10003; ${actualName} held hidden edges in: ${missedEdges.map(d => d.label.toLowerCase()).join(', ')}</div>` : ''}
@@ -12622,10 +12647,26 @@ function _teamScanCardHTML(r) {
         </div>`;
       }
 
+      // For correct predictions, show what edge held up
+      let correctNote = '';
+      if (predCorrect && !predTie && predComps) {
+        const topComp = [
+          { label: 'lineup/form',      delta: (predComps.lineup + (predComps.form||0)) - (actualComps.lineup + (actualComps.form||0)) },
+          { label: 'starting pitcher', delta: (predComps.starter||0) - (actualComps.starter||0) },
+          { label: 'bullpen',          delta: (predComps.bullpen||0) - (actualComps.bullpen||0) },
+        ].sort((a, b) => b.delta - a.delta)[0];
+        const winnerProj = winner === 'away' ? awayProjRuns : homeProjRuns;
+        const winnerAct  = winner === 'away' ? actualAwayScore : actualHomeScore;
+        const noteStr = topComp && topComp.delta >= 3
+          ? `${escHtml(winnerName||'')} won as predicted. Biggest validated edge: ${topComp.label}.${winnerProj != null && winnerAct != null ? ` Projected ~${winnerProj.toFixed(1)} R · actual ${winnerAct} R.` : ''}`
+          : `${escHtml(winnerName||'')} won as predicted (${predProb}%).`;
+        correctNote = `<div style="padding:6px 14px 7px;font-size:11px;color:#34d399;background:rgba(34,197,94,.04);border-top:1px solid rgba(34,197,94,.15)">${noteStr}</div>`;
+      }
+
       return `<div class="twp-result-strip">
         <span class="twp-result-score">${scoreLine}</span>
         ${resultBadge}
-      </div>${postmortem}`;
+      </div>${correctNote}${postmortem}`;
     })() : ''}
 
     ${(mainReason || summaryText) ? `<div class="twp-reasoning">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b">Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
