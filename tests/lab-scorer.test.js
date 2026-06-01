@@ -735,7 +735,25 @@ test('pitches array is sorted by usage descending', function() {
   assert.ok(res.pitches[0].usage >= res.pitches[1].usage, 'pitches sorted by usage desc');
 });
 
-test('PTE max value <=8 even when batter hits every pitch at .340+ BA', function() {
+test('PTE stacks: handling 2 pitch types scores higher than handling only 1', function() {
+  // batter handles primary (FF 55%) only
+  var one = s.computePitchTypeEdge(mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'55.0', whiff_percent:'22.0' },
+     { pitch_type:'SL', pitch_name:'Slider', pitch_usage:'30.0', whiff_percent:'28.0' }],
+    [{ pitch_type:'FF', ba:'0.325', whiff_percent:'12.0' },  // good vs FF
+     { pitch_type:'SL', ba:'0.250', whiff_percent:'22.0' }]  // neutral vs SL
+  ));
+  // batter handles both FF and SL well
+  var two = s.computePitchTypeEdge(mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam', pitch_usage:'55.0', whiff_percent:'22.0' },
+     { pitch_type:'SL', pitch_name:'Slider', pitch_usage:'30.0', whiff_percent:'28.0' }],
+    [{ pitch_type:'FF', ba:'0.325', whiff_percent:'12.0' },  // good vs FF
+     { pitch_type:'SL', ba:'0.315', whiff_percent:'14.0' }]  // good vs SL too
+  ));
+  assert.ok(two.value > one.value, 'handling 2 pitch types (score=' + two.value + ') should score higher than 1 (score=' + one.value + ')');
+});
+
+test('PTE cap: 3 pitches all .310+ BA caps at ±10', function() {
   var ctx = mkPteCtx(
     [{ pitch_type:'FF', pitch_name:'4-Seam',   pitch_usage:'55.0', whiff_percent:'22.0' },
      { pitch_type:'SL', pitch_name:'Slider',   pitch_usage:'30.0', whiff_percent:'28.0' },
@@ -746,8 +764,8 @@ test('PTE max value <=8 even when batter hits every pitch at .340+ BA', function
   );
   var res = s.computePitchTypeEdge(ctx);
   assert.ok(res.hasData, 'should have data');
-  assert.ok(res.value <= 8, 'cap at 8 even with all pitches at elite BA (got ' + res.value + ')');
-  assert.ok(res.value >= 5, 'elite across all pitches should still score high (got ' + res.value + ')');
+  assert.ok(res.value >= 7, 'elite across all pitches should score high (got ' + res.value + ')');
+  assert.ok(res.value <= 10, 'should never exceed the ±10 clamp (got ' + res.value + ')');
 });
 
 test('computeHitScore uses PTE when savant data present (batter strong vs primary pitch)', function() {
