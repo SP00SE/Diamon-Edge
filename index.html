@@ -723,6 +723,11 @@ main { padding: 28px 0 60px; }
 .lab-lineup-confirmed { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25); color:#34d399; }
 .lab-lineup-projected { background:rgba(245,158,11,.08);  border:1px solid rgba(245,158,11,.25);  color:#f59e0b; }
 .lab-lineup-unknown   { background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.25); color:#94a3b8; }
+.lab-matchup-ctx { display:flex; align-items:center; gap:8px; padding:5px 10px; font-size:11px; font-family:monospace; color:var(--text-muted); background:rgba(148,163,184,.05); border-radius:6px; margin-bottom:6px; flex-wrap:wrap; }
+.lab-ctx-label   { color:#64748b; font-size:9px; text-transform:uppercase; letter-spacing:.5px; }
+.lab-ctx-pitcher { color:#e2e8f0; font-weight:600; }
+.lab-ctx-stat    { color:#94a3b8; }
+.lab-stat-strip  { display:flex; gap:10px; flex-wrap:wrap; font-size:10px; font-family:monospace; color:var(--text-muted); margin:4px 0 8px; }
 .lab-conf-high  { color:#34d399; } .lab-conf-medium { color:#f59e0b; }
 .lab-conf-low   { color:#ef4444; } .lab-conf-insufficient { color:#94a3b8; }
 
@@ -10174,7 +10179,25 @@ function renderLabScoreCard(result, ctx, isHR) {
   var insuf   = result.confidence < 0.40;
   var scoreHtml = insuf ? _renderInsufCard(ctx) :
     '<div class="lab-score-num">'+result.score+'</div><div class="lab-score-lbl">'+result.label+'</div>';
+  var statStrip = '';
+  if (!isHR && !insuf) {
+    var _pl     = ctx.player || {};
+    var _ss     = _pl.seasonStats || {};
+    var _l7     = _pl.last7 || _pl.last7Stats || {};
+    var _streak = _pl.hitStreak || 0;
+    var _fmtA   = function(v) { return (v != null && v > 0) ? ('.' + Math.round(v*1000).toString().padStart(3,'0')) : null; };
+    var _avgS   = _fmtA(_ss.avg);
+    var _obpS   = _fmtA(_ss.obp);
+    var _l7S    = _fmtA(_l7.avg);
+    var _parts  = [];
+    if (_avgS) _parts.push('<span>'+_avgS+' AVG</span>');
+    if (_obpS) _parts.push('<span>'+_obpS+' OBP</span>');
+    if (_l7S)  _parts.push('<span>L7: '+_l7S+'</span>');
+    if (_streak > 2) _parts.push('<span class="lab-reason-pos">🔥 '+_streak+'-game streak</span>');
+    if (_parts.length) statStrip = '<div class="lab-stat-strip">'+_parts.join('')+'</div>';
+  }
   var reasonsHtml = insuf ? '' :
+    statStrip +
     '<ul class="lab-reason-list">'+
     result.reasons.map(function(r){ return '<li class="lab-reason-pos">✓ '+r+'</li>'; }).join('')+
     result.warnings.map(function(w){ return '<li class="lab-reason-warn">⚠ '+w+'</li>'; }).join('')+
@@ -10365,8 +10388,20 @@ async function openPlayerAnalyzer(playerId, source) {
   const hitResult = LabScorer.computeHitScore(ctx);
   const hrResult  = LabScorer.computeHRScore(ctx);
 
+  const _eraStr  = pEra  > 0 ? pEra.toFixed(2) + ' ERA' : '';
+  const _kpctStr = pKpct > 0 ? Math.round(pKpct * 100) + '% K' : '';
+  const _handStr = (pitcherHand && pitcherHand !== '?') ? ' (' + pitcherHand + 'HP)' : '';
+  const _pfBadge = `<span class="pa-sig-${parkImpact.cls}">${escHtml(parkImpact.lbl)}</span>`;
+  const _pitcherRow = (pitcherName && pitcherName !== '—')
+    ? `<div class="lab-matchup-ctx"><span class="lab-ctx-label">vs</span><span class="lab-ctx-pitcher">${escHtml(pitcherName)}${_handStr}</span>${_eraStr ? `<span class="lab-ctx-stat">${_eraStr}</span>` : ''}${_kpctStr ? `<span class="lab-ctx-stat">${_kpctStr}</span>` : ''}</div>`
+    : '';
+  const _parkRow = gd.venueName
+    ? `<div class="lab-matchup-ctx"><span class="lab-ctx-label">Park</span><span class="lab-ctx-pitcher">${escHtml(gd.venueName)}</span>${_pfBadge}<span class="lab-ctx-stat">${escHtml(wxNote)}</span></div>`
+    : '';
+
   const panelContent =
     renderLabLineupBanner(ctx.lineupStatus) +
+    _pitcherRow + _parkRow +
     '<div class="lab-two-card-row">' +
       renderLabScoreCard(hitResult, ctx, false) +
       renderLabScoreCard(hrResult,  ctx, true)  +
