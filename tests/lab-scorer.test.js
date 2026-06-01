@@ -635,6 +635,140 @@ test('large sample with game log gives High confidence', function () {
   assert.ok(res.confidence >= 0.80, 'player with large sample should reach High confidence');
 });
 
+// ── Integration: raw MLB API data shapes ──────────────────────────────────────
+// These tests use the exact field names the MLB Stats API returns.
+// Before Phase 1 enrichment, K%, hr9, and ip were always 0 from real data.
+console.log('\nintegration: raw MLB API data shapes');
+
+function mkRawMlbShape() {
+  // Mimics what fetchElitePlayerData passes to buildMatchupContext.
+  // Pitcher uses raw MLB fields: inningsPitched, strikeOuts, homeRuns (no kpct/hr9).
+  // Player game log uses g.stat.hits / g.stat.homeRuns (MLB API shape).
+  return {
+    player: {
+      seasonStats: { atBats: 160, avg: 0.265, obp: 0.330, slg: 0.420, babip: 0.295 },
+      last7: { avg: 0.280, ops: 0.800 },
+      vsRHP: { avg: 0.265, atBats: 80, obp: 0.330, slg: 0.420 },
+      gameLog: [
+        { stat: { hits: 2, homeRuns: 1 } },
+        { stat: { hits: 0, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 0, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 0, homeRuns: 1 } },
+        { stat: { hits: 2, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 0, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 1, homeRuns: 0 } },
+        { stat: { hits: 0, homeRuns: 1 } },
+      ],
+    },
+    pitcher: {
+      id: 'p99', pitchHand: 'R',
+      seasonStats: {
+        // Raw MLB API fields — no kpct, no hr9, no ip
+        inningsPitched: 80,
+        strikeOuts:     104,   // kpct = 104/(80*4.3) ≈ 0.302 — high K pitcher
+        homeRuns:       8,     // hr9  = (8/80)*9    = 0.90 — moderate HR
+        era:            3.45,
+        whip:           1.12,
+        babip:          0.285,
+      },
+    },
+    bullpen: { era: 3.80, h9: 8.0, hbf: 0.24, hr9: 0.9 },
+    park:    { overall: 1.02, rhh: 1.03, lhh: 1.01 },
+    weather: { tempF: 72, windMph: 5, windDir: 'out' },
+    h2h:           null,
+    savantBatter:  null,
+    savantPitcher: null,
+    lineupStatus:  'confirmed',
+    battingOrder:  3,
+  };
+}
+
+test('buildMatchupContext enriches kpct from strikeOuts/inningsPitched', function () {
+  var raw = mkRawMlbShape();
+  var ctx = s.buildMatchupContext(raw);
+  var kpct = ctx.pitcher.seasonStats.kpct;
+  // 104 / (80 * 4.3) ≈ 0.302
+  assert.ok(kpct > 0, 'kpct should be computed from raw MLB fields (got ' + kpct + ')');
+  assert.ok(kpct > 0.28 && kpct < 0.35, 'kpct ≈ 0.302 for 104 K in 80 IP (got ' + kpct + ')');
+});
+
+test('buildMatchupContext enriches hr9 from homeRuns/inningsPitched', function () {
+  var raw = mkRawMlbShape();
+  var ctx = s.buildMatchupContext(raw);
+  var hr9 = ctx.pitcher.seasonStats.hr9;
+  // (8/80)*9 = 0.90
+  assert.ok(hr9 > 0, 'hr9 should be computed from raw MLB fields (got ' + hr9 + ')');
+  assert.ok(hr9 > 0.85 && hr9 < 0.95, 'hr9 ≈ 0.90 for 8 HR in 80 IP (got ' + hr9 + ')');
+});
+
+test('buildMatchupContext sets ip from inningsPitched', function () {
+  var raw = mkRawMlbShape();
+  var ctx = s.buildMatchupContext(raw);
+  assert.strictEqual(ctx.pitcher.seasonStats.ip, 80);
+});
+
+test('computePCP fires K% from raw MLB data', function () {
+  var raw = mkRawMlbShape();
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  // kpct ≈ 0.302 → computePCP should give -4 from K component → pcp.value < 0
+  assert.ok(res.breakdown.pitcherContactProfile !== null, 'PCP should have data');
+  assert.ok(res.breakdown.pitcherContactProfile < 0, 'high-K pitcher should produce negative PCP');
+});
+
+test('computePHS fires from raw MLB homeRuns/inningsPitched', function () {
+  var rawHRProne = mkRawMlbShape();
+  rawHRProne.pitcher.seasonStats.homeRuns       = 16; // hr9 = (16/80)*9 = 1.80
+  rawHRProne.pitcher.seasonStats.inningsPitched = 80;
+  var ctx = s.buildMatchupContext(rawHRProne);
+  var res = s.computeHRScore(ctx);
+  assert.ok(res.breakdown.pitcherHRSusceptibility !== null, 'PHS should have data');
+  assert.ok(res.breakdown.pitcherHRSusceptibility > 0, 'HR-prone pitcher should produce positive PHS');
+});
+
+test('computeConfidence uses ip from raw inningsPitched', function () {
+  var rawNoPitcher = mkRawMlbShape();
+  rawNoPitcher.pitcher.seasonStats.inningsPitched = 0; // rookie, no IP
+  var rawFullPitcher = mkRawMlbShape(); // 80 IP
+
+  var ctxNo   = s.buildMatchupContext(rawNoPitcher);
+  var ctxFull = s.buildMatchupContext(rawFullPitcher);
+  var confNo   = s.computeHitScore(ctxNo).confidence;
+  var confFull = s.computeHitScore(ctxFull).confidence;
+  assert.ok(confFull > confNo, 'pitcher with 80 IP should give higher confidence than rookie (0 IP)');
+});
+
+test('game log MLB shape: hitGames7 computed from g.stat.hits', function () {
+  var raw = mkRawMlbShape();
+  // Last 7 game log entries: indices 7-13 (slice(-7))
+  // hits: 1,0,2,1,0,1,0 → 4 games with hits
+  var ctx = s.buildMatchupContext(raw);
+  assert.strictEqual(ctx.player.hitGames7, 4, 'hitGames7 should count g.stat.hits > 0');
+});
+
+test('game log MLB shape: recentHR computed from g.stat.homeRuns', function () {
+  var raw = mkRawMlbShape();
+  // 14 game log entries with homeRuns at indices 0,7,13 → 3 total
+  var ctx = s.buildMatchupContext(raw);
+  assert.strictEqual(ctx.player.recentHR, 3, 'recentHR should sum g.stat.homeRuns');
+});
+
+test('end-to-end: raw MLB data produces non-neutral Lab score', function () {
+  var raw = mkRawMlbShape();
+  var ctx = s.buildMatchupContext(raw);
+  var res = s.computeHitScore(ctx);
+  // With a high-K pitcher (kpct 0.302), PCP should be clearly negative
+  // Score should be noticeably below 50 for this matchup
+  assert.ok(res.score < 52, 'high-K pitcher + neutral batter should suppress score below neutral (got ' + res.score + ')');
+  assert.ok(typeof res.score === 'number' && !isNaN(res.score), 'score must be a number');
+});
+
 // ── formatBreakdownKey ────────────────────────────────────────────────────────
 console.log('\nformatBreakdownKey');
 
