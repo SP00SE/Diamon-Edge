@@ -716,6 +716,8 @@ main { padding: 28px 0 60px; }
 .lab-data-flags { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
 .lab-flag { font-size:9px; font-family:monospace; padding:2px 6px; border-radius:4px;
             background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#f59e0b; }
+.lab-flag-warn { background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); color:#f59e0b; }
+.lab-flag-info { background:rgba(148,163,184,.08); border-color:rgba(148,163,184,.2); color:#94a3b8; }
 .lab-lineup-banner { border-radius:8px; padding:6px 10px; margin-bottom:10px;
                      font-size:11px; font-family:monospace; display:flex; align-items:center; gap:6px; }
 .lab-lineup-confirmed { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25); color:#34d399; }
@@ -10132,29 +10134,46 @@ function renderLabBreakdownTable(breakdown, rawTotal, score) {
     return '<tr><td>'+formatBreakdownKey(k)+'</td><td class="'+cls+'">'+(v>0?'+':'')+v+'</td></tr>';
   }).join('');
   return '<table class="lab-breakdown-table">'+rows+
-    '<tr class="lab-bd-total"><td>Raw total</td><td>'+(rawTotal>=0?'+':'')+rawTotal+'</td></tr>'+
-    '<tr class="lab-bd-total"><td>Score (50 + raw)</td><td>'+score+'</td></tr></table>';
+    '<tr class="lab-bd-total"><td>Composite</td><td>'+(rawTotal>=0?'+':'')+rawTotal+'</td></tr>'+
+    '<tr class="lab-bd-total"><td>Final Score</td><td>'+score+'</td></tr></table>';
 }
 function renderLabDataFlags(dataFlags) {
-  var defs = [['savantMissing','⚠ Savant data unavailable'],['pitcherHR9Estimated','⚠ Pitcher HR/9 estimated'],
-              ['barrelMissing','⚠ Barrel% unavailable'],['smallBatterSample','⚠ Small batter sample'],
-              ['noBvpHistory','⚠ No BvP history'],['lineupProjected','⚠ Projected lineup'],
-              ['bullpenMissing','⚠ Bullpen data unavailable — scored as neutral'],
-              ['ghpMissing','⚠ Game hit rate unavailable — fewer than 10 games logged']];
-  return '<div class="lab-data-flags">'+
-    defs.filter(function(f){ return dataFlags[f[0]]; })
-        .map(function(f){ return '<span class="lab-flag">'+f[1]+'</span>'; }).join('')+
-    '</div>';
+  var amber = [['bullpenMissing','⚠ Bullpen unavailable — scored neutral'],
+               ['savantMissing','⚠ Savant data unavailable'],
+               ['ghpMissing','⚠ Game hit rate unavailable'],
+               ['pitcherHR9Estimated','⚠ Pitcher HR/9 estimated']];
+  var grey  = [['smallBatterSample','Small sample'],['noBvpHistory','No BvP history'],
+               ['barrelMissing','Barrel% unavailable'],['lineupProjected','Projected lineup']];
+  var amberHtml = amber.filter(function(f){ return dataFlags[f[0]]; })
+    .map(function(f){ return '<span class="lab-flag lab-flag-warn">'+f[1]+'</span>'; }).join('');
+  var greyHtml  = grey.filter(function(f){ return dataFlags[f[0]]; })
+    .map(function(f){ return '<span class="lab-flag lab-flag-info">'+f[1]+'</span>'; }).join('');
+  var html = amberHtml + greyHtml;
+  return html ? '<div class="lab-data-flags">'+html+'</div>' : '';
+}
+function _renderInsufCard(ctx) {
+  var missing = [];
+  var df = ctx.dataFlags || {};
+  if (df.smallBatterSample) missing.push('Batter sample < 50 AB');
+  if (df.savantMissing)     missing.push('Savant pitch data');
+  if (df.bullpenMissing)    missing.push('Bullpen stats');
+  if (df.ghpMissing)        missing.push('Game hit rate');
+  if (df.noBvpHistory)      missing.push('BvP history');
+  var listHtml = missing.length
+    ? '<ul style="margin:6px 0 0;padding-left:14px;font-size:10px;color:var(--text-muted)">'+
+      missing.map(function(m){ return '<li>'+m+'</li>'; }).join('')+'</ul>' : '';
+  return '<p style="color:var(--text-muted);font-size:11px;font-family:monospace;margin:0">'+
+    'Insufficient data to score</p>'+listHtml+renderLabDataFlags(df);
 }
 function renderLabScoreCard(result, ctx, isHR) {
   var cardCls = isHR ? 'lab-hr-card' : 'lab-hit-card';
-  var title   = isHR ? 'Home Run Score <span class="lab-card-subtitle">info only</span>' : 'Lab Matchup Score';
+  var titleText   = isHR ? 'Home Run Score' : 'Lab Matchup Score';
+  var titleSuffix = isHR ? '<span class="lab-flag lab-flag-info" style="margin-left:6px">context only</span>' : '';
   var confLbl = confidenceLabel(result.confidence);
   var confCls = 'lab-conf-' + confLbl.toLowerCase();
   var insuf   = result.confidence < 0.40;
-  var scoreHtml = insuf
-    ? '<p style="color:var(--text-muted);font-size:12px;font-family:monospace">Not enough data</p>'
-    : '<div class="lab-score-num">'+result.score+'</div><div class="lab-score-lbl">'+result.label+'</div>';
+  var scoreHtml = insuf ? _renderInsufCard(ctx) :
+    '<div class="lab-score-num">'+result.score+'</div><div class="lab-score-lbl">'+result.label+'</div>';
   var reasonsHtml = insuf ? '' :
     '<ul class="lab-reason-list">'+
     result.reasons.map(function(r){ return '<li class="lab-reason-pos">✓ '+r+'</li>'; }).join('')+
@@ -10163,11 +10182,12 @@ function renderLabScoreCard(result, ctx, isHR) {
   var bdHtml = insuf ? '' :
     '<details style="margin-top:8px"><summary style="font-size:10px;font-family:monospace;cursor:pointer;color:var(--text-muted)">Breakdown ▾</summary>'+
     renderLabBreakdownTable(result.breakdown, result.rawTotal, result.score)+'</details>';
+  var flagsHtml = insuf ? '' : renderLabDataFlags(ctx.dataFlags);
   return '<div class="lab-score-card '+cardCls+'">'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
-      '<span class="lab-card-title">'+title+'</span>'+
+      '<span class="lab-card-title">'+titleText+titleSuffix+'</span>'+
       '<span class="'+confCls+'" style="font-size:9px;font-family:monospace">'+confLbl+'</span></div>'+
-    scoreHtml+reasonsHtml+bdHtml+renderLabDataFlags(ctx.dataFlags)+'</div>';
+    scoreHtml+reasonsHtml+bdHtml+flagsHtml+'</div>';
 }
 function renderLabLineupBanner(lineupStatus) {
   var map = {
