@@ -556,11 +556,14 @@ main { padding: 28px 0 60px; }
 .twp-header { display:flex; justify-content:space-between; align-items:center; padding:9px 14px 8px; border-bottom:1px solid var(--border); }
 .twp-game-info { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .twp-game-date { font-size:10px; color:var(--text-muted); }
-.twp-grade { font-size:10px; font-weight:800; border-radius:4px; padding:2px 8px; letter-spacing:.5px; text-transform:uppercase; flex-shrink:0; }
-.twp-grade-A { background:#22c55e22; color:#22c55e; border:1px solid #22c55e44; }
-.twp-grade-B { background:#f59e0b22; color:#f59e0b; border:1px solid #f59e0b44; }
-.twp-grade-C { background:#94a3b822; color:#94a3b8; border:1px solid #94a3b844; }
-.twp-grade-D { background:#ef444422; color:#ef4444; border:1px solid #ef444444; }
+.twp-conf { font-size:10px; font-weight:700; border-radius:4px; padding:2px 8px; letter-spacing:.5px; text-transform:uppercase; flex-shrink:0; }
+.twp-conf-high        { background:#22c55e22; color:#22c55e; border:1px solid #22c55e44; }
+.twp-conf-medium      { background:#f59e0b22; color:#f59e0b; border:1px solid #f59e0b44; }
+.twp-conf-low         { background:#94a3b822; color:#94a3b8; border:1px solid #94a3b844; }
+.twp-conf-preliminary { background:#64748b22; color:#64748b; border:1px solid #64748b44; }
+.twp-win-edge         { font-size:10px; color:var(--text-muted); flex-shrink:0; margin:0 4px; }
+.twp-trap-warning     { padding:6px 14px; font-size:11px; color:#f59e0b; border-top:1px solid var(--border); background:rgba(245,158,11,.06); line-height:1.5; }
+.twp-proj-score       { font-size:11px; font-weight:700; color:#cbd5e1; text-align:center; margin-bottom:3px; white-space:nowrap; }
 .twp-body { display:flex; align-items:stretch; }
 .twp-team { flex:1; display:flex; flex-direction:column; align-items:center; padding:14px 8px 12px; gap:3px; border-bottom:2px solid transparent; min-width:0; }
 .twp-team.twp-winner { background:#052e1633; border-bottom-color:#22c55e55; }
@@ -11973,37 +11976,97 @@ function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal =
   return Math.max(1.0, (batting - suppression) * pfVal);
 }
 
-function _teamScanSummary(gd, winner, awayComp, homeComp, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc) {
-  const parts = [];
-  const awayAbbr = gd.awayAbbr || 'Away';
-  const homeAbbr = gd.homeAbbr || 'Home';
+function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc, awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted) {
+  const awayAbbr   = gd.awayAbbr || 'Away';
+  const homeAbbr   = gd.homeAbbr || 'Home';
   const winnerAbbr = winner === 'away' ? awayAbbr : winner === 'home' ? homeAbbr : null;
+  const loserAbbr  = winner === 'away' ? homeAbbr : winner === 'home' ? awayAbbr : null;
 
-  if (winner === 'away' && awayStarterSc <= 38)
-    parts.push(`⚠️ Trap: ${awayAbbr} bats against an elite starter — verify before betting`);
-  else if (winner === 'home' && homeStarterSc <= 38)
-    parts.push(`⚠️ Trap: ${homeAbbr} bats against an elite starter — verify before betting`);
+  // Determine biggest edge component for mainReason
+  const winSp  = winner === 'away' ? homeStarterSc : awayStarterSc; // starter facing winner's lineup
+  const winBp  = winner === 'away' ? homeBullpenSc : awayBullpenSc;
+  const scoreDiff = Math.abs(awayScore - homeScore);
+  const winArsenal = winner === 'away' ? awayArsenalEdge : homeArsenalEdge;
 
-  if (winner === 'away' && awayStarterSc >= 65) parts.push(`${awayAbbr} faces a hittable starter`);
-  if (winner === 'home' && homeStarterSc >= 65) parts.push(`${homeAbbr} faces a hittable starter`);
+  let mainReason = '';
+  if (winnerAbbr) {
+    const edges = [
+      { name: 'lineup matchup strength', val: scoreDiff >= 5 ? scoreDiff : 0 },
+      { name: 'starting pitcher matchup', val: winSp >= 65 ? winSp - 50 : 0 },
+      { name: 'bullpen advantage',        val: winBp >= 60 ? winBp - 50 : 0 },
+      { name: 'pitch arsenal fit',        val: Math.abs(winArsenal) >= 2 ? Math.abs(winArsenal) * 3 : 0 },
+    ].sort((a, b) => b.val - a.val);
+    const topEdge = edges[0];
+    if (topEdge.val > 0) {
+      mainReason = `${winnerAbbr} favored on ${topEdge.name}.`;
+      if (edges[1]?.val > 0) mainReason += ` ${edges[1].name.charAt(0).toUpperCase() + edges[1].name.slice(1)} also leans their way.`;
+    } else {
+      mainReason = `${winnerAbbr} holds a marginal composite edge with no single dominant factor.`;
+    }
+  } else {
+    mainReason = 'Neither team holds a meaningful edge — treat as a coin-flip.';
+  }
 
-  if (winner === 'away' && homeBullpenSc <= 38) parts.push(`${homeAbbr} pen is elite — late-inning risk`);
-  if (winner === 'home' && awayBullpenSc <= 38) parts.push(`${awayAbbr} pen is elite — late-inning risk`);
+  // Detect 7 traps
+  let trapWarning = '';
+  const winnerStSc = winner === 'away' ? homeStarterSc : awayStarterSc; // starter they face
+  const winnerBpSc = winner === 'away' ? homeBullpenSc : awayBullpenSc;
+  const loserStSc  = winner === 'away' ? awayStarterSc : homeStarterSc;
+  const loserBpSc  = winner === 'away' ? awayBullpenSc : homeBullpenSc;
+  const loserEra   = (winner === 'away' ? gd.awayPitcher : gd.homePitcher)?.seasonStats?.era || 0;
+  const loserK9    = (() => { const p = winner === 'away' ? gd.awayPitcher : gd.homePitcher; const ip = p?.seasonStats?.inningsPitched||0; return ip>0?(p.seasonStats.strikeOuts||0)/ip*9:0; })();
 
-  if (pf?.isHitter) parts.push('Hitter-friendly park — lean over on total');
-  else if (pf?.overall != null && pf.overall < 0.95) parts.push('Pitcher-friendly park — lean under on total');
+  if (winner !== 'tie') {
+    // Trap 1: High ERA but high-K starter opposing the predicted winner
+    if (winnerStSc <= 42 && loserK9 >= 9.5 && loserEra >= 4.00)
+      trapWarning = 'High ERA but strikeout upside — starter may limit clean offense despite ERA.';
+    // Trap 2: Weak starter but strong bullpen (loser side)
+    else if (loserStSc >= 65 && loserBpSc <= 40)
+      trapWarning = 'Early opportunity against a hittable starter, but elite bullpen may shut down later innings.';
+    // Trap 3: Strong starter but weak bullpen (winner side)
+    else if (winnerStSc <= 38 && winnerBpSc >= 62)
+      trapWarning = `${winnerAbbr}'s starter edge may not hold — their bullpen is below average if the game gets long.`;
+    // Trap 4: Hitter-friendly park but weak offense
+    else if ((pf?.overall ?? 1.0) >= 1.08 && awayScore < 52 && homeScore < 52)
+      trapWarning = 'Hitter-friendly park, but neither lineup is showing strong offensive signals.';
+    // Trap 5: Strong lineup but bad pitch-type fit (winner has arsenal disadvantage)
+    else if (winArsenal <= -3)
+      trapWarning = `${winnerAbbr}'s lineup is strong overall, but the starter's arsenal attacks their weaker pitch-type profiles.`;
+    // Trap 6: Contact-heavy lineup, low power ceiling
+    else if (winArsenal >= 0 && (winner === 'away' ? awayArsenalEdge : homeArsenalEdge) < 2 && pf?.isHitter)
+      trapWarning = 'Hit volume may be solid but run ceiling could be limited without extra-base damage in this park.';
+    // Trap 7: Projected lineups only
+    else if (!awayPosted && !homePosted)
+      trapWarning = 'Both lineups are projected. Prediction is preliminary — confidence will improve once official lineups are posted.';
+    else if (!awayPosted || !homePosted)
+      trapWarning = 'One lineup is still projected. Monitor for late scratches before committing.';
+  }
+
+  // mainRisk
+  let mainRisk = '';
+  if (winner !== 'tie' && winnerAbbr) {
+    if (winnerStSc <= 38)      mainRisk = `The opposing starter is the biggest risk — their pitch mix can suppress this lineup.`;
+    else if (winnerBpSc <= 40) mainRisk = `${winnerAbbr}'s bullpen is the risk if the starter exits early.`;
+    else if (!awayPosted || !homePosted) mainRisk = 'Lineup uncertainty could shift this edge — watch for official lineups.';
+    else mainRisk = `${loserAbbr}'s offense can get hot against any pitcher — a toss-up result is possible.`;
+  }
+
+  // Summary text (visible in .twp-reasoning)
+  const parts = [];
+  if (mainReason) parts.push(mainReason);
 
   const w = gd.weather;
   if (w) {
     const isOut = w.windSpeed >= 10 && w.windDir >= 135 && w.windDir <= 315;
     const isIn  = w.windSpeed >= 10 && (w.windDir < 135 || w.windDir > 315);
-    if (isOut)  parts.push(`Wind blowing out at ${w.windSpeed}mph — lean over`);
-    else if (isIn) parts.push(`Wind blowing in at ${w.windSpeed}mph — lean under`);
+    if (isOut)  parts.push(`Wind blowing out at ${w.windSpeed}mph — over lean.`);
+    else if (isIn) parts.push(`Wind blowing in at ${w.windSpeed}mph — under lean.`);
   }
 
-  if (!parts.length && winnerAbbr) parts.push(`${winnerAbbr} edge driven by lineup quality and pitching matchup`);
-  if (!parts.length) parts.push('Toss-up — no strong edge detected');
-  return parts.join(' · ');
+  if (pf?.isHitter) parts.push('Park boosts run environment.');
+  else if ((pf?.overall ?? 1.0) < 0.95) parts.push('Pitcher-friendly park suppresses scoring.');
+
+  return { summaryText: parts.join(' '), mainReason, mainRisk, trapWarning };
 }
 
 function _starterBonus(pitcher, gameLog = null) {
@@ -12047,12 +12110,13 @@ function _starterBonus(pitcher, gameLog = null) {
   return Math.max(-15, Math.min(20, eraScore + k9Score + durScore));
 }
 
-function _bullpenBonus(era, h9 = 0, hbf = 0) {
+function _bullpenBonus(era, h9 = 0, hbf = 0, hr9 = 0) {
   if (!era || era <= 0) return 0;
-  const eraScore = era <= 3.00 ? 8 : era <= 3.50 ? 5 : era <= 4.00 ? 2 : era <= 4.50 ? 0 : era <= 5.00 ? -4 : -8;
-  const h9Score  = h9  > 0 ? (h9  <= 7.0  ? 5  : h9  <= 8.0  ? 2  : h9  <= 9.0  ? 0  : h9  <= 10.5 ? -2 : -5)  : 0;
-  const hbfScore = hbf > 0 ? (hbf <= 0.22 ? 4  : hbf <= 0.26 ? 2  : hbf <= 0.30 ? 0  : hbf <= 0.34 ? -2 : -4) : 0;
-  return Math.max(-12, Math.min(15, eraScore + h9Score + hbfScore));
+  const eraScore  = era <= 3.00 ? 8 : era <= 3.50 ? 5 : era <= 4.00 ? 2 : era <= 4.50 ? 0 : era <= 5.00 ? -4 : -8;
+  const h9Score   = h9  > 0 ? (h9  <= 7.0  ? 5  : h9  <= 8.0  ? 2  : h9  <= 9.0  ? 0  : h9  <= 10.5 ? -2 : -5)  : 0;
+  const hbfScore  = hbf > 0 ? (hbf <= 0.22 ? 4  : hbf <= 0.26 ? 2  : hbf <= 0.30 ? 0  : hbf <= 0.34 ? -2 : -4) : 0;
+  const hr9Score  = hr9 > 0 ? (hr9 <= 0.80 ? 3  : hr9 <= 1.00 ? 1  : hr9 <= 1.30 ? 0  : hr9 <= 1.60 ? -2 : -4) : 0;
+  return Math.max(-15, Math.min(18, eraScore + h9Score + hbfScore + hr9Score));
 }
 
 function _playerOps(stats) {
@@ -12130,16 +12194,46 @@ function _winProbability(scoreDiff) {
   return Math.round(100 / (1 + Math.exp(-k * scoreDiff)));
 }
 
-function _predictionGrade(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra) {
+function _predictionConfidence(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra, hasArsenal) {
+  if (!awayPosted && !homePosted) return 'Preliminary';
   let pts = 0;
-  if (awayPosted) pts += 3;
-  if (homePosted) pts += 3;
-  if (awayPitcher?.seasonStats?.era > 0) pts += 1;
-  if (homePitcher?.seasonStats?.era > 0) pts += 1;
-  if (awayBullpenEra > 0) pts += 1;
-  if (homeBullpenEra > 0) pts += 1;
-  if (hasWeather) pts += 1;
-  return pts >= 9 ? 'A' : pts >= 7 ? 'B' : pts >= 4 ? 'C' : 'D';
+  if (awayPosted)                           pts += 3;
+  if (homePosted)                           pts += 3;
+  if (awayPitcher?.seasonStats?.era > 0)    pts += 1;
+  if (homePitcher?.seasonStats?.era > 0)    pts += 1;
+  if (awayBullpenEra > 0)                   pts += 1;
+  if (homeBullpenEra > 0)                   pts += 1;
+  if (hasWeather)                           pts += 1;
+  if (hasArsenal)                           pts += 1;
+  return pts >= 10 ? 'High' : pts >= 7 ? 'Medium' : 'Low';
+}
+
+function _winEdgeLabel(awayWinProb, homeWinProb) {
+  const maxProb = Math.max(awayWinProb ?? 50, homeWinProb ?? 50);
+  if (maxProb >= 72) return 'Strong Edge';
+  if (maxProb >= 62) return 'Moderate Edge';
+  if (maxProb >= 55) return 'Slight Edge';
+  return 'Toss-Up';
+}
+
+function _teamPitchArsenalEdge(batters, pitcherId) {
+  if (!state.savantPitcher || !state.savantBatter || !pitcherId) return 0;
+  const pitcherRows = state.savantPitcher.get(String(pitcherId)) || [];
+  if (!pitcherRows.some(r => parseFloat(r.pitch_usage) >= 10)) return 0;
+  const LINEUP_W = [1.15, 1.10, 1.05, 1.05, 1.00, 1.00, 0.95, 0.92, 0.90];
+  let wSum = 0, wTotal = 0, withData = 0;
+  for (const b of batters) {
+    if (!b.id) continue;
+    const res = computePitchMixMatchup(b.id, pitcherId);
+    if (!res.hasData) continue;
+    const pos = Math.max(0, Math.min(8, (b.orderPos || 5) - 1));
+    const w   = LINEUP_W[pos];
+    wSum += res.score * w;
+    wTotal += w;
+    withData++;
+  }
+  if (withData < 2 || wTotal === 0) return 0;
+  return clamp(Math.round(wSum / wTotal), -8, 8);
 }
 
 function runTeamScan(onProgress) {
@@ -12163,22 +12257,26 @@ function runTeamScan(onProgress) {
     const awayLineup   = _lineupScore(awayRes);
     const awayForm     = _teamRecentForm(awayPlayers);
     const awayStarter  = _starterBonus(gd.awayPitcher, gd.awayPitcherGameLog);
-    const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF);
-    const awayConf     = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
-    const awayScore    = awayLineup + awayForm + context + awayStarter + awayBullpen + awayConf;
+    const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF, gd.awayBullpenHR9);
+    const awayConf         = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
+    const awayArsenalEdge  = _teamPitchArsenalEdge(awayPlayers, gd.homePitcher?.id);
+    const awayScore        = awayLineup + awayForm + context + awayStarter + awayBullpen + awayConf + awayArsenalEdge;
 
-    const homeLineup   = _lineupScore(homeRes);
-    const homeForm     = _teamRecentForm(homePlayers);
-    const homeStarter  = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
-    const homeBullpen  = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF);
-    const homeConf     = _lineupConfidenceAdj(homePosted, homePlayers.length);
-    const homeScore    = homeLineup + homeForm + context + 3 + homeStarter + homeBullpen + homeConf;
+    const homeLineup       = _lineupScore(homeRes);
+    const homeForm         = _teamRecentForm(homePlayers);
+    const homeStarter      = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
+    const homeBullpen      = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF, gd.homeBullpenHR9);
+    const homeConf         = _lineupConfidenceAdj(homePosted, homePlayers.length);
+    const homeArsenalEdge  = _teamPitchArsenalEdge(homePlayers, gd.awayPitcher?.id);
+    const homeScore        = homeLineup + homeForm + context + 3 + homeStarter + homeBullpen + homeConf + homeArsenalEdge;
 
-    const margin      = Math.abs(awayScore - homeScore);
-    const winner      = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
-    const homeWinProb = _winProbability(homeScore - awayScore);
-    const awayWinProb = 100 - homeWinProb;
-    const grade       = _predictionGrade(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!weather, gd.awayBullpenEra, gd.homeBullpenEra);
+    const hasArsenal   = awayArsenalEdge !== 0 || homeArsenalEdge !== 0;
+    const margin       = Math.abs(awayScore - homeScore);
+    const winner       = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
+    const homeWinProb  = _winProbability(homeScore - awayScore);
+    const awayWinProb  = 100 - homeWinProb;
+    const confidence   = _predictionConfidence(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!weather, gd.awayBullpenEra, gd.homeBullpenEra, hasArsenal);
+    const winEdge      = _winEdgeLabel(awayWinProb, homeWinProb);
 
     const _rawGame    = (state.games || []).find(g => g.gamePk === gd.gamePk);
     const _isFinal    = _rawGame?.status?.abstractGameState === 'Final';
@@ -12187,6 +12285,15 @@ function runTeamScan(onProgress) {
     const _actWinner  = (_actAway != null && _actHome != null)
       ? (_actAway > _actHome ? 'away' : _actAway < _actHome ? 'home' : 'tie') : null;
 
+    const _awayProjRuns = _projRuns(awayLineup, homeStarter, homeBullpen, pf?.overall ?? 1.0);
+    const _homeProjRuns = _projRuns(homeLineup, awayStarter, awayBullpen, pf?.overall ?? 1.0);
+
+    const _summary = _teamScanSummary(gd, winner, awayScore, homeScore, pf,
+      _starterEdge(gd.homePitcher), _starterEdge(gd.awayPitcher),
+      _bullpenEdge(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF),
+      _bullpenEdge(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF),
+      awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted);
+
     results.push({
       gamePk: gd.gamePk,
       gameDate: gd.gameDate,
@@ -12194,7 +12301,8 @@ function runTeamScan(onProgress) {
       awayAbbr: gd.awayAbbr, homeAbbr: gd.homeAbbr,
       awayTeamId: gd.awayTeamId, homeTeamId: gd.homeTeamId,
       awayAvg: awayScore, homeAvg: homeScore,
-      margin, winner, awayWinProb, homeWinProb, grade,
+      margin, winner, awayWinProb, homeWinProb,
+      confidence, winEdge,
       awayPosted, homePosted,
       isFinal: _isFinal,
       actualAwayScore: _actAway,
@@ -12206,15 +12314,16 @@ function runTeamScan(onProgress) {
       homePitcherEra:  gd.homePitcher?.seasonStats?.era  || null,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
-      awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf },
-      homeComponents: { lineup: homeLineup, form: homeForm, starter: homeStarter, bullpen: homeBullpen, context: context + 3 + homeConf },
-      awayProjRuns: _projRuns(awayLineup, homeStarter, homeBullpen, pf?.overall ?? 1.0),
-      homeProjRuns: _projRuns(homeLineup, awayStarter, awayBullpen, pf?.overall ?? 1.0),
-      predTotal: _projRuns(awayLineup, homeStarter, homeBullpen, pf?.overall ?? 1.0) + _projRuns(homeLineup, awayStarter, awayBullpen, pf?.overall ?? 1.0),
-      summaryText: _teamScanSummary(gd, winner, awayScore, homeScore, pf,
-        _starterEdge(gd.homePitcher), _starterEdge(gd.awayPitcher),
-        _bullpenEdge(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF),
-        _bullpenEdge(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF)),
+      awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf, arsenal: awayArsenalEdge },
+      homeComponents: { lineup: homeLineup, form: homeForm, starter: homeStarter, bullpen: homeBullpen, context: context + 3 + homeConf, arsenal: homeArsenalEdge },
+      awayArsenalEdge, homeArsenalEdge,
+      awayProjRuns: _awayProjRuns,
+      homeProjRuns: _homeProjRuns,
+      predTotal: _awayProjRuns + _homeProjRuns,
+      summaryText:  _summary.summaryText,
+      mainReason:   _summary.mainReason,
+      mainRisk:     _summary.mainRisk,
+      trapWarning:  _summary.trapWarning,
     });
     onProgress?.();
   }
@@ -12227,9 +12336,11 @@ function _teamScanCardHTML(r) {
     gamePk, gameDate, gameLabel, awayAbbr, homeAbbr, awayTeamId, homeTeamId,
     winner, awayPlayers, homePlayers,
     awayProjRuns, homeProjRuns, predTotal,
-    summaryText, awayComponents, homeComponents,
-    awayWinProb, homeWinProb, grade,
+    summaryText, mainReason, mainRisk, trapWarning,
+    awayComponents, homeComponents,
+    awayWinProb, homeWinProb, confidence, winEdge,
     awayPosted, homePosted,
+    awayArsenalEdge, homeArsenalEdge,
     awayPitcherName, homePitcherName, awayPitcherEra, homePitcherEra,
     isFinal, actualAwayScore, actualHomeScore, actualWinner,
   } = r;
@@ -12247,9 +12358,9 @@ function _teamScanCardHTML(r) {
   const winnerName = winner === 'away' ? awayName : winner === 'home' ? homeName : null;
   const winnerProb = winner === 'away' ? awayWinProb : winner === 'home' ? homeWinProb : 50;
 
-  // Grade badge
-  const gradeCls = grade ? `twp-grade twp-grade-${grade}` : '';
-  const gradeBadge = grade ? `<span class="${gradeCls}">Grade: ${grade}</span>` : '';
+  // Confidence badge (replaces grade)
+  const confKey  = (confidence || 'low').toLowerCase();
+  const confBadge = `<span class="twp-conf twp-conf-${confKey}">${escHtml(confidence || 'Low')}</span>`;
 
   // Date label
   let dateLbl = '';
@@ -12266,11 +12377,12 @@ function _teamScanCardHTML(r) {
     : `<div class="twp-lineup-badge twp-projected">Projected</div>`;
 
   // Edge deltas — positive = home team has the edge
-  const offDelta = ((homeComponents?.lineup ?? 50) + (homeComponents?.form ?? 0))
-                 - ((awayComponents?.lineup ?? 50) + (awayComponents?.form ?? 0));
-  const spDelta  = (homeComponents?.starter ?? 0) - (awayComponents?.starter ?? 0);
-  const bpDelta  = (homeComponents?.bullpen ?? 0) - (awayComponents?.bullpen ?? 0);
-  const ctxDelta = (homeComponents?.context ?? 0) - (awayComponents?.context ?? 0);
+  const offDelta     = ((homeComponents?.lineup ?? 50) + (homeComponents?.form ?? 0))
+                     - ((awayComponents?.lineup ?? 50) + (awayComponents?.form ?? 0));
+  const spDelta      = (homeComponents?.starter ?? 0) - (awayComponents?.starter ?? 0);
+  const bpDelta      = (homeComponents?.bullpen ?? 0) - (awayComponents?.bullpen ?? 0);
+  const ctxDelta     = (homeComponents?.context ?? 0) - (awayComponents?.context ?? 0);
+  const arsenalDelta = (homeArsenalEdge ?? 0)         - (awayArsenalEdge ?? 0);
 
   const _edgeVal = (delta) => {
     if (Math.abs(delta) <= 2) return `<span style="color:var(--text-muted)">EVEN</span>`;
@@ -12315,7 +12427,7 @@ function _teamScanCardHTML(r) {
         <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>
         ${dateLbl ? `<span class="twp-game-date">${escHtml(dateLbl)}</span>` : ''}
       </div>
-      ${gradeBadge}
+      ${confBadge}
     </div>
 
     <div class="twp-body">
@@ -12329,7 +12441,8 @@ function _teamScanCardHTML(r) {
       </div>
       <div class="twp-center">
         <div class="twp-vs">VS</div>
-        ${predTotal != null ? `<div class="twp-ou">O/U<br><strong style="color:#cbd5e1;font-size:13px">${predTotal.toFixed(1)}</strong></div>` : ''}
+        ${awayProjRuns != null && homeProjRuns != null ? `<div class="twp-proj-score">${escHtml(awayAbbr||'?')} ${Math.round(awayProjRuns)} – ${Math.round(homeProjRuns)} ${escHtml(homeAbbr||'?')}</div>` : ''}
+        ${predTotal != null ? `<div class="twp-ou">O/U: <strong style="color:#cbd5e1">${predTotal.toFixed(1)}</strong></div>` : ''}
       </div>
       <div class="twp-team${winner==='home' ? ' twp-winner' : ''}">
         ${homeLogo}
@@ -12373,13 +12486,20 @@ function _teamScanCardHTML(r) {
         <div class="twp-edge-track">${_edgeBar(ctxDelta)}</div>
         <div class="twp-edge-val">${_edgeVal(ctxDelta)}</div>
       </div>
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">Arsenal</div>
+        <div class="twp-edge-track">${Math.abs(arsenalDelta) <= 1 ? '<div class="twp-edge-center"></div>' : _edgeBar(arsenalDelta)}</div>
+        <div class="twp-edge-val">${Math.abs(arsenalDelta) <= 1 ? '<span style="color:var(--text-muted)">NO DATA</span>' : _edgeVal(arsenalDelta)}</div>
+      </div>
     </div>
 
     <div class="twp-winner-strip">
       ${winner !== 'tie'
-        ? `<span class="twp-pred-label">Prediction</span><span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-winner-conf">${winnerProb}% confidence</span>`
-        : `<span class="twp-pred-label">Prediction</span><span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-winner-conf">${homeWinProb}% confidence</span>`}
+        ? `<span class="twp-pred-label">Prediction</span><span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-win-edge">${escHtml(winEdge||'')}</span><span class="twp-winner-conf">${winnerProb}%</span>`
+        : `<span class="twp-pred-label">Prediction</span><span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-win-edge">Toss-Up</span><span class="twp-winner-conf">${homeWinProb}%</span>`}
     </div>
+
+    ${trapWarning ? `<div class="twp-trap-warning">&#9888; ${escHtml(trapWarning)}</div>` : ''}
 
     ${isFinal && actualWinner ? (() => {
       // Bug 2: tie is a no-call, not a correct prediction
@@ -12438,8 +12558,8 @@ function _teamScanCardHTML(r) {
           tips.push(`${actualName}'s starter outperformed their ERA — look at Savant whiff% and pitch mix for better early reads`);
         if (missedEdges.some(d => d.label === 'Offense & Form'))
           tips.push(`${actualName}'s offense was underrated — OPS last-7 and platoon splits vs the opposing SP were likely underweighted`);
-        if (grade === 'C' || grade === 'D')
-          tips.push('Grade ' + grade + ' prediction — lineup was projected, not confirmed; unconfirmed orders amplify model error');
+        if (confidence === 'Low' || confidence === 'Preliminary')
+          tips.push(confidence + ' confidence — lineup was projected, not confirmed; unconfirmed orders amplify model error');
         if (!tips.length)
           tips.push('Marginal prediction — both teams were evenly matched; double-check lineup confirmation and SP rest before wagering');
 
@@ -12447,7 +12567,7 @@ function _teamScanCardHTML(r) {
 
         postmortem = `<div class="twp-postmortem">
           <div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:4px">Why the model missed</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">Model gave ${predAbbr} a ${predProb}% edge (Grade ${escHtml(grade||'?')}). ${actualName} won — ${scoreLine}.</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px">Model gave ${predAbbr} a ${predProb}% edge (${escHtml(confidence||'Low')} confidence). ${actualName} won — ${scoreLine}.</div>
           ${compRows}
           ${missedEdges.length ? `<div style="font-size:10px;color:#22c55e;margin-top:6px">&#10003; ${actualName} held hidden edges in: ${missedEdges.map(d => d.label.toLowerCase()).join(', ')}</div>` : ''}
           <div style="margin-top:8px;padding-top:7px;border-top:1px solid #1e293b">
@@ -12463,7 +12583,7 @@ function _teamScanCardHTML(r) {
       </div>${postmortem}`;
     })() : ''}
 
-    ${summaryText ? `<div class="twp-reasoning">${escHtml(summaryText)}</div>` : ''}
+    ${(mainReason || summaryText) ? `<div class="twp-reasoning">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b">Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
 
     <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
     <div class="twp-breakdown" id="${bkId}" style="display:none">
