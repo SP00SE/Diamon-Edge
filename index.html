@@ -3666,6 +3666,27 @@ async function cachedFetch(url, opts={}) {
   throw lastErr;
 }
 
+// ─── VERSION / CACHE BUST ────────────────────────────────────────────────
+// Bump this string whenever a breaking change is deployed (scoring model,
+// data shape, localStorage schema). Any cached snapshot from a prior version
+// is automatically cleared so returning users get fresh data.
+const APP_VERSION = '2026.05.31.2';
+(function _cacheBust() {
+  try {
+    const stored = localStorage.getItem('de_app_version');
+    if (stored !== APP_VERSION) {
+      // Wipe all keys that belong to this app
+      const appKeys = Object.keys(localStorage).filter(k =>
+        k.startsWith('btsSnapshot_') || k === 'dbCacheDate' ||
+        k === 'cacheConsent' || k === 'de_app_version'
+      );
+      appKeys.forEach(k => localStorage.removeItem(k));
+      localStorage.setItem('de_app_version', APP_VERSION);
+      console.info('[DiamondEdge] Cache cleared — new version', APP_VERSION);
+    }
+  } catch { /* private-browsing or storage blocked — ignore */ }
+})();
+
 // ─── STATE ────────────────────────────────────────────────────────────────
 let state = {
   date: getTodayStr(),
