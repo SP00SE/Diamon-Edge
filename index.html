@@ -3398,6 +3398,7 @@ const PARK_FACTORS = {
   'Citi Field':                     { overall:0.91, hrL:0.88, hrR:0.90, isHitter:false, isHR:false },
   'Kauffman Stadium':               { overall:0.94, hrL:0.91, hrR:0.93, isHitter:false, isHR:false },
   'Oakland Coliseum':               { overall:0.93, hrL:0.89, hrR:0.91, isHitter:false, isHR:false },
+  'Sutter Health Park':             { overall:1.02, hrL:1.03, hrR:1.03, isHitter:false, isHR:false },
   'Tropicana Field':                { overall:0.95, hrL:0.93, hrR:0.94, isHitter:false, isHR:false },
   'Comerica Park':                  { overall:0.95, hrL:0.92, hrR:0.94, isHitter:false, isHR:false },
   'Sahlen Field':                   { overall:0.97, hrL:0.96, hrR:0.96, isHitter:false, isHR:false },
@@ -11996,7 +11997,9 @@ function _recentEra(gameLog, seasonEra) {
 function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0) {
   const batting     = 4.5 + ((lineupComposite - 50) / 30) * 2.0;
   const suppression = (oppSpBonus + oppBullpenBonus) / 33;
-  return Math.max(1.0, (batting - suppression) * pfVal);
+  // Extra amplifier for extreme hitter environments (Coors-tier) where base formula understates scoring
+  const extremeParkAmp = pfVal >= 1.22 ? 1.35 : pfVal >= 1.12 ? 1.12 : 1.0;
+  return Math.max(1.0, (batting - suppression) * pfVal * extremeParkAmp);
 }
 
 function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc, awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted) {
@@ -12110,12 +12113,33 @@ function _starterBonus(pitcher, gameLog = null) {
     const wobaPts =
       weightedWOBA <= 0.250 ? 8  : weightedWOBA <= 0.290 ? 3 :
       weightedWOBA <= 0.330 ? 0  : weightedWOBA <= 0.370 ? -4 : -10;
-    return Math.max(-15, Math.min(20, whiffPts + wobaPts));
+    const savantScore = Math.max(-15, Math.min(20, whiffPts + wobaPts));
+    // Tag as ERA trap when pitch-mix scores well but season ERA is high — K% may not translate to run suppression
+    const eraTrap = (s?.era > 4.50 && savantScore >= 6);
+    return eraTrap ? { score: savantScore, eraTrap: true } : savantScore;
   }
 
-  // 2. Debut / no MLB data penalty
+  // 2. Debut / no MLB data — use game log if available, else flat penalty
   const era = s?.era != null ? parseFloat(s.era) : null;
-  if (!era || era <= 0) return -8;
+  if (!era || era <= 0) {
+    // Check if we have recent starts in the game log (pitcher like Misiorowski with strong debut)
+    const recentStarts = (gameLog || []).filter(g => parseFloat(g.inningsPitched) > 0);
+    if (recentStarts.length >= 2) {
+      // Use recent ERA only (no season baseline to blend with) — treat as their "true" ERA signal
+      const er = recentStarts.slice(-3).reduce((s, g) => s + (parseFloat(g.earnedRuns) || 0), 0);
+      const ip = recentStarts.slice(-3).reduce((s, g) => s + (parseFloat(g.inningsPitched) || 0), 0);
+      const recentEra = ip > 0 ? (er / ip) * 9 : 4.50;
+      let recentScore;
+      if      (recentEra <= 1.50) recentScore = 12;
+      else if (recentEra <= 2.50) recentScore =  8;
+      else if (recentEra <= 3.50) recentScore =  3;
+      else if (recentEra <= 4.50) recentScore = -2;
+      else if (recentEra <= 5.50) recentScore = -6;
+      else                         recentScore = -8;
+      return Math.max(-15, Math.min(20, recentScore));
+    }
+    return -8; // true debut — no game log data
+  }
 
   // 3. ERA bracket fallback with last-3-starts recency blend
   const blendedEra = _recentEra(gameLog, era);
@@ -12219,6 +12243,10 @@ function _winProbability(scoreDiff) {
 
 function _predictionConfidence(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra, hasArsenal) {
   if (!awayPosted && !homePosted) return 'Preliminary';
+  // When both starters are unproven (no season ERA), the pitcher component is entirely unknown
+  const awayEra = awayPitcher?.seasonStats?.era;
+  const homeEra = homePitcher?.seasonStats?.era;
+  if (!(awayEra > 0) && !(homeEra > 0)) return 'Preliminary';
   let pts = 0;
   if (awayPosted)                           pts += 3;
   if (homePosted)                           pts += 3;
@@ -12280,7 +12308,9 @@ function runTeamScan(onProgress) {
     const context      = _gameContextAdj(pf, weather);
     const awayLineup   = _lineupScore(awayRes);
     const awayForm     = _teamRecentForm(awayPlayers);
-    const awayStarter  = _starterBonus(gd.awayPitcher, gd.awayPitcherGameLog);
+    const _awayStarterRaw  = _starterBonus(gd.awayPitcher, gd.awayPitcherGameLog);
+    const awayStarter      = typeof _awayStarterRaw === 'object' ? _awayStarterRaw.score : _awayStarterRaw;
+    const awayEraTrap      = typeof _awayStarterRaw === 'object' && _awayStarterRaw.eraTrap;
     const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF, gd.awayBullpenHR9);
     const awayConf         = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
     const awayArsenalEdge  = _teamPitchArsenalEdge(awayPlayers, gd.homePitcher?.id);
@@ -12288,7 +12318,9 @@ function runTeamScan(onProgress) {
 
     const homeLineup       = _lineupScore(homeRes);
     const homeForm         = _teamRecentForm(homePlayers);
-    const homeStarter      = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
+    const _homeStarterRaw  = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
+    const homeStarter      = typeof _homeStarterRaw === 'object' ? _homeStarterRaw.score : _homeStarterRaw;
+    const homeEraTrap      = typeof _homeStarterRaw === 'object' && _homeStarterRaw.eraTrap;
     const homeBullpen      = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF, gd.homeBullpenHR9);
     const homeConf         = _lineupConfidenceAdj(homePosted, homePlayers.length);
     const homeArsenalEdge  = _teamPitchArsenalEdge(homePlayers, gd.awayPitcher?.id);
@@ -12336,6 +12368,7 @@ function runTeamScan(onProgress) {
       homePitcherName: gd.homePitcher?.name || gd.homePitcher?.fullName || null,
       awayPitcherEra:  gd.awayPitcher?.seasonStats?.era  || null,
       homePitcherEra:  gd.homePitcher?.seasonStats?.era  || null,
+      awayEraTrap, homeEraTrap,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
       awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf, arsenal: awayArsenalEdge },
@@ -12367,6 +12400,7 @@ function _teamScanCardHTML(r) {
     awayArsenalEdge, homeArsenalEdge,
     awayPitcherName, homePitcherName, awayPitcherEra, homePitcherEra,
     isFinal, actualAwayScore, actualHomeScore, actualWinner,
+    awayEraTrap, homeEraTrap,
   } = r;
 
   const awayTi   = TEAM_INFO[awayTeamId] || {};
@@ -12524,6 +12558,13 @@ function _teamScanCardHTML(r) {
     </div>
 
     ${trapWarning ? `<div class="twp-trap-warning">&#9888; ${escHtml(trapWarning)}</div>` : ''}
+    ${(() => {
+      const eraTrapName = winner === 'away' ? (awayEraTrap && awayPitcherName) : (homeEraTrap && homePitcherName);
+      const eraTrapEra  = winner === 'away' ? awayPitcherEra : homePitcherEra;
+      if (!eraTrapName) return '';
+      const eraStr = eraTrapEra > 0 ? ` (${parseFloat(eraTrapEra).toFixed(2)} ERA)` : '';
+      return `<div class="twp-trap-warning" style="border-top:none;padding-top:2px">&#9888; ERA Trap: ${escHtml(eraTrapName)}${eraStr} — model used K%/pitch-mix. High ERA may still allow traffic. Verify H/9 and H/BF%.</div>`;
+    })()}
 
     ${isFinal && actualWinner ? (() => {
       // Bug 2: tie is a no-call, not a correct prediction
