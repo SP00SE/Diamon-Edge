@@ -735,6 +735,21 @@ test('pitches array is sorted by usage descending', function() {
   assert.ok(res.pitches[0].usage >= res.pitches[1].usage, 'pitches sorted by usage desc');
 });
 
+test('PTE max value <=8 even when batter hits every pitch at .340+ BA', function() {
+  var ctx = mkPteCtx(
+    [{ pitch_type:'FF', pitch_name:'4-Seam',   pitch_usage:'55.0', whiff_percent:'22.0' },
+     { pitch_type:'SL', pitch_name:'Slider',   pitch_usage:'30.0', whiff_percent:'28.0' },
+     { pitch_type:'CH', pitch_name:'Changeup', pitch_usage:'15.0', whiff_percent:'18.0' }],
+    [{ pitch_type:'FF', ba:'0.345', whiff_percent:'8.0' },
+     { pitch_type:'SL', ba:'0.355', whiff_percent:'9.0' },
+     { pitch_type:'CH', ba:'0.360', whiff_percent:'10.0' }]
+  );
+  var res = s.computePitchTypeEdge(ctx);
+  assert.ok(res.hasData, 'should have data');
+  assert.ok(res.value <= 8, 'cap at 8 even with all pitches at elite BA (got ' + res.value + ')');
+  assert.ok(res.value >= 5, 'elite across all pitches should still score high (got ' + res.value + ')');
+});
+
 test('computeHitScore uses PTE when savant data present (batter strong vs primary pitch)', function() {
   var withSavant = mkRaw();
   withSavant.savantPitcher = [
