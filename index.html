@@ -3677,7 +3677,7 @@ async function cachedFetch(url, opts={}) {
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.05.31.2';
+const APP_VERSION = '2026.06.01.1';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -10445,10 +10445,9 @@ async function openPlayerAnalyzer(playerId, source) {
 
   // ── New two-card scoring UI ────────────────────────────────────────────
   const rawData = await fetchElitePlayerData(p, gd);
-  const lineupStatus = p.lineupPosted ? 'confirmed'
-                     : (p.orderPos > 0  ? 'projected' : 'unknown');
-  const ctx = LabScorer.buildMatchupContext(Object.assign({}, rawData,
-                { lineupStatus, battingOrder: p.orderPos || null }));
+  // Reuse the ctx that fetchElitePlayerData already built — avoids a second
+  // buildMatchupContext + computeHitScore call with identical inputs.
+  const ctx = rawData.ctx;
   ctx.dataFlags.bullpenMissing = !(rawData.bullpenEra > 0);
   ctx.dataFlags.ghpMissing     = rawData.ghp == null;
   const hitResult = LabScorer.computeHitScore(ctx);
@@ -11558,6 +11557,7 @@ async function fetchElitePlayerData(player, gd) {
     weather:       gd.weather || {},
     savantBatter:  state.savantBatter  ? (state.savantBatter.get(String(player.id))   || null) : null,
     savantPitcher: state.savantPitcher ? (state.savantPitcher.get(String(pitcher?.id)) || null) : null,
+    ctx:           _feCtx,  // reuse in openPlayerAnalyzer — avoids a redundant buildMatchupContext call
   };
 }
 
