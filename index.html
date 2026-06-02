@@ -726,6 +726,45 @@ main { padding: 28px 0 60px; }
 .lab-lineup-confirmed { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25); color:#34d399; }
 .lab-lineup-projected { background:rgba(245,158,11,.08);  border:1px solid rgba(245,158,11,.25);  color:#f59e0b; }
 .lab-lineup-unknown   { background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.25); color:#94a3b8; }
+/* ── Pitch Arsenal cards ──────────────────────────────────────────────── */
+.pa-ars-wrap          { margin-top:14px; }
+.pa-ars-header        { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.pa-ars-section-title { font-size:11px; font-weight:700; color:#e2e8f0; display:block; }
+.pa-ars-source        { font-size:9px; color:var(--text-muted); margin-top:1px; display:block; }
+.pa-ars-overall       { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; padding:3px 9px; border-radius:20px; border:1px solid; flex-shrink:0; }
+.pa-ars-cards         { display:flex; flex-direction:column; gap:6px; }
+.pa-ars-card          { background:var(--bg-hover); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+.pa-ars-card-top      { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:7px; }
+.pa-ars-pitch-id      { display:flex; align-items:flex-start; gap:8px; }
+.pa-ars-type-pill     { font-size:9px; font-weight:800; letter-spacing:.8px; padding:3px 7px; border-radius:5px; flex-shrink:0; margin-top:1px; font-family:monospace; }
+.pa-ars-name          { font-size:12px; font-weight:600; color:#e2e8f0; line-height:1.2; }
+.pa-ars-velo          { font-size:10px; color:var(--text-muted); margin-top:1px; font-family:monospace; }
+.pa-ars-tag           { font-size:9px; font-weight:700; padding:1px 5px; border-radius:4px; vertical-align:middle; margin-left:4px; }
+.pa-ars-tag-best      { background:rgba(34,197,94,.15); color:#22c55e; }
+.pa-ars-tag-risk      { background:rgba(239,68,68,.15); color:#ef4444; }
+.pa-ars-edge          { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; flex-shrink:0; }
+.pa-ars-edge-batter   { background:rgba(34,197,94,.12); color:#22c55e; }
+.pa-ars-edge-pitcher  { background:rgba(239,68,68,.12); color:#ef4444; }
+.pa-ars-edge-neutral  { background:rgba(148,163,184,.10); color:#94a3b8; }
+.pa-ars-usage-row     { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.pa-ars-usage-label   { font-size:9px; color:var(--text-muted); flex-shrink:0; font-family:monospace; width:52px; }
+.pa-ars-usage-track   { flex:1; height:3px; background:rgba(148,163,184,.15); border-radius:2px; overflow:hidden; }
+.pa-ars-usage-fill    { height:100%; border-radius:2px; transition:width .3s ease; }
+.pa-ars-stats         { display:flex; align-items:stretch; gap:0; }
+.pa-ars-stat-group    { flex:1; }
+.pa-ars-stat-hdr      { font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:#475569; margin-bottom:4px; }
+.pa-ars-stat-row      { display:flex; flex-wrap:wrap; gap:10px; }
+.pa-ars-stat          { display:flex; flex-direction:column; }
+.pa-ars-stat span     { font-size:8px; color:#475569; text-transform:uppercase; letter-spacing:.4px; margin-bottom:1px; }
+.pa-ars-stat strong   { font-size:12px; font-weight:700; line-height:1; }
+.pa-ars-divider       { width:1px; background:var(--border); margin:0 12px; }
+.pa-ars-summary-callout { margin-top:8px; padding:7px 10px; background:#0f172a; border-radius:6px; border-left:3px solid; font-size:11px; color:#e2e8f0; line-height:1.45; }
+.pa-ars-legend        { font-size:9px; color:#475569; margin-top:6px; line-height:1.4; }
+@media(max-width:400px){
+  .pa-ars-stat-row { gap:8px; }
+  .pa-ars-stat strong { font-size:11px; }
+  .pa-ars-divider { margin:0 8px; }
+}
 .lab-matchup-ctx { display:flex; align-items:center; gap:8px; padding:5px 10px; font-size:11px; font-family:monospace; color:var(--text-muted); background:rgba(148,163,184,.05); border-radius:6px; margin-bottom:6px; flex-wrap:wrap; }
 .lab-ctx-label   { color:#64748b; font-size:9px; text-transform:uppercase; letter-spacing:.5px; }
 .lab-ctx-pitcher { color:#e2e8f0; font-weight:600; }
@@ -13092,73 +13131,119 @@ async function runLabAnalysis() {
     if (!pRows.length) return '';
     const bRows = state.savantBatter?.get(String(player.id)) || [];
     const bMap  = new Map(bRows.map(r => [r.pitch_type, r]));
-    const pitches = [...pRows].filter(p => parseFloat(p.pitch_usage) >= 5).sort((a, b) => parseFloat(b.pitch_usage) - parseFloat(a.pitch_usage));
+    const pitches = [...pRows].filter(p => parseFloat(p.pitch_usage) >= 5)
+      .sort((a, b) => parseFloat(b.pitch_usage) - parseFloat(a.pitch_usage));
     if (!pitches.length) return '';
-    const tRows = pitches.map(p => {
-      const usage  = parseFloat(p.pitch_usage);
-      const pWhiff = parseFloat(p.whiff_percent) || 0;
-      const b      = bMap.get(p.pitch_type);
-      const ba     = b ? (parseFloat(b.ba) || 0) : null;
-      const bWhiff = b ? (parseFloat(b.whiff_percent) || 0) : null;
 
-      // Pitcher-level Savant stats (already in the fetched CSV)
-      const rv100Raw = parseFloat(p.run_value_per_100);
+    // Pitch family color by type code
+    const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
+      : ['SL','CU','ST','KC','SV'].includes(code)              ? '#f59e0b'
+      : '#a855f7';
+
+    // Best pitcher pitch: lowest RV/100 (most dominant)
+    const withRv   = pitches.filter(p => !isNaN(parseFloat(p.run_value_per_100)));
+    const bestPitch = withRv.length ? withRv.reduce((b, p) =>
+      parseFloat(p.run_value_per_100) < parseFloat(b.run_value_per_100) ? p : b) : null;
+
+    // Batter's worst matchup: lowest batter BA (hardest pitch to hit)
+    const withBat = pitches.filter(p => { const b = bMap.get(p.pitch_type); return b && parseFloat(b.ba) > 0; });
+    const worstMatch = withBat.length ? withBat.reduce((w, p) => {
+      const ba = parseFloat(bMap.get(p.pitch_type)?.ba);
+      return ba < parseFloat(bMap.get(w.pitch_type)?.ba) ? p : w;
+    }) : null;
+
+    const _baFmt  = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : '—';
+    const _rv100Color = v => isNaN(v) ? 'var(--text-muted)'
+      : v <= -2 ? '#22c55e' : v <= 0 ? '#86efac' : v <= 2 ? '#f59e0b' : '#ef4444';
+    const _wobaColor  = v => v <= 0 ? 'var(--text-muted)'
+      : v <= 0.280 ? '#22c55e' : v <= 0.320 ? '#86efac' : v <= 0.360 ? '#f59e0b' : '#ef4444';
+    const _baColor    = v => v == null ? 'var(--text-muted)'
+      : v >= 0.290 ? '#22c55e' : v <= 0.210 ? '#ef4444' : v <= 0.240 ? '#f59e0b' : 'var(--text-primary)';
+    const _kColor     = v => v == null ? 'var(--text-muted)'
+      : v >= 35 ? '#ef4444' : v >= 25 ? '#f59e0b' : '#22c55e';
+
+    const lastName = escHtml(player.name?.split(' ').pop() || 'Batter');
+
+    const cards = pitches.map(p => {
+      const usage    = parseFloat(p.pitch_usage);
+      const pWhiff   = parseFloat(p.whiff_percent) || 0;
+      const velo     = parseFloat(p.avg_speed) || 0;
+      const rv100    = parseFloat(p.run_value_per_100);
       const pWoba    = parseFloat(p.woba) || 0;
-      const rv100    = isNaN(rv100Raw) ? null : rv100Raw;
-      const rv100Str = rv100 != null ? (rv100 > 0 ? '+' : '') + rv100.toFixed(1) : '—';
-      // Negative RV/100 = pitcher dominant (green); positive = hittable (red)
-      const rv100Color = rv100 == null ? 'var(--text-muted)'
-                       : rv100 <= -2   ? '#22c55e'
-                       : rv100 <=  0   ? '#86efac'
-                       : rv100 <=  2   ? '#f59e0b'
-                       :                 '#ef4444';
-      const pWobaStr   = pWoba > 0 ? '.' + Math.round(pWoba * 1000).toString().padStart(3,'0') : '—';
-      // Low SP wOBA = pitch is dominant (green); high = hittable (red)
-      const pWobaColor = pWoba <= 0     ? 'var(--text-muted)'
-                       : pWoba <= 0.280 ? '#22c55e'
-                       : pWoba <= 0.320 ? '#86efac'
-                       : pWoba <= 0.360 ? '#f59e0b'
-                       :                  '#ef4444';
+      const putAway  = parseFloat(p.put_away_percent) || 0;
+      const b        = bMap.get(p.pitch_type);
+      const ba       = b ? (parseFloat(b.ba) || 0) : null;
+      const bWhiff   = b ? (parseFloat(b.whiff_percent) || 0) : null;
 
-      const baStr     = ba != null && ba > 0 ? '.' + Math.round(ba * 1000).toString().padStart(3,'0') : '—';
-      const bWhiffStr = bWhiff != null ? Math.round(bWhiff) + '%' : '—';
-      const baColor     = ba == null ? 'var(--text-muted)' : ba >= 0.290 ? '#22c55e' : ba <= 0.210 ? '#ef4444' : ba <= 0.240 ? '#f59e0b' : 'var(--text-primary)';
-      const bWhiffColor = bWhiff == null ? 'var(--text-muted)' : bWhiff >= 35 ? '#ef4444' : bWhiff >= 25 ? '#f59e0b' : '#22c55e';
+      const isBest  = bestPitch?.pitch_type === p.pitch_type;
+      const isWorst = worstMatch?.pitch_type === p.pitch_type && b;
       const batEdge = ba != null && ba >= 0.290;
       const spEdge  = ba != null && (ba <= 0.210 || (pWhiff >= 28 && bWhiff != null && bWhiff >= 28));
-      const edgeText = batEdge
-        ? `<span style="color:#22c55e;font-weight:700">Batter ↑</span>`
-        : spEdge ? `<span style="color:#ef4444;font-weight:700">SP ↑</span>`
-        : `<span style="color:var(--text-muted)">Even</span>`;
-      return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:5px 4px;font-weight:600;color:#e2e8f0;white-space:nowrap">${escHtml(p.pitch_name || p.pitch_type)}</td>
-        <td style="padding:5px 4px;text-align:center;color:#94a3b8">${usage.toFixed(0)}%</td>
-        <td style="padding:5px 4px;text-align:center;color:#64748b;font-size:10px">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</td>
-        <td style="padding:5px 4px;text-align:center;font-weight:700;font-size:10px;color:${rv100Color}">${rv100Str}</td>
-        <td style="padding:5px 4px;text-align:center;font-size:10px;color:${pWobaColor}">${pWobaStr}</td>
-        <td style="padding:5px 4px;text-align:center;font-weight:700;color:${baColor}">${baStr}</td>
-        <td style="padding:5px 4px;text-align:center;color:${bWhiffColor}">${bWhiffStr}</td>
-        <td style="padding:5px 4px;text-align:center;font-size:10px">${edgeText}</td>
-      </tr>`;
+      const edgeCls = batEdge ? 'batter' : spEdge ? 'pitcher' : 'neutral';
+      const edgeLbl = batEdge ? 'Batter ↑' : spEdge ? 'SP ↑' : 'Even';
+
+      const rv100v   = isNaN(rv100) ? null : rv100;
+      const typeClr  = _typeColor(p.pitch_type);
+      const cardBg   = isBest
+        ? 'background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.20)'
+        : isWorst ? 'background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.20)' : '';
+      const usageBarW = Math.min(usage / 60 * 100, 100).toFixed(1);
+
+      return `<div class="pa-ars-card" style="${cardBg}">
+        <div class="pa-ars-card-top">
+          <div class="pa-ars-pitch-id">
+            <span class="pa-ars-type-pill" style="background:${typeClr}22;color:${typeClr};border-color:${typeClr}44">${escHtml(p.pitch_type)}</span>
+            <div>
+              <div class="pa-ars-name">${escHtml(p.pitch_name || p.pitch_type)}${isBest ? '&nbsp;<span class="pa-ars-tag pa-ars-tag-best">⚡ Best</span>' : ''}${isWorst ? '&nbsp;<span class="pa-ars-tag pa-ars-tag-risk">⚠ Risk</span>' : ''}</div>
+              ${velo > 0 ? `<div class="pa-ars-velo">${velo.toFixed(0)} mph</div>` : ''}
+            </div>
+          </div>
+          <span class="pa-ars-edge pa-ars-edge-${edgeCls}">${edgeLbl}</span>
+        </div>
+        <div class="pa-ars-usage-row">
+          <span class="pa-ars-usage-label">${usage.toFixed(0)}% use</span>
+          <div class="pa-ars-usage-track"><div class="pa-ars-usage-fill" style="width:${usageBarW}%;background:${typeClr}"></div></div>
+        </div>
+        <div class="pa-ars-stats">
+          <div class="pa-ars-stat-group">
+            <div class="pa-ars-stat-hdr">Pitcher</div>
+            <div class="pa-ars-stat-row">
+              <div class="pa-ars-stat"><span>Whiff</span><strong style="color:#94a3b8">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</strong></div>
+              <div class="pa-ars-stat"><span>RV/100</span><strong style="color:${_rv100Color(rv100v)}">${rv100v != null ? (rv100v > 0 ? '+' : '') + rv100v.toFixed(1) : '—'}</strong></div>
+              <div class="pa-ars-stat"><span>wOBA</span><strong style="color:${_wobaColor(pWoba)}">${_baFmt(pWoba)}</strong></div>
+              ${putAway > 0 ? `<div class="pa-ars-stat"><span>PutAwy</span><strong style="color:#94a3b8">${putAway.toFixed(0)}%</strong></div>` : ''}
+            </div>
+          </div>
+          ${b ? `<div class="pa-ars-divider"></div>
+          <div class="pa-ars-stat-group">
+            <div class="pa-ars-stat-hdr">${lastName}</div>
+            <div class="pa-ars-stat-row">
+              <div class="pa-ars-stat"><span>BA</span><strong style="color:${_baColor(ba)}">${_baFmt(ba)}</strong></div>
+              <div class="pa-ars-stat"><span>K%</span><strong style="color:${_kColor(bWhiff)}">${bWhiff != null ? Math.round(bWhiff) + '%' : '—'}</strong></div>
+            </div>
+          </div>` : ''}
+        </div>
+      </div>`;
     }).join('');
+
+    const edgeClr = pitchMatchup.score > 2 ? '#22c55e'
+      : pitchMatchup.score < -2 ? '#ef4444' : '#94a3b8';
+    const edgeLbl = pitchMatchup.score > 2 ? 'Lineup Edge'
+      : pitchMatchup.score < -2 ? 'Pitcher Edge' : 'Even';
+    const calloutBdr = pitchMatchup.score > 0 ? '#22c55e'
+      : pitchMatchup.score < 0 ? '#ef4444' : '#334155';
     const summaryCallout = pitchMatchup.reasons.length
-      ? `<div style="margin-top:8px;padding:7px 10px;background:#0f172a;border-radius:6px;border-left:3px solid ${pitchMatchup.score > 0 ? '#22c55e' : pitchMatchup.score < 0 ? '#ef4444' : '#334155'};font-size:11px;color:#e2e8f0">${pitchMatchup.score > 0 ? '📈' : pitchMatchup.score < 0 ? '📉' : '→'} ${escHtml(pitchMatchup.reasons[0])}</div>` : '';
-    return `<div class="lab-section-label" style="display:flex;align-items:center;justify-content:space-between;margin-top:12px"><span>SP Pitch Arsenal vs ${escHtml(player.name)}</span><span style="font-size:9px;color:var(--text-muted)">Baseball Savant 2026</span></div>
-    <div style="overflow-x:auto;margin-bottom:4px"><table style="width:100%;border-collapse:collapse;font-size:11px">
-      <thead><tr style="border-bottom:1px solid var(--border)">
-        <th style="text-align:left;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Pitch</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Use</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Whiff</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase" title="Run Value per 100 pitches — negative is better for pitcher">RV/100</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase" title="wOBA allowed on this pitch type">SP wOBA</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat BA</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat K%</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Edge</th>
-      </tr></thead>
-      <tbody>${tRows}</tbody>
-    </table></div>
-    <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Use/Whiff/RV100/SP wOBA = pitcher stats from Baseball Savant. RV/100: negative = dominant pitch. Bat BA/K% = ${escHtml(player.name)}'s 2026 numbers vs this pitch type league-wide.</div>
-    ${summaryCallout}`;
+      ? `<div class="pa-ars-summary-callout" style="border-left-color:${calloutBdr}">${pitchMatchup.score > 0 ? '📈' : pitchMatchup.score < 0 ? '📉' : '→'} ${escHtml(pitchMatchup.reasons[0])}</div>` : '';
+
+    return `<div class="pa-ars-wrap">
+      <div class="pa-ars-header">
+        <div><span class="pa-ars-section-title">SP Arsenal vs ${escHtml(player.name)}</span><span class="pa-ars-source">Baseball Savant 2026</span></div>
+        <span class="pa-ars-overall" style="color:${edgeClr};border-color:${edgeClr}44;background:${edgeClr}11">${edgeLbl}</span>
+      </div>
+      <div class="pa-ars-cards">${cards}</div>
+      ${summaryCallout}
+      <div class="pa-ars-legend">RV/100: negative = dominant pitch. Bat BA/K% = ${escHtml(player.name)}'s 2026 vs this pitch type.</div>
+    </div>`;
   })();
 
   const _savantBatterPitches = (() => {
