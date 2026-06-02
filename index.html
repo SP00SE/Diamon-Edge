@@ -13100,9 +13100,29 @@ async function runLabAnalysis() {
       const b      = bMap.get(p.pitch_type);
       const ba     = b ? (parseFloat(b.ba) || 0) : null;
       const bWhiff = b ? (parseFloat(b.whiff_percent) || 0) : null;
+
+      // Pitcher-level Savant stats (already in the fetched CSV)
+      const rv100Raw = parseFloat(p.run_value_per_100);
+      const pWoba    = parseFloat(p.woba) || 0;
+      const rv100    = isNaN(rv100Raw) ? null : rv100Raw;
+      const rv100Str = rv100 != null ? (rv100 > 0 ? '+' : '') + rv100.toFixed(1) : '—';
+      // Negative RV/100 = pitcher dominant (green); positive = hittable (red)
+      const rv100Color = rv100 == null ? 'var(--text-muted)'
+                       : rv100 <= -2   ? '#22c55e'
+                       : rv100 <=  0   ? '#86efac'
+                       : rv100 <=  2   ? '#f59e0b'
+                       :                 '#ef4444';
+      const pWobaStr   = pWoba > 0 ? '.' + Math.round(pWoba * 1000).toString().padStart(3,'0') : '—';
+      // Low SP wOBA = pitch is dominant (green); high = hittable (red)
+      const pWobaColor = pWoba <= 0     ? 'var(--text-muted)'
+                       : pWoba <= 0.280 ? '#22c55e'
+                       : pWoba <= 0.320 ? '#86efac'
+                       : pWoba <= 0.360 ? '#f59e0b'
+                       :                  '#ef4444';
+
       const baStr     = ba != null && ba > 0 ? '.' + Math.round(ba * 1000).toString().padStart(3,'0') : '—';
       const bWhiffStr = bWhiff != null ? Math.round(bWhiff) + '%' : '—';
-      const baColor = ba == null ? 'var(--text-muted)' : ba >= 0.290 ? '#22c55e' : ba <= 0.210 ? '#ef4444' : ba <= 0.240 ? '#f59e0b' : 'var(--text-primary)';
+      const baColor     = ba == null ? 'var(--text-muted)' : ba >= 0.290 ? '#22c55e' : ba <= 0.210 ? '#ef4444' : ba <= 0.240 ? '#f59e0b' : 'var(--text-primary)';
       const bWhiffColor = bWhiff == null ? 'var(--text-muted)' : bWhiff >= 35 ? '#ef4444' : bWhiff >= 25 ? '#f59e0b' : '#22c55e';
       const batEdge = ba != null && ba >= 0.290;
       const spEdge  = ba != null && (ba <= 0.210 || (pWhiff >= 28 && bWhiff != null && bWhiff >= 28));
@@ -13114,6 +13134,8 @@ async function runLabAnalysis() {
         <td style="padding:5px 4px;font-weight:600;color:#e2e8f0;white-space:nowrap">${escHtml(p.pitch_name || p.pitch_type)}</td>
         <td style="padding:5px 4px;text-align:center;color:#94a3b8">${usage.toFixed(0)}%</td>
         <td style="padding:5px 4px;text-align:center;color:#64748b;font-size:10px">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</td>
+        <td style="padding:5px 4px;text-align:center;font-weight:700;font-size:10px;color:${rv100Color}">${rv100Str}</td>
+        <td style="padding:5px 4px;text-align:center;font-size:10px;color:${pWobaColor}">${pWobaStr}</td>
         <td style="padding:5px 4px;text-align:center;font-weight:700;color:${baColor}">${baStr}</td>
         <td style="padding:5px 4px;text-align:center;color:${bWhiffColor}">${bWhiffStr}</td>
         <td style="padding:5px 4px;text-align:center;font-size:10px">${edgeText}</td>
@@ -13125,15 +13147,17 @@ async function runLabAnalysis() {
     <div style="overflow-x:auto;margin-bottom:4px"><table style="width:100%;border-collapse:collapse;font-size:11px">
       <thead><tr style="border-bottom:1px solid var(--border)">
         <th style="text-align:left;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Pitch</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">SP Use</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">SP Whiff</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Use</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Whiff</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase" title="Run Value per 100 pitches — negative is better for pitcher">RV/100</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase" title="wOBA allowed on this pitch type">SP wOBA</th>
         <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat BA</th>
-        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat Whiff</th>
+        <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Bat K%</th>
         <th style="text-align:center;padding:4px 4px 5px;font-size:9px;letter-spacing:.4px;color:var(--text-muted);font-weight:700;text-transform:uppercase">Edge</th>
       </tr></thead>
       <tbody>${tRows}</tbody>
     </table></div>
-    <div style="font-size:10px;color:var(--text-muted);margin-top:2px">SP Use = share of pitches thrown. Bat BA/Whiff = ${escHtml(player.name)}'s 2026 numbers vs this pitch type league-wide.</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Use/Whiff/RV100/SP wOBA = pitcher stats from Baseball Savant. RV/100: negative = dominant pitch. Bat BA/K% = ${escHtml(player.name)}'s 2026 numbers vs this pitch type league-wide.</div>
     ${summaryCallout}`;
   })();
 
