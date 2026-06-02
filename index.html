@@ -733,6 +733,13 @@ main { padding: 28px 0 60px; }
 .lab-stat-strip  { display:flex; gap:10px; flex-wrap:wrap; font-size:10px; font-family:monospace; color:var(--text-muted); margin:4px 0 8px; }
 .lab-conf-high  { color:#34d399; } .lab-conf-medium { color:#f59e0b; }
 .lab-conf-low   { color:#ef4444; } .lab-conf-insufficient { color:#94a3b8; }
+.lab-card-sub   { font-size:9px; color:var(--text-muted); margin-top:1px; letter-spacing:.2px; }
+.lab-insuf-state { display:flex; gap:10px; align-items:flex-start; padding:10px; background:#0f172a; border-radius:8px; margin-bottom:8px; border:1px solid var(--border); }
+.lab-insuf-icon  { font-size:18px; flex-shrink:0; line-height:1; margin-top:2px; opacity:.6; }
+.lab-insuf-title { font-size:11px; font-weight:700; color:#94a3b8; margin-bottom:6px; }
+.lab-insuf-item  { font-size:10px; padding:2px 0; line-height:1.5; }
+.lab-insuf-crit  { color:#f59e0b; }
+.lab-insuf-minor { color:#64748b; }
 
 /* ── LEADERBOARD ──────────────────────────────────── */
 .leaders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -10195,28 +10202,43 @@ function renderLabDataFlags(dataFlags) {
   return html ? '<div class="lab-data-flags">'+html+'</div>' : '';
 }
 function _renderInsufCard(ctx) {
-  var missing = [];
   var df = ctx.dataFlags || {};
-  if (df.smallBatterSample) missing.push('Batter sample < 50 AB');
-  if (df.savantMissing)     missing.push('Savant pitch data');
-  if (df.bullpenMissing)    missing.push('Bullpen stats');
-  if (df.ghpMissing)        missing.push('Game hit rate');
-  if (df.noBvpHistory)      missing.push('BvP history');
-  var listHtml = missing.length
-    ? '<ul style="margin:6px 0 0;padding-left:14px;font-size:10px;color:var(--text-muted)">'+
-      missing.map(function(m){ return '<li>'+m+'</li>'; }).join('')+'</ul>' : '';
-  return '<p style="color:var(--text-muted);font-size:11px;font-family:monospace;margin:0">'+
-    'Insufficient data to score</p>'+listHtml+renderLabDataFlags(df);
+  // Map flag keys to human labels — most important first
+  var critical = [
+    [df.smallBatterSample, 'Batter has fewer than 50 AB this season'],
+    [df.savantMissing,     'Savant pitch-type data not loaded'],
+    [df.bullpenMissing,    'Bullpen stats unavailable'],
+    [df.ghpMissing,        'Game hit-rate data missing'],
+  ].filter(function(f){ return f[0]; });
+  var minor = [
+    [df.noBvpHistory, 'No BvP history vs this pitcher'],
+  ].filter(function(f){ return f[0]; });
+  var critHtml = critical.length
+    ? critical.map(function(f){
+        return '<div class="lab-insuf-item lab-insuf-crit">'+f[1]+'</div>';
+      }).join('') : '';
+  var minorHtml = minor.length
+    ? minor.map(function(f){
+        return '<div class="lab-insuf-item lab-insuf-minor">'+f[1]+'</div>';
+      }).join('') : '';
+  return critHtml + minorHtml;
 }
 function renderLabScoreCard(result, ctx, isHR) {
   var cardCls = isHR ? 'lab-hr-card' : 'lab-hit-card';
-  var titleText   = isHR ? 'Home Run Score' : 'Lab Matchup Score';
-  var titleSuffix = isHR ? '<span class="lab-flag lab-flag-info" style="margin-left:6px">context only</span>' : '';
+  var titleText = isHR ? 'HR Likelihood' : 'Lab Matchup Score';
+  var titleSub  = isHR
+    ? '<div class="lab-card-sub">Power &amp; extra-base context</div>'
+    : '<div class="lab-card-sub">Hit probability vs today\'s matchup</div>';
   var confLbl = confidenceLabel(result.confidence);
   var confCls = 'lab-conf-' + confLbl.toLowerCase();
   var insuf   = result.confidence < 0.40;
-  var scoreHtml = insuf ? _renderInsufCard(ctx) :
-    '<div class="lab-score-num">'+result.score+'</div><div class="lab-score-lbl">'+result.label+'</div>';
+  // Insufficient: unified callout — suppress confidence badge (it duplicates the text)
+  var scoreHtml = insuf
+    ? '<div class="lab-insuf-state">'+
+        '<span class="lab-insuf-icon">⚠</span>'+
+        '<div><div class="lab-insuf-title">Insufficient data</div>'+
+        _renderInsufCard(ctx)+'</div></div>'
+    : '<div class="lab-score-num">'+result.score+'</div><div class="lab-score-lbl">'+result.label+'</div>';
   var statStrip = '';
   if (!isHR && !insuf) {
     var _pl     = ctx.player || {};
@@ -10241,13 +10263,17 @@ function renderLabScoreCard(result, ctx, isHR) {
     result.warnings.map(function(w){ return '<li class="lab-reason-warn">⚠ '+w+'</li>'; }).join('')+
     '</ul>';
   var bdHtml = insuf ? '' :
-    '<details style="margin-top:8px"><summary style="font-size:10px;font-family:monospace;cursor:pointer;color:var(--text-muted)">Breakdown ▾</summary>'+
+    '<details style="margin-top:8px"><summary style="font-size:10px;font-family:monospace;cursor:pointer;color:var(--text-muted)">Score Components ▾</summary>'+
     renderLabBreakdownTable(result.breakdown, result.rawTotal, result.score)+'</details>';
-  var flagsHtml = insuf ? '' : renderLabDataFlags(ctx.dataFlags);
+  var flagsHtml = renderLabDataFlags(ctx.dataFlags);
+  var confBadge = insuf ? '' :
+    '<span class="'+confCls+'" style="font-size:9px;font-family:monospace">'+confLbl+'</span>';
   return '<div class="lab-score-card '+cardCls+'">'+
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
-      '<span class="lab-card-title">'+titleText+titleSuffix+'</span>'+
-      '<span class="'+confCls+'" style="font-size:9px;font-family:monospace">'+confLbl+'</span></div>'+
+    '<div style="margin-bottom:6px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<span class="lab-card-title">'+titleText+'</span>'+confBadge+
+      '</div>'+titleSub+
+    '</div>'+
     scoreHtml+reasonsHtml+bdHtml+flagsHtml+'</div>';
 }
 function renderLabLineupBanner(lineupStatus) {
