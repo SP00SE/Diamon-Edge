@@ -3931,7 +3931,7 @@ function _hitWeatherScore(weather, factors) {
   return Math.min(3, Math.max(-3, s));
 }
 
-function computeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
+function _playerComputeHitScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
   const factors      = [];
   const skill        = _hitSkillScore(batter, factors);
   const form         = _hitRecentFormScore(batter, factors);
@@ -4176,7 +4176,7 @@ function _hrParkWeatherScore(batter, weather, parkFactor, factors) {
 }
 
 // ─── HR SCORE ORCHESTRATOR ────────────────────────────────────────────────────
-function computeHRScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
+function _playerComputeHRScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
   const factors   = [];
   const power     = _hrPowerSkillScore(batter, factors);
   const form      = _hrRecentPowerFormScore(batter, factors);
@@ -4548,8 +4548,8 @@ async function processGame(game) {
     const batterObj = { ...batter, seasonStats, last7Stats, last10Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
     const oppBullpenEra = batter.isAway ? homeBullpenEra : awayBullpenEra;
     const oppBullpenH9  = batter.isAway ? homeBullpenH9  : awayBullpenH9;
-    const { score: hitScore, factors: hitFactors } = computeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra, oppBullpenH9);
-    const { score: hrScore,  factors: hrFactors  } = computeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra, oppBullpenH9);
+    const { score: hitScore, factors: hitFactors } = _playerComputeHitScore(batterObj, pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra, oppBullpenH9);
+    const { score: hrScore,  factors: hrFactors  } = _playerComputeHRScore(batterObj,  pitcher, batter.orderPos, weather, parkFactor, oppBullpenEra, oppBullpenH9);
 
     const playerObj = {
       ...batter,
