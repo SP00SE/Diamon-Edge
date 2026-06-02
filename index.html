@@ -10221,7 +10221,9 @@ function _renderInsufCard(ctx) {
     ? minor.map(function(f){
         return '<div class="lab-insuf-item lab-insuf-minor">'+f[1]+'</div>';
       }).join('') : '';
-  return critHtml + minorHtml;
+  var body = critHtml + minorHtml;
+  if (!body) body = '<div class="lab-insuf-item lab-insuf-minor">Not enough season data to produce a reliable score</div>';
+  return body;
 }
 function renderLabScoreCard(result, ctx, isHR) {
   var cardCls = isHR ? 'lab-hr-card' : 'lab-hit-card';
@@ -10303,8 +10305,8 @@ async function openPlayerAnalyzer(playerId, source) {
   if (!gd) { document.getElementById('paContent').innerHTML = '<div style="color:var(--accent-orange);text-align:center;padding:40px">Game data not found.</div>'; return; }
 
   const oppPitcher  = p.isAway ? gd.homePitcher : gd.awayPitcher;
-  const pitcherHand = oppPitcher?.pitchHand?.code || oppPitcher?.pitchHand || '?';
-  const pitcherName = oppPitcher?.fullName || oppPitcher?.name || '—';
+  const pitcherHand = escHtml(oppPitcher?.pitchHand?.code || oppPitcher?.pitchHand || '?');
+  const pitcherName = escHtml(oppPitcher?.fullName || oppPitcher?.name || '—');
   const pEra  = oppPitcher?.seasonStats?.era  || null;
   const pIP   = oppPitcher?.seasonStats?.inningsPitched || 0;
   const pBB   = oppPitcher?.seasonStats?.baseOnBalls    || 0;
@@ -10474,7 +10476,8 @@ async function openPlayerAnalyzer(playerId, source) {
   document.getElementById('paContent').innerHTML = panelContent;
 
   // ── Share data (kept for screenshot/share feature) ─────────────────────
-  const matchupScore = rawData.score;
+  // Use hitResult.score (what the UI shows) not rawData.score (stale pre-compute)
+  const matchupScore = hitResult.score;
 
   // ── Save share data & reveal Share button ──────────────────────────────
   const _src = source || state.activeTab || 'general';
