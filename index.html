@@ -1673,6 +1673,13 @@ main { padding: 28px 0 60px; }
 }
 .stat-pill span { color: var(--text-muted); margin-right: 4px; }
 .stat-pill strong { color: var(--text-primary); }
+.pc2-pill { border-radius:6px; }
+.pc2-pill-pos { background:rgba(52,211,153,.10); border-color:rgba(52,211,153,.30); }
+.pc2-pill-pos strong { color:#34d399; }
+.pc2-pill-neg { background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.30); }
+.pc2-pill-neg strong { color:#ef4444; }
+.pc2-pill-neu { background:var(--bg-hover); }
+.pc2-pill-neu strong { color:var(--text-muted); }
 
 /* ===== ANIMATIONS ===== */
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -4232,61 +4239,141 @@ function scoreRingHTML(score, type) {
 
 // ─── PREDICTION CARD HTML ─────────────────────────────────────────────────
 function predCardHTML(player, type, delay=0, prefix='c') {
-  const score = type === 'hit' ? player.hitScore : player.hrScore;
-  const factors = type === 'hit' ? player.hitFactors : player.hrFactors;
-  const conf = (type === 'hit' ? player.hitConfidence : player.hrConfidence) || (type === 'hit' ? getHitConfidence(score) : getHRConfidence(score));
-  const reason = buildReason(factors, type);
+  const isHit    = type === 'hit';
+  const score    = isHit ? player.hitScore : player.hrScore;
+  const factors  = isHit ? (player.hitFactors || []) : (player.hrFactors || []);
+  const conf     = (isHit ? player.hitConfidence : player.hrConfidence)
+                || (isHit ? getHitConfidence(score) : getHRConfidence(score));
+  const reason   = buildReason(factors, type);
+  const accentColor = isHit ? 'var(--accent-green)' : 'var(--accent-orange)';
 
-  const chipsHTML = factors.slice(0,5).map(f =>
+  // ── Headshot + team logo (same pattern as buildPickCard) ──────────────────
+  const photoUrl    = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const teamInfo    = TEAM_INFO[player.teamId] || null;
+  const logoSlug    = teamInfo?.espn || (player.teamAbbr||'').toLowerCase();
+  const teamLogoHTML = logoSlug
+    ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${logoSlug}.png" alt="${player.teamAbbr||''}" onerror="this.style.display='none'">`
+    : '';
+
+  // ── Hot/cold streak (same logic as buildPickCard) ─────────────────────────
+  const ss   = player.seasonStats || {};
+  const l7   = player.last7Stats  || {};
+  const sAvg = ss.avg || 0;
+  const lAvg = l7.avg || 0;
+  const diff = Math.round((lAvg - sAvg) * 1000);
+  const streakLabel = diff >= 30 ? '🔥 HOT' : diff <= -30 ? '❄️ COLD' : '— STEADY';
+  const streakClass = diff >= 30 ? 'bb-streak-hot' : diff <= -30 ? 'bb-streak-cold' : 'bb-streak-steady';
+  const trendClass  = diff >= 15 ? 'bb-trend-up'   : diff <= -15 ? 'bb-trend-down'  : '';
+  const fmt = v => v ? v.toFixed(3).replace(/^0/,'') : '---';
+
+  // ── Hit-specific context pills ────────────────────────────────────────────
+  let contextPills = '';
+  if (isHit) {
+    const ghp = player.hitGames7 != null ? (player.hitGames7 / 7) : null;
+    const ghpStr = ghp != null ? `${Math.round(ghp*100)}%` : null;
+    const ghpCls = ghp != null ? (ghp >= 0.70 ? 'pos' : ghp < 0.45 ? 'neg' : 'neu') : 'neu';
+    const pa  = ss.plateAppearances || 0;
+    const kpct = pa > 0 && ss.strikeOuts != null ? (ss.strikeOuts / pa) : null;
+    const kStr = kpct != null ? `${Math.round(kpct*100)}% K` : null;
+    const kCls = kpct != null ? (kpct <= 0.14 ? 'pos' : kpct >= 0.28 ? 'neg' : 'neu') : 'neu';
+    const hasPlatoon = factors.some(f => f.label && f.label.toLowerCase().includes('platoon'));
+    const platoonF   = factors.find(f => f.label && f.label.toLowerCase().includes('platoon'));
+    const pills = [];
+    if (ghpStr) pills.push(`<span class="stat-pill pc2-pill pc2-pill-${ghpCls}"><span>Hit Rate</span><strong>${ghpStr}</strong></span>`);
+    if (kStr)   pills.push(`<span class="stat-pill pc2-pill pc2-pill-${kCls}"><span>K%</span><strong>${kStr}</strong></span>`);
+    if (hasPlatoon) pills.push(`<span class="stat-pill pc2-pill pc2-pill-pos"><span>Platoon</span><strong>Edge</strong></span>`);
+    if (pills.length) contextPills = `<div class="stats-row" style="margin:6px 0 2px">${pills.join('')}</div>`;
+  }
+
+  // ── HR-specific context pills ─────────────────────────────────────────────
+  if (!isHit) {
+    const gd      = state.predictions?.[player.gamePk];
+    const pf      = gd?.parkFactor || getParkFactor(gd?.venueName);
+    const hrPark  = isHit ? null : (pf?.hrR ?? pf?.hrL ?? null);
+    const pitcherHrRisk = factors.find(f => f.type === 'neg' && f.label && f.label.toLowerCase().includes('hr'));
+    const iso     = ss.slg && ss.avg ? (ss.slg - ss.avg) : null;
+    const pills   = [];
+    if (hrPark != null) {
+      const pkCls = hrPark >= 1.10 ? 'pos' : hrPark <= 0.90 ? 'neg' : 'neu';
+      pills.push(`<span class="stat-pill pc2-pill pc2-pill-${pkCls}"><span>Park HR</span><strong>${hrPark.toFixed(2)}×</strong></span>`);
+    }
+    if (pitcherHrRisk) {
+      pills.push(`<span class="stat-pill pc2-pill pc2-pill-pos"><span>Pitcher</span><strong>HR Risk</strong></span>`);
+    }
+    if (iso != null && iso >= 0.175) {
+      pills.push(`<span class="stat-pill pc2-pill pc2-pill-pos"><span>ISO</span><strong>${iso.toFixed(3).replace(/^0/,'')}</strong></span>`);
+    }
+    if (pills.length) contextPills = `<div class="stats-row" style="margin:6px 0 2px">${pills.join('')}</div>`;
+  }
+
+  // ── Factor chips (top 4, keep existing chip classes) ──────────────────────
+  const chipsHTML = factors.slice(0,4).map(f =>
     `<span class="chip ${f.type}">${f.label}</span>`
   ).join('');
 
-  const statsHTML = `
-    <div class="stats-row">
-      <div class="stat-pill"><span>AVG</span><strong>${safe(player.seasonStats?.avg)}</strong></div>
-      <div class="stat-pill"><span>SLG</span><strong>${safe(player.seasonStats?.slg)}</strong></div>
-      <div class="stat-pill"><span>OBP</span><strong>${safe(player.seasonStats?.obp)}</strong></div>
-      ${player.seasonStats?.ops ? `<div class="stat-pill"><span>OPS</span><strong>${safe(player.seasonStats.ops)}</strong></div>` : ''}
-    </div>`;
-
-  // Live / Final achievement badges
+  // ── Live / Final achievement badges ───────────────────────────────────────
   const _ld = (state.allGamesLiveData || {})[player.gamePk];
   let achieveBadgeHTML = '';
   if (_ld) {
     const _bs = _ld.statsMap[player.id];
     const _ab = _bs?.atBats || 0;
-    if (_bs && (_ab > 0 || (_bs.hits || 0) > 0 || (_bs.homeRuns || 0) > 0)) {
+    if (_bs && (_ab > 0 || (_bs.hits||0) > 0 || (_bs.homeRuns||0) > 0)) {
       const _pip = _ld.isLive
         ? `<span class="bb-live-pip">● LIVE</span>`
         : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
-      const _hitBadge = (_bs.hits || 0) > 0
+      const _hitBadge = (_bs.hits||0) > 0
         ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
         : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
-      const _hrBadge = (_bs.homeRuns || 0) > 0
+      const _hrBadge = (_bs.homeRuns||0) > 0
         ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
         : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
-      achieveBadgeHTML = `<div class="bb-achieve-row" style="margin-top:6px">${_pip}${_hitBadge}${_hrBadge}</div>`;
+      achieveBadgeHTML = `<div class="bb-achieve-row" style="margin-bottom:8px">${_pip}${_hitBadge}${_hrBadge}</div>`;
     }
   }
 
   return `
     <div class="pred-card ${type}" style="animation-delay:${delay}ms">
-      <div class="card-top">
-        <div class="score-ring-wrap">${scoreRingHTML(score, type)}</div>
-        <div class="card-info">
-          <div class="card-player td-player-link" onclick="openPlayerModal(${player.id})" style="cursor:pointer;display:inline-block">${player.name}</div>
-          <div class="card-team">${player.team} · ${player.batSide || '?'}HB</div>
-          <div class="card-matchup">${player.matchup}</div>
-          <div class="card-order">Bats ${player.orderPos || '?'}${ordinal(player.orderPos)} · ${player.position || ''}</div>
-        </div>
-        <span class="confidence-badge ${conf.cls}">${conf.icon ? conf.icon + ' ' : ''}${conf.label}</span>
-      </div>
       ${achieveBadgeHTML}
-      ${statsHTML}
+      <div class="best-bet-left" onclick="openPlayerModal(${player.id})" style="cursor:pointer;margin-bottom:10px">
+        <div class="best-bet-headshot-wrap">
+          <img class="best-bet-headshot" src="${photoUrl}" alt="${player.name}"
+            onerror="this.closest('.best-bet-headshot-wrap').style.display='none';this.closest('.best-bet-headshot-wrap').nextElementSibling.style.display='flex'">
+        </div>
+        <div class="best-bet-headshot-fallback" style="display:none">${(player.name||'?')[0]}</div>
+        <div class="best-bet-info">
+          <div class="best-bet-name-row">${teamLogoHTML}<div class="best-bet-name">${player.name}</div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${player.team} · ${player.position||''} · Bats ${player.orderPos||'?'}${ordinal(player.orderPos)}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${player.matchup||''}</div>
+          <div class="bb-score-conf-row" style="margin-top:6px">
+            <span class="bb-mini-score">
+              <div class="bb-ms-val" style="color:${accentColor}">${score}</div>
+              <div class="bb-ms-lbl">${isHit ? 'Hit Score' : 'HR Score'}</div>
+            </span>
+            ${conf ? `<span class="confidence-badge ${conf.cls}" style="margin-left:8px">${conf.icon ? conf.icon+' ' : ''}${conf.label}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${contextPills}
+      <div class="best-bet-stats-panel" style="margin-top:4px">
+        <div class="best-bet-stats-label">
+          Season Stats
+          <span class="bb-streak-badge ${streakClass}">${streakLabel}</span>
+        </div>
+        <div class="best-bet-stat-row">
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(sAvg)}</div><div class="sl">AVG</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${ss.hits != null ? ss.hits : '—'}</div><div class="sl">H</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${ss.homeRuns != null ? ss.homeRuns : '—'}</div><div class="sl">HR</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.obp)}</div><div class="sl">OBP</div></div>
+          <div class="best-bet-stat-cell"><div class="sv">${fmt(ss.slg)}</div><div class="sl">SLG</div></div>
+          <div class="best-bet-stat-cell" style="border-left:1px solid var(--border);padding-left:10px;margin-left:2px">
+            <div class="sv ${trendClass}">${fmt(lAvg)}</div><div class="sl">L7 AVG</div>
+          </div>
+        </div>
+      </div>
       <div class="card-reason" style="margin-top:10px">"${reason}"</div>
-      <div class="factor-chips">${chipsHTML}</div>
-      <div style="margin-top:8px">
-        <button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},${type==='hit'?"'hitPicks'":"'hrPicks'"})">🔬 Lab Analysis</button>
+      <div class="factor-chips" style="margin-top:6px">${chipsHTML}</div>
+      <div style="margin-top:10px">
+        <button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},${isHit?"'hitPicks'":"'hrPicks'"})">🔬 Lab Analysis</button>
       </div>
       <div class="streak-expand-btn" style="margin-top:10px" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${prefix}-gl-${type}-${player.id}')">
         <span>Last 7 Games</span><span class="chevron">▼</span>
