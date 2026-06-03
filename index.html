@@ -7157,6 +7157,12 @@ function renderBeatTheStreak() {
   grid.innerHTML = '';
   empty.style.display = 'none';
 
+  // Show spinner while initial data fetch is still in progress
+  if (state.loading) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text-muted);font-size:13px">⏳ Loading today\'s lineups and picks…</div>';
+    return;
+  }
+
   // Collect all players across all games, attach gameData reference
   const candidates = [];
   for (const pk of Object.keys(state.predictions)) {
@@ -8178,6 +8184,9 @@ async function startFetch() {
     renderTopPlays();
     renderOverallTopPlays();
     renderHotStreaks();
+    // Re-render whichever tab is active — fixes BTS (and other tabs) not
+    // refreshing when data finishes loading after the user already switched there
+    renderCurrentTab();
 
     document.getElementById('formulaSection').style.display='block';
     document.getElementById('legendSection').style.display='block';
