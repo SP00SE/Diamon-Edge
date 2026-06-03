@@ -2215,6 +2215,9 @@ main { padding: 28px 0 60px; }
         <button class="btn btn-primary" id="refreshBtn" onclick="startFetch()">
           ↻ Refresh
         </button>
+        <button class="btn" id="clearCacheBtn" onclick="forceRefreshData()" title="Clear all cached data and reload fresh stats from MLB" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;font-weight:600;">
+          ⊘ Clear Cache
+        </button>
       </div>
     </div>
   </div>
@@ -3628,16 +3631,27 @@ async function clearAllCaches() {
 
 // Force-refresh button handler — wipes all caches then re-runs full fetch
 async function forceRefreshData() {
-  const btn = document.getElementById('refreshDataBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '⟳ Loading…'; }
+  const btn      = document.getElementById('refreshDataBtn');
+  const clearBtn = document.getElementById('clearCacheBtn');
+  if (btn)      { btn.disabled = true;      btn.textContent = '⟳ Loading…'; }
+  if (clearBtn) { clearBtn.disabled = true; clearBtn.textContent = '⟳ Clearing…'; }
   await clearAllCaches();
   state.predictions = {};
   state.playerMap   = {};
+  state.savantPitcher    = null;
+  state.savantBatter     = null;
+  state.savantPitchRanks = null;
+  state.savantYear       = null;
+  state.savantFailed     = false;
   if (typeof leaderboardLoaded !== 'undefined') leaderboardLoaded = false;
   startFetch();
   if (btn) {
     btn.textContent = '✓ Refreshed';
     setTimeout(() => { btn.disabled = false; btn.textContent = '↺ Refresh'; }, 2500);
+  }
+  if (clearBtn) {
+    clearBtn.textContent = '✓ Cleared';
+    setTimeout(() => { clearBtn.disabled = false; clearBtn.textContent = '⊘ Clear Cache'; }, 2500);
   }
 }
 
