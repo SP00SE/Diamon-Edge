@@ -10844,6 +10844,20 @@ function _arsenalHitCardHTML(r, rank) {
   const reasonHtml  = reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : '';
   const riskHtml    = risks.length ? `<div class="ahf-risks">${risks.map(r => `<span class="ahf-risk-chip">⚠ ${escHtml(r)}</span>`).join('')}</div>` : '';
 
+  // Season stats row — same helper as BTS
+  const ss   = player.seasonStats || {};
+  const l7   = player.last7Stats  || {};
+  const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : '---';
+  const statPills = [
+    ss.avg  > 0 ? `<span class="bts-score-pill bts-pill-hit">AVG ${_avg(ss.avg)}</span>` : '',
+    l7.avg  > 0 ? `<span class="bts-score-pill bts-pill-hit">L7 ${_avg(l7.avg)}</span>` : '',
+    ss.obp  > 0 ? `<span class="bts-score-pill bts-pill-era">OBP ${_avg(ss.obp)}</span>` : '',
+    ss.slg  > 0 ? `<span class="bts-score-pill bts-pill-era">SLG ${_avg(ss.slg)}</span>` : '',
+    ss.homeRuns > 0 ? `<span class="bts-score-pill bts-pill-streak">${ss.homeRuns} HR</span>` : '',
+  ].filter(Boolean).join('');
+
+  const glId = `ars-gl-${player.id}-${rank}`;
+
   return `<div class="ahf-card">
     <div class="ahf-card-top">
       <span class="ahf-rank">#${rank}</span>
@@ -10857,7 +10871,13 @@ function _arsenalHitCardHTML(r, rank) {
     </div>
     ${pitchChips ? `<div class="ahf-pitch-chips">${pitchChips}</div>` : ''}
     ${reasonHtml}
+    ${statPills ? `<div class="bts-card-scores" style="margin-top:6px">${statPills}</div>` : ''}
     ${riskHtml}
+    <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button></div>
+    <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
+      <span>Last 7 Games</span><span class="chevron">▼</span>
+    </div>
+    <div class="streak-gamelog" id="${glId}"></div>
   </div>`;
 }
 
