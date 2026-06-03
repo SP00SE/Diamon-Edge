@@ -13192,6 +13192,7 @@ async function runLabAnalysis() {
       const rv100    = parseFloat(p.run_value_per_100);
       const pWoba    = parseFloat(p.woba) || 0;
       const putAway  = parseFloat(p.put_away_percent) || 0;
+      const pKpct    = parseFloat(p.k_percent) || 0;
       const rkMap    = state.savantPitchRanks?.get(p.pitch_type);
       const rank     = rkMap?.get(p.player_id) ?? null;
       const rankTotal = rkMap?.size ?? null;
@@ -13233,6 +13234,7 @@ async function runLabAnalysis() {
             <div class="pa-ars-stat-hdr">Pitcher${rank && rankTotal ? `&nbsp;<span class="pa-ars-rk-badge" style="color:${rank <= 5 ? '#22c55e' : rank <= 15 ? '#86efac' : rank <= 30 ? '#f59e0b' : '#94a3b8'}">RK #${rank}/${rankTotal}</span>` : ''}</div>
             <div class="pa-ars-stat-row">
               <div class="pa-ars-stat"><span>Whiff</span><strong style="color:#94a3b8">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</strong></div>
+              <div class="pa-ars-stat"><span>K%</span><strong style="color:${pKpct >= 30 ? '#22c55e' : pKpct >= 22 ? '#86efac' : pKpct >= 15 ? '#94a3b8' : '#f59e0b'}">${pKpct > 0 ? pKpct.toFixed(0) + '%' : '—'}</strong></div>
               <div class="pa-ars-stat"><span>RV/100</span><strong style="color:${_rv100Color(rv100v)}">${rv100v != null ? (rv100v > 0 ? '+' : '') + rv100v.toFixed(1) : '—'}</strong></div>
               <div class="pa-ars-stat"><span>wOBA</span><strong style="color:${_wobaColor(pWoba)}">${_baFmt(pWoba)}</strong></div>
               ${putAway > 0 ? `<div class="pa-ars-stat"><span>PutAwy</span><strong style="color:#94a3b8">${putAway.toFixed(0)}%</strong></div>` : ''}
