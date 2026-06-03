@@ -4751,8 +4751,10 @@ async function processGame(game) {
   const processedAwayPitcher = { ...awayPitcherRaw, seasonStats: mapPitcherStats(awayPitcherStats?.stat), pitchHand: awayPitcherStats?.pitchHand || null };
   const processedHomePitcher = { ...homePitcherRaw, seasonStats: mapPitcherStats(homePitcherStats?.stat), pitchHand: homePitcherStats?.pitchHand || null };
 
-  const awayPitcherGameLog = processedAwayPitcher?.id ? await fetchPitcherGameLog(processedAwayPitcher.id) : [];
-  const homePitcherGameLog = processedHomePitcher?.id ? await fetchPitcherGameLog(processedHomePitcher.id) : [];
+  const [awayPitcherGameLog, homePitcherGameLog] = await Promise.all([
+    processedAwayPitcher?.id ? fetchPitcherGameLog(processedAwayPitcher.id) : Promise.resolve([]),
+    processedHomePitcher?.id ? fetchPitcherGameLog(processedHomePitcher.id) : Promise.resolve([]),
+  ]);
 
   // Attach confidence to every player (uses gameLogCache if already populated)
   const gameCtx = { awayPitcher: processedAwayPitcher, homePitcher: processedHomePitcher, homeTeamId, awayBullpenEra, homeBullpenEra, awayBullpenWhip, homeBullpenWhip, awayBullpenH9, homeBullpenH9, awayBullpenHBF, homeBullpenHBF, parkFactor, weather };
@@ -8184,26 +8186,23 @@ async function startFetch() {
     };
     _setBar(0);
 
-    // Process games sequentially to avoid rate limiting
-    // Skip reprocessing if already scored AND lineup was officially locked —
-    // this keeps scores stable across refreshes (past data doesn't change)
+    // Process games in concurrent waves of 3 — ~3× faster than sequential
+    // while keeping MLB API connections low enough to avoid ECONNRESET.
+    const GAME_WAVE = 3;
     let _processed = 0;
-    for (const game of games) {
+
+    const _processOneGame = async (game) => {
       try {
         const existing = state.predictions[game.gamePk];
         if (existing?.lineupPosted) {
           updateChipLineupStatus(game.gamePk, true);
-          _processed++;
-          _setBar(Math.round((_processed / games.length) * 100));
-          continue;
+        } else {
+          const gameData = await processGame(game);
+          state.predictions[game.gamePk] = gameData;
+          updateChipLineupStatus(game.gamePk, gameData.lineupPosted);
         }
-        setLoadingStatus(`Processing ${game.teams?.away?.team?.abbreviation||'?'} @ ${game.teams?.home?.team?.abbreviation||'?'}...`);
-        const gameData = await processGame(game);
-        state.predictions[game.gamePk] = gameData;
-        updateChipLineupStatus(game.gamePk, gameData.lineupPosted);
       } catch (err) {
         console.warn('Game processing error:', game.gamePk, err);
-        // Store a minimal stub so Team Win Predictor can still show the game
         if (!state.predictions[game.gamePk]) {
           const aw = game.teams?.away?.team;
           const hw = game.teams?.home?.team;
@@ -8219,6 +8218,10 @@ async function startFetch() {
       }
       _processed++;
       _setBar(Math.round((_processed / games.length) * 100));
+    };
+
+    for (let _wi = 0; _wi < games.length; _wi += GAME_WAVE) {
+      await Promise.allSettled(games.slice(_wi, _wi + GAME_WAVE).map(_processOneGame));
     }
     _setBar(100);
 
