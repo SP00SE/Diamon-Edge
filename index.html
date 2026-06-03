@@ -761,6 +761,29 @@ main { padding: 28px 0 60px; }
 .pa-ars-summary-callout { margin-top:8px; padding:7px 10px; background:#0f172a; border-radius:6px; border-left:3px solid; font-size:11px; color:#e2e8f0; line-height:1.45; }
 .pa-ars-legend        { font-size:9px; color:#475569; margin-top:6px; line-height:1.4; }
 .pa-ars-rk-badge      { font-size:8px; font-weight:700; letter-spacing:.3px; font-family:monospace; }
+/* ── Arsenal Hit Finder cards ─────────────────────────────────────────── */
+.ahf-card             { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+.ahf-card-top         { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; }
+.ahf-photo            { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0; background:var(--bg-hover); }
+.ahf-photo-fallback   { width:40px; height:40px; border-radius:50%; background:var(--bg-hover); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0; }
+.ahf-info             { flex:1; min-width:0; }
+.ahf-name             { font-size:13px; font-weight:700; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ahf-meta             { font-size:10px; color:var(--text-muted); margin-top:1px; }
+.ahf-rank             { font-size:18px; font-weight:800; color:var(--text-muted); font-family:monospace; flex-shrink:0; }
+.ahf-edge-badge       { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; white-space:nowrap; }
+.ahf-edge-strong-hit  { background:rgba(34,197,94,.15); color:#22c55e; border:1px solid rgba(34,197,94,.3); }
+.ahf-edge-hit         { background:rgba(134,239,172,.12); color:#86efac; border:1px solid rgba(134,239,172,.25); }
+.ahf-edge-neutral     { background:rgba(148,163,184,.10); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
+.ahf-edge-pitcher     { background:rgba(239,68,68,.12); color:#ef4444; border:1px solid rgba(239,68,68,.25); }
+.ahf-pitch-chips      { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:7px; }
+.ahf-pitch-chip       { display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:10px; border:1px solid; }
+.ahf-chip-type        { font-weight:800; font-size:9px; font-family:monospace; }
+.ahf-chip-stat        { font-weight:700; }
+.ahf-reason           { font-size:11px; color:#cbd5e1; line-height:1.4; margin-bottom:4px; }
+.ahf-risks            { display:flex; flex-wrap:wrap; gap:4px; }
+.ahf-risk-chip        { font-size:9px; color:#f59e0b; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.2); padding:2px 6px; border-radius:4px; }
+.ahf-no-data          { font-size:11px; color:#475569; text-align:center; padding:24px 0; }
+@media(max-width:400px) { .ahf-card-top { gap:8px; } .ahf-name { font-size:12px; } }
 @media(max-width:400px){
   .pa-ars-stat-row { gap:8px; }
   .pa-ars-stat strong { font-size:11px; }
@@ -2593,7 +2616,18 @@ main { padding: 28px 0 60px; }
         <button id="labGlobalScanBtn" class="lab-global-scan-btn" onclick="handleGlobalScan()">🌐 Scan All Games for Top Picks</button>
         <button id="labLeaderScanBtn" class="lab-global-scan-btn" onclick="handleLeaderboardScan()" style="margin-top:8px">🏆 Scan Hit Leaderboard</button>
         <button id="labTeamScanBtn" class="lab-global-scan-btn" onclick="handleTeamScan()" style="margin-top:8px">🏟️ Team Win Predictor</button>
+        <button id="labArsenalBtn" class="lab-global-scan-btn" onclick="handleArsenalHitFinder()" style="margin-top:8px">⚾ Arsenal Hit Finder</button>
         <div class="lab-game-grid" id="labGameGrid"></div>
+      </div>
+      <!-- Screen Arsenal Hit Finder -->
+      <div id="labScreenArsenal" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
+          <span class="lab-back-crumb">Arsenal Hit Finder — All Games</span>
+        </div>
+        <div class="lab-global-elite-header">⚾ Arsenal Hit Finder · Pitch-Type Matchup Rankings</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.45">Hitters ranked by how well their pitch-type profile matches today's opposing starter's arsenal. Ignores ERA, park, and bullpen — pitch-matchup signal only.</div>
+        <div id="labArsenalCards"></div>
       </div>
       <!-- Screen 1b: Global Elite Scan Results -->
       <div id="labScreenGlobalScan" class="lab-screen" style="display:none;">
@@ -10673,8 +10707,184 @@ let _labState = { gamePk: null, playerId: null, source: null };
 let _labCompareSet = new Set();
 let _lastCompareData = null;
 
+// ─── ARSENAL HIT FINDER ────────────────────────────────────────────────────
+
+function computeArsenalHitEdge(player, gd) {
+  if (!state.savantPitcher || !state.savantBatter) return { score: 0, hasData: false };
+  const pitcher = player.isAway ? gd.homePitcher : gd.awayPitcher;
+  if (!pitcher?.id) return { score: 0, hasData: false };
+
+  const pRows = state.savantPitcher.get(String(pitcher.id)) || [];
+  const bRows = state.savantBatter.get(String(player.id))   || [];
+  if (!pRows.length || !bRows.length) return { score: 0, hasData: false };
+
+  const bMap = new Map(bRows.map(r => [r.pitch_type, r]));
+  const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
+    : ['SL','CU','ST','KC','SV'].includes(code) ? '#f59e0b' : '#a855f7';
+
+  let raw = 0;
+  const matches = [];
+
+  for (const p of pRows) {
+    const usage = parseFloat(p.pitch_usage) || 0;
+    if (usage < 15) continue;
+    const b = bMap.get(p.pitch_type);
+    if (!b) continue;
+    const ba     = parseFloat(b.ba) || 0;
+    if (ba <= 0) continue; // no BA data — skip
+    const bWhiff = parseFloat(b.whiff_percent) || 0;
+    const rv100  = parseFloat(p.run_value_per_100);
+
+    let edge = 0;
+    // BA vs pitch type
+    if      (ba >= 0.310) edge += 6;
+    else if (ba >= 0.280) edge += 3;
+    else if (ba >= 0.250) edge += 0;
+    else if (ba >= 0.220) edge -= 3;
+    else if (ba >= 0.190) edge -= 5;
+    else                  edge -= 7;
+    // Whiff rate vs pitch
+    if      (bWhiff <= 12) edge += 3;
+    else if (bWhiff <= 20) edge += 1;
+    else if (bWhiff <= 30) edge += 0;
+    else if (bWhiff <= 40) edge -= 2;
+    else                   edge -= 4;
+    // Pitcher's pitch dominance (hittable = batter benefit)
+    if (!isNaN(rv100)) {
+      if      (rv100 >= 2)  edge += 2;
+      else if (rv100 <= -2) edge -= 2;
+    }
+
+    const weighted = edge * (usage / 100);
+    raw += weighted;
+    matches.push({ pitchName: p.pitch_name || p.pitch_type, pitchType: p.pitch_type, usage, ba, bWhiff, edge, weighted, typeColor: _typeColor(p.pitch_type) });
+  }
+
+  const score = Math.max(-15, Math.min(15, Math.round(raw)));
+  const edgeLabel = score >= 6 ? 'Strong Hitter Edge' : score >= 3 ? 'Hitter Edge'
+    : score >= -2 ? 'Neutral' : score >= -6 ? 'Pitcher Edge' : 'Strong Pitcher Edge';
+  const edgeCls = score >= 6 ? 'ahf-edge-strong-hit' : score >= 3 ? 'ahf-edge-hit'
+    : score >= -2 ? 'ahf-edge-neutral' : 'ahf-edge-pitcher';
+  const edgeColor = score >= 3 ? '#22c55e' : score >= -2 ? '#94a3b8' : '#ef4444';
+
+  const sorted = [...matches].sort((a, b) => b.weighted - a.weighted);
+  const topMatch = sorted[0];
+  const worstMatch = sorted[sorted.length - 1];
+
+  const reasons = [];
+  if (topMatch && topMatch.weighted > 0) {
+    const baStr = '.' + Math.round(topMatch.ba * 1000).toString().padStart(3,'0');
+    reasons.push(`Hits ${topMatch.pitchName} well (${baStr} BA) — pitcher throws it ${topMatch.usage.toFixed(0)}%`);
+  } else if (score <= -3 && topMatch) {
+    const baStr = '.' + Math.round(topMatch.ba * 1000).toString().padStart(3,'0');
+    reasons.push(`Struggles vs ${topMatch.pitchName} (${baStr} BA) — pitcher's primary offering`);
+  }
+
+  const risks = [];
+  if (!gd.lineupPosted && !gd.awayLineupPosted && !gd.homeLineupPosted) risks.push('Lineup unconfirmed');
+  if (worstMatch && worstMatch !== topMatch && worstMatch.weighted <= -2 && worstMatch.usage >= 20)
+    risks.push(`Risk: weak vs ${worstMatch.pitchName} (${worstMatch.usage.toFixed(0)}% use)`);
+
+  const displayPitches = sorted.filter(m => Math.abs(m.weighted) >= 0.5).slice(0, 3);
+  return { score, edgeLabel, edgeCls, edgeColor, reasons, risks, matches: displayPitches, pitcher, hasData: true };
+}
+
+async function runArsenalScan() {
+  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const results  = [];
+  for (const gd of allGames) {
+    for (const player of (gd.players||[]).filter(p => p.id)) {
+      const r = computeArsenalHitEdge(player, gd);
+      if (!r.hasData) continue;
+      results.push({
+        player, gd, score: r.score,
+        edgeLabel: r.edgeLabel, edgeCls: r.edgeCls, edgeColor: r.edgeColor,
+        reasons: r.reasons, risks: r.risks, matches: r.matches,
+        pitcher: r.pitcher,
+        gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
+        gamePk: gd.gamePk,
+      });
+    }
+  }
+  return results.sort((a, b) => b.score - a.score).slice(0, 30);
+}
+
+function _arsenalHitCardHTML(r, rank) {
+  const { player, pitcher, score, edgeLabel, edgeCls, edgeColor, reasons, risks, matches, gameLabel } = r;
+  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const initial  = (player.name||'?')[0].toUpperCase();
+
+  const pitchChips = matches.map(m => {
+    const baStr   = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
+    const chipClr = m.weighted >= 1 ? m.typeColor : '#ef4444';
+    const chipBg  = m.weighted >= 1 ? m.typeColor + '18' : 'rgba(239,68,68,.12)';
+    const chipBdr = m.weighted >= 1 ? m.typeColor + '40' : 'rgba(239,68,68,.3)';
+    return `<div class="ahf-pitch-chip" style="background:${chipBg};border-color:${chipBdr}">
+      <span class="ahf-chip-type" style="color:${chipClr}">${escHtml(m.pitchType)}</span>
+      <span style="color:var(--text-muted);font-size:9px">${m.usage.toFixed(0)}%</span>
+      <span class="ahf-chip-stat" style="color:${m.weighted >= 0 ? '#22c55e' : '#ef4444'}">${baStr}</span>
+    </div>`;
+  }).join('');
+
+  const pitcherLine = pitcher?.name ? `vs ${escHtml(pitcher.name)}` : '';
+  const reasonHtml  = reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : '';
+  const riskHtml    = risks.length ? `<div class="ahf-risks">${risks.map(r => `<span class="ahf-risk-chip">⚠ ${escHtml(r)}</span>`).join('')}</div>` : '';
+
+  return `<div class="ahf-card">
+    <div class="ahf-card-top">
+      <span class="ahf-rank">#${rank}</span>
+      <img class="ahf-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="ahf-photo-fallback" style="display:none">${initial}</div>
+      <div class="ahf-info">
+        <div class="ahf-name">${escHtml(player.name||'Unknown')}</div>
+        <div class="ahf-meta">${escHtml(player.teamAbbr||player.team||'')} · ${escHtml(gameLabel)} · ${pitcherLine}</div>
+      </div>
+      <span class="ahf-edge-badge ${edgeCls}">${escHtml(edgeLabel)}</span>
+    </div>
+    ${pitchChips ? `<div class="ahf-pitch-chips">${pitchChips}</div>` : ''}
+    ${reasonHtml}
+    ${riskHtml}
+  </div>`;
+}
+
+async function handleArsenalHitFinder() {
+  const btn = document.getElementById('labArsenalBtn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Scanning…';
+
+  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  if (!allGames.length) {
+    btn.disabled = false;
+    const _c = document.getElementById('labArsenalCards');
+    if (_c) _c.innerHTML = '<div class="ahf-no-data">Game data is still loading — try again in a moment.</div>';
+    _labShow('labScreenArsenal');
+    return;
+  }
+
+  try {
+    await ensureSavantData(new Date().getFullYear());
+    const results = await runArsenalScan();
+    btn.textContent = `✅ Arsenal Hit Finder`;
+    btn.disabled = false;
+
+    const cards = document.getElementById('labArsenalCards');
+    if (!cards) return;
+    if (!results.length) {
+      cards.innerHTML = '<div class="ahf-no-data">No pitch-type matchup data available — Savant data may be loading. Try again in a moment.</div>';
+    } else {
+      cards.innerHTML = results.map((r, i) => _arsenalHitCardHTML(r, i + 1)).join('');
+    }
+    _labShow('labScreenArsenal');
+  } catch(e) {
+    console.error('Arsenal scan error:', e);
+    btn.disabled = false;
+    btn.textContent = '⚾ Arsenal Hit Finder';
+  }
+}
+
 function _labShow(screenId) {
-  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenTeamScan','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
+  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
   window.scrollTo(0, 0);
 }
