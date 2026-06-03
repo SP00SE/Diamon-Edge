@@ -3772,7 +3772,7 @@ async function cachedFetch(url, opts={}) {
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.01.1';
+const APP_VERSION = '2026.06.03.1';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -8227,6 +8227,9 @@ async function startFetch() {
       state.selectedGamePk = null;
     }
 
+    // Clear loading flag BEFORE any render calls so tab guards like
+    // `if (state.loading) return` in renderBeatTheStreak don't block content.
+    state.loading = false;
     hideLoading();
     if (state.selectedGamePk) renderSelectedGame();
     renderTopPlays();
@@ -8244,6 +8247,7 @@ async function startFetch() {
     saveSnapshot(); // persist processed predictions for same-day instant reload
 
   } catch (err) {
+    state.loading = false;
     console.error('Fetch error:', err);
     showError('MLB Stats API connection error (ECONNRESET). This is usually temporary — wait a few seconds and tap Retry.');
   } finally {
