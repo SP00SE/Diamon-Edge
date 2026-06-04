@@ -11003,16 +11003,19 @@ function _arsenalHitCardHTML(r, rank) {
 
   // ── Pitch match chips — human-readable strength labels ───────────────
   const pitchChips = matches.map(m => {
-    const baStr    = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
-    const chipLabel = m.weighted >= 2.0 ? 'Strong'
-                    : m.weighted >= 0.5 ? 'Good'
-                    : m.weighted >= -0.5 ? 'Neutral'
-                    : m.weighted >= -2.0 ? 'Weak'
+    const baStr = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
+    // Label from raw BA — .200 is never "Neutral". MLB avg ≈ .252.
+    const chipLabel = m.ba >= 0.300 ? 'Strong'
+                    : m.ba >= 0.270 ? 'Good'
+                    : m.ba >= 0.240 ? 'Neutral'
+                    : m.ba >= 0.210 ? 'Weak'
                     : 'Risk';
-    const chipClr = m.weighted >= 1 ? m.typeColor : '#ef4444';
-    const chipBg  = m.weighted >= 1 ? m.typeColor + '18' : 'rgba(239,68,68,.12)';
-    const chipBdr = m.weighted >= 1 ? m.typeColor + '40' : 'rgba(239,68,68,.3)';
-    const labelClr = m.weighted >= 0.5 ? '#22c55e' : m.weighted >= -0.5 ? '#94a3b8' : '#ef4444';
+    const isPos    = m.ba >= 0.270;
+    const isNeg    = m.ba <  0.240;
+    const chipClr  = isPos ? m.typeColor : isNeg ? '#ef4444' : '#94a3b8';
+    const chipBg   = isPos ? m.typeColor + '18' : isNeg ? 'rgba(239,68,68,.12)' : 'rgba(148,163,184,.08)';
+    const chipBdr  = isPos ? m.typeColor + '40' : isNeg ? 'rgba(239,68,68,.3)'  : 'rgba(148,163,184,.2)';
+    const labelClr = m.ba >= 0.270 ? '#22c55e' : m.ba >= 0.240 ? '#94a3b8' : '#ef4444';
     return `<div class="ahf-pitch-chip" style="background:${chipBg};border-color:${chipBdr}">
       <span class="ahf-chip-type" style="color:${chipClr}">${escHtml(m.pitchType)}</span>
       <span class="ahf-chip-use">${m.usage.toFixed(0)}%</span>
