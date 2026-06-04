@@ -10755,6 +10755,20 @@ function computeArsenalHitEdge(player, gd) {
   const bRows = state.savantBatter.get(String(player.id))   || [];
   if (!pRows.length || !bRows.length) return { score: 0, hasData: false };
 
+  // Elite pitcher filter: K/9 > 9 AND H/9 < 8 means this pitcher suppresses
+  // hits at an elite level regardless of batter pitch-type splits — exclude entirely.
+  const _ps  = pitcher.seasonStats || {};
+  const _pIP = parseFloat(_ps.inningsPitched) || 0;
+  if (_pIP > 10) {
+    const _pK    = parseFloat(_ps.strikeOuts)   || 0;
+    const _pBB   = parseFloat(_ps.baseOnBalls)  || 0;
+    const _pW    = parseFloat(_ps.whip)         || 0;
+    const _k9    = (_pK / _pIP) * 9;
+    const _pHits = Math.max(0, _pW * _pIP - _pBB);
+    const _h9    = (_pHits / _pIP) * 9;
+    if (_k9 > 9 && _h9 < 8) return { score: 0, hasData: false };
+  }
+
   const bMap = new Map(bRows.map(r => [r.pitch_type, r]));
   const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
     : ['SL','CU','ST','KC','SV'].includes(code) ? '#f59e0b' : '#a855f7';
