@@ -789,10 +789,10 @@ main { padding: 28px 0 60px; }
 .ahf-h2h-fallback     { width:44px; height:44px; border-radius:50%; background:var(--bg-hover); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--text-muted); margin-bottom:4px; flex-shrink:0; }
 .ahf-h2h-name         { font-size:12px; font-weight:700; color:#e2e8f0; line-height:1.2; margin-bottom:1px; }
 .ahf-h2h-sub          { font-size:9px; color:var(--text-muted); margin-bottom:5px; }
-.ahf-h2h-stats        { width:100%; }
-.ahf-h2h-stat         { display:flex; justify-content:space-between; align-items:center; padding:1px 0; font-size:10px; }
-.ahf-h2h-stat-lbl     { color:var(--text-muted); }
-.ahf-h2h-stat-val     { font-weight:700; color:#cbd5e1; }
+.ahf-h2h-stats        { width:100%; display:flex; flex-direction:column; align-items:center; }
+.ahf-h2h-stat         { display:grid; grid-template-columns:52px 1fr; align-items:baseline; padding:1px 2px; font-size:10px; width:100%; max-width:120px; }
+.ahf-h2h-stat-lbl     { color:var(--text-muted); text-align:right; padding-right:5px; white-space:nowrap; }
+.ahf-h2h-stat-val     { font-weight:700; color:#cbd5e1; text-align:left; }
 .ahf-h2h-stat-val.good { color:#22c55e; }
 .ahf-h2h-stat-val.warn { color:#ef4444; }
 .ahf-h2h-stat-cmt  { font-size:8px; color:var(--text-muted); font-weight:400; margin-left:3px; font-style:italic; }
@@ -11230,9 +11230,10 @@ function openLabFor(playerId, source) {
     _paToast('Player not in today\'s lineup — Lab analysis requires an active game today.');
     return;
   }
-  _labState.playerId = playerId;
-  _labState.gamePk   = p.gamePk || null;
-  _labState.source   = source || state.activeTab || 'general';
+  _labState.playerId    = playerId;
+  _labState.gamePk      = p.gamePk || null;
+  _labState.source      = source || state.activeTab || 'general';
+  _labState.fromArsenal = source === 'arsenal';
   document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
   const labBtn = document.querySelector('.main-tab[onclick*="\'lab\'"]');
   if (labBtn) labBtn.classList.add('active');
@@ -11432,7 +11433,10 @@ function labGoRoster() {
   if (_lBar) _lBar.style.display = 'none';
   const _csBar = document.getElementById('labCompareShareBar');
   if (_csBar) _csBar.style.display = 'none';
-  if (_labState.fromGlobalScan) {
+  if (_labState.fromArsenal) {
+    _labState.fromArsenal = false;
+    _labShow('labScreenArsenal');
+  } else if (_labState.fromGlobalScan) {
     _labState.fromGlobalScan = false;
     _labShow('labScreenGlobalScan');
   } else if (_labState.fromLeaderScan) {
@@ -14365,7 +14369,7 @@ async function runLabAnalysis() {
   const _lNI = document.getElementById('labNativeShareItem');
   if (_lNI) _lNI.style.display = navigator.share ? '' : 'none';
   const _rBtn = document.querySelector('#labScreenAnalysis .lab-back-btn:first-child');
-  if (_rBtn) _rBtn.textContent = _labState.fromGlobalScan ? '← Elite Picks' : _labState.fromLeaderScan ? '← Leaderboard Picks' : '← Roster';
+  if (_rBtn) _rBtn.textContent = _labState.fromArsenal ? '← Arsenal' : _labState.fromGlobalScan ? '← Elite Picks' : _labState.fromLeaderScan ? '← Leaderboard Picks' : '← Roster';
 
   _labShow('labScreenAnalysis');
 }
