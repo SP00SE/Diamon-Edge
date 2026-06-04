@@ -10877,7 +10877,8 @@ function _arsenalHitCardHTML(r, rank) {
   const pPhotoUrl = pitcher?.id
     ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current`
     : '';
-  const pInitial = (pitcher?.name || 'SP')[0].toUpperCase();
+  const pName    = pitcher?.fullName || pitcher?.name || null;
+  const pInitial = (pName || 'SP')[0].toUpperCase();
   const ps  = pitcher?.seasonStats || {};
   const pIP = parseFloat(ps.inningsPitched) || 0;
   const pK  = parseFloat(ps.strikeOuts)     || 0;
@@ -10914,11 +10915,29 @@ function _arsenalHitCardHTML(r, rank) {
     </div>`;
   }).join('');
 
-  // ── Live badge ───────────────────────────────────────────────────────
-  const _ld = (state.allGamesLiveData || {})[r.gamePk];
-  const liveBadge = _ld?.isLive  ? `<span class="bb-live-pip">● LIVE</span>`
-                  : _ld?.isFinal ? `<span class="bb-live-pip bb-pip-final">● FINAL</span>`
-                  : '';
+  // ── Live / Final badge + per-player stats (same pattern as BTS cards) ─
+  const _ld  = (state.allGamesLiveData || {})[r.gamePk];
+  const _bs  = _ld?.statsMap?.[player.id];
+  const _ab  = _bs?.atBats || 0;
+  let achieveHTML = '';
+  let liveBadge   = '';
+  if (_ld && _bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+    const _pip     = _ld.isLive
+      ? `<span class="bb-live-pip">● LIVE</span>`
+      : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+    const _hitBadge = (_bs.hits || 0) > 0
+      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
+      : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
+    const _hrBadge  = (_bs.homeRuns || 0) > 0
+      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
+      : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+    achieveHTML = `<div class="bb-achieve-row" style="margin-bottom:6px">${_pip}${_hitBadge}${_hrBadge}</div>`;
+    liveBadge   = _pip;
+  } else if (_ld?.isLive) {
+    liveBadge = `<span class="bb-live-pip">● LIVE</span>`;
+  } else if (_ld?.isFinal) {
+    liveBadge = `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+  }
 
   const reasonHtml = reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : '';
   const riskHtml   = risks.length   ? `<div class="ahf-risks">${risks.map(r2 => `<span class="ahf-risk-chip">⚠ ${escHtml(r2)}</span>`).join('')}</div>` : '';
@@ -10958,12 +10977,13 @@ function _arsenalHitCardHTML(r, rank) {
         ${pitcher?.id
           ? `<img class="ahf-h2h-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-h2h-fallback" style="display:none">${pInitial}</div>`
           : `<div class="ahf-h2h-fallback">${pInitial}</div>`}
-        <div class="ahf-h2h-name">${escHtml(pitcher?.name || 'Unknown SP')}</div>
+        <div class="ahf-h2h-name">${escHtml(pName || 'Unknown SP')}</div>
         <div class="ahf-h2h-sub">${escHtml(pHand)}</div>
         <div class="ahf-h2h-stats">${pitcherStats || '<span style="font-size:10px;color:var(--text-muted)">No data</span>'}</div>
       </div>
     </div>
 
+    ${achieveHTML}
     ${pitchChips ? `<div class="ahf-pitch-chips">${pitchChips}</div>` : ''}
     ${reasonHtml}
     ${riskHtml}
