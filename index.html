@@ -795,6 +795,13 @@ main { padding: 28px 0 60px; }
 .ahf-h2h-stat-val     { font-weight:700; color:#cbd5e1; }
 .ahf-h2h-stat-val.good { color:#22c55e; }
 .ahf-h2h-stat-val.warn { color:#ef4444; }
+.ahf-h2h-stat-cmt  { font-size:8px; color:var(--text-muted); font-weight:400; margin-left:3px; font-style:italic; }
+.ahf-split-section { margin-top:6px; padding-top:5px; border-top:1px solid var(--border); width:100%; }
+.ahf-split-row     { display:flex; align-items:center; justify-content:space-between; padding:1px 0; font-size:9px; }
+.ahf-split-lbl     { color:var(--text-muted); flex-shrink:0; max-width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ahf-split-lbl.rel { color:#a78bfa; font-weight:700; }
+.ahf-split-val     { font-weight:600; color:#cbd5e1; margin:0 4px; }
+.ahf-split-ab      { color:var(--text-muted); font-size:8px; flex-shrink:0; }
 .ahf-reason           { font-size:11px; color:#cbd5e1; line-height:1.4; margin-bottom:4px; }
 .ahf-risks            { display:flex; flex-wrap:wrap; gap:4px; }
 .ahf-risk-chip        { font-size:9px; color:#f59e0b; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.2); padding:2px 6px; border-radius:4px; }
@@ -4753,6 +4760,10 @@ async function processGame(game) {
     const hitGames7    = stats.hitGames7    ?? null;
     const vsRHP        = stats.vsRHP        || null;
     const vsLHP        = stats.vsLHP        || null;
+    const homeStats    = stats.homeStats    || null;
+    const awayStats    = stats.awayStats    || null;
+    const dayStats     = stats.dayStats     || null;
+    const nightStats   = stats.nightStats   || null;
     const teamPAs      = batter.isAway ? awayPAList : homePAList;
 
     const batterObj = { ...batter, seasonStats, last7Stats, last10Stats, teamPAList: teamPAs, hitStreak, hrStreak, recentStarts, hitGames7, vsRHP, vsLHP };
@@ -4766,7 +4777,7 @@ async function processGame(game) {
       gamePk,
       seasonStats, last7Stats, last10Stats, last30Stats,
       hitStreak, hrStreak, recentStarts, hitGames7,
-      vsRHP, vsLHP,
+      vsRHP, vsLHP, homeStats, awayStats, dayStats, nightStats,
       teamPAList: teamPAs,
       matchup: `vs ${pitcher.name || (batter.isAway ? homeAbbr : awayAbbr)}${pitcher.pitchHand ? ` (${pitcher.pitchHand}HP)` : ''}${pitcher.seasonStats?.era != null ? ` ERA ${Number(pitcher.seasonStats.era).toFixed(2)}` : ''}`,
       pitcherName: pitcher.name,
@@ -4916,7 +4927,7 @@ async function fetchStreaks(playerId) {
 
 async function fetchHandednessSplits(playerId) {
   const season = new Date().getFullYear();
-  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=statSplits&season=${season}&group=hitting&gameType=R&sitCodes=vr,vl`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=statSplits&season=${season}&group=hitting&gameType=R&sitCodes=vr,vl,h,a,d,n`;
   try {
     const data = await cachedFetch(url);
     const splits = data?.stats?.[0]?.splits || [];
@@ -4925,8 +4936,15 @@ async function fetchHandednessSplits(playerId) {
       if (!s) return null;
       return { avg: parseFloat(s.avg)||0, obp: parseFloat(s.obp)||0, slg: parseFloat(s.slg)||0, atBats: parseInt(s.atBats)||0 };
     };
-    return { vsRHP: pick('vr'), vsLHP: pick('vl') };
-  } catch { return { vsRHP: null, vsLHP: null }; }
+    return {
+      vsRHP:      pick('vr'),
+      vsLHP:      pick('vl'),
+      homeStats:  pick('h'),
+      awayStats:  pick('a'),
+      dayStats:   pick('d'),
+      nightStats: pick('n'),
+    };
+  } catch { return { vsRHP: null, vsLHP: null, homeStats: null, awayStats: null, dayStats: null, nightStats: null }; }
 }
 
 async function batchFetchBatterStats(batters) {
@@ -4939,7 +4957,7 @@ async function batchFetchBatterStats(batters) {
       const [season, streaks, splits] = await Promise.all([
         fetchPlayerHittingStats(b.id).catch(()=>null),
         fetchStreaks(b.id).catch(()=>({ hitStreak:0, hrStreak:0, recentStarts:null, hitGames7:null, last7Agg:null, last10Agg:null, last30Agg:null })),
-        fetchHandednessSplits(b.id).catch(()=>({ vsRHP:null, vsLHP:null })),
+        fetchHandednessSplits(b.id).catch(()=>({ vsRHP:null, vsLHP:null, homeStats:null, awayStats:null, dayStats:null, nightStats:null })),
       ]);
       result[b.id] = {
         season,
@@ -4948,7 +4966,12 @@ async function batchFetchBatterStats(batters) {
         last30: streaks.last30Agg || null,
         hitStreak: streaks.hitStreak, hrStreak: streaks.hrStreak,
         recentStarts: streaks.recentStarts, hitGames7: streaks.hitGames7,
-        vsRHP: splits.vsRHP, vsLHP: splits.vsLHP,
+        vsRHP:      splits.vsRHP,
+        vsLHP:      splits.vsLHP,
+        homeStats:  splits.homeStats  || null,
+        awayStats:  splits.awayStats  || null,
+        dayStats:   splits.dayStats   || null,
+        nightStats: splits.nightStats || null,
       };
     }));
     // Pause between chunks to let the MLB API breathe — longer delay reduces ECONNRESET
@@ -10948,8 +10971,8 @@ function _arsenalHitCardHTML(r, rank) {
   const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, sampleWarning, matches, gameLabel } = r;
   const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : null;
   const _fmt = (v, d=2) => v > 0 ? (+v).toFixed(d) : null;
-  const _stat = (lbl, val, cls='') => val != null
-    ? `<div class="ahf-h2h-stat"><span class="ahf-h2h-stat-lbl">${lbl}</span><span class="ahf-h2h-stat-val${cls ? ' '+cls : ''}">${val}</span></div>`
+  const _stat = (lbl, val, cls='', cmt='') => val != null
+    ? `<div class="ahf-h2h-stat"><span class="ahf-h2h-stat-lbl">${lbl}</span><span class="ahf-h2h-stat-val${cls ? ' '+cls : ''}">${val}${cmt ? `<span class="ahf-h2h-stat-cmt">${escHtml(cmt)}</span>` : ''}</span></div>`
     : '';
 
   // ── Batter side ──────────────────────────────────────────────────────
@@ -10957,13 +10980,44 @@ function _arsenalHitCardHTML(r, rank) {
   const initial  = (player.name||'?')[0].toUpperCase();
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
+  // Batter stat comments
+  const avgCmt = !ss.avg ? '' : ss.avg >= 0.300 ? 'Strong' : ss.avg >= 0.275 ? 'Solid' : ss.avg >= 0.250 ? 'Average' : ss.avg >= 0.220 ? 'Weak bat' : 'Struggling';
+  const obpCmt = !ss.obp ? '' : ss.obp >= 0.370 ? 'Elite patience' : ss.obp >= 0.340 ? 'Good eye' : ss.obp >= 0.310 ? 'Average' : 'Chase risk';
+  const slgCmt = !ss.slg ? '' : ss.slg >= 0.500 ? 'Power threat' : ss.slg >= 0.430 ? 'Good power' : ss.slg >= 0.380 ? 'Average' : 'Contact-first';
+  const l7Cmt  = !l7.avg ? '' : l7.avg >= 0.300 ? 'Hot' : l7.avg >= 0.260 ? 'On pace' : l7.avg > 0 && l7.avg < 0.210 ? 'Cold' : '';
+
   const batStats = [
-    _stat('AVG',    _avg(ss.avg)),
-    _stat('OBP',    _avg(ss.obp)),
-    _stat('SLG',    _avg(ss.slg)),
-    _stat('L7 AVG', _avg(l7.avg), l7.avg >= 0.300 ? 'good' : l7.avg > 0 && l7.avg < 0.220 ? 'warn' : ''),
+    _stat('AVG',    _avg(ss.avg),  ss.avg >= 0.285 ? 'good' : ss.avg > 0 && ss.avg < 0.230 ? 'warn' : '', avgCmt),
+    _stat('OBP',    _avg(ss.obp),  ss.obp >= 0.340 ? 'good' : ss.obp > 0 && ss.obp < 0.290 ? 'warn' : '', obpCmt),
+    _stat('SLG',    _avg(ss.slg),  ss.slg >= 0.430 ? 'good' : ss.slg > 0 && ss.slg < 0.350 ? 'warn' : '', slgCmt),
+    _stat('L7 AVG', _avg(l7.avg),  l7.avg >= 0.300 ? 'good' : l7.avg > 0 && l7.avg < 0.220 ? 'warn' : '', l7Cmt),
     _stat('HR',     ss.homeRuns > 0 ? ss.homeRuns : null),
   ].filter(Boolean).join('');
+
+  // Platoon & context splits
+  const pHand_      = pitcher?.pitchHand || 'R';
+  const relSplit    = pHand_ === 'L' ? player.vsLHP : player.vsRHP;
+  const oppSplit    = pHand_ === 'L' ? player.vsRHP : player.vsLHP;
+  const relLabel    = pHand_ === 'L' ? 'vs LHP ★' : 'vs RHP ★';
+  const oppLabel    = pHand_ === 'L' ? 'vs RHP'   : 'vs LHP';
+  const locSplit    = player.isAway ? player.awayStats : player.homeStats;
+  const locLabel    = player.isAway ? 'Away' : 'Home';
+  const isNight     = (() => { try { return new Date(r.gd?.gameDate).getUTCHours() >= 16; } catch { return null; } })();
+  const timeSplit   = isNight === true ? player.nightStats : isNight === false ? player.dayStats : null;
+  const timeLabel   = isNight === true ? 'Night' : 'Day';
+  const _splitRow   = (lbl, spl, isRel) => {
+    if (!spl || spl.atBats < (isRel ? 10 : 5)) return '';
+    const a = _avg(spl.avg), o = _avg(spl.obp);
+    if (!a) return '';
+    return `<div class="ahf-split-row"><span class="ahf-split-lbl${isRel?' rel':''}">${escHtml(lbl)}</span><span class="ahf-split-val">${a}/${o||'---'}</span><span class="ahf-split-ab">${spl.atBats}AB</span></div>`;
+  };
+  const splitRows = [
+    _splitRow(relLabel, relSplit, true),
+    _splitRow(oppLabel, oppSplit, false),
+    _splitRow(locLabel, locSplit, false),
+    timeSplit ? _splitRow(timeLabel, timeSplit, false) : '',
+  ].filter(Boolean).join('');
+  const splitSection = splitRows ? `<div class="ahf-split-section">${splitRows}</div>` : '';
 
   // ── Pitcher side ─────────────────────────────────────────────────────
   const pPhotoUrl = pitcher?.id
@@ -10984,13 +11038,20 @@ function _arsenalHitCardHTML(r, rank) {
   const bb9   = pIP > 0 ? (pBB  / pIP * 9).toFixed(1) : null;
   const bbBfP = pBF > 0 ? (pBB  / pBF * 100).toFixed(1) + '%' : null;
   const pHand = pitcher?.pitchHand ? pitcher.pitchHand + 'HP' : '';
+  // Pitcher stat comments (same labels as Lab analysis)
+  const eraCmt  = !ps.era  ? '' : ps.era  <= 2.50 ? 'Elite Ace' : ps.era  <= 3.25 ? 'Solid' : ps.era  <= 4.00 ? 'Average' : ps.era  <= 5.00 ? 'Hittable' : 'Vulnerable';
+  const whipCmt = !ps.whip ? '' : ps.whip <= 1.00 ? 'Elite'     : ps.whip <= 1.20 ? 'Good'  : ps.whip <= 1.35 ? 'Average' : 'Allows traffic';
+  const k9Cmt   = !k9 ? '' : +k9 >= 10 ? 'Elite K' : +k9 >= 8 ? 'High K' : +k9 >= 6 ? 'Average' : 'Low K (contact)';
+  const h9Cmt   = !h9 ? '' : +h9 >= 9.5 ? 'Allows Hits Freely' : +h9 >= 8.5 ? 'Hit-Prone' : +h9 >= 7.0 ? 'Average' : 'Suppresses Hits';
+  const bb9Cmt  = !bb9 ? '' : +bb9 <= 2.5 ? 'Elite control' : +bb9 <= 3.5 ? 'Good control' : +bb9 <= 4.5 ? 'Average' : 'Wild';
+
   const pitcherStats = [
-    _stat('ERA',    _fmt(ps.era),  ps.era > 0 && ps.era <= 3.25 ? 'good' : ps.era >= 4.75 ? 'warn' : ''),
-    _stat('WHIP',   _fmt(ps.whip), ps.whip > 0 && ps.whip <= 1.10 ? 'good' : ps.whip >= 1.40 ? 'warn' : ''),
+    _stat('ERA',    _fmt(ps.era),  ps.era > 0 && ps.era <= 3.25 ? 'good' : ps.era >= 4.75 ? 'warn' : '', eraCmt),
+    _stat('WHIP',   _fmt(ps.whip), ps.whip > 0 && ps.whip <= 1.10 ? 'good' : ps.whip >= 1.40 ? 'warn' : '', whipCmt),
     _stat('IP',     pIP > 0 ? pIP.toFixed(1) : null),
-    _stat('K/9',    k9, k9 >= 9.5 ? 'good' : k9 < 6.5 && k9 > 0 ? 'warn' : ''),
-    _stat('H/9',    h9, h9 > 0 && h9 <= 7.5 ? 'good' : h9 >= 9.5 ? 'warn' : ''),
-    _stat('BB/9',   bb9, bb9 > 0 && bb9 <= 2.5 ? 'good' : bb9 >= 4.0 ? 'warn' : ''),
+    _stat('K/9',    k9, +k9 >= 9.5 ? 'good' : +k9 < 6.5 && +k9 > 0 ? 'warn' : '', k9Cmt),
+    _stat('H/9',    h9, +h9 > 0 && +h9 <= 7.5 ? 'good' : +h9 >= 9.5 ? 'warn' : '', h9Cmt),
+    _stat('BB/9',   bb9, +bb9 > 0 && +bb9 <= 2.5 ? 'good' : +bb9 >= 4.0 ? 'warn' : '', bb9Cmt),
     _stat('BB/BF%', bbBfP),
   ].filter(Boolean).join('');
 
@@ -11075,6 +11136,7 @@ function _arsenalHitCardHTML(r, rank) {
         <div class="ahf-h2h-sub">${escHtml(player.teamAbbr||player.team||'')}${player.position ? ' · '+escHtml(player.position) : ''}${player.batSide ? ' · '+escHtml(player.batSide)+'HB' : ''}</div>
         <div style="margin-bottom:4px">${lineupBadge}</div>
         <div class="ahf-h2h-stats">${batStats}</div>
+        ${splitSection}
       </div>
 
       <!-- VS divider -->
