@@ -10755,19 +10755,20 @@ function computeArsenalHitEdge(player, gd) {
   const bRows = state.savantBatter.get(String(player.id))   || [];
   if (!pRows.length || !bRows.length) return { score: 0, hasData: false };
 
-  // Elite pitcher filter: K/9 > 9 AND H/9 < 8 means this pitcher suppresses
-  // hits at an elite level regardless of batter pitch-type splits — exclude entirely.
-  const _ps  = pitcher.seasonStats || {};
-  const _pIP = parseFloat(_ps.inningsPitched) || 0;
-  if (_pIP > 10) {
-    const _pK    = parseFloat(_ps.strikeOuts)   || 0;
-    const _pBB   = parseFloat(_ps.baseOnBalls)  || 0;
-    const _pW    = parseFloat(_ps.whip)         || 0;
-    const _k9    = (_pK / _pIP) * 9;
-    const _pHits = Math.max(0, _pW * _pIP - _pBB);
-    const _h9    = (_pHits / _pIP) * 9;
-    if (_k9 > 9 && _h9 < 8) return { score: 0, hasData: false };
-  }
+  // Compute pitcher rate stats (used for elite filter AND hittability bonus)
+  const _ps    = pitcher.seasonStats || {};
+  const _pIP   = parseFloat(_ps.inningsPitched) || 0;
+  const _pK    = parseFloat(_ps.strikeOuts)     || 0;
+  const _pBB   = parseFloat(_ps.baseOnBalls)    || 0;
+  const _pW    = parseFloat(_ps.whip)           || 0;
+  const _pHits = _pIP > 0 ? Math.max(0, _pW * _pIP - _pBB) : 0;
+  const _k9    = _pIP > 0 ? (_pK    / _pIP) * 9 : 0;
+  const _h9    = _pIP > 0 ? (_pHits / _pIP) * 9 : 0;
+  const _pBF   = _pIP > 0 ? _pIP * (3 + _pW) : 0;
+  const _bbBf  = _pBF > 0 ? _pBB / _pBF : 0;
+
+  // Elite pitcher filter: K/9 > 9 AND H/9 < 8 → exclude batter entirely
+  if (_pIP > 10 && _k9 > 9 && _h9 < 8) return { score: 0, hasData: false };
 
   const bMap = new Map(bRows.map(r => [r.pitch_type, r]));
   const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
@@ -10813,12 +10814,32 @@ function computeArsenalHitEdge(player, gd) {
 
   // Stacking bonus: count from ALL matches (no weight threshold — low-usage pitches
   // would be excluded by the 0.5 filter even when edge is clearly positive).
-  // A pitcher's 20%-use pitch with .290 BA is a real strength; it should count.
   const strongMatches = matches.filter(m => m.ba >= 0.280 && m.edge > 0).length;
   const stackBonus = strongMatches >= 3 ? 4.0   // 3+ pitch types = decisive breadth advantage
                    : strongMatches === 2 ? 2.0   // 2 pitch types = clear multi-pitch edge
                    : 0;
   raw += stackBonus;
+
+  // Pitcher hittability bonus — perfect target is high H/9, low K/9, low BB/BF%.
+  // Only applies when IP > 10 (meaningful sample) and batter has 2+ strong matches.
+  if (_pIP > 10 && strongMatches >= 2) {
+    let hittability = 0;
+    // H/9: pitcher allows many hits per 9 = hittable
+    if      (_h9 >= 10.5) hittability += 3;
+    else if (_h9 >=  9.5) hittability += 2;
+    else if (_h9 >=  8.5) hittability += 1;
+    else if (_h9 <   7.5) hittability -= 1;
+    // K/9: pitcher can't miss bats = batters make contact
+    if      (_k9 <= 5.5) hittability += 3;
+    else if (_k9 <= 7.0) hittability += 2;
+    else if (_k9 <= 8.0) hittability += 1;
+    else if (_k9 >= 9.0) hittability -= 1;
+    // BB/BF%: low walk rate = throws strikes, but those strikes get hit
+    if      (_bbBf <= 0.06) hittability += 2;
+    else if (_bbBf <= 0.08) hittability += 1;
+    else if (_bbBf >= 0.12) hittability -= 1;
+    raw += hittability;
+  }
 
   const score = Math.max(-15, Math.min(15, Math.round(raw)));
   const edgeLabel = score >= 6 ? 'Strong Hitter Edge' : score >= 3 ? 'Hitter Edge'
