@@ -10797,10 +10797,13 @@ function computeArsenalHitEdge(player, gd) {
     matches.push({ pitchName: p.pitch_name || p.pitch_type, pitchType: p.pitch_type, usage, ba, bWhiff, edge, weighted, typeColor: _typeColor(p.pitch_type) });
   }
 
-  // Stacking bonus: reward batters who handle multiple pitch types, not just one
-  const displayPitchesForStack = matches.filter(m => Math.abs(m.weighted) >= 0.5);
-  const strongMatches = displayPitchesForStack.filter(m => m.ba >= 0.280 && m.weighted >= 0).length;
-  const stackBonus = strongMatches >= 3 ? 2.5 : strongMatches === 2 ? 1.5 : 0;
+  // Stacking bonus: count from ALL matches (no weight threshold — low-usage pitches
+  // would be excluded by the 0.5 filter even when edge is clearly positive).
+  // A pitcher's 20%-use pitch with .290 BA is a real strength; it should count.
+  const strongMatches = matches.filter(m => m.ba >= 0.280 && m.edge > 0).length;
+  const stackBonus = strongMatches >= 3 ? 4.0   // 3+ pitch types = decisive breadth advantage
+                   : strongMatches === 2 ? 2.0   // 2 pitch types = clear multi-pitch edge
+                   : 0;
   raw += stackBonus;
 
   const score = Math.max(-15, Math.min(15, Math.round(raw)));
@@ -10828,7 +10831,7 @@ function computeArsenalHitEdge(player, gd) {
   if (worstMatch && worstMatch !== topMatch && worstMatch.weighted <= -2 && worstMatch.usage >= 20)
     risks.push(`Risk: weak vs ${worstMatch.pitchName} (${worstMatch.usage.toFixed(0)}% use)`);
 
-  const displayPitches = displayPitchesForStack.slice(0, 3);
+  const displayPitches = [...matches].sort((a, b) => b.usage - a.usage).slice(0, 3);
   return { score, edgeLabel, edgeCls, edgeColor, reasons, risks, matches: displayPitches, pitcher, hasData: true };
 }
 
