@@ -799,6 +799,23 @@ main { padding: 28px 0 60px; }
 .ahf-risks            { display:flex; flex-wrap:wrap; gap:4px; }
 .ahf-risk-chip        { font-size:9px; color:#f59e0b; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.2); padding:2px 6px; border-radius:4px; }
 .ahf-no-data          { font-size:11px; color:#475569; text-align:center; padding:24px 0; }
+/* Arsenal summary bar */
+.ahf-summary-bar { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.ahf-sum-chip    { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; }
+.ahf-sum-strong  { background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.25); }
+.ahf-sum-best    { background:rgba(99,102,241,.12); color:#a78bfa; border:1px solid rgba(99,102,241,.25); }
+.ahf-sum-pitch   { background:rgba(148,163,184,.10); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
+.ahf-sum-warn    { background:rgba(245,158,11,.10); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
+/* Lineup badges on Arsenal cards */
+.ahf-lineup-conf { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.25); }
+.ahf-lineup-proj { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; background:rgba(245,158,11,.10); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
+.ahf-lineup-unk  { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; background:rgba(148,163,184,.08); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
+/* Pitch chip sub-labels */
+.ahf-chip-use    { color:var(--text-muted); font-size:9px; margin:0 2px; }
+.ahf-chip-label  { font-size:9px; font-weight:700; }
+.ahf-chip-ba     { font-size:9px; color:var(--text-muted); }
+/* Small sample warning */
+.ahf-sample-warn { font-size:10px; color:#f59e0b; padding:2px 0 3px; }
 @media(max-width:400px) { .ahf-card-top { gap:8px; } .ahf-name { font-size:12px; } }
 @media(max-width:400px){
   .pa-ars-stat-row { gap:8px; }
@@ -2646,6 +2663,7 @@ main { padding: 28px 0 60px; }
         </div>
         <div class="lab-global-elite-header">⚾ Arsenal Hit Finder · Pitch-Type Matchup Rankings</div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.45">Hitters ranked by how well their pitch-type profile matches today's opposing starter's arsenal. Ignores ERA, park, and bullpen — pitch-matchup signal only.</div>
+        <div id="labArsenalSummaryBar" style="display:none"></div>
         <div id="labArsenalCards"></div>
       </div>
       <!-- Screen 1b: Global Elite Scan Results -->
@@ -10776,6 +10794,7 @@ function computeArsenalHitEdge(player, gd) {
 
   let raw = 0;
   const matches = [];
+  let putAwayRiskPitch = null;
 
   for (const p of pRows) {
     const usage = parseFloat(p.pitch_usage) || 0;
@@ -10783,33 +10802,44 @@ function computeArsenalHitEdge(player, gd) {
     const b = bMap.get(p.pitch_type);
     if (!b) continue;
     const ba     = parseFloat(b.ba) || 0;
-    if (ba <= 0) continue; // no BA data — skip
-    const bWhiff = parseFloat(b.whiff_percent) || 0;
-    const rv100  = parseFloat(p.run_value_per_100);
+    if (ba <= 0) continue;
+    const bWhiff  = parseFloat(b.whiff_percent) || 0;
+    const rv100   = parseFloat(p.run_value_per_100);
+    const pPutAwy = parseFloat(p.put_away_percent) || 0;
+
+    // Sample size confidence: scale edge by how many PA the batter has vs this pitch type
+    const bPa = parseFloat(b.pa) || parseFloat(b.n_pitches) || 0;
+    const sampleScale = bPa >= 100 ? 1.00
+                      : bPa >=  40 ? 0.85
+                      : bPa >=  15 ? 0.65
+                      : bPa >   0  ? 0.40
+                      : 0.70; // unknown PA — medium-low
 
     let edge = 0;
-    // BA vs pitch type
     if      (ba >= 0.310) edge += 6;
     else if (ba >= 0.280) edge += 3;
     else if (ba >= 0.250) edge += 0;
     else if (ba >= 0.220) edge -= 3;
     else if (ba >= 0.190) edge -= 5;
     else                  edge -= 7;
-    // Whiff rate vs pitch
     if      (bWhiff <= 12) edge += 3;
     else if (bWhiff <= 20) edge += 1;
     else if (bWhiff <= 30) edge += 0;
     else if (bWhiff <= 40) edge -= 2;
     else                   edge -= 4;
-    // Pitcher's pitch dominance (hittable = batter benefit)
     if (!isNaN(rv100)) {
       if      (rv100 >= 2)  edge += 2;
       else if (rv100 <= -2) edge -= 2;
     }
 
-    const weighted = edge * (usage / 100);
+    // Put-away pitch risk: pitcher finishes hitters with this pitch AND batter struggles vs it
+    if (pPutAwy >= 0.18 && edge < -2 && usage >= 15) {
+      putAwayRiskPitch = p.pitch_name || p.pitch_type;
+    }
+
+    const weighted = edge * (usage / 100) * sampleScale;
     raw += weighted;
-    matches.push({ pitchName: p.pitch_name || p.pitch_type, pitchType: p.pitch_type, usage, ba, bWhiff, edge, weighted, typeColor: _typeColor(p.pitch_type) });
+    matches.push({ pitchName: p.pitch_name || p.pitch_type, pitchType: p.pitch_type, usage, ba, bWhiff, edge, weighted, typeColor: _typeColor(p.pitch_type), bPa, sampleScale });
   }
 
   // Stacking bonus: count from ALL matches (no weight threshold — low-usage pitches
@@ -10853,21 +10883,33 @@ function computeArsenalHitEdge(player, gd) {
   const worstMatch = sorted[sorted.length - 1];
 
   const reasons = [];
-  if (topMatch && topMatch.weighted > 0) {
-    const baStr = '.' + Math.round(topMatch.ba * 1000).toString().padStart(3,'0');
-    reasons.push(`Hits ${topMatch.pitchName} well (${baStr} BA) — pitcher throws it ${topMatch.usage.toFixed(0)}%`);
+  const posMatches = sorted.filter(m => m.weighted > 0);
+  if (posMatches.length >= 2) {
+    const b0 = '.' + Math.round(posMatches[0].ba * 1000).toString().padStart(3,'0');
+    const b1 = '.' + Math.round(posMatches[1].ba * 1000).toString().padStart(3,'0');
+    reasons.push(
+      `Handles ${posMatches[0].pitchName} (${b0} BA, ${posMatches[0].usage.toFixed(0)}% use) ` +
+      `and ${posMatches[1].pitchName} (${b1} BA, ${posMatches[1].usage.toFixed(0)}% use)`
+    );
+  } else if (posMatches.length === 1) {
+    const baStr = '.' + Math.round(posMatches[0].ba * 1000).toString().padStart(3,'0');
+    reasons.push(`Hits ${posMatches[0].pitchName} well (${baStr} BA) — pitcher throws it ${posMatches[0].usage.toFixed(0)}%`);
   } else if (score <= -3 && topMatch) {
     const baStr = '.' + Math.round(topMatch.ba * 1000).toString().padStart(3,'0');
     reasons.push(`Struggles vs ${topMatch.pitchName} (${baStr} BA) — pitcher's primary offering`);
   }
 
+  const sampleWarning = matches.some(m => m.bPa > 0 && m.bPa < 15);
+
   const risks = [];
   if (!gd.lineupPosted && !gd.awayLineupPosted && !gd.homeLineupPosted) risks.push('Lineup unconfirmed');
   if (worstMatch && worstMatch !== topMatch && worstMatch.weighted <= -2 && worstMatch.usage >= 20)
-    risks.push(`Risk: weak vs ${worstMatch.pitchName} (${worstMatch.usage.toFixed(0)}% use)`);
+    risks.push(`Weak vs ${worstMatch.pitchName} (${worstMatch.usage.toFixed(0)}% use)`);
+  if (putAwayRiskPitch)
+    risks.push(`Put-away risk: ${putAwayRiskPitch} attacks this batter's weakness`);
 
   const displayPitches = [...matches].sort((a, b) => b.usage - a.usage).slice(0, 3);
-  return { score, edgeLabel, edgeCls, edgeColor, reasons, risks, matches: displayPitches, pitcher, hasData: true };
+  return { score, edgeLabel, edgeCls, edgeColor, reasons, risks, sampleWarning, matches: displayPitches, pitcher, hasData: true };
 }
 
 async function runArsenalScan() {
@@ -10880,18 +10922,30 @@ async function runArsenalScan() {
       results.push({
         player, gd, score: r.score,
         edgeLabel: r.edgeLabel, edgeCls: r.edgeCls, edgeColor: r.edgeColor,
-        reasons: r.reasons, risks: r.risks, matches: r.matches,
+        reasons: r.reasons, risks: r.risks, sampleWarning: r.sampleWarning, matches: r.matches,
         pitcher: r.pitcher,
         gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
         gamePk: gd.gamePk,
       });
     }
   }
-  return results.sort((a, b) => b.score - a.score).slice(0, 30);
+  const sorted = results.sort((a, b) => b.score - a.score).slice(0, 30);
+
+  // Slate summary for summary bar
+  const strongCount   = sorted.filter(r => r.score >= 6).length;
+  const projectedOnly = sorted.length > 0 && sorted.every(r => !r.gd.lineupPosted);
+  const pitchTypeCounts = {};
+  sorted.forEach(r => r.matches.forEach(m => {
+    if (m.weighted > 0) pitchTypeCounts[m.pitchName] = (pitchTypeCounts[m.pitchName] || 0) + 1;
+  }));
+  const topPitchType = Object.entries(pitchTypeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const bestMatchup  = sorted[0]?.player?.name || null;
+
+  return { results: sorted, summary: { strongCount, projectedOnly, topPitchType, bestMatchup } };
 }
 
 function _arsenalHitCardHTML(r, rank) {
-  const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, matches, gameLabel } = r;
+  const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, sampleWarning, matches, gameLabel } = r;
   const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : null;
   const _fmt = (v, d=2) => v > 0 ? (+v).toFixed(d) : null;
   const _stat = (lbl, val, cls='') => val != null
@@ -10940,16 +10994,30 @@ function _arsenalHitCardHTML(r, rank) {
     _stat('BB/BF%', bbBfP),
   ].filter(Boolean).join('');
 
-  // ── Pitch match chips ────────────────────────────────────────────────
+  // ── Lineup status badge ──────────────────────────────────────────────
+  const lineupBadge = r.gd?.lineupPosted
+    ? `<span class="ahf-lineup-conf">Confirmed</span>`
+    : player._projected
+    ? `<span class="ahf-lineup-proj">Projected</span>`
+    : `<span class="ahf-lineup-unk">? Lineup</span>`;
+
+  // ── Pitch match chips — human-readable strength labels ───────────────
   const pitchChips = matches.map(m => {
-    const baStr  = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
+    const baStr    = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
+    const chipLabel = m.weighted >= 2.0 ? 'Strong'
+                    : m.weighted >= 0.5 ? 'Good'
+                    : m.weighted >= -0.5 ? 'Neutral'
+                    : m.weighted >= -2.0 ? 'Weak'
+                    : 'Risk';
     const chipClr = m.weighted >= 1 ? m.typeColor : '#ef4444';
     const chipBg  = m.weighted >= 1 ? m.typeColor + '18' : 'rgba(239,68,68,.12)';
     const chipBdr = m.weighted >= 1 ? m.typeColor + '40' : 'rgba(239,68,68,.3)';
+    const labelClr = m.weighted >= 0.5 ? '#22c55e' : m.weighted >= -0.5 ? '#94a3b8' : '#ef4444';
     return `<div class="ahf-pitch-chip" style="background:${chipBg};border-color:${chipBdr}">
       <span class="ahf-chip-type" style="color:${chipClr}">${escHtml(m.pitchType)}</span>
-      <span style="color:var(--text-muted);font-size:9px">${m.usage.toFixed(0)}%</span>
-      <span class="ahf-chip-stat" style="color:${m.weighted >= 0 ? '#22c55e' : '#ef4444'}">${baStr}</span>
+      <span class="ahf-chip-use">${m.usage.toFixed(0)}%</span>
+      <span class="ahf-chip-label" style="color:${labelClr}">${chipLabel}</span>
+      <span class="ahf-chip-ba">(${baStr})</span>
     </div>`;
   }).join('');
 
@@ -11001,7 +11069,8 @@ function _arsenalHitCardHTML(r, rank) {
         <img class="ahf-h2h-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
         <div class="ahf-h2h-fallback" style="display:none">${initial}</div>
         <div class="ahf-h2h-name">${escHtml(player.name||'Unknown')}</div>
-        <div class="ahf-h2h-sub">${escHtml(player.teamAbbr||player.team||'')}${player.position ? ' · '+escHtml(player.position) : ''}</div>
+        <div class="ahf-h2h-sub">${escHtml(player.teamAbbr||player.team||'')}${player.position ? ' · '+escHtml(player.position) : ''}${player.batSide ? ' · '+escHtml(player.batSide)+'HB' : ''}</div>
+        <div style="margin-bottom:4px">${lineupBadge}</div>
         <div class="ahf-h2h-stats">${batStats}</div>
       </div>
 
@@ -11023,6 +11092,7 @@ function _arsenalHitCardHTML(r, rank) {
 
     ${achieveHTML}
     ${pitchChips ? `<div class="ahf-pitch-chips">${pitchChips}</div>` : ''}
+    ${sampleWarning ? `<div class="ahf-sample-warn">⚠ Small pitch-type sample — treat as a light signal</div>` : ''}
     ${reasonHtml}
     ${riskHtml}
     <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button></div>
@@ -11050,14 +11120,28 @@ async function handleArsenalHitFinder() {
 
   try {
     await ensureSavantData(new Date().getFullYear());
-    const results = await runArsenalScan();
+    const data  = await runArsenalScan();
+    const { results, summary } = data;
     btn.textContent = `✅ Arsenal Hit Finder`;
     btn.disabled = false;
+
+    // Summary bar
+    const bar = document.getElementById('labArsenalSummaryBar');
+    if (bar && summary) {
+      const { strongCount, projectedOnly, topPitchType, bestMatchup } = summary;
+      bar.style.display = results.length ? 'block' : 'none';
+      bar.innerHTML = `<div class="ahf-summary-bar">
+        ${strongCount > 0 ? `<span class="ahf-sum-chip ahf-sum-strong">${strongCount} Strong Edge${strongCount !== 1 ? 's' : ''}</span>` : ''}
+        ${bestMatchup ? `<span class="ahf-sum-chip ahf-sum-best">Best: ${escHtml(bestMatchup)}</span>` : ''}
+        ${topPitchType ? `<span class="ahf-sum-chip ahf-sum-pitch">Top pitch: ${escHtml(topPitchType)}</span>` : ''}
+        ${projectedOnly ? `<span class="ahf-sum-chip ahf-sum-warn">⚠ Lineups projected only</span>` : ''}
+      </div>`;
+    }
 
     const cards = document.getElementById('labArsenalCards');
     if (!cards) return;
     if (!results.length) {
-      cards.innerHTML = '<div class="ahf-no-data">No pitch-type matchup data available — Savant data may be loading. Try again in a moment.</div>';
+      cards.innerHTML = '<div class="ahf-no-data">No pitch-type matchup data available — Savant data may be loading, or most starters today have elite suppression profiles (K/9 &gt; 9, H/9 &lt; 8). Try again in a moment.</div>';
     } else {
       cards.innerHTML = results.map((r, i) => _arsenalHitCardHTML(r, i + 1)).join('');
     }
