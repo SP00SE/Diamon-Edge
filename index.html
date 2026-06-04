@@ -779,11 +779,22 @@ main { padding: 28px 0 60px; }
 .ahf-pitch-chip       { display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:10px; border:1px solid; }
 .ahf-chip-type        { font-weight:800; font-size:9px; font-family:monospace; }
 .ahf-chip-stat        { font-weight:700; }
-.ahf-pitcher-strip    { display:flex; align-items:center; gap:8px; padding:7px 0 5px; border-top:1px solid var(--border); margin-top:6px; }
-.ahf-pitcher-photo    { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; border:1px solid var(--border); }
-.ahf-pitcher-fallback { width:32px; height:32px; border-radius:50%; background:var(--bg-hover); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--text-muted); flex-shrink:0; }
-.ahf-pitcher-info     { min-width:0; }
-.ahf-pitcher-name     { font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:3px; }
+/* Arsenal Hit Finder — head-to-head matchup layout */
+.ahf-h2h              { display:flex; align-items:flex-start; gap:0; margin:10px 0 8px; }
+.ahf-h2h-side         { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0; padding:0 4px; }
+.ahf-h2h-side.ahf-pitcher-side { background:rgba(99,102,241,.04); border-radius:8px; padding:6px 4px; }
+.ahf-h2h-vs           { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; flex-shrink:0; }
+.ahf-h2h-vs-text      { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:.5px; }
+.ahf-h2h-photo        { width:44px; height:44px; border-radius:50%; object-fit:cover; margin-bottom:4px; border:2px solid var(--border); flex-shrink:0; }
+.ahf-h2h-fallback     { width:44px; height:44px; border-radius:50%; background:var(--bg-hover); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--text-muted); margin-bottom:4px; flex-shrink:0; }
+.ahf-h2h-name         { font-size:12px; font-weight:700; color:#e2e8f0; line-height:1.2; margin-bottom:1px; }
+.ahf-h2h-sub          { font-size:9px; color:var(--text-muted); margin-bottom:5px; }
+.ahf-h2h-stats        { width:100%; }
+.ahf-h2h-stat         { display:flex; justify-content:space-between; align-items:center; padding:1px 0; font-size:10px; }
+.ahf-h2h-stat-lbl     { color:var(--text-muted); }
+.ahf-h2h-stat-val     { font-weight:700; color:#cbd5e1; }
+.ahf-h2h-stat-val.good { color:#22c55e; }
+.ahf-h2h-stat-val.warn { color:#ef4444; }
 .ahf-reason           { font-size:11px; color:#cbd5e1; line-height:1.4; margin-bottom:4px; }
 .ahf-risks            { display:flex; flex-wrap:wrap; gap:4px; }
 .ahf-risk-chip        { font-size:9px; color:#f59e0b; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.2); padding:2px 6px; border-radius:4px; }
@@ -10842,12 +10853,57 @@ async function runArsenalScan() {
 }
 
 function _arsenalHitCardHTML(r, rank) {
-  const { player, pitcher, score, edgeLabel, edgeCls, edgeColor, reasons, risks, matches, gameLabel } = r;
+  const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, matches, gameLabel } = r;
+  const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : null;
+  const _fmt = (v, d=2) => v > 0 ? (+v).toFixed(d) : null;
+  const _stat = (lbl, val, cls='') => val != null
+    ? `<div class="ahf-h2h-stat"><span class="ahf-h2h-stat-lbl">${lbl}</span><span class="ahf-h2h-stat-val${cls ? ' '+cls : ''}">${val}</span></div>`
+    : '';
+
+  // ── Batter side ──────────────────────────────────────────────────────
   const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
   const initial  = (player.name||'?')[0].toUpperCase();
+  const ss  = player.seasonStats || {};
+  const l7  = player.last7Stats  || {};
+  const batStats = [
+    _stat('AVG',    _avg(ss.avg)),
+    _stat('OBP',    _avg(ss.obp)),
+    _stat('SLG',    _avg(ss.slg)),
+    _stat('L7 AVG', _avg(l7.avg), l7.avg >= 0.300 ? 'good' : l7.avg > 0 && l7.avg < 0.220 ? 'warn' : ''),
+    _stat('HR',     ss.homeRuns > 0 ? ss.homeRuns : null),
+  ].filter(Boolean).join('');
 
+  // ── Pitcher side ─────────────────────────────────────────────────────
+  const pPhotoUrl = pitcher?.id
+    ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current`
+    : '';
+  const pInitial = (pitcher?.name || 'SP')[0].toUpperCase();
+  const ps  = pitcher?.seasonStats || {};
+  const pIP = parseFloat(ps.inningsPitched) || 0;
+  const pK  = parseFloat(ps.strikeOuts)     || 0;
+  const pBB = parseFloat(ps.baseOnBalls)    || 0;
+  const pW  = parseFloat(ps.whip)           || 0;
+  // Derive hits from WHIP: H = WHIP×IP − BB
+  const pHits = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const pBF   = pIP > 0 ? pIP * (3 + pW) : 0; // approx batters faced
+  const k9    = pIP > 0 ? (pK   / pIP * 9).toFixed(1) : null;
+  const h9    = pIP > 0 ? (pHits / pIP * 9).toFixed(1) : null;
+  const bb9   = pIP > 0 ? (pBB  / pIP * 9).toFixed(1) : null;
+  const bbBfP = pBF > 0 ? (pBB  / pBF * 100).toFixed(1) + '%' : null;
+  const pHand = pitcher?.pitchHand ? pitcher.pitchHand + 'HP' : '';
+  const pitcherStats = [
+    _stat('ERA',    _fmt(ps.era),  ps.era > 0 && ps.era <= 3.25 ? 'good' : ps.era >= 4.75 ? 'warn' : ''),
+    _stat('WHIP',   _fmt(ps.whip), ps.whip > 0 && ps.whip <= 1.10 ? 'good' : ps.whip >= 1.40 ? 'warn' : ''),
+    _stat('IP',     pIP > 0 ? pIP.toFixed(1) : null),
+    _stat('K/9',    k9, k9 >= 9.5 ? 'good' : k9 < 6.5 && k9 > 0 ? 'warn' : ''),
+    _stat('H/9',    h9, h9 > 0 && h9 <= 7.5 ? 'good' : h9 >= 9.5 ? 'warn' : ''),
+    _stat('BB/9',   bb9, bb9 > 0 && bb9 <= 2.5 ? 'good' : bb9 >= 4.0 ? 'warn' : ''),
+    _stat('BB/BF%', bbBfP),
+  ].filter(Boolean).join('');
+
+  // ── Pitch match chips ────────────────────────────────────────────────
   const pitchChips = matches.map(m => {
-    const baStr   = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
+    const baStr  = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
     const chipClr = m.weighted >= 1 ? m.typeColor : '#ef4444';
     const chipBg  = m.weighted >= 1 ? m.typeColor + '18' : 'rgba(239,68,68,.12)';
     const chipBdr = m.weighted >= 1 ? m.typeColor + '40' : 'rgba(239,68,68,.3)';
@@ -10858,71 +10914,58 @@ function _arsenalHitCardHTML(r, rank) {
     </div>`;
   }).join('');
 
-  const pitcherLine = pitcher?.name ? `vs ${escHtml(pitcher.name)}` : '';
-  const reasonHtml  = reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : '';
-  const riskHtml    = risks.length ? `<div class="ahf-risks">${risks.map(r => `<span class="ahf-risk-chip">⚠ ${escHtml(r)}</span>`).join('')}</div>` : '';
-
-  // Season stats row — same helper as BTS
-  const ss   = player.seasonStats || {};
-  const l7   = player.last7Stats  || {};
-  const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : '---';
-  const statPills = [
-    ss.avg  > 0 ? `<span class="bts-score-pill bts-pill-hit">AVG ${_avg(ss.avg)}</span>` : '',
-    l7.avg  > 0 ? `<span class="bts-score-pill bts-pill-hit">L7 ${_avg(l7.avg)}</span>` : '',
-    ss.obp  > 0 ? `<span class="bts-score-pill bts-pill-era">OBP ${_avg(ss.obp)}</span>` : '',
-    ss.slg  > 0 ? `<span class="bts-score-pill bts-pill-era">SLG ${_avg(ss.slg)}</span>` : '',
-    ss.homeRuns > 0 ? `<span class="bts-score-pill bts-pill-streak">${ss.homeRuns} HR</span>` : '',
-  ].filter(Boolean).join('');
-
-  // Live / Final badge (reuses bb-live-pip CSS)
+  // ── Live badge ───────────────────────────────────────────────────────
   const _ld = (state.allGamesLiveData || {})[r.gamePk];
-  const liveBadge = _ld?.isLive  ? `<span class="bb-live-pip" style="margin-right:6px">● LIVE</span>`
-                  : _ld?.isFinal ? `<span class="bb-live-pip bb-pip-final" style="margin-right:6px">● FINAL</span>`
+  const liveBadge = _ld?.isLive  ? `<span class="bb-live-pip">● LIVE</span>`
+                  : _ld?.isFinal ? `<span class="bb-live-pip bb-pip-final">● FINAL</span>`
                   : '';
 
-  // Pitcher profile strip
-  const pitcherProfileHTML = pitcher?.id ? (() => {
-    const pPhotoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current`;
-    const pInitial  = (pitcher.name || '?')[0].toUpperCase();
-    const pEra  = pitcher.seasonStats?.era  > 0 ? (+pitcher.seasonStats.era).toFixed(2)  : null;
-    const pWhip = pitcher.seasonStats?.whip > 0 ? (+pitcher.seasonStats.whip).toFixed(2) : null;
-    const pIP   = parseFloat(pitcher.seasonStats?.inningsPitched) || 0;
-    const pK    = parseFloat(pitcher.seasonStats?.strikeOuts)     || 0;
-    const pKpct = pIP > 0 ? Math.round((pK / (pIP * 4.3)) * 100) : null;
-    const pHand = pitcher.pitchHand ? `(${pitcher.pitchHand}HP)` : '';
-    const pPills = [
-      pEra  != null ? `<span class="bts-score-pill bts-pill-era">ERA ${pEra}</span>`   : '',
-      pWhip != null ? `<span class="bts-score-pill bts-pill-era">WHIP ${pWhip}</span>` : '',
-      pKpct != null ? `<span class="bts-score-pill bts-pill-hit">K% ${pKpct}%</span>`  : '',
-    ].filter(Boolean).join('');
-    return `<div class="ahf-pitcher-strip">
-      <img class="ahf-pitcher-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
-      <div class="ahf-pitcher-fallback" style="display:none">${pInitial}</div>
-      <div class="ahf-pitcher-info">
-        <div class="ahf-pitcher-name">${escHtml(pitcher.name || 'Unknown SP')} <span style="color:var(--text-muted)">${escHtml(pHand)}</span></div>
-        ${pPills ? `<div>${pPills}</div>` : ''}
-      </div>
-    </div>`;
-  })() : '';
-
+  const reasonHtml = reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : '';
+  const riskHtml   = risks.length   ? `<div class="ahf-risks">${risks.map(r2 => `<span class="ahf-risk-chip">⚠ ${escHtml(r2)}</span>`).join('')}</div>` : '';
   const glId = `ars-gl-${player.id}-${rank}`;
 
   return `<div class="ahf-card">
-    <div class="ahf-card-top">
-      <span class="ahf-rank">#${rank}</span>
-      <img class="ahf-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
-      <div class="ahf-photo-fallback" style="display:none">${initial}</div>
-      <div class="ahf-info">
+
+    <!-- Card header: rank + game + live badge + edge -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:4px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="ahf-rank">#${rank}</span>
+        <span style="font-size:10px;color:var(--text-muted)">${escHtml(gameLabel)}</span>
         ${liveBadge}
-        <div class="ahf-name">${escHtml(player.name||'Unknown')}</div>
-        <div class="ahf-meta">${escHtml(player.teamAbbr||player.team||'')} · ${escHtml(gameLabel)} · ${pitcherLine}</div>
       </div>
       <span class="ahf-edge-badge ${edgeCls}">${escHtml(edgeLabel)}</span>
     </div>
+
+    <!-- Head-to-head comparison -->
+    <div class="ahf-h2h">
+
+      <!-- Batter (left) -->
+      <div class="ahf-h2h-side">
+        <img class="ahf-h2h-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+        <div class="ahf-h2h-fallback" style="display:none">${initial}</div>
+        <div class="ahf-h2h-name">${escHtml(player.name||'Unknown')}</div>
+        <div class="ahf-h2h-sub">${escHtml(player.teamAbbr||player.team||'')}${player.position ? ' · '+escHtml(player.position) : ''}</div>
+        <div class="ahf-h2h-stats">${batStats}</div>
+      </div>
+
+      <!-- VS divider -->
+      <div class="ahf-h2h-vs">
+        <span class="ahf-h2h-vs-text">VS</span>
+      </div>
+
+      <!-- Pitcher (right) -->
+      <div class="ahf-h2h-side ahf-pitcher-side">
+        ${pitcher?.id
+          ? `<img class="ahf-h2h-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-h2h-fallback" style="display:none">${pInitial}</div>`
+          : `<div class="ahf-h2h-fallback">${pInitial}</div>`}
+        <div class="ahf-h2h-name">${escHtml(pitcher?.name || 'Unknown SP')}</div>
+        <div class="ahf-h2h-sub">${escHtml(pHand)}</div>
+        <div class="ahf-h2h-stats">${pitcherStats || '<span style="font-size:10px;color:var(--text-muted)">No data</span>'}</div>
+      </div>
+    </div>
+
     ${pitchChips ? `<div class="ahf-pitch-chips">${pitchChips}</div>` : ''}
-    ${pitcherProfileHTML}
     ${reasonHtml}
-    ${statPills ? `<div class="bts-card-scores" style="margin-top:6px">${statPills}</div>` : ''}
     ${riskHtml}
     <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button></div>
     <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
