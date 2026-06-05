@@ -838,7 +838,9 @@ main { padding: 28px 0 60px; }
 .ahf-platoon        { font-size:9px; font-weight:700; letter-spacing:.4px; padding:2px 7px; border-radius:3px; margin-bottom:5px; text-align:center; }
 .ahf-platoon-adv    { background:rgba(52,211,153,.12); color:#34d399; border:1px solid rgba(52,211,153,.25); }
 .ahf-platoon-switch { background:rgba(251,191,36,.10); color:#fbbf24; border:1px solid rgba(251,191,36,.2); }
-.ahf-platoon-neutral { background:rgba(74,81,104,.12); color:#4a5168; border:1px solid rgba(74,81,104,.2); }
+.ahf-platoon-neutral  { background:rgba(74,81,104,.12); color:#4a5168; border:1px solid rgba(74,81,104,.2); }
+.ahf-platoon-pit-adv  { background:rgba(248,113,113,.10); color:#f87171; border:1px solid rgba(248,113,113,.2); }
+.ahf-platoon-bat-adv  { background:rgba(52,211,153,.12); color:#34d399; border:1px solid rgba(52,211,153,.25); }
 
 @media(max-width:480px){
   .ahf-pitch-row { grid-template-columns:24px 1fr 24px 36px 65px; gap:4px; }
@@ -11161,7 +11163,16 @@ function _arsenalHitCardHTML(r, rank) {
           ? `<img class="ahf-person-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-person-fallback" style="display:none">${pInitial}</div>`
           : `<div class="ahf-person-fallback">${pInitial}</div>`}
         <div class="ahf-person-name">${escHtml(pName||'Unknown SP')}</div>
-        <div class="ahf-person-sub">${pitcher?.pitchHand||'?'}HP</div>
+        <div class="ahf-person-sub">${pitcher?.pitchHand||'?'}HP vs ${escHtml(player.batSide||'R')}HB</div>
+        ${(() => {
+          const bat = player.batSide || 'R';
+          if (bat === 'S') return '<div class="ahf-platoon ahf-platoon-switch">⚡ vs Switch Hitter</div>';
+          // Pitcher has platoon advantage when same-side (e.g. RHP vs RHB)
+          const pitFavored = (pitcher?.pitchHand === 'R' && bat === 'R') || (pitcher?.pitchHand === 'L' && bat === 'L');
+          return pitFavored
+            ? '<div class="ahf-platoon ahf-platoon-pit-adv">⚠ Pitcher Platoon Adv</div>'
+            : '<div class="ahf-platoon ahf-platoon-bat-adv">✓ Batter Has Edge</div>';
+        })()}
         ${pitGrid}
       </div>
     </div>
