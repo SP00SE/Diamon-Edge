@@ -761,73 +761,85 @@ main { padding: 28px 0 60px; }
 .pa-ars-summary-callout { margin-top:8px; padding:7px 10px; background:#0f172a; border-radius:6px; border-left:3px solid; font-size:11px; color:#e2e8f0; line-height:1.45; }
 .pa-ars-legend        { font-size:9px; color:#475569; margin-top:6px; line-height:1.4; }
 .pa-ars-rk-badge      { display:inline-flex; align-items:center; font-size:11px; font-weight:800; letter-spacing:.2px; font-family:monospace; padding:2px 7px; border-radius:4px; border:1px solid; margin-left:5px; vertical-align:middle; }
-/* ── Arsenal Hit Finder cards ─────────────────────────────────────────── */
-.ahf-card             { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:10px; }
-.ahf-card-top         { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; }
-.ahf-photo            { width:40px; height:40px; border-radius:50%; object-fit:cover; flex-shrink:0; background:var(--bg-hover); }
-.ahf-photo-fallback   { width:40px; height:40px; border-radius:50%; background:var(--bg-hover); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-muted); flex-shrink:0; }
-.ahf-info             { flex:1; min-width:0; }
-.ahf-name             { font-size:13px; font-weight:700; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ahf-meta             { font-size:10px; color:var(--text-muted); margin-top:1px; }
-.ahf-rank             { font-size:18px; font-weight:800; color:var(--text-muted); font-family:monospace; flex-shrink:0; }
-.ahf-edge-badge       { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; white-space:nowrap; }
-.ahf-edge-strong-hit  { background:rgba(34,197,94,.15); color:#22c55e; border:1px solid rgba(34,197,94,.3); }
-.ahf-edge-hit         { background:rgba(134,239,172,.12); color:#86efac; border:1px solid rgba(134,239,172,.25); }
-.ahf-edge-neutral     { background:rgba(148,163,184,.10); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
-.ahf-edge-pitcher     { background:rgba(239,68,68,.12); color:#ef4444; border:1px solid rgba(239,68,68,.25); }
-.ahf-pitch-chips      { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:7px; }
-.ahf-pitch-chip       { display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-size:10px; border:1px solid; }
-.ahf-chip-type        { font-weight:800; font-size:9px; font-family:monospace; }
-.ahf-chip-stat        { font-weight:700; }
-/* Arsenal Hit Finder — head-to-head matchup layout */
-.ahf-h2h              { display:flex; align-items:flex-start; gap:0; margin:10px 0 8px; }
-.ahf-h2h-side         { flex:1; display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0; padding:0 4px; }
-.ahf-h2h-side.ahf-pitcher-side { background:rgba(99,102,241,.04); border-radius:8px; padding:6px 4px; }
-.ahf-h2h-vs           { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; flex-shrink:0; }
-.ahf-h2h-vs-text      { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:.5px; }
-.ahf-h2h-photo        { width:44px; height:44px; border-radius:50%; object-fit:cover; margin-bottom:4px; border:2px solid var(--border); flex-shrink:0; }
-.ahf-h2h-fallback     { width:44px; height:44px; border-radius:50%; background:var(--bg-hover); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--text-muted); margin-bottom:4px; flex-shrink:0; }
-.ahf-h2h-name         { font-size:12px; font-weight:700; color:#e2e8f0; line-height:1.2; margin-bottom:1px; }
-.ahf-h2h-sub          { font-size:9px; color:var(--text-muted); margin-bottom:5px; }
-.ahf-h2h-stats        { width:100%; display:flex; flex-direction:column; align-items:center; }
-.ahf-h2h-stat         { display:grid; grid-template-columns:52px 1fr; align-items:baseline; padding:1px 2px; font-size:10px; width:100%; max-width:120px; }
-.ahf-h2h-stat-lbl     { color:var(--text-muted); text-align:right; padding-right:5px; white-space:nowrap; }
-.ahf-h2h-stat-val     { font-weight:700; color:#cbd5e1; text-align:left; }
-.ahf-h2h-stat-val.good { color:#22c55e; }
-.ahf-h2h-stat-val.warn { color:#ef4444; }
-.ahf-h2h-stat-cmt  { font-size:8px; color:var(--text-muted); font-weight:400; margin-left:3px; font-style:italic; }
-.ahf-split-section { margin-top:6px; padding-top:5px; border-top:1px solid var(--border); width:100%; }
-.ahf-split-row     { display:flex; align-items:center; justify-content:space-between; padding:1px 0; font-size:9px; }
-.ahf-split-lbl     { color:var(--text-muted); flex-shrink:0; max-width:50px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ahf-split-lbl.rel { color:#a78bfa; font-weight:700; }
-.ahf-split-val     { font-weight:600; color:#cbd5e1; margin:0 4px; }
-.ahf-split-ab      { color:var(--text-muted); font-size:8px; flex-shrink:0; }
-.ahf-reason           { font-size:11px; color:#cbd5e1; line-height:1.4; margin-bottom:4px; }
-.ahf-risks            { display:flex; flex-wrap:wrap; gap:4px; }
-.ahf-risk-chip        { font-size:9px; color:#f59e0b; background:rgba(245,158,11,.10); border:1px solid rgba(245,158,11,.2); padding:2px 6px; border-radius:4px; }
-.ahf-no-data          { font-size:11px; color:#475569; text-align:center; padding:24px 0; }
-/* Arsenal summary bar */
+/* ── Arsenal Hit Finder — Signal Intercept design ─────────────────────── */
+/* Card shell */
+.ahf-card { position:relative; background:#0d1421; border:1px solid #1a2438; border-left:3px solid #1a2438; border-radius:10px; margin-bottom:10px; overflow:hidden; transition:border-left-color .2s; }
+.ahf-card:hover { background:#0f1826; }
+
+/* Card header */
+.ahf-header    { display:flex; align-items:center; gap:10px; padding:10px 14px 8px; }
+.ahf-rank      { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:600; color:#2a3a52; min-width:28px; flex-shrink:0; }
+.ahf-header-mid { flex:1; min-width:0; }
+.ahf-name      { font-size:14px; font-weight:700; color:#dde6f5; letter-spacing:-.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ahf-meta-row  { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:2px; }
+.ahf-meta-txt  { font-size:10px; color:#3a4e68; }
+.ahf-edge-group { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+.ahf-edge-icon  { font-size:11px; font-weight:900; font-family:'JetBrains Mono',monospace; }
+.ahf-edge-lbl   { font-size:9px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; padding:2px 8px; border-radius:3px; border:1px solid; white-space:nowrap; }
+
+/* Score meter */
+.ahf-meter-wrap  { padding:0 14px 8px; }
+.ahf-meter-track { position:relative; height:3px; background:#141f30; border-radius:2px; }
+.ahf-meter-marker { position:absolute; top:-2px; width:7px; height:7px; border-radius:50%; transform:translateX(-50%); transition:left .3s ease; }
+.ahf-meter-center { position:absolute; left:50%; top:0; width:1px; height:100%; background:#1e2e45; }
+
+/* H2H section */
+.ahf-h2h          { display:flex; align-items:stretch; padding:0 12px 10px; gap:8px; border-bottom:1px solid #111c2b; }
+.ahf-batter-col,
+.ahf-pitcher-col  { flex:1; display:flex; flex-direction:column; align-items:center; min-width:0; padding:6px 4px; }
+.ahf-batter-col   { background:rgba(52,211,153,.03); border-radius:7px; border:1px solid rgba(52,211,153,.06); }
+.ahf-pitcher-col  { background:rgba(99,102,241,.03); border-radius:7px; border:1px solid rgba(99,102,241,.06); }
+.ahf-vs-col       { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:0 4px; flex-shrink:0; }
+.ahf-vs-text      { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; color:#1e2e45; letter-spacing:1px; writing-mode:vertical-rl; }
+.ahf-person-photo { width:42px; height:42px; border-radius:50%; object-fit:cover; margin-bottom:5px; border:2px solid #1e2e45; flex-shrink:0; }
+.ahf-person-fallback { width:42px; height:42px; border-radius:50%; background:#111c2b; border:2px solid #1e2e45; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#2a3a52; margin-bottom:5px; flex-shrink:0; }
+.ahf-person-name  { font-size:10px; font-weight:700; color:#c8d4e8; text-align:center; line-height:1.2; margin-bottom:1px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ahf-person-sub   { font-size:8px; color:#2a3a52; text-align:center; margin-bottom:5px; font-family:'JetBrains Mono',monospace; }
+.ahf-stat-grid    { display:grid; grid-template-columns:auto auto; gap:1px 6px; width:100%; max-width:110px; }
+.ahf-sg-lbl       { font-size:9px; color:#2a3a52; text-align:right; font-family:'JetBrains Mono',monospace; line-height:1.7; }
+.ahf-sg-val       { font-size:9px; font-weight:700; color:#8a9bb8; font-family:'JetBrains Mono',monospace; line-height:1.7; }
+.ahf-sg-val.pos   { color:#34d399; }
+.ahf-sg-val.neg   { color:#f87171; }
+.ahf-sg-val.rel   { color:#a78bfa; }
+.ahf-sg-divider   { grid-column:1/-1; height:1px; background:#111c2b; margin:2px 0; }
+
+/* Arsenal pitch bars */
+.ahf-arsenal      { padding:8px 14px 6px; }
+.ahf-arsenal-hdr  { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:1.5px; color:#1e2e45; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.ahf-arsenal-hdr::after { content:''; flex:1; height:1px; background:#111c2b; }
+.ahf-pitch-row    { display:grid; grid-template-columns:26px 1fr 28px 38px 72px; align-items:center; gap:5px; margin-bottom:4px; }
+.ahf-pitch-code   { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; }
+.ahf-pitch-bar-wrap { position:relative; height:6px; background:#0a1322; border-radius:3px; overflow:hidden; }
+.ahf-pitch-bar    { height:100%; border-radius:3px; transition:width .4s ease; }
+.ahf-pitch-pct    { font-family:'JetBrains Mono',monospace; font-size:9px; color:#2a3a52; text-align:right; }
+.ahf-pitch-ba     { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; text-align:center; }
+.ahf-pitch-verdict { font-size:9px; font-weight:700; letter-spacing:.3px; }
+.ahf-pitch-row:last-child { margin-bottom:0; }
+
+/* Footer */
+.ahf-reason     { margin:6px 14px 4px; font-size:11px; color:#8a9bb8; line-height:1.45; font-style:italic; }
+.ahf-risks      { display:flex; flex-wrap:wrap; gap:4px; margin:0 14px 4px; }
+.ahf-risk-chip  { font-size:9px; color:#f59e0b; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.15); padding:2px 6px; border-radius:4px; }
+.ahf-actions    { display:flex; align-items:center; gap:8px; padding:7px 14px 10px; border-top:1px solid #0d1726; margin-top:4px; }
+.ahf-actions .streak-expand-btn { margin-top:0; border-top:none; padding-top:0; font-size:11px; }
+
+/* Summary bar, no-data, lineup badges — kept */
+.ahf-no-data    { font-size:11px; color:#2a3a52; text-align:center; padding:32px 0; font-family:'JetBrains Mono',monospace; }
 .ahf-summary-bar { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
-.ahf-sum-chip    { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; }
-.ahf-sum-strong  { background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.25); }
-.ahf-sum-best    { background:rgba(99,102,241,.12); color:#a78bfa; border:1px solid rgba(99,102,241,.25); }
-.ahf-sum-pitch   { background:rgba(148,163,184,.10); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
-.ahf-sum-warn    { background:rgba(245,158,11,.10); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
-/* Lineup badges on Arsenal cards */
-.ahf-lineup-conf { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.25); }
-.ahf-lineup-proj { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; background:rgba(245,158,11,.10); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
-.ahf-lineup-unk  { font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; background:rgba(148,163,184,.08); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
-/* Pitch chip sub-labels */
-.ahf-chip-use    { color:var(--text-muted); font-size:9px; margin:0 2px; }
-.ahf-chip-label  { font-size:9px; font-weight:700; }
-.ahf-chip-ba     { font-size:9px; color:var(--text-muted); }
-/* Small sample warning */
-.ahf-sample-warn { font-size:10px; color:#f59e0b; padding:2px 0 3px; }
-@media(max-width:400px) { .ahf-card-top { gap:8px; } .ahf-name { font-size:12px; } }
-@media(max-width:400px){
-  .pa-ars-stat-row { gap:8px; }
-  .pa-ars-stat strong { font-size:11px; }
-  .pa-ars-divider { margin:0 8px; }
+.ahf-sum-chip   { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px; }
+.ahf-sum-strong { background:rgba(34,197,94,.12); color:#22c55e; border:1px solid rgba(34,197,94,.25); }
+.ahf-sum-best   { background:rgba(99,102,241,.12); color:#a78bfa; border:1px solid rgba(99,102,241,.25); }
+.ahf-sum-pitch  { background:rgba(148,163,184,.10); color:#94a3b8; border:1px solid rgba(148,163,184,.2); }
+.ahf-sum-warn   { background:rgba(245,158,11,.10); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
+.ahf-lineup-conf { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(34,197,94,.10); color:#22c55e; border:1px solid rgba(34,197,94,.2); }
+.ahf-lineup-proj { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(245,158,11,.08); color:#f59e0b; border:1px solid rgba(245,158,11,.15); }
+.ahf-lineup-unk  { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(148,163,184,.06); color:#4a5168; border:1px solid rgba(148,163,184,.12); }
+.ahf-sample-warn { font-size:9px; color:#f59e0b; }
+
+@media(max-width:480px){
+  .ahf-pitch-row { grid-template-columns:24px 1fr 24px 36px 65px; gap:4px; }
+  .ahf-pitch-verdict { display:none; }
+  .ahf-pitch-ba { font-size:9px; }
 }
 .lab-matchup-ctx { display:flex; align-items:center; gap:8px; padding:5px 10px; font-size:11px; font-family:monospace; color:var(--text-muted); background:rgba(148,163,184,.05); border-radius:6px; margin-bottom:6px; flex-wrap:wrap; }
 .lab-ctx-label   { color:#64748b; font-size:9px; text-transform:uppercase; letter-spacing:.5px; }
@@ -10976,146 +10988,54 @@ function _arsenalHitCardHTML(r, rank) {
   const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, sampleWarning, matches, gameLabel } = r;
   const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : null;
   const _fmt = (v, d=2) => v > 0 ? (+v).toFixed(d) : null;
-  const _stat = (lbl, val, cls='', cmt='') => val != null
-    ? `<div class="ahf-h2h-stat"><span class="ahf-h2h-stat-lbl">${lbl}</span><span class="ahf-h2h-stat-val${cls ? ' '+cls : ''}">${val}${cmt ? `<span class="ahf-h2h-stat-cmt">${escHtml(cmt)}</span>` : ''}</span></div>`
-    : '';
 
-  // ── Batter side ──────────────────────────────────────────────────────
+  // ── Edge color ────────────────────────────────────────────────────────
+  const stripeClr = score >= 6 ? '#22c55e' : score >= 3 ? '#86efac'
+                  : score >= -2 ? '#4a5168' : score >= -6 ? '#f87171' : '#dc2626';
+
+  // ── Identifiers ───────────────────────────────────────────────────────
   const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
   const initial  = (player.name||'?')[0].toUpperCase();
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
-  // Batter stat comments
-  const avgCmt = !ss.avg ? '' : ss.avg >= 0.300 ? 'Strong' : ss.avg >= 0.275 ? 'Solid' : ss.avg >= 0.250 ? 'Average' : ss.avg >= 0.220 ? 'Weak bat' : 'Struggling';
-  const obpCmt = !ss.obp ? '' : ss.obp >= 0.370 ? 'Elite patience' : ss.obp >= 0.340 ? 'Good eye' : ss.obp >= 0.310 ? 'Average' : 'Chase risk';
-  const slgCmt = !ss.slg ? '' : ss.slg >= 0.500 ? 'Power threat' : ss.slg >= 0.430 ? 'Good power' : ss.slg >= 0.380 ? 'Average' : 'Contact-first';
-  const l7Cmt  = !l7.avg ? '' : l7.avg >= 0.300 ? 'Hot' : l7.avg >= 0.260 ? 'On pace' : l7.avg > 0 && l7.avg < 0.210 ? 'Cold' : '';
+  const pHand_ = pitcher?.pitchHand || 'R';
 
-  const _pa   = ss.plateAppearances || 0;
-  const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
-  const kpctCmt = _kpct == null ? '' : _kpct <= 12 ? 'Rare K' : _kpct <= 18 ? 'Low K' : _kpct <= 24 ? 'Average' : _kpct <= 30 ? 'High K' : 'Strikeout risk';
-
-  const batStats = [
-    _stat('AVG',    _avg(ss.avg),  ss.avg >= 0.285 ? 'good' : ss.avg > 0 && ss.avg < 0.230 ? 'warn' : '', avgCmt),
-    _stat('H',      ss.hits > 0 ? ss.hits : null),
-    _stat('OBP',    _avg(ss.obp),  ss.obp >= 0.340 ? 'good' : ss.obp > 0 && ss.obp < 0.290 ? 'warn' : '', obpCmt),
-    _stat('SLG',    _avg(ss.slg),  ss.slg >= 0.430 ? 'good' : ss.slg > 0 && ss.slg < 0.350 ? 'warn' : '', slgCmt),
-    _stat('K%',     _kpct != null ? _kpct + '%' : null, _kpct <= 15 ? 'good' : _kpct >= 28 ? 'warn' : '', kpctCmt),
-    _stat('L7 AVG', _avg(l7.avg),  l7.avg >= 0.300 ? 'good' : l7.avg > 0 && l7.avg < 0.220 ? 'warn' : '', l7Cmt),
-    _stat('HR',     ss.homeRuns > 0 ? ss.homeRuns : null),
-  ].filter(Boolean).join('');
-
-  // Platoon & context splits
-  const pHand_      = pitcher?.pitchHand || 'R';
-  const relSplit    = pHand_ === 'L' ? player.vsLHP : player.vsRHP;
-  const oppSplit    = pHand_ === 'L' ? player.vsRHP : player.vsLHP;
-  const relLabel    = pHand_ === 'L' ? 'vs LHP ★' : 'vs RHP ★';
-  const oppLabel    = pHand_ === 'L' ? 'vs RHP'   : 'vs LHP';
-  const locSplit    = player.isAway ? player.awayStats : player.homeStats;
-  const locLabel    = player.isAway ? 'Away' : 'Home';
-  // Use the MLB API's own dayNight field — far more reliable than computing from UTC hours.
-  // gameDate in UTC does not map cleanly to local game time across US time zones.
-  const _rawGame  = (state.games || []).find(g => g.gamePk === r.gamePk);
-  const isNight   = _rawGame ? _rawGame.dayNight === 'night' : null;
-  const timeSplit = isNight === true ? player.nightStats : isNight === false ? player.dayStats : null;
-  const timeLabel = isNight === true ? 'Night' : 'Day';
-  const _splitRow   = (lbl, spl, isRel) => {
-    if (!spl || spl.atBats < (isRel ? 10 : 5)) return '';
-    const a = _avg(spl.avg), o = _avg(spl.obp);
-    if (!a) return '';
-    return `<div class="ahf-split-row"><span class="ahf-split-lbl${isRel?' rel':''}">${escHtml(lbl)}</span><span class="ahf-split-val">${a}/${o||'---'}</span><span class="ahf-split-ab">${spl.atBats}AB</span></div>`;
-  };
-  const splitRows = [
-    _splitRow(relLabel, relSplit, true),
-    _splitRow(oppLabel, oppSplit, false),
-    _splitRow(locLabel, locSplit, false),
-    timeSplit ? _splitRow(timeLabel, timeSplit, false) : '',
-  ].filter(Boolean).join('');
-  const splitSection = splitRows ? `<div class="ahf-split-section">${splitRows}</div>` : '';
-
-  // ── Pitcher side ─────────────────────────────────────────────────────
+  // ── Pitcher metadata ───────────────────────────────────────────────────
   const pPhotoUrl = pitcher?.id
     ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current`
-    : '';
+    : null;
   const pName    = pitcher?.fullName || pitcher?.name || null;
   const pInitial = (pName || 'SP')[0].toUpperCase();
-  const ps  = pitcher?.seasonStats || {};
-  const pIP = parseFloat(ps.inningsPitched) || 0;
-  const pK  = parseFloat(ps.strikeOuts)     || 0;
-  const pBB = parseFloat(ps.baseOnBalls)    || 0;
-  const pW  = parseFloat(ps.whip)           || 0;
-  // Derive hits from WHIP: H = WHIP×IP − BB
-  const pHits = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
-  const pBF   = pIP > 0 ? pIP * (3 + pW) : 0; // approx batters faced
-  const k9    = pIP > 0 ? (pK   / pIP * 9).toFixed(1) : null;
-  const h9    = pIP > 0 ? (pHits / pIP * 9).toFixed(1) : null;
-  const bb9   = pIP > 0 ? (pBB  / pIP * 9).toFixed(1) : null;
-  const bbBfP = pBF > 0 ? (pBB  / pBF * 100).toFixed(1) + '%' : null;
-  const pHand = pitcher?.pitchHand ? pitcher.pitchHand + 'HP' : '';
-  // Pitcher stat comments (same labels as Lab analysis)
-  const eraCmt  = !ps.era  ? '' : ps.era  <= 2.50 ? 'Elite Ace' : ps.era  <= 3.25 ? 'Solid' : ps.era  <= 4.00 ? 'Average' : ps.era  <= 5.00 ? 'Hittable' : 'Vulnerable';
-  const whipCmt = !ps.whip ? '' : ps.whip <= 1.00 ? 'Elite'     : ps.whip <= 1.20 ? 'Good'  : ps.whip <= 1.35 ? 'Average' : 'Allows traffic';
-  const k9Cmt   = !k9 ? '' : +k9 >= 10 ? 'Elite K' : +k9 >= 8 ? 'High K' : +k9 >= 6 ? 'Average' : 'Low K (contact)';
-  const h9Cmt   = !h9 ? '' : +h9 >= 9.5 ? 'Allows Hits Freely' : +h9 >= 8.5 ? 'Hit-Prone' : +h9 >= 7.0 ? 'Average' : 'Suppresses Hits';
-  const bb9Cmt  = !bb9 ? '' : +bb9 <= 2.5 ? 'Elite control' : +bb9 <= 3.5 ? 'Good control' : +bb9 <= 4.5 ? 'Average' : 'Wild';
+  const ps   = pitcher?.seasonStats || {};
+  const pIP  = parseFloat(ps.inningsPitched) || 0;
+  const pK   = parseFloat(ps.strikeOuts)     || 0;
+  const pBB  = parseFloat(ps.baseOnBalls)    || 0;
+  const pW   = parseFloat(ps.whip)           || 0;
+  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const k9   = pIP > 0 ? (pK     / pIP * 9).toFixed(1) : null;
+  const h9   = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
+  const bb9  = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
+  const pBF  = pIP > 0 ? pIP * (3 + pW) : 0;
+  const bbBfP = pBF > 0 ? (pBB / pBF * 100).toFixed(1) + '%' : null;
 
-  const pitcherStats = [
-    _stat('ERA',    _fmt(ps.era),  ps.era > 0 && ps.era <= 3.25 ? 'good' : ps.era >= 4.75 ? 'warn' : '', eraCmt),
-    _stat('WHIP',   _fmt(ps.whip), ps.whip > 0 && ps.whip <= 1.10 ? 'good' : ps.whip >= 1.40 ? 'warn' : '', whipCmt),
-    _stat('IP',     pIP > 0 ? pIP.toFixed(1) : null),
-    _stat('K/9',    k9, +k9 >= 9.5 ? 'good' : +k9 < 6.5 && +k9 > 0 ? 'warn' : '', k9Cmt),
-    _stat('H/9',    h9, +h9 > 0 && +h9 <= 7.5 ? 'good' : +h9 >= 9.5 ? 'warn' : '', h9Cmt),
-    _stat('BB/9',   bb9, +bb9 > 0 && +bb9 <= 2.5 ? 'good' : +bb9 >= 4.0 ? 'warn' : '', bb9Cmt),
-    _stat('BB/BF%', bbBfP),
-  ].filter(Boolean).join('');
+  // ── Score meter ────────────────────────────────────────────────────────
+  // Map score (-15..+15) → 0..100% with 50% = neutral
+  const meterPct = Math.round(50 + (Math.max(-15, Math.min(15, score)) / 15) * 45);
 
-  // ── Lineup status badge ──────────────────────────────────────────────
-  const lineupBadge = r.gd?.lineupPosted
-    ? `<span class="ahf-lineup-conf">Confirmed</span>`
-    : player._projected
-    ? `<span class="ahf-lineup-proj">Projected</span>`
-    : `<span class="ahf-lineup-unk">? Lineup</span>`;
-
-  // ── Pitch match chips — human-readable strength labels ───────────────
-  const pitchChips = matches.map(m => {
-    const baStr = '.' + Math.round(m.ba * 1000).toString().padStart(3,'0');
-    // Label from raw BA — .200 is never "Neutral". MLB avg ≈ .252.
-    const chipLabel = m.ba >= 0.300 ? 'Strong'
-                    : m.ba >= 0.270 ? 'Good'
-                    : m.ba >= 0.240 ? 'Neutral'
-                    : m.ba >= 0.210 ? 'Weak'
-                    : 'Risk';
-    const isPos    = m.ba >= 0.270;
-    const isNeg    = m.ba <  0.240;
-    const chipClr  = isPos ? m.typeColor : isNeg ? '#ef4444' : '#94a3b8';
-    const chipBg   = isPos ? m.typeColor + '18' : isNeg ? 'rgba(239,68,68,.12)' : 'rgba(148,163,184,.08)';
-    const chipBdr  = isPos ? m.typeColor + '40' : isNeg ? 'rgba(239,68,68,.3)'  : 'rgba(148,163,184,.2)';
-    const labelClr = m.ba >= 0.270 ? '#22c55e' : m.ba >= 0.240 ? '#94a3b8' : '#ef4444';
-    return `<div class="ahf-pitch-chip" style="background:${chipBg};border-color:${chipBdr}">
-      <span class="ahf-chip-type" style="color:${chipClr}">${escHtml(m.pitchType)}</span>
-      <span class="ahf-chip-use">${m.usage.toFixed(0)}%</span>
-      <span class="ahf-chip-label" style="color:${labelClr}">${chipLabel}</span>
-      <span class="ahf-chip-ba">(${baStr})</span>
-    </div>`;
-  }).join('');
-
-  // ── Live / Final badge + per-player stats (same pattern as BTS cards) ─
-  const _ld  = (state.allGamesLiveData || {})[r.gamePk];
-  const _bs  = _ld?.statsMap?.[player.id];
-  const _ab  = _bs?.atBats || 0;
+  // ── Live / Final badge + achievement tracking ──────────────────────────
+  const _ld = (state.allGamesLiveData || {})[r.gamePk];
+  const _bs = _ld?.statsMap?.[player.id];
+  const _ab = _bs?.atBats || 0;
   let achieveHTML = '';
   let liveBadge   = '';
   if (_ld && _bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
-    const _pip     = _ld.isLive
+    const _pip    = _ld.isLive
       ? `<span class="bb-live-pip">● LIVE</span>`
       : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
-    const _hitBadge = (_bs.hits || 0) > 0
-      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${_bs.hits}/${_ab})</span>`
-      : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${_ab})</span>` : '';
-    const _hrBadge  = (_bs.homeRuns || 0) > 0
-      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
-      : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
-    achieveHTML = `<div class="bb-achieve-row" style="margin-bottom:6px">${_pip}${_hitBadge}${_hrBadge}</div>`;
+    const _hitBdg = (_bs.hits || 0) > 0
+      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit ${_bs.hits}/${_ab}</span>`
+      : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ 0/${_ab}</span>` : '';
+    achieveHTML = `<div class="bb-achieve-row" style="margin:2px 14px 6px">${_pip}${_hitBdg}</div>`;
     liveBadge   = _pip;
   } else if (_ld?.isLive) {
     liveBadge = `<span class="bb-live-pip">● LIVE</span>`;
@@ -11123,60 +11043,132 @@ function _arsenalHitCardHTML(r, rank) {
     liveBadge = `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
   }
 
-  const reasonHtml = reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : '';
-  const riskHtml   = risks.length   ? `<div class="ahf-risks">${risks.map(r2 => `<span class="ahf-risk-chip">⚠ ${escHtml(r2)}</span>`).join('')}</div>` : '';
+  // ── Lineup badge ────────────────────────────────────────────────────────
+  const lineupBadge = r.gd?.lineupPosted
+    ? `<span class="ahf-lineup-conf">✓ Confirmed</span>`
+    : player._projected
+    ? `<span class="ahf-lineup-proj">Projected</span>`
+    : `<span class="ahf-lineup-unk">? Lineup</span>`;
+
+  // ── Batter stat grid ────────────────────────────────────────────────────
+  const _pa   = ss.plateAppearances || 0;
+  const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
+  const relSplit = pHand_ === 'L' ? player.vsLHP : (player.vsRHP || null);
+  const relLabel = pHand_ === 'L' ? 'vs LHP ★' : 'vs RHP ★';
+  const locSplit = player.isAway ? player.awayStats : player.homeStats;
+  const locLabel = player.isAway ? 'Away' : 'Home';
+  const _rawGame = (state.games || []).find(g => g.gamePk === r.gamePk);
+  const _isNight = _rawGame ? _rawGame.dayNight === 'night' : null;
+  const timeSplit = _isNight === true ? player.nightStats : _isNight === false ? player.dayStats : null;
+  const timeLabel = _isNight === true ? 'Night' : 'Day';
+
+  const _sg = (lbl, val, cls='') => val != null
+    ? `<span class="ahf-sg-lbl">${lbl}</span><span class="ahf-sg-val${cls?' '+cls:''}">${val}</span>`
+    : '';
+  const _sgDiv = () => `<span class="ahf-sg-divider"></span><span class="ahf-sg-divider"></span>`;
+  const batGrid = `<div class="ahf-stat-grid">
+    ${_sg('AVG', _avg(ss.avg), ss.avg >= 0.285 ? 'pos' : ss.avg > 0 && ss.avg < 0.230 ? 'neg' : '')}
+    ${_sg('H',   ss.hits > 0 ? ss.hits : null)}
+    ${_sg('OBP', _avg(ss.obp), ss.obp >= 0.340 ? 'pos' : ss.obp > 0 && ss.obp < 0.290 ? 'neg' : '')}
+    ${_sg('K%',  _kpct != null ? _kpct + '%' : null, _kpct != null && _kpct <= 15 ? 'pos' : _kpct != null && _kpct >= 28 ? 'neg' : '')}
+    ${_sg('L7',  _avg(l7.avg), l7.avg >= 0.300 ? 'pos' : l7.avg > 0 && l7.avg < 0.210 ? 'neg' : '')}
+    ${relSplit?.atBats >= 10 ? _sg(relLabel, _avg(relSplit.avg), relSplit.avg >= 0.285 ? 'rel' : '') : ''}
+    ${locSplit?.atBats >= 10 ? _sg(locLabel, _avg(locSplit.avg)) : ''}
+    ${timeSplit?.atBats >= 5 ? _sg(timeLabel, _avg(timeSplit.avg)) : ''}
+  </div>`;
+
+  // ── Pitcher stat grid ───────────────────────────────────────────────────
+  const _pStat = (lbl, val, favor) => val != null
+    ? `<span class="ahf-sg-lbl">${lbl}</span><span class="ahf-sg-val${favor === true ? ' pos' : favor === false ? ' neg' : ''}">${val}</span>`
+    : '';
+  const pitGrid = `<div class="ahf-stat-grid">
+    ${_pStat('ERA',   _fmt(ps.era),  ps.era > 0 && ps.era >= 4.75 ? true : ps.era > 0 && ps.era <= 3.25 ? false : null)}
+    ${_pStat('WHIP',  _fmt(ps.whip), ps.whip > 0 && ps.whip >= 1.40 ? true : ps.whip > 0 && ps.whip <= 1.10 ? false : null)}
+    ${_pStat('K/9',   k9,  k9 && +k9 < 6.5 ? true : k9 && +k9 >= 9.5 ? false : null)}
+    ${_pStat('H/9',   h9,  h9 && +h9 >= 9.0 ? true : h9 && +h9 <= 7.5 ? false : null)}
+    ${_pStat('BB/9',  bb9, bb9 && +bb9 >= 4.0 ? true : bb9 && +bb9 <= 2.5 ? false : null)}
+    ${_pStat('IP',    pIP > 0 ? pIP.toFixed(1) : null, null)}
+  </div>`;
+
+  // ── Pitch arsenal rows (the visual star) ────────────────────────────────
+  const pitchRows = matches.map(m => {
+    const ba       = m.ba > 0 ? '.' + Math.round(m.ba * 1000).toString().padStart(3,'0') : '---';
+    const verdict  = m.ba >= 0.300 ? '▲ CRUSHES' : m.ba >= 0.270 ? '↑ Good'
+                   : m.ba >= 0.240 ? '→ Neutral'  : m.ba >= 0.210 ? '↓ Weak' : '▼ Struggles';
+    const vClr     = m.ba >= 0.300 ? '#22c55e' : m.ba >= 0.270 ? '#86efac'
+                   : m.ba >= 0.240 ? '#4a5168' : m.ba >= 0.210 ? '#f87171' : '#dc2626';
+    const barFill  = m.ba >= 0.270 ? `rgba(52,211,153,.35)` : m.ba >= 0.240 ? `rgba(255,255,255,.06)` : `rgba(248,113,113,.3)`;
+    const barW     = Math.min(Math.round(m.usage), 60); // cap at 60% visual width
+    return `<div class="ahf-pitch-row">
+      <span class="ahf-pitch-code" style="color:${vClr}">${escHtml(m.pitchType)}</span>
+      <div class="ahf-pitch-bar-wrap"><div class="ahf-pitch-bar" style="width:${barW}%;background:${barFill}"></div></div>
+      <span class="ahf-pitch-pct">${m.usage.toFixed(0)}%</span>
+      <span class="ahf-pitch-ba" style="color:${vClr}">${ba}</span>
+      <span class="ahf-pitch-verdict" style="color:${vClr}">${verdict}</span>
+    </div>`;
+  }).join('');
+
   const glId = `ars-gl-${player.id}-${rank}`;
 
-  return `<div class="ahf-card">
+  return `<div class="ahf-card" style="border-left-color:${stripeClr}">
 
-    <!-- Card header: rank + game + live badge + edge -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:4px">
-      <div style="display:flex;align-items:center;gap:6px">
-        <span class="ahf-rank">#${rank}</span>
-        <span style="font-size:10px;color:var(--text-muted)">${escHtml(gameLabel)}</span>
-        ${liveBadge}
+    <div class="ahf-header">
+      <span class="ahf-rank">#${rank}</span>
+      <div class="ahf-header-mid">
+        <div class="ahf-name">${escHtml(player.name||'Unknown')}</div>
+        <div class="ahf-meta-row">
+          <span class="ahf-meta-txt">${escHtml(player.teamAbbr||player.team||'')}${player.position?' · '+escHtml(player.position):''}${player.batSide?' · '+escHtml(player.batSide)+'HB':''} · ${escHtml(gameLabel)}</span>
+          ${liveBadge} ${lineupBadge}
+        </div>
       </div>
-      <span class="ahf-edge-badge ${edgeCls}">${escHtml(edgeLabel)}</span>
+      <div class="ahf-edge-group">
+        <span class="ahf-edge-lbl" style="border-color:${stripeClr}40;background:${stripeClr}18;color:${stripeClr}">${escHtml(edgeLabel)}</span>
+      </div>
     </div>
 
-    <!-- Head-to-head comparison -->
+    <div class="ahf-meter-wrap">
+      <div class="ahf-meter-track">
+        <div class="ahf-meter-center"></div>
+        <div class="ahf-meter-marker" style="left:${meterPct}%;background:${stripeClr}"></div>
+      </div>
+    </div>
+
     <div class="ahf-h2h">
-
-      <!-- Batter (left) -->
-      <div class="ahf-h2h-side">
-        <img class="ahf-h2h-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
-        <div class="ahf-h2h-fallback" style="display:none">${initial}</div>
-        <div class="ahf-h2h-name">${escHtml(player.name||'Unknown')}</div>
-        <div class="ahf-h2h-sub">${escHtml(player.teamAbbr||player.team||'')}${player.position ? ' · '+escHtml(player.position) : ''}${player.batSide ? ' · '+escHtml(player.batSide)+'HB' : ''}</div>
-        <div style="margin-bottom:4px">${lineupBadge}</div>
-        <div class="ahf-h2h-stats">${batStats}</div>
-        ${splitSection}
+      <div class="ahf-batter-col">
+        <img class="ahf-person-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+        <div class="ahf-person-fallback" style="display:none">${initial}</div>
+        <div class="ahf-person-name">${escHtml(player.name||'')}</div>
+        <div class="ahf-person-sub">${escHtml(player.batSide||'R')}HB${pHand_?' vs '+pHand_+'HP':''}</div>
+        ${batGrid}
       </div>
-
-      <!-- VS divider -->
-      <div class="ahf-h2h-vs">
-        <span class="ahf-h2h-vs-text">VS</span>
+      <div class="ahf-vs-col">
+        <span class="ahf-vs-text">VS</span>
       </div>
-
-      <!-- Pitcher (right) -->
-      <div class="ahf-h2h-side ahf-pitcher-side">
-        ${pitcher?.id
-          ? `<img class="ahf-h2h-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-h2h-fallback" style="display:none">${pInitial}</div>`
-          : `<div class="ahf-h2h-fallback">${pInitial}</div>`}
-        <div class="ahf-h2h-name">${escHtml(pName || 'Unknown SP')}</div>
-        <div class="ahf-h2h-sub">${escHtml(pHand)}</div>
-        <div class="ahf-h2h-stats">${pitcherStats || '<span style="font-size:10px;color:var(--text-muted)">No data</span>'}</div>
+      <div class="ahf-pitcher-col">
+        ${pPhotoUrl
+          ? `<img class="ahf-person-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-person-fallback" style="display:none">${pInitial}</div>`
+          : `<div class="ahf-person-fallback">${pInitial}</div>`}
+        <div class="ahf-person-name">${escHtml(pName||'Unknown SP')}</div>
+        <div class="ahf-person-sub">${pitcher?.pitchHand||'?'}HP</div>
+        ${pitGrid}
       </div>
     </div>
 
     ${achieveHTML}
-    ${pitchChips ? `<div class="ahf-pitch-chips">${pitchChips}</div>` : ''}
-    ${sampleWarning ? `<div class="ahf-sample-warn">⚠ Small pitch-type sample — treat as a light signal</div>` : ''}
-    ${reasonHtml}
-    ${riskHtml}
-    <div style="margin-top:8px"><button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button></div>
-    <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
-      <span>Last 7 Games</span><span class="chevron">▼</span>
+
+    ${matches.length ? `<div class="ahf-arsenal">
+      <div class="ahf-arsenal-hdr">Arsenal Matchup${sampleWarning?' <span class="ahf-sample-warn">⚠ small sample</span>':''}</div>
+      ${pitchRows}
+    </div>` : ''}
+
+    ${reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : ''}
+    ${risks.length   ? `<div class="ahf-risks">${risks.map(rk=>`<span class="ahf-risk-chip">⚠ ${escHtml(rk)}</span>`).join('')}</div>` : ''}
+
+    <div class="ahf-actions">
+      <button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button>
+      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
+        Last 7 Games <span class="chevron">▼</span>
+      </div>
     </div>
     <div class="streak-gamelog" id="${glId}"></div>
   </div>`;
