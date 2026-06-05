@@ -842,6 +842,23 @@ main { padding: 28px 0 60px; }
 .ahf-lineup-proj { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(245,158,11,.08); color:#f59e0b; border:1px solid rgba(245,158,11,.15); }
 .ahf-lineup-unk  { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(148,163,184,.06); color:#4a5168; border:1px solid rgba(148,163,184,.12); }
 .ahf-sample-warn { font-size:9px; color:#f59e0b; }
+
+/* Arsenal filter panel */
+.ahf-filter-panel    { background:#0a1220; border:1px solid #111c2b; border-radius:10px; padding:10px 12px; margin-bottom:10px; }
+.ahf-filter-section-lbl { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:1.5px; color:#1e2e45; text-transform:uppercase; margin-bottom:6px; }
+.ahf-filter-group    { display:flex; align-items:center; flex-wrap:wrap; gap:5px; margin-bottom:6px; }
+.ahf-filter-lbl      { font-size:10px; color:#2a3a52; min-width:130px; flex-shrink:0; }
+.ahf-filter-btns     { display:flex; gap:4px; flex-wrap:wrap; }
+.ahf-filter-btn      { font-size:10px; font-weight:600; padding:3px 10px; border-radius:4px; border:1px solid #1e2e45; background:#0d1726; color:#2a3a52; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.ahf-filter-btn:hover { border-color:#334155; color:#8a9bb8; }
+.ahf-filter-btn.active { background:#1e2e45; color:#dde6f5; border-color:#334155; }
+.ahf-filter-reset    { font-size:10px; color:#4a5168; background:none; border:none; cursor:pointer; padding:2px 0; margin-top:4px; }
+.ahf-filter-reset:hover { color:#94a3b8; }
+.ahf-filter-toggle   { font-size:10px; font-weight:600; color:#4a5168; background:none; border:none; cursor:pointer; padding:0; margin-bottom:8px; }
+.ahf-filter-toggle:hover { color:#8a9bb8; }
+
+/* Batting order badge in card */
+.ahf-order-badge { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(99,102,241,.10); color:#818cf8; border:1px solid rgba(99,102,241,.2); }
 .ahf-platoon        { font-size:9px; font-weight:700; letter-spacing:.4px; padding:2px 7px; border-radius:3px; margin-bottom:5px; text-align:center; }
 .ahf-platoon-adv    { background:rgba(52,211,153,.12); color:#34d399; border:1px solid rgba(52,211,153,.25); }
 .ahf-platoon-switch { background:rgba(251,191,36,.10); color:#fbbf24; border:1px solid rgba(251,191,36,.2); }
@@ -2694,8 +2711,105 @@ main { padding: 28px 0 60px; }
           <span class="lab-back-crumb">Arsenal Hit Finder — All Games</span>
         </div>
         <div class="lab-global-elite-header">⚾ Arsenal Hit Finder · Pitch-Type Matchup Rankings</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.45">Hitters ranked by how well their pitch-type profile matches today's opposing starter's arsenal. Ignores ERA, park, and bullpen — pitch-matchup signal only.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Hitters ranked by pitch-type matchup fit vs today's starting pitchers. Filters apply instantly to already-loaded results.</div>
         <div id="labArsenalSummaryBar" style="display:none"></div>
+
+        <!-- Arsenal Filters -->
+        <div id="ahfFilters" class="ahf-filter-panel" style="display:none">
+          <div class="ahf-filter-section-lbl">BATTER</div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Lineup Spot</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="lineupspot" data-val="any"   onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="top3"  onclick="setAhfFilter(this)">Top 3</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="top5"  onclick="setAhfFilter(this)">Top 5</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="low"   onclick="setAhfFilter(this)">6–9</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Season AVG</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minavg" data-val="0"    onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.260" onclick="setAhfFilter(this)">.260+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.275" onclick="setAhfFilter(this)">.275+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.290" onclick="setAhfFilter(this)">.290+</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Batter K%</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxkpct" data-val="100"  onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="25"   onclick="setAhfFilter(this)">≤ 25%</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="20"   onclick="setAhfFilter(this)">≤ 20%</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="15"   onclick="setAhfFilter(this)">≤ 15% (low K)</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Platoon</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="platoon" data-val="any"  onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="platoon" data-val="adv"  onclick="setAhfFilter(this)">Adv only</button>
+              <button class="ahf-filter-btn"                            data-ahf="platoon" data-val="switch" onclick="setAhfFilter(this)">Switch</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Lineup Status</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="lineup" data-val="any"   onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineup" data-val="conf"  onclick="setAhfFilter(this)">Confirmed</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-section-lbl" style="margin-top:8px">PITCHER</div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">H/9 (hits allowed)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minh9" data-val="0"    onclick="setAhfFilter(this)">Any (≥8)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="8.5"  onclick="setAhfFilter(this)">8.5+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="9.0"  onclick="setAhfFilter(this)">9.0+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="9.5"  onclick="setAhfFilter(this)">9.5+ (hittable)</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">K/9 (contact pitchers)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxk9" data-val="99"   onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="8"    onclick="setAhfFilter(this)">≤ 8</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="7"    onclick="setAhfFilter(this)">≤ 7</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="6"    onclick="setAhfFilter(this)">≤ 6 (contact)</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">BB/9 (control)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxbb9" data-val="99"   onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="3.5"  onclick="setAhfFilter(this)">≤ 3.5</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="3.0"  onclick="setAhfFilter(this)">≤ 3.0</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="2.5"  onclick="setAhfFilter(this)">≤ 2.5 (elite ctrl)</button>
+            </div>
+          </div>
+
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Edge Score</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minedge" data-val="-99"  onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="1"    onclick="setAhfFilter(this)">Hitter Edge+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="4"    onclick="setAhfFilter(this)">Hitter Edge</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="6"    onclick="setAhfFilter(this)">Strong Edge only</button>
+            </div>
+          </div>
+
+          <button class="ahf-filter-reset" onclick="resetAhfFilters()">↺ Reset all filters</button>
+        </div>
+
         <div id="labArsenalCards"></div>
       </div>
       <!-- Screen 1b: Global Elite Scan Results -->
@@ -11147,6 +11261,7 @@ function _arsenalHitCardHTML(r, rank) {
             ${escHtml(player.teamAbbr||player.team||'')}${player.position?' · '+escHtml(player.position):''}
             · <span style="color:#4a6080">${escHtml(gameLabel)}</span>
             · ${escHtml(_bat)}HB vs ${pitcher?.pitchHand||'?'}HP
+            ${player.orderPos > 0 ? `<span class="ahf-order-badge">#${player.orderPos} spot</span>` : ''}
             ${liveBadge} ${lineupBadge}
           </div>
         </div>
@@ -11185,6 +11300,95 @@ function _arsenalHitCardHTML(r, rank) {
   </div>`;
 }
 
+// ── Arsenal filter state ──────────────────────────────────────────────────
+let _ahfResults = [];   // full unfiltered results, cached after scan
+const _ahfState = {
+  lineupspot: 'any', minavg: 0, maxkpct: 100, platoon: 'any', lineup: 'any',
+  minh9: 0, maxk9: 99, maxbb9: 99, minedge: -99,
+};
+
+function setAhfFilter(btn) {
+  const key = btn.dataset.ahf;
+  const raw = btn.dataset.val;
+  _ahfState[key] = isNaN(raw) ? raw : parseFloat(raw);
+  document.querySelectorAll(`#ahfFilters .ahf-filter-btn[data-ahf="${key}"]`)
+    .forEach(b => b.classList.toggle('active', b === btn));
+  _renderAhfFiltered();
+}
+
+function resetAhfFilters() {
+  Object.assign(_ahfState, {
+    lineupspot:'any', minavg:0, maxkpct:100, platoon:'any', lineup:'any',
+    minh9:0, maxk9:99, maxbb9:99, minedge:-99,
+  });
+  document.querySelectorAll('#ahfFilters .ahf-filter-btn')
+    .forEach(b => b.classList.toggle('active', b.dataset.active === 'true'));
+  _renderAhfFiltered();
+}
+
+function _renderAhfFiltered() {
+  const f = _ahfState;
+  const filtered = _ahfResults.filter(r => {
+    const p   = r.player;
+    const pit = r.pitcher;
+    const ss  = p.seasonStats || {};
+    const _pa = ss.plateAppearances || 0;
+    const kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : 100;
+
+    // Lineup spot
+    const pos = p.orderPos || 0;
+    if (f.lineupspot === 'top3' && !(pos >= 1 && pos <= 3)) return false;
+    if (f.lineupspot === 'top5' && !(pos >= 1 && pos <= 5)) return false;
+    if (f.lineupspot === 'low'  && !(pos >= 6))             return false;
+
+    // Batter AVG
+    if (f.minavg > 0 && (ss.avg || 0) < f.minavg) return false;
+
+    // Batter K%
+    if (f.maxkpct < 100 && kpct > f.maxkpct) return false;
+
+    // Platoon
+    if (f.platoon !== 'any') {
+      const bat = p.batSide || 'R';
+      const hand = pit?.pitchHand || 'R';
+      if (f.platoon === 'adv') {
+        if (!((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R'))) return false;
+      }
+      if (f.platoon === 'switch' && bat !== 'S') return false;
+    }
+
+    // Lineup status
+    if (f.lineup === 'conf' && !r.gd?.lineupPosted) return false;
+
+    // Pitcher H/9
+    const ps  = pit?.seasonStats || {};
+    const pIP = parseFloat(ps.inningsPitched) || 0;
+    const pW  = parseFloat(ps.whip) || 0;
+    const pBB = parseFloat(ps.baseOnBalls) || 0;
+    const pK  = parseFloat(ps.strikeOuts)  || 0;
+    const pH2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+    const h9r = pIP > 0 ? pH2 / pIP * 9 : 0;
+    const k9r = pIP > 0 ? pK  / pIP * 9 : 0;
+    const bb9r = pIP > 0 ? pBB / pIP * 9 : 0;
+    if (f.minh9 > 0  && h9r  < f.minh9)  return false;
+    if (f.maxk9 < 99 && k9r  > f.maxk9)  return false;
+    if (f.maxbb9 < 99 && bb9r > f.maxbb9) return false;
+
+    // Edge score
+    if (r.score < f.minedge) return false;
+
+    return true;
+  });
+
+  const cards = document.getElementById('labArsenalCards');
+  if (!cards) return;
+  if (!filtered.length) {
+    cards.innerHTML = '<div class="ahf-no-data">No players match the current filters — try relaxing a filter.</div>';
+    return;
+  }
+  cards.innerHTML = filtered.map((r, i) => _arsenalHitCardHTML(r, i + 1)).join('');
+}
+
 async function handleArsenalHitFinder() {
   const btn = document.getElementById('labArsenalBtn');
   if (!btn || btn.disabled) return;
@@ -11204,6 +11408,7 @@ async function handleArsenalHitFinder() {
     await ensureSavantData(new Date().getFullYear());
     const data  = await runArsenalScan();
     const { results, summary } = data;
+    _ahfResults = results; // cache for filter re-renders
     btn.textContent = `✅ Arsenal Hit Finder`;
     btn.disabled = false;
 
@@ -11220,10 +11425,14 @@ async function handleArsenalHitFinder() {
       </div>`;
     }
 
+    // Show filter panel once results are loaded
+    const fp = document.getElementById('ahfFilters');
+    if (fp) fp.style.display = results.length ? 'block' : 'none';
+
     const cards = document.getElementById('labArsenalCards');
     if (!cards) return;
     if (!results.length) {
-      cards.innerHTML = '<div class="ahf-no-data">No pitch-type matchup data available — Savant data may be loading, or most starters today have elite suppression profiles (K/9 &gt; 9, H/9 &lt; 8). Try again in a moment.</div>';
+      cards.innerHTML = '<div class="ahf-no-data">No pitch-type matchup data available — Savant data may be loading, or most starters today have elite suppression profiles (H/9 &lt; 8). Try again in a moment.</div>';
     } else {
       cards.innerHTML = results.map((r, i) => _arsenalHitCardHTML(r, i + 1)).join('');
     }
