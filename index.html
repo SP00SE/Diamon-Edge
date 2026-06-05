@@ -5683,6 +5683,10 @@ async function renderOverallTopPlays() {
 
   // Apply mode filter after everything is rendered
   applyOvrBbModeFilter(state.ovrBbViewMode || 'combined');
+
+  // Live data is now loaded — re-render BTS if it's the active tab so
+  // live/final badges appear without the user having to switch tabs.
+  if (state.activeTab === 'bts') renderBeatTheStreak();
 }
 
 // ─── HOT STREAKS ──────────────────────────────────────────────────────────
@@ -8293,10 +8297,10 @@ async function startFetch() {
     hideLoading();
     if (state.selectedGamePk) renderSelectedGame();
     renderTopPlays();
-    renderOverallTopPlays();
     renderHotStreaks();
-    // Re-render whichever tab is active — fixes BTS (and other tabs) not
-    // refreshing when data finishes loading after the user already switched there
+    // Await live data before renderCurrentTab so BTS shows live/final badges
+    // on first load without requiring a tab switch.
+    await renderOverallTopPlays();
     renderCurrentTab();
 
     document.getElementById('formulaSection').style.display='block';
@@ -9580,7 +9584,7 @@ function saveSnapshot() {
   } catch (e) { /* storage full — skip silently */ }
 }
 
-function tryLoadSnapshot() {
+async function tryLoadSnapshot() {
   const raw = localStorage.getItem(`btsSnapshot_${state.date}`);
   if (!raw) return false;
   try {
@@ -9594,7 +9598,8 @@ function tryLoadSnapshot() {
     document.getElementById('topHitsSection').style.display = '';
     document.getElementById('topHRsSection').style.display  = '';
     renderTopPlays();
-    renderOverallTopPlays();
+    // Await live data before renderCurrentTab so BTS badges are populated.
+    await renderOverallTopPlays();
     renderCurrentTab();
     return true;
   } catch { return false; }
