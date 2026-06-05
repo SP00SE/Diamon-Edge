@@ -835,6 +835,10 @@ main { padding: 28px 0 60px; }
 .ahf-lineup-proj { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(245,158,11,.08); color:#f59e0b; border:1px solid rgba(245,158,11,.15); }
 .ahf-lineup-unk  { font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(148,163,184,.06); color:#4a5168; border:1px solid rgba(148,163,184,.12); }
 .ahf-sample-warn { font-size:9px; color:#f59e0b; }
+.ahf-platoon        { font-size:9px; font-weight:700; letter-spacing:.4px; padding:2px 7px; border-radius:3px; margin-bottom:5px; text-align:center; }
+.ahf-platoon-adv    { background:rgba(52,211,153,.12); color:#34d399; border:1px solid rgba(52,211,153,.25); }
+.ahf-platoon-switch { background:rgba(251,191,36,.10); color:#fbbf24; border:1px solid rgba(251,191,36,.2); }
+.ahf-platoon-neutral { background:rgba(74,81,104,.12); color:#4a5168; border:1px solid rgba(74,81,104,.2); }
 
 @media(max-width:480px){
   .ahf-pitch-row { grid-template-columns:24px 1fr 24px 36px 65px; gap:4px; }
@@ -11139,6 +11143,14 @@ function _arsenalHitCardHTML(r, rank) {
         <div class="ahf-person-fallback" style="display:none">${initial}</div>
         <div class="ahf-person-name">${escHtml(player.name||'')}</div>
         <div class="ahf-person-sub">${escHtml(player.batSide||'R')}HB${pHand_?' vs '+pHand_+'HP':''}</div>
+        ${(() => {
+          const bat = player.batSide || 'R';
+          if (bat === 'S') return '<div class="ahf-platoon ahf-platoon-switch">⚡ Switch Hit</div>';
+          const hasAdv = (bat === 'R' && pHand_ === 'L') || (bat === 'L' && pHand_ === 'R');
+          return hasAdv
+            ? '<div class="ahf-platoon ahf-platoon-adv">✓ Platoon Edge</div>'
+            : '<div class="ahf-platoon ahf-platoon-neutral">= Same Side</div>';
+        })()}
         ${batGrid}
       </div>
       <div class="ahf-vs-col">
