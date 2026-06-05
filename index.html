@@ -859,6 +859,14 @@ main { padding: 28px 0 60px; }
 
 /* Batting order badge in card */
 .ahf-order-badge { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; background:rgba(99,102,241,.10); color:#818cf8; border:1px solid rgba(99,102,241,.2); }
+
+/* Facing SP row */
+.ahf-sp-row       { display:flex; align-items:center; gap:8px; padding:7px 12px 7px; border-top:1px solid #0d1726; background:rgba(99,102,241,.03); }
+.ahf-sp-photo     { width:34px; height:34px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid rgba(99,102,241,.2); }
+.ahf-sp-fallback  { width:34px; height:34px; border-radius:50%; background:#111c2b; border:2px solid rgba(99,102,241,.15); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#2a3a52; flex-shrink:0; }
+.ahf-sp-info      { flex:1; min-width:0; }
+.ahf-sp-name      { font-size:12px; font-weight:700; color:#c8d4e8; margin-bottom:3px; }
+.ahf-no-arsenal   { padding:6px 12px; font-size:10px; color:#2a3a52; font-style:italic; font-family:'JetBrains Mono',monospace; }
 .ahf-platoon        { font-size:9px; font-weight:700; letter-spacing:.4px; padding:2px 7px; border-radius:3px; margin-bottom:5px; text-align:center; }
 .ahf-platoon-adv    { background:rgba(52,211,153,.12); color:#34d399; border:1px solid rgba(52,211,153,.25); }
 .ahf-platoon-switch { background:rgba(251,191,36,.10); color:#fbbf24; border:1px solid rgba(251,191,36,.2); }
@@ -11269,7 +11277,6 @@ function _arsenalHitCardHTML(r, rank) {
       </div>
       <div class="ahf-id-badges">
         ${platoonBadge}
-        ${pitcherPlatBadge}
       </div>
     </div>
 
@@ -11278,14 +11285,25 @@ function _arsenalHitCardHTML(r, rank) {
 
     ${achieveHTML}
 
-    <!-- ── Row 3: Arsenal pitch bars ───────────────────────────── -->
+    <!-- ── Row 3: Facing SP (always visible) ───────────────────── -->
+    <div class="ahf-sp-row">
+      ${pPhotoUrl
+        ? `<img class="ahf-sp-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-sp-fallback" style="display:none">${pInitial}</div>`
+        : `<div class="ahf-sp-fallback">${pInitial}</div>`}
+      <div class="ahf-sp-info">
+        <div class="ahf-sp-name">${escHtml(pName||'Unknown SP')} <span style="color:#2a3a52">(${pitcher?.pitchHand||'?'}HP)</span></div>
+        <div class="ahf-pit-chips">${pitStatsLine||'<span class="ahf-pit-chip n">No stats</span>'}</div>
+      </div>
+      ${pitcherPlatBadge}
+    </div>
+
+    <!-- ── Row 4: Arsenal pitch bars ───────────────────────────── -->
     ${matches.length ? `<div class="ahf-arsenal">
       <div class="ahf-arsenal-hdr">
-        <span>Arsenal vs ${escHtml(pName||'SP')} (${pitcher?.pitchHand||'?'}HP)${sampleWarning?' <span class="ahf-sample-warn">⚠ small sample</span>':''}</span>
-        <div class="ahf-pit-chips">${pitStatsLine}</div>
+        <span>Arsenal Matchup${sampleWarning?' <span class="ahf-sample-warn">⚠ small sample</span>':''}</span>
       </div>
       ${pitchRows}
-    </div>` : ''}
+    </div>` : '<div class="ahf-no-arsenal">No Savant pitch data available for this pitcher — pitch bars unavailable.</div>'}
 
     <!-- ── Row 4: Reason + actions ─────────────────────────────── -->
     ${reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : ''}
