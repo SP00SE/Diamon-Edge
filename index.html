@@ -783,30 +783,37 @@ main { padding: 28px 0 60px; }
 .ahf-meter-marker { position:absolute; top:-2px; width:7px; height:7px; border-radius:50%; transform:translateX(-50%); transition:left .3s ease; }
 .ahf-meter-center { position:absolute; left:50%; top:0; width:1px; height:100%; background:#1e2e45; }
 
-/* H2H section */
-.ahf-h2h          { display:flex; align-items:stretch; padding:0 12px 10px; gap:8px; border-bottom:1px solid #111c2b; }
-.ahf-batter-col,
-.ahf-pitcher-col  { flex:1; display:flex; flex-direction:column; align-items:center; min-width:0; padding:6px 4px; }
-.ahf-batter-col   { background:rgba(52,211,153,.03); border-radius:7px; border:1px solid rgba(52,211,153,.06); }
-.ahf-pitcher-col  { background:rgba(99,102,241,.03); border-radius:7px; border:1px solid rgba(99,102,241,.06); }
-.ahf-vs-col       { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:0 4px; flex-shrink:0; }
-.ahf-vs-text      { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; color:#1e2e45; letter-spacing:1px; writing-mode:vertical-rl; }
-.ahf-person-photo { width:42px; height:42px; border-radius:50%; object-fit:cover; margin-bottom:5px; border:2px solid #1e2e45; flex-shrink:0; }
-.ahf-person-fallback { width:42px; height:42px; border-radius:50%; background:#111c2b; border:2px solid #1e2e45; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#2a3a52; margin-bottom:5px; flex-shrink:0; }
-.ahf-person-name  { font-size:10px; font-weight:700; color:#c8d4e8; text-align:center; line-height:1.2; margin-bottom:1px; max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ahf-person-sub   { font-size:8px; color:#2a3a52; text-align:center; margin-bottom:5px; font-family:'JetBrains Mono',monospace; }
-.ahf-stat-grid    { display:grid; grid-template-columns:auto auto; gap:1px 6px; width:100%; max-width:110px; }
-.ahf-sg-lbl       { font-size:9px; color:#2a3a52; text-align:right; font-family:'JetBrains Mono',monospace; line-height:1.7; }
-.ahf-sg-val       { font-size:9px; font-weight:700; color:#8a9bb8; font-family:'JetBrains Mono',monospace; line-height:1.7; }
-.ahf-sg-val.pos   { color:#34d399; }
-.ahf-sg-val.neg   { color:#f87171; }
-.ahf-sg-val.rel   { color:#a78bfa; }
-.ahf-sg-divider   { grid-column:1/-1; height:1px; background:#111c2b; margin:2px 0; }
+/* Identity row */
+.ahf-id           { padding:10px 12px 8px; }
+.ahf-id-top       { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.ahf-id-rank      { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:#1e2e45; min-width:26px; flex-shrink:0; }
+.ahf-id-photo     { width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #1a2438; flex-shrink:0; }
+.ahf-id-fallback  { width:36px; height:36px; border-radius:50%; background:#111c2b; border:2px solid #1a2438; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#2a3a52; flex-shrink:0; }
+.ahf-id-info      { flex:1; min-width:0; }
+.ahf-id-name      { font-size:15px; font-weight:700; color:#dde6f5; letter-spacing:-.2px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ahf-id-sub       { font-size:9px; color:#2a3a52; margin-top:2px; line-height:1.4; }
+.ahf-id-badges    { display:flex; gap:5px; flex-wrap:wrap; }
+
+/* Stat pills row */
+.ahf-pills-row    { display:flex; gap:4px; padding:6px 12px 8px; flex-wrap:wrap; border-top:1px solid #0d1726; border-bottom:1px solid #0d1726; }
+.ahf-pill         { display:flex; flex-direction:column; align-items:center; background:#0a1220; border-radius:5px; padding:3px 7px; min-width:34px; flex-shrink:0; }
+.ahf-pill-rel     { background:rgba(167,139,250,.06); border:1px solid rgba(167,139,250,.15); }
+.ahf-pill-lbl     { font-size:7px; color:#2a3a52; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.4px; line-height:1.2; }
+.ahf-pill-val     { font-size:11px; font-weight:700; color:#8a9bb8; font-family:'JetBrains Mono',monospace; line-height:1.3; }
+.ahf-pill-val.pos { color:#34d399; }
+.ahf-pill-val.neg { color:#f87171; }
+
+/* Pitcher inline chips in arsenal header */
+.ahf-pit-chips    { display:flex; gap:4px; flex-wrap:wrap; }
+.ahf-pit-chip     { font-size:9px; font-weight:700; font-family:'JetBrains Mono',monospace; padding:1px 5px; border-radius:3px; }
+.ahf-pit-chip.g   { color:#34d399; background:rgba(52,211,153,.10); }
+.ahf-pit-chip.r   { color:#f87171; background:rgba(248,113,113,.10); }
+.ahf-pit-chip.n   { color:#4a5168; background:rgba(255,255,255,.04); }
 
 /* Arsenal pitch bars */
 .ahf-arsenal      { padding:8px 14px 6px; }
-.ahf-arsenal-hdr  { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:1.5px; color:#1e2e45; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-.ahf-arsenal-hdr::after { content:''; flex:1; height:1px; background:#111c2b; }
+.ahf-arsenal-hdr  { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
+.ahf-arsenal-hdr > span:first-child { font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:1.2px; color:#1e2e45; text-transform:uppercase; }
 .ahf-pitch-row    { display:grid; grid-template-columns:26px 1fr 28px 38px 72px; align-items:center; gap:5px; margin-bottom:4px; }
 .ahf-pitch-code   { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; }
 .ahf-pitch-bar-wrap { position:relative; height:6px; background:#0a1322; border-radius:3px; overflow:hidden; }
@@ -11068,33 +11075,43 @@ function _arsenalHitCardHTML(r, rank) {
   const timeSplit = _isNight === true ? player.nightStats : _isNight === false ? player.dayStats : null;
   const timeLabel = _isNight === true ? 'Night' : 'Day';
 
-  const _sg = (lbl, val, cls='') => val != null
-    ? `<span class="ahf-sg-lbl">${lbl}</span><span class="ahf-sg-val${cls?' '+cls:''}">${val}</span>`
-    : '';
-  const _sgDiv = () => `<span class="ahf-sg-divider"></span><span class="ahf-sg-divider"></span>`;
-  const batGrid = `<div class="ahf-stat-grid">
-    ${_sg('AVG', _avg(ss.avg), ss.avg >= 0.285 ? 'pos' : ss.avg > 0 && ss.avg < 0.230 ? 'neg' : '')}
-    ${_sg('H',   ss.hits > 0 ? ss.hits : null)}
-    ${_sg('OBP', _avg(ss.obp), ss.obp >= 0.340 ? 'pos' : ss.obp > 0 && ss.obp < 0.290 ? 'neg' : '')}
-    ${_sg('K%',  _kpct != null ? _kpct + '%' : null, _kpct != null && _kpct <= 15 ? 'pos' : _kpct != null && _kpct >= 28 ? 'neg' : '')}
-    ${_sg('L7',  _avg(l7.avg), l7.avg >= 0.300 ? 'pos' : l7.avg > 0 && l7.avg < 0.210 ? 'neg' : '')}
-    ${relSplit?.atBats >= 10 ? _sg(relLabel, _avg(relSplit.avg), relSplit.avg >= 0.285 ? 'rel' : '') : ''}
-    ${locSplit?.atBats >= 10 ? _sg(locLabel, _avg(locSplit.avg)) : ''}
-    ${timeSplit?.atBats >= 5 ? _sg(timeLabel, _avg(timeSplit.avg)) : ''}
-  </div>`;
+  // ── Platoon badge (computed once, used in identity header) ─────────────
+  const _bat = player.batSide || 'R';
+  const platoonBadge = _bat === 'S'
+    ? `<span class="ahf-platoon ahf-platoon-switch">⚡ Switch Hit</span>`
+    : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R'))
+    ? `<span class="ahf-platoon ahf-platoon-adv">✓ Platoon Edge</span>`
+    : `<span class="ahf-platoon ahf-platoon-neutral">= Same Side</span>`;
 
-  // ── Pitcher stat grid ───────────────────────────────────────────────────
-  const _pStat = (lbl, val, favor) => val != null
-    ? `<span class="ahf-sg-lbl">${lbl}</span><span class="ahf-sg-val${favor === true ? ' pos' : favor === false ? ' neg' : ''}">${val}</span>`
+  const pitcherPlatBadge = _bat === 'S'
+    ? `<span class="ahf-platoon ahf-platoon-switch">⚡ vs Switch</span>`
+    : ((pitcher?.pitchHand === 'R' && _bat === 'R') || (pitcher?.pitchHand === 'L' && _bat === 'L'))
+    ? `<span class="ahf-platoon ahf-platoon-pit-adv">⚠ Pitcher Adv</span>`
+    : `<span class="ahf-platoon ahf-platoon-bat-adv">✓ Batter Adv</span>`;
+
+  // ── Batter stat pills (horizontal, scannable) ────────────────────────
+  const _pill = (lbl, val, cls='') => val != null
+    ? `<div class="ahf-pill"><div class="ahf-pill-lbl">${lbl}</div><div class="ahf-pill-val${cls?' '+cls:''}">${val}</div></div>`
     : '';
-  const pitGrid = `<div class="ahf-stat-grid">
-    ${_pStat('ERA',   _fmt(ps.era),  ps.era > 0 && ps.era >= 4.75 ? true : ps.era > 0 && ps.era <= 3.25 ? false : null)}
-    ${_pStat('WHIP',  _fmt(ps.whip), ps.whip > 0 && ps.whip >= 1.40 ? true : ps.whip > 0 && ps.whip <= 1.10 ? false : null)}
-    ${_pStat('K/9',   k9,  k9 && +k9 < 6.5 ? true : k9 && +k9 >= 9.5 ? false : null)}
-    ${_pStat('H/9',   h9,  h9 && +h9 >= 9.0 ? true : h9 && +h9 <= 7.5 ? false : null)}
-    ${_pStat('BB/9',  bb9, bb9 && +bb9 <= 2.5 ? true : bb9 && +bb9 >= 4.0 ? false : null)}
-    ${_pStat('IP',    pIP > 0 ? pIP.toFixed(1) : null, null)}
-  </div>`;
+  const batPills = [
+    _pill('AVG', _avg(ss.avg), ss.avg >= 0.285 ? ' pos' : ss.avg > 0 && ss.avg < 0.230 ? ' neg' : ''),
+    _pill('H',   ss.hits > 0 ? ss.hits : null),
+    _pill('OBP', _avg(ss.obp), ss.obp >= 0.340 ? ' pos' : ss.obp > 0 && ss.obp < 0.290 ? ' neg' : ''),
+    _pill('K%',  _kpct != null ? _kpct + '%' : null, _kpct != null && _kpct <= 15 ? ' pos' : _kpct != null && _kpct >= 28 ? ' neg' : ''),
+    _pill('L7',  _avg(l7.avg), l7.avg >= 0.300 ? ' pos' : l7.avg > 0 && l7.avg < 0.210 ? ' neg' : ''),
+    relSplit?.atBats >= 10 ? `<div class="ahf-pill ahf-pill-rel"><div class="ahf-pill-lbl">${relLabel}</div><div class="ahf-pill-val pos">${_avg(relSplit.avg)||'---'}</div></div>` : '',
+    locSplit?.atBats >= 10 ? _pill(locLabel, _avg(locSplit.avg)) : '',
+    timeSplit?.atBats >= 5 ? _pill(timeLabel, _avg(timeSplit.avg)) : '',
+  ].filter(Boolean).join('');
+
+  // ── Pitcher key stats (inline chips in arsenal header) ─────────────────
+  const pitStatsLine = [
+    ps.era  > 0 ? `<span class="ahf-pit-chip ${ps.era  >= 4.75 ? 'g' : ps.era  <= 3.25 ? 'r' : 'n'}">ERA ${(+ps.era).toFixed(2)}</span>`  : '',
+    h9 && +h9  > 0 ? `<span class="ahf-pit-chip ${+h9  >= 9.0 ? 'g' : +h9  <= 7.5 ? 'r' : 'n'}">H/9 ${h9}</span>`  : '',
+    k9 && +k9  > 0 ? `<span class="ahf-pit-chip ${+k9  < 6.5  ? 'g' : +k9  >= 9.5 ? 'r' : 'n'}">K/9 ${k9}</span>`  : '',
+    bb9 && +bb9 > 0 ? `<span class="ahf-pit-chip ${+bb9 <= 2.5 ? 'g' : +bb9 >= 4.0 ? 'r' : 'n'}">BB/9 ${bb9}</span>` : '',
+    pIP > 0 ? `<span class="ahf-pit-chip n">IP ${pIP.toFixed(0)}</span>` : '',
+  ].filter(Boolean).join('');
 
   // ── Pitch arsenal rows (the visual star) ────────────────────────────────
   const pitchRows = matches.map(m => {
@@ -11118,75 +11135,46 @@ function _arsenalHitCardHTML(r, rank) {
 
   return `<div class="ahf-card" style="border-left-color:${stripeClr}">
 
-    <div class="ahf-header">
-      <span class="ahf-rank">#${rank}</span>
-      <div class="ahf-header-mid">
-        <div class="ahf-name">${escHtml(player.name||'Unknown')}</div>
-        <div class="ahf-meta-row">
-          <span class="ahf-meta-txt">${escHtml(player.teamAbbr||player.team||'')}${player.position?' · '+escHtml(player.position):''}${player.batSide?' · '+escHtml(player.batSide)+'HB':''} · ${escHtml(gameLabel)}</span>
-          ${liveBadge} ${lineupBadge}
+    <!-- ── Row 1: Identity ─────────────────────────────────────── -->
+    <div class="ahf-id">
+      <div class="ahf-id-top">
+        <span class="ahf-id-rank">#${rank}</span>
+        <img class="ahf-id-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+        <div class="ahf-id-fallback" style="display:none">${initial}</div>
+        <div class="ahf-id-info">
+          <div class="ahf-id-name">${escHtml(player.name||'Unknown')}</div>
+          <div class="ahf-id-sub">
+            ${escHtml(player.teamAbbr||player.team||'')}${player.position?' · '+escHtml(player.position):''}
+            · <span style="color:#4a6080">${escHtml(gameLabel)}</span>
+            · ${escHtml(_bat)}HB vs ${pitcher?.pitchHand||'?'}HP
+            ${liveBadge} ${lineupBadge}
+          </div>
         </div>
-      </div>
-      <div class="ahf-edge-group">
         <span class="ahf-edge-lbl" style="border-color:${stripeClr}40;background:${stripeClr}18;color:${stripeClr}">${escHtml(edgeLabel)}</span>
       </div>
-    </div>
-
-    <div class="ahf-meter-wrap">
-      <div class="ahf-meter-track">
-        <div class="ahf-meter-center"></div>
-        <div class="ahf-meter-marker" style="left:${meterPct}%;background:${stripeClr}"></div>
+      <div class="ahf-id-badges">
+        ${platoonBadge}
+        ${pitcherPlatBadge}
       </div>
     </div>
 
-    <div class="ahf-h2h">
-      <div class="ahf-batter-col">
-        <img class="ahf-person-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
-        <div class="ahf-person-fallback" style="display:none">${initial}</div>
-        <div class="ahf-person-name">${escHtml(player.name||'')}</div>
-        <div class="ahf-person-sub">${escHtml(player.batSide||'R')}HB${pHand_?' vs '+pHand_+'HP':''}</div>
-        ${(() => {
-          const bat = player.batSide || 'R';
-          if (bat === 'S') return '<div class="ahf-platoon ahf-platoon-switch">⚡ Switch Hit</div>';
-          const hasAdv = (bat === 'R' && pHand_ === 'L') || (bat === 'L' && pHand_ === 'R');
-          return hasAdv
-            ? '<div class="ahf-platoon ahf-platoon-adv">✓ Platoon Edge</div>'
-            : '<div class="ahf-platoon ahf-platoon-neutral">= Same Side</div>';
-        })()}
-        ${batGrid}
-      </div>
-      <div class="ahf-vs-col">
-        <span class="ahf-vs-text">VS</span>
-      </div>
-      <div class="ahf-pitcher-col">
-        ${pPhotoUrl
-          ? `<img class="ahf-person-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-person-fallback" style="display:none">${pInitial}</div>`
-          : `<div class="ahf-person-fallback">${pInitial}</div>`}
-        <div class="ahf-person-name">${escHtml(pName||'Unknown SP')}</div>
-        <div class="ahf-person-sub">${pitcher?.pitchHand||'?'}HP vs ${escHtml(player.batSide||'R')}HB</div>
-        ${(() => {
-          const bat = player.batSide || 'R';
-          if (bat === 'S') return '<div class="ahf-platoon ahf-platoon-switch">⚡ vs Switch Hitter</div>';
-          // Pitcher has platoon advantage when same-side (e.g. RHP vs RHB)
-          const pitFavored = (pitcher?.pitchHand === 'R' && bat === 'R') || (pitcher?.pitchHand === 'L' && bat === 'L');
-          return pitFavored
-            ? '<div class="ahf-platoon ahf-platoon-pit-adv">⚠ Pitcher Platoon Adv</div>'
-            : '<div class="ahf-platoon ahf-platoon-bat-adv">✓ Batter Has Edge</div>';
-        })()}
-        ${pitGrid}
-      </div>
-    </div>
+    <!-- ── Row 2: Batter stat pills ────────────────────────────── -->
+    <div class="ahf-pills-row">${batPills}</div>
 
     ${achieveHTML}
 
+    <!-- ── Row 3: Arsenal pitch bars ───────────────────────────── -->
     ${matches.length ? `<div class="ahf-arsenal">
-      <div class="ahf-arsenal-hdr">Arsenal Matchup${sampleWarning?' <span class="ahf-sample-warn">⚠ small sample</span>':''}</div>
+      <div class="ahf-arsenal-hdr">
+        <span>Arsenal vs ${escHtml(pName||'SP')} (${pitcher?.pitchHand||'?'}HP)${sampleWarning?' <span class="ahf-sample-warn">⚠ small sample</span>':''}</span>
+        <div class="ahf-pit-chips">${pitStatsLine}</div>
+      </div>
       ${pitchRows}
     </div>` : ''}
 
+    <!-- ── Row 4: Reason + actions ─────────────────────────────── -->
     ${reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : ''}
     ${risks.length   ? `<div class="ahf-risks">${risks.map(rk=>`<span class="ahf-risk-chip">⚠ ${escHtml(rk)}</span>`).join('')}</div>` : ''}
-
     <div class="ahf-actions">
       <button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button>
       <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
