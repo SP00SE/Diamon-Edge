@@ -10831,8 +10831,8 @@ function computeArsenalHitEdge(player, gd) {
   const _pBF   = _pIP > 0 ? _pIP * (3 + _pW) : 0;
   const _bbBf  = _pBF > 0 ? _pBB / _pBF : 0;
 
-  // Elite pitcher filter: K/9 > 9 AND H/9 < 8 → exclude batter entirely
-  if (_pIP > 10 && _k9 > 9 && _h9 < 8) return { score: 0, hasData: false };
+  // Hit suppressor filter: H/9 < 8 → pitcher suppresses hits, exclude from Arsenal Hit Finder
+  if (_pIP > 10 && _h9 < 8) return { score: 0, hasData: false };
 
   const bMap = new Map(bRows.map(r => [r.pitch_type, r]));
   const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
@@ -11092,7 +11092,7 @@ function _arsenalHitCardHTML(r, rank) {
     ${_pStat('WHIP',  _fmt(ps.whip), ps.whip > 0 && ps.whip >= 1.40 ? true : ps.whip > 0 && ps.whip <= 1.10 ? false : null)}
     ${_pStat('K/9',   k9,  k9 && +k9 < 6.5 ? true : k9 && +k9 >= 9.5 ? false : null)}
     ${_pStat('H/9',   h9,  h9 && +h9 >= 9.0 ? true : h9 && +h9 <= 7.5 ? false : null)}
-    ${_pStat('BB/9',  bb9, bb9 && +bb9 >= 4.0 ? true : bb9 && +bb9 <= 2.5 ? false : null)}
+    ${_pStat('BB/9',  bb9, bb9 && +bb9 <= 2.5 ? true : bb9 && +bb9 >= 4.0 ? false : null)}
     ${_pStat('IP',    pIP > 0 ? pIP.toFixed(1) : null, null)}
   </div>`;
 
