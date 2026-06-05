@@ -10991,10 +10991,16 @@ function _arsenalHitCardHTML(r, rank) {
   const slgCmt = !ss.slg ? '' : ss.slg >= 0.500 ? 'Power threat' : ss.slg >= 0.430 ? 'Good power' : ss.slg >= 0.380 ? 'Average' : 'Contact-first';
   const l7Cmt  = !l7.avg ? '' : l7.avg >= 0.300 ? 'Hot' : l7.avg >= 0.260 ? 'On pace' : l7.avg > 0 && l7.avg < 0.210 ? 'Cold' : '';
 
+  const _pa   = ss.plateAppearances || 0;
+  const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
+  const kpctCmt = _kpct == null ? '' : _kpct <= 12 ? 'Rare K' : _kpct <= 18 ? 'Low K' : _kpct <= 24 ? 'Average' : _kpct <= 30 ? 'High K' : 'Strikeout risk';
+
   const batStats = [
     _stat('AVG',    _avg(ss.avg),  ss.avg >= 0.285 ? 'good' : ss.avg > 0 && ss.avg < 0.230 ? 'warn' : '', avgCmt),
+    _stat('H',      ss.hits > 0 ? ss.hits : null),
     _stat('OBP',    _avg(ss.obp),  ss.obp >= 0.340 ? 'good' : ss.obp > 0 && ss.obp < 0.290 ? 'warn' : '', obpCmt),
     _stat('SLG',    _avg(ss.slg),  ss.slg >= 0.430 ? 'good' : ss.slg > 0 && ss.slg < 0.350 ? 'warn' : '', slgCmt),
+    _stat('K%',     _kpct != null ? _kpct + '%' : null, _kpct <= 15 ? 'good' : _kpct >= 28 ? 'warn' : '', kpctCmt),
     _stat('L7 AVG', _avg(l7.avg),  l7.avg >= 0.300 ? 'good' : l7.avg > 0 && l7.avg < 0.220 ? 'warn' : '', l7Cmt),
     _stat('HR',     ss.homeRuns > 0 ? ss.homeRuns : null),
   ].filter(Boolean).join('');
@@ -11007,9 +11013,12 @@ function _arsenalHitCardHTML(r, rank) {
   const oppLabel    = pHand_ === 'L' ? 'vs RHP'   : 'vs LHP';
   const locSplit    = player.isAway ? player.awayStats : player.homeStats;
   const locLabel    = player.isAway ? 'Away' : 'Home';
-  const isNight     = (() => { try { return new Date(r.gd?.gameDate).getUTCHours() >= 16; } catch { return null; } })();
-  const timeSplit   = isNight === true ? player.nightStats : isNight === false ? player.dayStats : null;
-  const timeLabel   = isNight === true ? 'Night' : 'Day';
+  // Use the MLB API's own dayNight field — far more reliable than computing from UTC hours.
+  // gameDate in UTC does not map cleanly to local game time across US time zones.
+  const _rawGame  = (state.games || []).find(g => g.gamePk === r.gamePk);
+  const isNight   = _rawGame ? _rawGame.dayNight === 'night' : null;
+  const timeSplit = isNight === true ? player.nightStats : isNight === false ? player.dayStats : null;
+  const timeLabel = isNight === true ? 'Night' : 'Day';
   const _splitRow   = (lbl, spl, isRel) => {
     if (!spl || spl.atBats < (isRel ? 10 : 5)) return '';
     const a = _avg(spl.avg), o = _avg(spl.obp);
