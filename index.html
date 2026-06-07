@@ -5466,15 +5466,21 @@ function renderTopPlays() {
     document.getElementById('topHRsSection').style.display = 'none';
   }
 
-  // TOP HITS: score >= 70
+  // Top 3 hit picks and top 3 HR picks (always ranked by score, naturally unique)
+  const hitPicks = [...allPlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
+  const hrPicks  = [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
+  const hitPickIdSet = new Set(hitPicks.map(p => String(p.id)));
+  const hrPickIdSet  = new Set(hrPicks.map(p => String(p.id)));
+
+  // TOP HITS: score >= 70 (excluding players already featured in the top-3 hit picks above)
   const topHits = allPlayers
-    .filter(p => p.hitScore >= 70)
+    .filter(p => p.hitScore >= 70 && !hitPickIdSet.has(String(p.id)))
     .sort((a,b) => b.hitScore - a.hitScore)
     .slice(0, 10);
 
-  // TOP HRS: score >= 65
+  // TOP HRS: score >= 65 (excluding players already featured in the top-3 HR picks above)
   const topHRs = allPlayers
-    .filter(p => p.hrScore >= 65)
+    .filter(p => p.hrScore >= 65 && !hrPickIdSet.has(String(p.id)))
     .sort((a,b) => b.hrScore - a.hrScore)
     .slice(0, 10);
 
@@ -5483,10 +5489,6 @@ function renderTopPlays() {
   const bestBetCombined = lineupPosted
     ? (selectedGd.lockedBestBet || [...allPlayers].sort((a,b) => (b.hitScore+b.hrScore)-(a.hitScore+a.hrScore))[0])
     : ([...allPlayers].sort((a,b) => (b.hitScore+b.hrScore)-(a.hitScore+a.hrScore))[0] || null);
-
-  // Top 3 hit picks and top 3 HR picks (always ranked by score, naturally unique)
-  const hitPicks = [...allPlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
-  const hrPicks  = [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
 
   const selGame = state.games.find(g => g.gamePk === state.selectedGamePk);
 
@@ -5624,6 +5626,8 @@ async function renderOverallTopPlays() {
   const bestBetCombined = [...allPlayers].sort((a,b) => (b.hitScore+b.hrScore)-(a.hitScore+a.hrScore))[0] || null;
   const hitPicks = [...allPlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
   const hrPicks  = [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
+  const hitPickIdSet = new Set(hitPicks.map(p => String(p.id)));
+  const hrPickIdSet  = new Set(hrPicks.map(p => String(p.id)));
 
   const wrap   = document.getElementById('overallBestBetWrap');
   const banner = document.getElementById('overallBestBetBanner');
@@ -5706,9 +5710,9 @@ async function renderOverallTopPlays() {
     wrap.style.display = 'none';
   }
 
-  // Top Hits across all games (score >= 70, top 15)
+  // Top Hits across all games (score >= 70, top 15, excluding players already featured in the top-3 hit picks above)
   const topHits = [...allPlayers]
-    .filter(p => p.hitScore >= 70)
+    .filter(p => p.hitScore >= 70 && !hitPickIdSet.has(String(p.id)))
     .sort((a,b) => b.hitScore - a.hitScore)
     .slice(0, 15);
   const hitsSection = document.getElementById('overallHitsSection');
@@ -5720,9 +5724,9 @@ async function renderOverallTopPlays() {
     hitsSection.style.display = 'none';
   }
 
-  // Top HRs across all games (score >= 65, top 15)
+  // Top HRs across all games (score >= 65, top 15, excluding players already featured in the top-3 HR picks above)
   const topHRs = [...allPlayers]
-    .filter(p => p.hrScore >= 65)
+    .filter(p => p.hrScore >= 65 && !hrPickIdSet.has(String(p.id)))
     .sort((a,b) => b.hrScore - a.hrScore)
     .slice(0, 15);
   const hrSection = document.getElementById('overallHRsSection');
