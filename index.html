@@ -747,6 +747,7 @@ main { padding: 28px 0 60px; }
 
 /* Stat pills row */
 .ahf-pills-row    { display:flex; gap:4px; padding:6px 12px 8px; flex-wrap:wrap; border-top:1px solid #0d1726; border-bottom:1px solid #0d1726; }
+.ahf-narrative    { font-size:10px; color:#7a8aa8; line-height:1.4; font-style:italic; padding:4px 12px 0; }
 .ahf-pill         { display:flex; flex-direction:column; align-items:center; background:#0a1220; border-radius:5px; padding:3px 7px; min-width:34px; flex-shrink:0; }
 .ahf-pill-rel     { background:rgba(167,139,250,.06); border:1px solid rgba(167,139,250,.15); }
 .ahf-pill-lbl     { font-size:7px; color:#2a3a52; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:.4px; line-height:1.2; }
@@ -10709,6 +10710,50 @@ function _arsenalHitCardHTML(r, rank) {
     </div>`;
   }).join('');
 
+  // ── Contextual narrative lines (ported from Lab analysis comment style) ──
+  const _lastName = n => (n||'').trim().split(' ').pop() || 'He';
+  const avgTier = !ss.avg ? null
+    : ss.avg >= 0.300 ? 'a strong hitter'
+    : ss.avg >= 0.275 ? 'a solid hitter'
+    : ss.avg >= 0.250 ? 'an average hitter'
+    : ss.avg >= 0.220 ? 'a weak bat'
+    : 'a struggling bat';
+  const discTag = _kpct == null ? ''
+    : _kpct <= 15 ? ' with sharp plate discipline'
+    : _kpct >= 28 ? ' but chase-prone'
+    : '';
+  const formTag = !l7.avg ? ''
+    : l7.avg >= 0.300 ? ', riding a hot streak'
+    : (l7.avg > 0 && l7.avg < 0.210) ? ', currently cold'
+    : '';
+  const platTag = _bat === 'S' ? ' — switch hitter, no platoon disadvantage'
+    : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R')) ? ' — holds the platoon edge tonight'
+    : ' — same-side matchup, no platoon edge';
+  const batterNarrative = avgTier
+    ? `${escHtml(_lastName(player.name))} is ${avgTier} (${_avg(ss.avg)||'—'})${discTag}${formTag}${platTag}.`
+    : '';
+
+  const eraTag = !ps.era ? null
+    : ps.era <= 3.00 ? 'an elite arm'
+    : ps.era <= 4.00 ? 'a solid starter'
+    : ps.era <= 5.00 ? 'a hittable arm'
+    : 'a vulnerable arm';
+  const h9Tag = !h9 ? ''
+    : +h9 >= 9.5 ? ', allows hits freely'
+    : +h9 >= 8.5 ? ', is hit-prone'
+    : +h9 <= 7.0 ? ', suppresses hits well'
+    : '';
+  const k9Tag = !k9 ? ''
+    : +k9 >= 9.5 ? ' with swing-and-miss stuff'
+    : +k9 < 6.5 ? ` but doesn't miss many bats`
+    : '';
+  const bb9Tag = !bb9 ? ''
+    : +bb9 >= 4.0 ? ' and is wild in the zone'
+    : '';
+  const pitcherNarrative = eraTag
+    ? `${escHtml(_lastName(pName))} is ${eraTag} (${(+ps.era).toFixed(2)} ERA)${h9Tag}${k9Tag}${bb9Tag}.`
+    : '';
+
   const glId = `ars-gl-${player.id}-${rank}`;
 
   return `<div class="ahf-card" style="border-left-color:${stripeClr}">
@@ -10738,6 +10783,7 @@ function _arsenalHitCardHTML(r, rank) {
 
     <!-- ── Row 2: Batter stat pills ────────────────────────────── -->
     <div class="ahf-pills-row">${batPills}</div>
+    ${batterNarrative ? `<div class="ahf-narrative">${batterNarrative}</div>` : ''}
 
     ${achieveHTML}
 
@@ -10749,6 +10795,7 @@ function _arsenalHitCardHTML(r, rank) {
       <div class="ahf-sp-info">
         <div class="ahf-sp-name">${escHtml(pName||'Unknown SP')} <span style="color:#2a3a52">(${pitcher?.pitchHand||'?'}HP)</span></div>
         <div class="ahf-pit-chips">${pitStatsLine||'<span class="ahf-pit-chip n">No stats</span>'}</div>
+        ${pitcherNarrative ? `<div class="ahf-narrative">${pitcherNarrative}</div>` : ''}
       </div>
       ${pitcherPlatBadge}
     </div>
