@@ -10695,8 +10695,8 @@ function _arsenalHitCardHTML(r, rank) {
     _pill('K%',  _kpct != null ? _kpct + '%' : null, _kpct != null && _kpct <= 15 ? ' pos' : _kpct != null && _kpct >= 28 ? ' neg' : ''),
     _pill('L7',  _avg(l7.avg), l7.avg >= 0.300 ? ' pos' : l7.avg > 0 && l7.avg < 0.210 ? ' neg' : ''),
     relSplit?.atBats >= 10 ? `<div class="ahf-pill ahf-pill-rel"><div class="ahf-pill-lbl">${relLabel}</div><div class="ahf-pill-val pos">${_avg(relSplit.avg)||'---'}</div></div>` : '',
-    locSplit?.atBats >= 10 ? _pill(locLabel, _avg(locSplit.avg)) : '',
-    timeSplit?.atBats >= 5 ? _pill(timeLabel, _avg(timeSplit.avg)) : '',
+    locSplit?.atBats >= 10 ? _pill(locLabel, _avg(locSplit.avg), locSplit.avg >= 0.285 ? ' pos' : locSplit.avg > 0 && locSplit.avg < 0.230 ? ' neg' : '') : '',
+    timeSplit?.atBats >= 5 ? _pill(timeLabel, _avg(timeSplit.avg), timeSplit.avg >= 0.285 ? ' pos' : timeSplit.avg > 0 && timeSplit.avg < 0.230 ? ' neg' : '') : '',
   ].filter(Boolean).join('');
 
   // ── Pitcher key stats (inline chips in arsenal header) ─────────────────
