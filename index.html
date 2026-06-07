@@ -3549,6 +3549,10 @@ main { padding: 28px 0 60px; }
 
 const escHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
+const headshotUrl = id => `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${id}/headshot/67/current`;
+
+const fmtAvg = (v, empty='—') => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : empty;
+
 // ─── TEAM INFO (id → city, nickname, ESPN logo slug) ────────────────────────
 const TEAM_INFO = {
   108: { city:'Los Angeles', nick:'Angels',    espn:'laa' },
@@ -4448,7 +4452,7 @@ function predCardHTML(player, type, delay=0, prefix='c') {
   const accentColor = isHit ? 'var(--accent-green)' : 'var(--accent-orange)';
 
   // ── Headshot + team logo (same pattern as buildPickCard) ──────────────────
-  const photoUrl    = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const photoUrl    = headshotUrl(player.id);
   const teamInfo    = TEAM_INFO[player.teamId] || null;
   const logoSlug    = teamInfo?.espn || (player.teamAbbr||'').toLowerCase();
   const teamLogoHTML = logoSlug
@@ -4686,24 +4690,24 @@ async function processGame(game) {
 
   // Parallel: weather + boxscore + pitcher stats + bullpen ERA
   setLoadingStatus(`Processing ${awayAbbr} @ ${homeAbbr}...`);
-  const [weatherData, boxscore, awayPitcherStats, homePitcherStats, awayBullpenEra, homeBullpenEra, awayBullpenStats, homeBullpenStats] = await Promise.all([
+  const [weatherData, boxscore, awayPitcherStats, homePitcherStats, awayBullpen, homeBullpen] = await Promise.all([
     fetchWeather(lat, lng, gameDate),
     fetchBoxscore(gamePk).catch(() => null),
     awayPitcherRaw?.id ? fetchPitcherStats(awayPitcherRaw.id) : Promise.resolve(null),
     homePitcherRaw?.id ? fetchPitcherStats(homePitcherRaw.id) : Promise.resolve(null),
-    fetchBullpenEra(awayTeamId).catch(() => 0),
-    fetchBullpenEra(homeTeamId).catch(() => 0),
-    fetchBullpenWhip(awayTeamId).catch(() => ({ whip:0, h9:0 })),
-    fetchBullpenWhip(homeTeamId).catch(() => ({ whip:0, h9:0 })),
+    fetchBullpenPitching(awayTeamId).catch(() => ({ era:0, whip:0, h9:0, hbf:0, hr9:0 })),
+    fetchBullpenPitching(homeTeamId).catch(() => ({ era:0, whip:0, h9:0, hbf:0, hr9:0 })),
   ]);
-  const awayBullpenWhip = awayBullpenStats.whip;
-  const homeBullpenWhip = homeBullpenStats.whip;
-  const awayBullpenH9   = awayBullpenStats.h9;
-  const homeBullpenH9   = homeBullpenStats.h9;
-  const awayBullpenHBF  = awayBullpenStats.hbf || 0;
-  const homeBullpenHBF  = homeBullpenStats.hbf || 0;
-  const awayBullpenHR9  = awayBullpenStats.hr9 || 0;
-  const homeBullpenHR9  = homeBullpenStats.hr9 || 0;
+  const awayBullpenEra  = awayBullpen.era;
+  const homeBullpenEra  = homeBullpen.era;
+  const awayBullpenWhip = awayBullpen.whip;
+  const homeBullpenWhip = homeBullpen.whip;
+  const awayBullpenH9   = awayBullpen.h9;
+  const homeBullpenH9   = homeBullpen.h9;
+  const awayBullpenHBF  = awayBullpen.hbf || 0;
+  const homeBullpenHBF  = homeBullpen.hbf || 0;
+  const awayBullpenHR9  = awayBullpen.hr9 || 0;
+  const homeBullpenHR9  = homeBullpen.hr9 || 0;
 
   const weather = weatherData || { temp:70, windSpeed:0, windDir:180, humidity:50 };
 
@@ -5339,7 +5343,7 @@ function hideProjectedNotice() {
 function buildPickCard(player, mode, glId, selGame, lineupPosted) {
   const bbTeamInfo  = TEAM_INFO[player.teamId] || null;
   const bbLogoSlug  = bbTeamInfo?.espn || player.teamAbbr?.toLowerCase() || '';
-  const bbPhotoUrl  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const bbPhotoUrl  = headshotUrl(player.id);
   const teamLogoHTML = bbLogoSlug
     ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${bbLogoSlug}.png" alt="${player.teamAbbr}" onerror="this.style.display='none'">`
     : '';
@@ -5793,7 +5797,7 @@ async function renderHotStreaks() {
     const logoHTML = slug
       ? `<img class="streak-card-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">`
       : '';
-    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const photoUrl = headshotUrl(p.id);
 
     const consecBadge = consecCount !== null
       ? `<div class="consec-badge">🔵 ${consecCount}-game consecutive streak</div>` : '';
@@ -7455,7 +7459,7 @@ function renderBeatTheStreak() {
   grid.innerHTML = top.map(({ player, gameData: gd, score, reasons, lineupSt, isException }, i) => {
     const ti = TEAM_INFO[player.teamId] || {};
     const slug = ti.espn || player.teamAbbr?.toLowerCase() || '';
-    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+    const photoUrl = headshotUrl(player.id);
 
     const pitcher = player.teamId === gd.homeTeamId ? gd.awayPitcher : gd.homePitcher;
     const pName = pitcher?.name || pitcher?.fullName || '—';
@@ -7646,7 +7650,7 @@ async function renderDailyDominators() {
   grid.innerHTML = top.map((p, i) => {
     const ti       = TEAM_INFO[p.teamId] || {};
     const slug     = ti.espn || p.teamAbbr?.toLowerCase() || '';
-    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const photoUrl = headshotUrl(p.id);
     const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
     const avgStr   = p.hits && p.ab ? (p.hits / p.ab).toFixed(3).replace(/^0/, '') : '.000';
 
@@ -7783,7 +7787,7 @@ async function renderRisingStars() {
     const ti       = TEAM_INFO[p.teamId] || {};
     const slug     = ti.espn || (p.teamAbbr || '').toLowerCase();
     const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
-    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const photoUrl = headshotUrl(p.id);
 
     const ss  = p.seasonStats || {};
     const l7  = p.last7Stats  || {};
@@ -7945,7 +7949,7 @@ async function renderDueForHit() {
     const ti       = TEAM_INFO[p.teamId] || {};
     const slug     = ti.espn || (p.teamAbbr || '').toLowerCase();
     const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
-    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const photoUrl = headshotUrl(p.id);
 
     const ss  = p.seasonStats || {};
     const l7  = p.last7Stats  || {};
@@ -8394,37 +8398,27 @@ async function fetchBvP(batterId, pitcherId) {
   } catch { return { avg:0, ab:0, hits:0 }; }
 }
 
-async function fetchBullpenEra(teamId) {
-  if (!teamId) return 0;
-  const key = `bull_${teamId}_${hfDateStr()}`;
-  if (hfCache.has(key)) return hfCache.get(key);
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=season&group=pitching&season=${new Date().getFullYear()}&gameType=R`;
-  try {
-    const data = await cachedFetch(url);
-    const s = data?.stats?.[0]?.splits?.[0]?.stat || {};
-    const v = parseFloat(s.era)||0; hfCache.set(key, v); return v;
-  } catch { return 0; }
-}
-
-async function fetchBullpenWhip(teamId) {
-  if (!teamId) return { whip:0, h9:0, hbf:0 };
-  const key = `bullwhip_${teamId}_${hfDateStr()}`;
+async function fetchBullpenPitching(teamId) {
+  const empty = { era:0, whip:0, h9:0, hbf:0, hr9:0 };
+  if (!teamId) return empty;
+  const key = `bullpitch_${teamId}_${hfDateStr()}`;
   if (hfCache.has(key)) return hfCache.get(key);
   const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/stats?stats=season&group=pitching&season=${new Date().getFullYear()}&gameType=R`;
   try {
     const data = await cachedFetch(url);
     const s    = data?.stats?.[0]?.splits?.[0]?.stat || {};
-    const whip = parseFloat(s.whip)           || 0;
+    const era  = parseFloat(s.era)             || 0;
+    const whip = parseFloat(s.whip)            || 0;
     const ip   = parseFloat(s.inningsPitched)  || 0;
     const hits = parseFloat(s.hits)            || 0;
     const h9   = ip > 0 ? Math.round((hits / ip) * 9 * 10) / 10 : 0;
     const bf   = parseFloat(s.battersFaced)    || 0;
     const hbf  = bf > 0 ? hits / bf : 0;
     const hr9  = parseFloat(s.homeRunsPer9Inn) || 0;
-    const result = { whip, h9, hbf, hr9 };
+    const result = { era, whip, h9, hbf, hr9 };
     hfCache.set(key, result);
     return result;
-  } catch { return { whip:0, h9:0, hbf:0, hr9:0 }; }
+  } catch { return empty; }
 }
 
 async function fetchTeamHitAvg7(teamId) {
@@ -8664,7 +8658,7 @@ async function renderHitForge() {
 
     // Fetch team-level stats in parallel
     const [bullpenArr, teamHitArr, oppAvgArr] = await Promise.all([
-      Promise.all(oppTeamIds.map(id => fetchBullpenEra(id).then(v=>[id,v]).catch(()=>[id,0]))),
+      Promise.all(oppTeamIds.map(id => fetchBullpenPitching(id).then(r=>[id,r.era]).catch(()=>[id,0]))),
       Promise.all(myTeamIds.map(id  => fetchTeamHitAvg7(id).then(v=>[id,v]).catch(()=>[id,0]))),
       Promise.all(oppTeamIds.map(id => fetchOppAllowsAvg(id).then(v=>[id,v]).catch(()=>[id,0]))),
     ]);
@@ -8715,7 +8709,7 @@ async function renderHitForge() {
   // ── 1. Top Hit Picks (compact grid, max 20, confirmed lineup only) ─────────
   const top20 = scored.slice(0, 20);
   document.getElementById('hfBreakdownList').innerHTML = `<div class="hf-compact-grid">${top20.map(({p,score,factors,tier,trend,val},i) => {
-    const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const photoUrl = headshotUrl(p.id);
     const ti      = TEAM_INFO[p.teamId]||{};
     const slug    = ti.espn||(p.teamAbbr||'').toLowerCase();
     const logo    = slug ? `<img class="hf-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
@@ -10222,10 +10216,10 @@ async function openPlayerAnalyzer(playerId, source) {
   const oppTeamId = p.isAway ? gd.homeTeamId : gd.awayTeamId;
   let bullpenEra = null, bullpenH9 = null, bullpenHBF = null;
   try {
-    const [bEra, bWh] = await Promise.all([fetchBullpenEra(oppTeamId), fetchBullpenWhip(oppTeamId)]);
-    bullpenEra = bEra || null;
-    bullpenH9  = bWh?.h9 || null;
-    bullpenHBF = bWh?.hbf || null;
+    const bp = await fetchBullpenPitching(oppTeamId);
+    bullpenEra = bp.era || null;
+    bullpenH9  = bp.h9 || null;
+    bullpenHBF = bp.hbf || null;
   } catch {}
 
   // Park & weather
@@ -10578,7 +10572,7 @@ async function runArsenalScan() {
 
 function _arsenalHitCardHTML(r, rank) {
   const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, sampleWarning, matches, gameLabel } = r;
-  const _avg = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : null;
+  const _avg = v => fmtAvg(v, null);
   const _fmt = (v, d=2) => v > 0 ? (+v).toFixed(d) : null;
 
   // ── Edge color ────────────────────────────────────────────────────────
@@ -10586,7 +10580,7 @@ function _arsenalHitCardHTML(r, rank) {
                   : score >= -2 ? '#4a5168' : score >= -6 ? '#f87171' : '#dc2626';
 
   // ── Identifiers ───────────────────────────────────────────────────────
-  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const photoUrl = headshotUrl(player.id);
   const initial  = (player.name||'?')[0].toUpperCase();
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
@@ -10594,7 +10588,7 @@ function _arsenalHitCardHTML(r, rank) {
 
   // ── Pitcher metadata ───────────────────────────────────────────────────
   const pPhotoUrl = pitcher?.id
-    ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current`
+    ? headshotUrl(pitcher.id)
     : null;
   const pName    = pitcher?.fullName || pitcher?.name || null;
   const pInitial = (pName || 'SP')[0].toUpperCase();
@@ -11091,7 +11085,7 @@ function labSelectGame(gamePk) {
 
   const _rosterPf = getParkFactor(gd.venueName || '');
   const playerCard = p => {
-    const photo  = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.id}/headshot/67/current`;
+    const photo  = headshotUrl(p.id);
     const avg    = p.seasonStats?.avg  ? p.seasonStats.avg.toFixed(3)  : '—';
     const obp    = p.seasonStats?.obp  ? p.seasonStats.obp.toFixed(3)  : '—';
     const slg    = p.seasonStats?.slg  ? p.seasonStats.slg.toFixed(3)  : '—';
@@ -11371,8 +11365,7 @@ async function fetchLabAnalysisData(playerId) {
     })(),
     (async () => {
       if (oppTeamId) {
-        try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; bullpenHR9 = bw.hr9||0; } catch {}
+        try { const bp = await fetchBullpenPitching(oppTeamId); bullpenEra = bp.era; bullpenH9 = bp.h9||0; bullpenHBF = bp.hbf||0; bullpenHR9 = bp.hr9||0; } catch {}
       }
     })(),
   ]);
@@ -11612,8 +11605,8 @@ function buildCompareHTML(dataA, dataB) {
   }).join('');
 
   const scoreCls = s => s>=80?'#22c55e':s>=65?'#f59e0b':s>=45?'#94a3b8':'#ef4444';
-  const photoA = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pA.id}/headshot/67/current`;
-  const photoB = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pB.id}/headshot/67/current`;
+  const photoA = headshotUrl(pA.id);
+  const photoB = headshotUrl(pB.id);
 
   return `
     <div class="lab-compare-verdict">
@@ -11981,8 +11974,7 @@ async function fetchElitePlayerData(player, gd) {
     })(),
     (async () => {
       if (oppTeamId) {
-        try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; bullpenHR9 = bw.hr9||0; } catch {}
+        try { const bp = await fetchBullpenPitching(oppTeamId); bullpenEra = bp.era; bullpenH9 = bp.h9||0; bullpenHBF = bp.hbf||0; bullpenHR9 = bp.hr9||0; } catch {}
       }
     })(),
   ]);
@@ -12064,7 +12056,7 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0,
 
 function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal, pitcher, pf, pitchHighlights = []) {
   const onclk    = isGlobal === 'leader' ? `labLeaderSelectPlayer(${player.id},${gamePk})` : isGlobal ? `labGlobalSelectPlayer(${player.id},${gamePk})` : `labSelectPlayer(${player.id})`;
-  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const photoUrl = headshotUrl(player.id);
   const gameBadge = gameLabel ? `<span class="lab-global-game-badge">${escHtml(gameLabel)}</span>` : '';
 
   const pills = [];
@@ -13303,7 +13295,7 @@ async function runLabAnalysis() {
   await new Promise(r => setTimeout(r, 280));
   const ti       = TEAM_INFO[player.teamId] || {};
   const slug     = ti.espn || (player.teamAbbr||'').toLowerCase();
-  const photoUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.id}/headshot/67/current`;
+  const photoUrl = headshotUrl(player.id);
   const seasAvg  = player.seasonStats?.avg || 0;
   const seasOBP  = player.seasonStats?.obp || 0;
   const seasSLG  = player.seasonStats?.slg || 0;
@@ -13326,7 +13318,7 @@ async function runLabAnalysis() {
   const parkCtx     = PARK_CONTEXT[venue] || null;
   const pitcherHand = pitcher?.pitchHand || '?';
   const profile     = buildPitcherProfile(pitcher);
-  const pitcherPhoto= pitcher?.id ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${pitcher.id}/headshot/67/current` : '';
+  const pitcherPhoto= pitcher?.id ? headshotUrl(pitcher.id) : '';
   const oppTi       = TEAM_INFO[oppTeamId] || {};
   const oppSlug     = oppTi.espn || '';
   // hand-specific HR factor
@@ -13404,8 +13396,7 @@ async function runLabAnalysis() {
     })(),
     (async () => {
       if (oppTeamId) {
-        try { bullpenEra = await fetchBullpenEra(oppTeamId); } catch {}
-        try { const bw = await fetchBullpenWhip(oppTeamId); bullpenH9 = bw.h9||0; bullpenHBF = bw.hbf||0; bullpenHR9 = bw.hr9||0; } catch {}
+        try { const bp = await fetchBullpenPitching(oppTeamId); bullpenEra = bp.era; bullpenH9 = bp.h9||0; bullpenHBF = bp.hbf||0; bullpenHR9 = bp.hr9||0; } catch {}
       }
     })(),
     (async () => { try { await ensureSavantData(new Date().getFullYear()); } catch {} })(),
@@ -13443,7 +13434,7 @@ async function runLabAnalysis() {
       return ba < parseFloat(bMap.get(w.pitch_type)?.ba) ? p : w;
     }) : null;
 
-    const _baFmt  = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : '—';
+    const _baFmt  = fmtAvg;
     const _rv100Color = v => isNaN(v) ? 'var(--text-muted)'
       : v <= -2 ? '#22c55e' : v <= 0 ? '#86efac' : v <= 2 ? '#f59e0b' : '#ef4444';
     const _wobaColor  = v => v <= 0 ? 'var(--text-muted)'
