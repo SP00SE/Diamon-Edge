@@ -93,14 +93,7 @@ h1, h2, h3, .bebas { font-family: 'Bebas Neue', cursive; letter-spacing: 1.5px; 
   align-items: center;
   gap: 10px;
 }
-.logo-diamond-unused {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
+
 .logo h1 { font-size: 22px; color: var(--accent-green); line-height: 1; }
 .logo span { font-family: 'Outfit', sans-serif; font-size: 11px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; display: block; margin-top: -2px; }
 .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -518,39 +511,13 @@ main { padding: 28px 0 60px; }
 .lab-period-tab.active { background:#3b0764; border-color:#7c3aed; color:#c4b5fd; }
 .lab-global-game-badge { display:inline-block; font-size:10px; color:#c4b5fd; font-weight:600; background:#2e1065; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
 #labGlobalEliteCards, #labEliteCards, #labLeaderScanCards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; margin-top:4px; }
-.team-pred-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
-.team-pred-body { display:flex; align-items:stretch; gap:10px; margin:12px 0 8px; }
-.team-pred-side { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; padding:12px 8px; border-radius:8px; border:1px solid transparent; }
-.team-pred-side.winner { border-color:#22c55e55; background:#052e1633; }
-.team-pred-logo { width:40px; height:40px; object-fit:contain; }
-.team-pred-name { font-size:11px; color:var(--text-muted); text-align:center; font-weight:600; line-height:1.3; }
-.team-pred-score { font-size:26px; font-weight:800; color:#e2e8f0; line-height:1; }
-.team-pred-score.winner { color:#22c55e; }
-.team-pred-count { font-size:10px; color:var(--text-muted); }
-.team-pred-vs { font-size:11px; color:var(--text-muted); font-weight:700; flex-shrink:0; align-self:center; }
-.team-pred-winner-row { text-align:center; font-size:12px; font-weight:700; color:#86efac; padding:7px 0 5px; border-top:1px solid var(--border); }
-.team-pred-margin-lbl { font-size:11px; color:var(--text-muted); font-weight:400; }
-.team-pred-expand-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:7px 0 0; margin-top:6px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
-.team-pred-breakdown { margin-top:10px; display:flex; gap:12px; }
-.team-pred-col { flex:1; min-width:0; }
-.team-pred-col-header { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; padding-bottom:4px; border-bottom:1px solid var(--border); }
-.team-pred-player-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:11px; }
-.team-pred-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100px; }
-.team-pred-player-score { font-weight:700; flex-shrink:0; margin-left:4px; }
-.team-pred-conf-badge { font-size:10px; font-weight:600; border-radius:3px; padding:1px 5px; margin-top:2px; display:inline-block; }
-.team-pred-proj-runs  { font-size:11px; color:var(--text-muted); margin-top:1px; }
-.team-pred-summary    { font-size:11px; color:var(--text-muted); padding:6px 10px; border-top:1px solid var(--border); line-height:1.4; }
-.team-pred-comp-section { margin-bottom:8px; }
-.team-pred-comp-row   { display:flex; align-items:center; gap:6px; margin:2px 0; }
-.team-pred-comp-label { font-size:10px; color:var(--text-muted); width:56px; flex-shrink:0; }
+
 .lab-pitch-breakdown { margin:6px 0; padding:6px 10px; background:#0f172a; border-radius:6px; border:1px solid var(--border); }
 .lab-pitch-hdr { font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); margin-bottom:5px; font-weight:700; }
 .lab-pitch-row { display:flex; justify-content:space-between; align-items:center; padding:2px 0; font-size:11px; }
 .lab-pitch-name { font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-pitch-meta { color:var(--text-muted); font-size:10px; flex-shrink:0; margin-left:6px; }
-.team-pred-comp-bar-bg{ flex:1; height:6px; background:var(--bg-hover); border-radius:3px; overflow:hidden; }
-.team-pred-comp-bar   { height:100%; border-radius:3px; }
-.team-pred-comp-val   { font-size:10px; color:var(--text-muted); width:22px; text-align:right; flex-shrink:0; }
+
 /* ── Team Win Predictor redesign (twp-*) ──────────────── */
 .twp-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
 .twp-header { display:flex; justify-content:space-between; align-items:center; padding:9px 14px 8px; border-bottom:1px solid var(--border); }
@@ -638,18 +605,8 @@ main { padding: 28px 0 60px; }
 .lab-loading-step.active { color:var(--text-primary); }
 .lab-loading-step.active .ls-icon { display:inline-block; animation:labSpin .7s linear infinite; }
 @keyframes labSpin { to{transform:rotate(360deg)} }
-.lab-faceoff { display:grid; grid-template-columns:1fr 36px 1fr; gap:0; margin-bottom:16px; align-items:start; }
-.lab-faceoff-divider { display:flex; align-items:center; justify-content:center; padding-top:60px; }
-.lab-vs-text { font-family:'Bebas Neue',cursive; font-size:22px; color:var(--accent-orange); writing-mode:vertical-lr; }
-.lab-faceoff-side { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
-.lab-side-header { padding:10px 14px; border-bottom:1px solid var(--border); background:var(--bg-hover); }
-.lab-side-label { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); font-weight:700; }
-.lab-side-body { padding:14px; }
-.lab-player-hero { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
-.lab-hero-photo { width:52px; height:52px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
 .lab-hero-name { font-size:15px; font-weight:700; line-height:1.2; }
 .lab-hero-meta { font-size:11px; color:var(--text-muted); margin-top:3px; }
-.lab-chips-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:10px 0 5px; }
 .lab-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
 .lab-chip { font-size:11px; padding:3px 9px; border-radius:20px; font-weight:600; line-height:1.4; }
 .lab-chip.str { background:#22c55e18; color:#22c55e; border:1px solid #22c55e30; }
@@ -686,12 +643,6 @@ main { padding: 28px 0 60px; }
 .lab-score-bar-track { height:12px; border-radius:6px; background:var(--bg-hover); overflow:hidden; }
 .lab-score-bar-fill { height:100%; border-radius:6px; }
 .lab-narrative { font-size:13px; line-height:1.7; color:var(--text-secondary); margin-top:14px; }
-@media(max-width:700px){
-  .lab-faceoff { grid-template-columns:1fr; }
-  .lab-faceoff-divider { padding:8px 0; }
-  .lab-vs-text { writing-mode:horizontal-tb; }
-  .lab-team-grid { grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); }
-}
 
 /* ── Lab Score Cards ─────────────────────────────────────────────── */
 .lab-two-card-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
@@ -1324,17 +1275,7 @@ main { padding: 28px 0 60px; }
 .hf-hdr-orange { color:var(--accent-orange); border-color:var(--accent-orange)30; }
 .hf-hdr-blue { color:#60a5fa; border-color:#60a5fa30; }
 
-/* Pick rows */
-.hf-pick-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--bg-card); border-radius:8px; margin-bottom:6px; border:1px solid var(--border); transition:background .15s; }
-.hf-pick-row:hover { background:var(--bg-card-hover); }
-.hf-pick-row-top { border-color:var(--accent-green)60; background:linear-gradient(90deg,var(--accent-green)08,transparent); }
-.hf-pick-rank { width:24px; font-size:13px; font-weight:700; color:var(--text-muted); text-align:center; flex-shrink:0; }
 .hf-team-logo { width:28px; height:28px; border-radius:50%; object-fit:contain; background:#fff1; padding:2px; flex-shrink:0; }
-.hf-pick-info { flex:1; min-width:0; }
-.hf-pick-name { font-size:13px; font-weight:700; color:var(--text-primary); }
-.hf-pick-meta { font-size:11px; color:var(--text-muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.hf-pick-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
-.hf-score-badge { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:var(--bg-card-hover); border:2px solid var(--border); color:var(--text-primary); }
 .hf-score-ring { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; background:var(--bg-card-hover); border:2px solid var(--border); color:var(--text-primary); flex-shrink:0; }
 
 /* Tier badges */
@@ -3740,7 +3681,6 @@ let db = null;
 // Initialize IndexedDB with fallback for private mode / old browsers
 async function initDB() {
   if (!window.indexedDB) {
-    console.log('IndexedDB unavailable (private mode or old browser)');
     return null;
   }
   try {
@@ -3754,7 +3694,6 @@ async function initDB() {
       req.onerror = reject;
     });
   } catch (e) {
-    console.log('IndexedDB init failed:', e.message);
     return null;
   }
 }
@@ -3972,7 +3911,6 @@ const APP_VERSION = '2026.06.03.1';
       );
       appKeys.forEach(k => localStorage.removeItem(k));
       localStorage.setItem('de_app_version', APP_VERSION);
-      console.info('[DiamondEdge] Cache cleared — new version', APP_VERSION);
     }
   } catch { /* private-browsing or storage blocked — ignore */ }
 })();
@@ -4497,22 +4435,6 @@ function buildReason(factors, type) {
 }
 
 // ─── SCORING RING SVG ─────────────────────────────────────────────────────
-function scoreRingHTML(score, type) {
-  const R = 27; const C = 2 * Math.PI * R;
-  const dash = (score / 100) * C;
-  const colorCls = type === 'hit' ? 'hit-color' : 'hr-color';
-  return `
-    <div class="score-ring">
-      <svg width="64" height="64" viewBox="0 0 64 64">
-        <circle class="ring-bg" cx="32" cy="32" r="${R}" />
-        <circle class="ring-fill ${colorCls}" cx="32" cy="32" r="${R}"
-          stroke-dasharray="${C}"
-          stroke-dashoffset="${C - dash}"
-        />
-      </svg>
-      <div class="ring-text ${colorCls}">${score}</div>
-    </div>`;
-}
 
 // ─── PREDICTION CARD HTML ─────────────────────────────────────────────────
 function predCardHTML(player, type, delay=0, prefix='c') {
@@ -4700,15 +4622,6 @@ async function fetchPlayerHittingStats(personId, season=2026) {
   } catch { return null; }
 }
 
-async function fetchPlayerLastNGames(personId, group='hitting', n=7) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${personId}/stats?stats=lastXGames&lastXGames=${n}&group=${group}&gameType=R`;
-  try {
-    const data = await cachedFetch(url);
-    const splits = data.stats?.[0]?.splits;
-    return splits?.[0]?.stat || null;
-  } catch { return null; }
-}
-
 async function fetchPitcherStats(personId, season=2026) {
   const url = `https://statsapi.mlb.com/api/v1/people/${personId}?hydrate=stats(group=[pitching],type=[season],season=${season})`;
   try {
@@ -4720,14 +4633,6 @@ async function fetchPitcherStats(personId, season=2026) {
       pitchHand: person?.pitchHand?.code || null,
     };
   } catch { return { stat: null, pitchHand: null }; }
-}
-
-async function fetchPlayerInfo(personId) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${personId}?hydrate=stats(group=[hitting],type=[season],season=2026)`;
-  try {
-    const data = await cachedFetch(url);
-    return data.people?.[0] || null;
-  } catch { return null; }
 }
 
 // ─── FETCH WEATHER ────────────────────────────────────────────────────────
@@ -5359,10 +5264,6 @@ function updateChipLineupStatus(gamePk, posted) {
     el.className = 'lineup-status lineup-projected';
     el.textContent = '~ Projected lineup';
   }
-}
-
-function selectGame(pk) {
-  selectGameView(pk, 'top');
 }
 
 function selectGameView(pk, view) {
@@ -6834,15 +6735,6 @@ let _btsResultCount = 15;
 function btsShowMore() {
   _btsResultCount += 10;
   renderBeatTheStreak();
-}
-
-function toggleBtsAdvanced() {
-  const el  = document.getElementById('btsAdvancedFilters');
-  const btn = document.getElementById('btsAdvancedToggle');
-  if (!el || !btn) return;
-  const open = el.style.display !== 'none';
-  el.style.display = open ? 'none' : 'block';
-  btn.textContent  = open ? '▼ Advanced Filters' : '▲ Hide Advanced';
 }
 
 function showBtsFilterTip(btn, text) {
@@ -9778,21 +9670,17 @@ async function init() {
   try {
     db = await initDB();
     if (db) {
-      console.log('✅ IndexedDB enabled for 3-hour cache');
       // Purge all IndexedDB entries if the stored date differs from today
       // (ensures stale prior-day data never survives overnight)
       const storedDate = localStorage.getItem('dbCacheDate');
       const todayStr   = new Date().toISOString().slice(0,10);
       if (storedDate && storedDate !== todayStr) {
         await clearIndexedDB();
-        console.log('ℹ️ Purged previous-day IndexedDB entries');
       }
       localStorage.setItem('dbCacheDate', todayStr);
     } else {
-      console.log('ℹ️ Using RAM cache only (IndexedDB unavailable)');
     }
   } catch (e) {
-    console.log('IndexedDB init error:', e.message);
   }
   
   // Show cache consent prompt if user hasn't decided
@@ -10025,258 +9913,20 @@ function generateSmartMatchupSummary(hitResult, hrResult, ctx) {
 function buildPlayerAnalysisShareText() {
   const d = _paShareData;
   if (!d) return '';
-  const isBts = d.source === 'bts';
-  const isLab = ['lab','hitPicks','hrPicks','streaks','dominator','dueForHit'].includes(d.source);
-  const srcLabel = isBts ? 'Beat the Streak'
-    : d.source === 'hitPicks' ? 'Hit Picks (via The Lab)'
-    : d.source === 'hrPicks'  ? 'HR Picks (via The Lab)'
-    : d.source === 'streaks'  ? 'Hot Streaks (via The Lab)'
-    : d.source === 'dominator'? 'Daily Dominators (via The Lab)'
-    : d.source === 'dueForHit'? 'Due for a Hit (via The Lab)'
-    : d.source === 'lab'      ? 'Player Matchup Lab'
-    : 'Diamond Edge';
-
-  const pickTerm = isBts
-    ? (d.matchupScore >= 70 ? `${d.pickEmoji} Good BTS Pick`
-      : d.matchupScore >= 55 ? `${d.pickEmoji} Monitor Lineup`
-      : d.matchupScore >= 40 ? `${d.pickEmoji} Risky BTS Pick`
-      : `${d.pickEmoji} Avoid BTS`)
-    : isLab
-      ? (d.matchupScore >= 70 ? `${d.pickEmoji} Strong Matchup Lean`
-        : d.matchupScore >= 55 ? `${d.pickEmoji} Moderate Matchup Lean`
-        : d.matchupScore >= 40 ? `${d.pickEmoji} Neutral Matchup`
-        : `${d.pickEmoji} Avoid`)
-      : `${d.pickEmoji} ${d.pickLabel}`;
-
-  const f3 = v => v != null && v > 0 ? v.toFixed(3).replace(/^0/, '') : '—';
-  const pct = v => Math.round(v * 100) + '%';
-
-  const lines = [
-    `${d.playerName} — ${d.team} vs ${d.matchup}`,
-    `Source: ${srcLabel}`,
+  const parts = [
+    `⚾ Diamond Edge — ${d.playerName} (${d.team})`,
+    `Matchup: ${d.matchup}`,
+    `${d.pickEmoji || ''} ${d.pickLabel || ''} | Score: ${d.matchupScore ?? '—'}`,
+    `Pitcher: ${d.pitcherName}${d.pEra ? ` | ERA ${d.pEra}` : ''}`,
+    d.ssAvg != null ? `AVG: ${d.ssAvg.toFixed(3)} | OBP: ${(d.ssObp||0).toFixed(3)}` : '',
+    d.l7Avg != null ? `L7 AVG: ${d.l7Avg.toFixed(3)}` : '',
+    (d.hitStreak || 0) > 0 ? `Hit streak: ${d.hitStreak}` : '',
     '',
-    `Final Pick: ${pickTerm}`,
-    `Confidence: ${d.confidence}`,
-    d.hitScore != null ? `Hit Score: ${d.hitScore}` : null,
-    (!isBts && d.hrScore != null) ? `HR Score: ${d.hrScore}` : null,
-    `Matchup Score: ${d.matchupScore}`,
-    '',
-  ].filter(l => l !== null);
-
-  // ── Batter Stats ──────────────────────────────────────────────────────────
-  const batLines = ['Batter Stats:'];
-  if (d.ssAvg != null) batLines.push(`  • Season: AVG ${f3(d.ssAvg)}${d.ssObp != null ? ' / OBP ' + f3(d.ssObp) : ''}`);
-  if (d.ssBabip != null || d.ssBacon != null) batLines.push(`  • BABIP ${f3(d.ssBabip)} | BACON ${f3(d.ssBacon)}`);
-  const recentAvg = d.l10Avg ?? d.l7Avg;
-  if (recentAvg != null) batLines.push(`  • Recent AVG (L${d.l10Avg != null ? '10' : '7'}): ${f3(recentAvg)}`);
-  if (d.ghpSeason != null) batLines.push(`  • GHP (season): ${pct(d.ghpSeason)}`);
-  if (d.ghpL10 != null)    batLines.push(`  • GHP (last 10): ${pct(d.ghpL10)}`);
-  if ((d.hitStreak || 0) >= 2) batLines.push(`  • Hit streak: ${d.hitStreak} games`);
-  if (batLines.length > 1) { lines.push(...batLines); lines.push(''); }
-
-  // ── Platoon split ─────────────────────────────────────────────────────────
-  if ((d.splitAB || 0) >= 10 && d.splitAvg != null) {
-    const diffSign = (d.splitDiff || 0) >= 0 ? '+' : '';
-    lines.push(`Vs ${d.pitcherHand}HP (platoon split):`);
-    lines.push(`  • ${f3(d.splitAvg)} AVG in ${d.splitAB} AB (${diffSign}${Math.round((d.splitDiff || 0) * 1000)} pts vs season avg)`);
-    lines.push(`  • ${d.platoonLabel || '—'}`);
-    lines.push('');
-  }
-
-  // ── Hitter advantages ─────────────────────────────────────────────────────
-  if (d.whyBullets?.length) {
-    lines.push(isBts ? 'Why he can get a hit:' : 'Hitter advantages:');
-    d.whyBullets.slice(0, 4).forEach(b => lines.push(`  • ${b}`));
-    lines.push('');
-  }
-
-  // ── Risk factors ──────────────────────────────────────────────────────────
-  if (d.riskBullets?.length && d.riskBullets[0] !== 'No major risk factors identified') {
-    lines.push('Risk factors:');
-    d.riskBullets.slice(0, 3).forEach(b => lines.push(`  • ${b}`));
-    lines.push('');
-  }
-
-  // ── Pitcher matchup ───────────────────────────────────────────────────────
-  const pitLines = ['Pitcher Matchup:'];
-  if (d.pitcherName && d.pitcherName !== '—') pitLines.push(`  • Opposing Starter: ${d.pitcherName} (${d.pitcherHand}HP)`);
-  if (d.pitcherProfileLabel)                  pitLines.push(`  • Profile: ${d.pitcherProfileLabel}`);
-  if (d.pEra != null)   pitLines.push(`  • ERA: ${d.pEra.toFixed(2)}`);
-  if (d.pKpct > 0)      pitLines.push(`  • K%: ${(d.pKpct * 100).toFixed(1)}%`);
-  if (d.pH9 != null)    pitLines.push(`  • H/9: ${d.pH9.toFixed(1)}`);
-  if (d.pHBF > 0)       pitLines.push(`  • H/BF%: ${(d.pHBF * 100).toFixed(1)}%`);
-  if (d.pBabip != null) pitLines.push(`  • BABIP Allowed: ${f3(d.pBabip)}`);
-  if (d.pBacon != null) pitLines.push(`  • BACON Allowed: ${f3(d.pBacon)}`);
-  if (pitLines.length > 1) { lines.push(...pitLines); lines.push(''); }
-
-  // ── Head-to-head history ──────────────────────────────────────────────────
-  const pitName = (d.pitcherName && d.pitcherName !== '—') ? d.pitcherName : 'this pitcher';
-  if ((d.h2hAB || 0) >= 5) {
-    lines.push(`Career vs ${pitName}:`);
-    lines.push(`  • ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}), ${d.h2hHR} HR, ${d.h2hK} K`);
-    lines.push('');
-  } else if ((d.h2hAB || 0) === 0 && d.pitcherName && d.pitcherName !== '—') {
-    lines.push(`Career vs ${pitName}:`);
-    lines.push(`  • No prior head-to-head data`);
-    lines.push('');
-  }
-
-  // ── Bullpen ───────────────────────────────────────────────────────────────
-  if (d.bullpenEra != null) {
-    lines.push('Opposing Bullpen:');
-    let penLine = `  • ERA: ${d.bullpenEra.toFixed(2)}`;
-    if (d.bullpenH9 != null) penLine += ` | H/9: ${d.bullpenH9.toFixed(1)}`;
-    if (d.bullpenHBF != null) penLine += ` | H/BF%: ${Math.round(d.bullpenHBF*100)}%`;
-    lines.push(penLine);
-    if (d.bullpenEra >= 5.0 || (d.bullpenH9||0) >= 9.0) lines.push('  • Exploitable late — bullpen is giving up hits freely');
-    else if (d.bullpenEra <= 3.5 && (d.bullpenH9 == null || d.bullpenH9 <= 7.5)) lines.push('  • Strong bullpen — limits late-inning upside');
-    lines.push('');
-  }
-
-  // ── Park & weather ────────────────────────────────────────────────────────
-  if (d.venueName || d.wxNote) {
-    lines.push('Park/Weather:');
-    if (d.venueName) lines.push(`  • ${d.venueName}${d.parkFactor ? ` (${d.parkFactor.toFixed(2)}×)` : ''} — ${d.parkImpact?.lbl || 'Neutral'}`);
-    if (d.wxNote && d.wxNote !== 'Not available') lines.push(`  • Weather: ${d.wxNote}`);
-    lines.push('');
-  }
-
-  // ── Final Take — analytical multi-sentence conclusion ─────────────────────
-  const ftParts = [];
-
-  // Build specific counter-points from raw data (what's preventing a perfect score)
-  const counterPoints = [];
-  // High K% even when ERA is weak — the key nuance users miss
-  if (d.pKpct != null && d.pKpct >= 0.22 && (d.pEra == null || d.pEra >= 4.50)) {
-    counterPoints.push(`despite the elevated ERA, ${pitName} has a ${(d.pKpct*100).toFixed(0)}% K rate — strikeout risk remains`);
-  }
-  // Strong/good pitcher quality
-  if (d.pEra != null && d.pEra <= 3.50) {
-    counterPoints.push(`facing a quality arm (ERA ${d.pEra.toFixed(2)}) caps the hit ceiling`);
-  } else if (d.pH9 != null && d.pH9 <= 7.0 && (d.pEra == null || d.pEra > 3.50)) {
-    counterPoints.push(`starter suppresses hits (H/9 ${d.pH9.toFixed(1)}) — harder contact environment than ERA alone suggests`);
-  }
-  // Bullpen quality (limits late-game upside even if score is high)
-  if (d.bullpenEra != null && d.bullpenEra > 0 && d.bullpenEra <= 3.50) {
-    counterPoints.push(`opposing bullpen is elite (ERA ${d.bullpenEra.toFixed(2)}) — late-inning scoring chances are limited`);
-  } else if (d.bullpenEra != null && d.bullpenEra > 0 && d.bullpenEra <= 4.00 && d.matchupScore >= 65) {
-    counterPoints.push(`bullpen is solid (ERA ${d.bullpenEra.toFixed(2)}) — no guaranteed late-game upside`);
-  }
-  // Small platoon split sample
-  if ((d.splitAB || 0) > 0 && (d.splitAB || 0) < 20) {
-    counterPoints.push(`platoon split is unproven — only ${d.splitAB} AB vs ${d.pitcherHand}HP limits conviction`);
-  }
-  // Recent slump
-  if (d.l10Avg != null && d.l10Avg < 0.230) {
-    counterPoints.push(`recent slump (${f3(d.l10Avg)} L10 AVG) tempers confidence`);
-  }
-  // Park suppresses offense
-  if (d.parkFactor != null && d.parkFactor <= 0.97) {
-    counterPoints.push(`${d.venueName || 'the park'} suppresses offense (${d.parkFactor.toFixed(2)}×)`);
-  }
-  const meaningfulRisks = (d.riskBullets || []).filter(r =>
-    r !== 'No major risk factors identified' && !/lineup/i.test(r)
-  );
-
-  if (d.matchupScore >= 70) {
-    if ((d.splitAB || 0) >= 25 && (d.splitDiff || 0) > 0.040) {
-      ftParts.push(`Score ${d.matchupScore}/100 — strong lean built on a real platoon edge (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB, +${Math.round((d.splitDiff || 0) * 1000)} pts above season avg).`);
-    } else if (d.pH9 != null && d.pH9 >= 8.5) {
-      ftParts.push(`Score ${d.matchupScore}/100 — strong lean. The opposing starter allows ${d.pH9.toFixed(1)} H/9; this is a contact-friendly environment that creates genuine opportunities for a quality hitter.`);
-    } else if (d.pEra != null && d.pEra >= 5.0) {
-      ftParts.push(`Score ${d.matchupScore}/100 — strong lean against a vulnerable starter (ERA ${d.pEra.toFixed(2)}) who has been allowing hard contact at an elevated rate.`);
-    } else {
-      ftParts.push(`Score ${d.matchupScore}/100 — strong lean. Multiple positive signals converge; this is one of the better hit environments on today's slate.`);
-    }
-    // Counter-point: name what's keeping it from being a perfect score
-    if (counterPoints.length > 0) {
-      ftParts.push(`That said — ${counterPoints.slice(0, 2).join('; ')}. Factor this into your confidence level.`);
-    }
-  } else if (d.matchupScore >= 55) {
-    if (d.pEra != null && d.pEra >= 4.5) {
-      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Facing a below-average starter (ERA ${d.pEra.toFixed(2)}) is a real edge.`);
-    } else if ((d.splitAB || 0) >= 20 && (d.splitDiff || 0) > 0.015) {
-      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. A favorable platoon split (${f3(d.splitAvg)} vs ${d.pitcherHand}HP in ${d.splitAB} AB) is the strongest positive today.`);
-    } else {
-      ftParts.push(`Score ${d.matchupScore}/100 — moderate lean. Playable conditions with no single dominant driver; treat as a secondary pick.`);
-    }
-    // Explicitly name what's capping this score
-    if (counterPoints.length > 0) {
-      ftParts.push(`The ceiling is capped by: ${counterPoints.slice(0, 2).join('; ')}.`);
-    } else if (meaningfulRisks.length > 0) {
-      ftParts.push(`Main constraint holding back a higher score: ${meaningfulRisks[0].toLowerCase()}.`);
-    }
-  } else if (d.matchupScore >= 40) {
-    const topRisk = d.riskBullets?.[0] || 'multiple risk factors present';
-    ftParts.push(`Score ${d.matchupScore}/100 — proceed with caution. ${topRisk} is the primary concern suppressing this matchup.`);
-    if (counterPoints.length > 1) {
-      ftParts.push(`Additional headwinds: ${counterPoints.slice(1, 3).join('; ')}.`);
-    }
-  } else {
-    ftParts.push(`Score ${d.matchupScore}/100 — avoid. The combination of pitcher quality, splits, and form creates a below-average hit environment today.`);
-  }
-
-  if ((d.h2hAB || 0) >= 5) {
-    const h2hPct = Math.round((d.h2hH || 0) / d.h2hAB * 100);
-    if ((d.h2hAvg || 0) >= 0.290) {
-      ftParts.push(`History backs the play: ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}, ${d.h2hHR} HR, ${d.h2hK} K) career vs ${pitName} — a ${h2hPct}% hit rate against this arm is meaningful evidence beyond the season numbers.`);
-    } else if ((d.h2hAvg || 0) < 0.200 && d.h2hAB >= 8) {
-      ftParts.push(`History is a red flag: only ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}) career — this hitter has consistently struggled against ${pitName}.`);
-    } else if (d.h2hAB >= 10) {
-      ftParts.push(`Career vs ${pitName}: ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}, ${d.h2hHR} HR) — neutral history, no directional edge.`);
-    } else {
-      ftParts.push(`Small H2H sample: ${d.h2hH}-for-${d.h2hAB} (${f3(d.h2hAvg)}) — light context, not a primary signal.`);
-    }
-  }
-
-  const lineupWarning = d.riskBullets?.some(r => /lineup/i.test(r));
-  if (d.matchupScore >= 70) {
-    ftParts.push(lineupWarning
-      ? 'Valid BTS/hit prop candidate — confirm the lineup is officially posted before locking.'
-      : 'Solid BTS or hit prop play; lineup is confirmed, proceed with confidence.');
-  } else if (d.matchupScore >= 55) {
-    ftParts.push(lineupWarning
-      ? 'Hold — confirm lineup first before committing to this pick.'
-      : 'Use as a low-priority secondary pick only if stronger options on the slate are already covered.');
-  } else {
-    ftParts.push('Pass today — look for a cleaner matchup elsewhere on the slate.');
-  }
-
-  lines.push('Final Take:');
-  ftParts.forEach(s => lines.push(`  ${s}`));
-  lines.push('');
-
-  // Smart analysis — appended after the Final Take
-  const hitResultObj = { score: d.matchupScore, label: null, reasons: [], warnings: [] };
-  const hrResultObj = { score: null, label: null, reasons: [], warnings: [] };
-  const ctxObj = {
-    playerName: d.playerName,
-    pitcherName: pitName,
-    pitcherHand: d.pitcherHand,
-    pEra: d.pEra,
-    pH9: d.pH9,
-    pKpct: d.pKpct,
-    bullpenEra: d.bullpenEra,
-    bullpenH9: d.bullpenH9,
-    bullpenHBF: d.bullpenHBF,
-    ssAvg: d.ssAvg,
-    ssBabip: d.ssBabip,
-    l10Avg: d.l10Avg,
-    hitStreak: d.hitStreak,
-    splitAvg: d.splitAvg,
-    splitAB: d.splitAB,
-    splitDiff: d.splitDiff,
-    parkFactor: d.parkFactor,
-  };
-  const _smartSummary = generateSmartMatchupSummary(hitResultObj, hrResultObj, ctxObj);
-  if (_smartSummary) {
-    lines.push('Smart Analysis:');
-    _smartSummary.split('. ').filter(Boolean).forEach(s => lines.push(`  ${s.trim()}${s.trim().endsWith('.') ? '' : '.'}`));
-    lines.push('');
-  }
-
-  lines.push('— Diamond Edge MLB Analysis  🔬');
-  return lines.join('\n');
+    d.whyBullets?.length ? d.whyBullets.map(b => `✅ ${b}`).join('\n') : '',
+    d.riskBullets?.length ? d.riskBullets.map(b => `⚠️ ${b}`).join('\n') : '',
+    d.actionLine || '',
+  ];
+  return parts.filter(Boolean).join('\n').trim();
 }
 
 // ── Share: copy to clipboard ───────────────────────────────────────────────
@@ -10321,200 +9971,6 @@ async function _paNativeShare() {
 }
 
 // ── Share: Download image card via Canvas ─────────────────────────────────
-function _paDownloadImage() {
-  const sm = document.getElementById('paShareMenu');
-  if (sm) sm.style.display = 'none';
-  const d = _paShareData;
-  if (!d) { _paToast('No analysis to export.'); return; }
-
-  const W = 1080, H = 1350, PAD = 60;
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-
-  // Background
-  ctx.fillStyle = '#06080c';
-  ctx.fillRect(0, 0, W, H);
-  const g1 = ctx.createRadialGradient(W*0.2, H*0.1, 0, W*0.2, H*0.1, W*0.8);
-  g1.addColorStop(0, 'rgba(52,211,153,0.07)'); g1.addColorStop(1, 'transparent');
-  ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
-  const g2 = ctx.createRadialGradient(W*0.85, H*0.85, 0, W*0.85, H*0.85, W*0.65);
-  g2.addColorStop(0, 'rgba(251,146,60,0.06)'); g2.addColorStop(1, 'transparent');
-  ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
-
-  function rRect(x, y, w, h, r, fill, stroke, sw2) {
-    ctx.beginPath();
-    ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-    ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-    ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-    ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y); ctx.closePath();
-    if (fill)  { ctx.fillStyle = fill; ctx.fill(); }
-    if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = sw2||2; ctx.stroke(); }
-  }
-  function fitText(text, maxW) {
-    let t = text;
-    while (ctx.measureText(t).width > maxW && t.length > 4) t = t.slice(0,-4)+'…';
-    return t;
-  }
-  function hRule(yp) {
-    ctx.strokeStyle = '#1e2330'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(PAD, yp); ctx.lineTo(W-PAD, yp); ctx.stroke();
-  }
-
-  const isBts = d.source === 'bts';
-  const srcLabel = isBts ? 'Beat the Streak' : d.source === 'lab' ? 'Player Matchup Lab' : 'Diamond Edge';
-  const pickColors = {
-    'pa-verdict-good':  { bg:'rgba(52,211,153,0.14)', border:'#34d399', text:'#34d399' },
-    'pa-verdict-mixed': { bg:'rgba(251,191,36,0.14)',  border:'#fbbf24', text:'#fbbf24' },
-    'pa-verdict-risky': { bg:'rgba(251,146,60,0.14)',  border:'#fb923c', text:'#fb923c' },
-    'pa-verdict-poor':  { bg:'rgba(248,113,113,0.14)', border:'#f87171', text:'#f87171' },
-  };
-  const pc = pickColors[d.pickCls] || pickColors['pa-verdict-mixed'];
-  const platClr = { pos:'#34d399', neg:'#fb923c', neu:'#4a5168' };
-
-  let y = PAD;
-
-  // Branding header
-  ctx.font = 'bold 30px Arial, sans-serif';
-  ctx.fillStyle = '#34d399';
-  ctx.fillText('DIAMOND EDGE', PAD, y+22);
-  ctx.font = '22px Arial, sans-serif';
-  ctx.fillStyle = '#4a5168';
-  ctx.fillText(srcLabel, PAD, y+56);
-  y += 80;
-
-  // Player name
-  ctx.font = 'bold 68px Arial, sans-serif';
-  ctx.fillStyle = '#e8eaf0';
-  ctx.fillText(fitText(d.playerName || '—', W - PAD*2 - 20), PAD, y+62);
-  y += 80;
-
-  // Team / matchup
-  ctx.font = '28px Arial, sans-serif';
-  ctx.fillStyle = '#8b92a5';
-  ctx.fillText(fitText(`${d.team || ''}   ·   ${d.matchup || ''}`, W - PAD*2), PAD, y);
-  y += 42;
-
-  hRule(y); y += 32;
-
-  // Decision card
-  const cardH = 170;
-  rRect(PAD, y, W-PAD*2, cardH, 18, pc.bg, pc.border, 3);
-
-  const pickDisplay = isBts
-    ? (d.matchupScore>=70?`${d.pickEmoji} Good BTS Pick` : d.matchupScore>=55?`${d.pickEmoji} Monitor Lineup` : d.matchupScore>=40?`${d.pickEmoji} Risky BTS Pick` : `${d.pickEmoji} Avoid BTS`)
-    : `${d.pickEmoji} ${d.pickLabel}`;
-
-  ctx.font = 'bold 50px Arial, sans-serif';
-  ctx.fillStyle = pc.text;
-  ctx.fillText(fitText(pickDisplay, W-PAD*2-60), PAD+28, y+56);
-
-  ctx.font = '26px Arial, sans-serif';
-  ctx.fillStyle = '#8b92a5';
-  ctx.fillText(`Score: ${d.matchupScore}   ·   Confidence: ${d.confidence}`, PAD+28, y+100);
-
-  ctx.font = '24px Arial, sans-serif';
-  ctx.fillStyle = '#e8eaf0';
-  const scoreRow = [`Hit Score: ${d.hitScore ?? '—'}`, !isBts && d.hrScore != null ? `HR Score: ${d.hrScore}` : null]
-    .filter(Boolean).join('   ·   ');
-  ctx.fillText(scoreRow, PAD+28, y+138);
-  y += cardH + 28;
-
-  // WHY bullets
-  if (d.whyBullets?.length) {
-    ctx.font = 'bold 24px Arial, sans-serif';
-    ctx.fillStyle = '#34d399';
-    ctx.fillText(isBts ? 'WHY HE CAN GET A HIT' : 'HITTER ADVANTAGES', PAD, y);
-    y += 34;
-    d.whyBullets.slice(0,3).forEach(b => {
-      rRect(PAD, y, W-PAD*2, 46, 8, 'rgba(52,211,153,0.08)', null);
-      ctx.font = '22px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
-      ctx.fillText(fitText(`✓  ${b}`, W-PAD*2-36), PAD+18, y+32);
-      y += 56;
-    });
-    y += 8;
-  }
-
-  // RISK bullets
-  const nonTrivialRisks = (d.riskBullets||[]).filter(r => r !== 'No major risk factors identified');
-  if (nonTrivialRisks.length) {
-    ctx.font = 'bold 24px Arial, sans-serif';
-    ctx.fillStyle = '#fb923c';
-    ctx.fillText('RISK FACTORS', PAD, y);
-    y += 34;
-    nonTrivialRisks.slice(0,2).forEach(b => {
-      rRect(PAD, y, W-PAD*2, 46, 8, 'rgba(251,146,60,0.08)', null);
-      ctx.font = '22px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
-      ctx.fillText(fitText(`⚠  ${b}`, W-PAD*2-36), PAD+18, y+32);
-      y += 56;
-    });
-    y += 8;
-  }
-
-  // Pitcher card
-  rRect(PAD, y, W-PAD*2, 138, 14, '#12151d', '#1e2330');
-  ctx.font = 'bold 20px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
-  ctx.fillText('PITCHER MATCHUP', PAD+22, y+28);
-  ctx.font = 'bold 30px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
-  ctx.fillText(fitText(`${d.pitcherName||'—'} (${d.pitcherHand||'?'}HP)`, W-PAD*2-44), PAD+22, y+68);
-  ctx.font = '22px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
-  const pitStats = [
-    d.pH9!=null  ? `H/9 ${d.pH9.toFixed(1)}`              : null,
-    d.pHBF>0     ? `H/BF ${(d.pHBF*100).toFixed(1)}%`      : null,
-    d.pKpct>0    ? `K% ${(d.pKpct*100).toFixed(1)}%`        : null,
-    d.pEra!=null ? `ERA ${d.pEra.toFixed(2)}`               : null,
-  ].filter(Boolean);
-  ctx.fillText(fitText(pitStats.join('   ·   '), W-PAD*2-44), PAD+22, y+108);
-  y += 156;
-
-  // Platoon + Park row (side by side)
-  const halfW = (W-PAD*2-16)/2;
-  rRect(PAD,        y, halfW, 92, 14, '#12151d', '#1e2330');
-  rRect(PAD+halfW+16, y, halfW, 92, 14, '#12151d', '#1e2330');
-
-  ctx.font = 'bold 19px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
-  ctx.fillText('PLATOON EDGE', PAD+20, y+26);
-  ctx.font = 'bold 27px Arial, sans-serif';
-  ctx.fillStyle = platClr[d.platoonCls||'neu']||'#8b92a5';
-  ctx.fillText(fitText(d.platoonLabel||'—', halfW-40), PAD+20, y+66);
-
-  ctx.font = 'bold 19px Arial, sans-serif'; ctx.fillStyle = '#8b92a5';
-  ctx.fillText('PARK IMPACT', PAD+halfW+36, y+26);
-  ctx.font = 'bold 27px Arial, sans-serif';
-  ctx.fillStyle = platClr[d.parkImpact?.cls||'neu']||'#8b92a5';
-  ctx.fillText(d.parkImpact?.lbl||'Neutral', PAD+halfW+36, y+66);
-  y += 110;
-
-  hRule(y); y += 26;
-
-  // Action line
-  ctx.font = '25px Arial, sans-serif'; ctx.fillStyle = '#e8eaf0';
-  ctx.fillText(fitText(d.actionLine||'', W-PAD*2), PAD, y+28);
-  y += 54;
-
-  // Lineup warning
-  if ((d.riskBullets||[]).some(r => r.toLowerCase().includes('lineup'))) {
-    ctx.font = 'italic 22px Arial, sans-serif'; ctx.fillStyle = '#fbbf24';
-    ctx.fillText('⚠  Verify lineup before locking this pick.', PAD, y);
-    y += 36;
-  }
-
-  // Footer branding
-  ctx.font = '20px Arial, sans-serif'; ctx.fillStyle = '#1e2330';
-  const dateStr = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  ctx.fillText(`Diamond Edge  ·  ${dateStr}`, PAD, H-32);
-
-  canvas.toBlob(blob => {
-    if (!blob) { _paToast('Image export failed.'); return; }
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(d.playerName||'player').replace(/\s+/g,'_')}_analysis.png`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-    _paToast('Share image downloaded.');
-  }, 'image/png');
-}
 
 // ── Share: Screenshot of live analysis panel ──────────────────────────────
 let _h2cReady = false;
@@ -12945,41 +12401,6 @@ function _bullpenEdge(era, h9, hbf) {
     else if (hbf <= 0.20) sc -= 2;
   }
   return Math.max(20, Math.min(80, sc));
-}
-
-function _parkWeatherScore(pf, weather) {
-  let sc = 50;
-  if (pf?.overall != null) {
-    if (pf.overall >= 110) sc += 10;
-    else if (pf.overall >= 105) sc += 5;
-    else if (pf.overall <= 90)  sc -= 8;
-    else if (pf.overall <= 95)  sc -= 4;
-  }
-  if (weather) {
-    const { temp, windSpeed, windDir } = weather;
-    if (temp >= 85) sc += 3;
-    else if (temp <= 45) sc -= 3;
-    const isWindOut = windSpeed >= 10 && windDir >= 135 && windDir <= 315;
-    const isWindIn  = windSpeed >= 10 && (windDir < 135 || windDir > 315);
-    if (isWindOut) {
-      sc += (windSpeed >= 15) ? 8 : (windSpeed >= 10) ? 5 : 2;
-    } else if (isWindIn) {
-      sc -= (windSpeed >= 15) ? 6 : (windSpeed >= 10) ? 3 : 1;
-    }
-  }
-  return Math.max(20, Math.min(80, sc));
-}
-
-function _confidenceBoost(lineupPosted, count) {
-  if (lineupPosted && count >= 8) return 70;
-  if (lineupPosted || count >= 5) return 55;
-  return 40;
-}
-
-function _confidenceLabel(lineupPosted, count) {
-  if (lineupPosted && count >= 8) return 'High';
-  if (lineupPosted || count >= 5) return 'Medium';
-  return 'Preliminary';
 }
 
 function _recentEra(gameLog, seasonEra) {
