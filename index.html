@@ -5946,15 +5946,20 @@ async function renderHotStreaks() {
       document.getElementById('streakHRGrid').innerHTML = placeholder;
     }
 
-    // Fetch game logs for all candidate players in parallel
+    // Fetch full-season game logs for all candidate players in parallel
+    // (must use the full season, not the default 7-game window — otherwise any
+    // streak longer than the fetched window gets reported as just the window length)
     const candidates = [...new Map(
       [...ptsFilteredHit, ...ptsFilteredHR].map(p => [p.id, p])
     ).values()];
-    await Promise.all(candidates.map(p => fetchGameLog(p.id).catch(() => [])));
+    const consecLogs = new Map();
+    await Promise.all(candidates.map(async p => {
+      consecLogs.set(p.id, await fetchGameLog(p.id, false, 162).catch(() => []));
+    }));
 
     consecMap = {};
     for (const p of candidates) {
-      const log = gameLogCache.get(p.id) || [];
+      const log = consecLogs.get(p.id) || [];
       consecMap[p.id] = {
         hit: calcConsecutiveStreak(log, 'hit'),
         hr:  calcConsecutiveStreak(log, 'hr'),
