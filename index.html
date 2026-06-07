@@ -2715,6 +2715,15 @@ main { padding: 28px 0 60px; }
             </div>
           </div>
 
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Home/Away</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="homeaway" data-val="any"  onclick="setAhfFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="homeaway" data-val="home" onclick="setAhfFilter(this)">Home</button>
+              <button class="ahf-filter-btn"                            data-ahf="homeaway" data-val="away" onclick="setAhfFilter(this)">Away</button>
+            </div>
+          </div>
+
           <div class="ahf-filter-section-lbl" style="margin-top:8px">PITCHER</div>
 
           <div class="ahf-filter-group">
@@ -10827,7 +10836,7 @@ function _arsenalHitCardHTML(r, rank) {
 // ── Arsenal filter state ──────────────────────────────────────────────────
 let _ahfResults = [];   // full unfiltered results, cached after scan
 const _ahfState = {
-  lineupspot: 'any', minavg: 0, maxkpct: 100, platoon: 'any', lineup: 'any',
+  lineupspot: 'any', minavg: 0, maxkpct: 100, platoon: 'any', lineup: 'any', homeaway: 'any',
   minh9: 0, maxk9: 99, maxbb9: 99, minedge: -99,
 };
 
@@ -10842,7 +10851,7 @@ function setAhfFilter(btn) {
 
 function resetAhfFilters() {
   Object.assign(_ahfState, {
-    lineupspot:'any', minavg:0, maxkpct:100, platoon:'any', lineup:'any',
+    lineupspot:'any', minavg:0, maxkpct:100, platoon:'any', lineup:'any', homeaway:'any',
     minh9:0, maxk9:99, maxbb9:99, minedge:-99,
   });
   document.querySelectorAll('#ahfFilters .ahf-filter-btn')
@@ -10883,6 +10892,13 @@ function _renderAhfFiltered() {
 
     // Lineup status
     if (f.lineup === 'conf' && !r.gd?.lineupPosted) return false;
+
+    // Home/Away
+    if (f.homeaway !== 'any') {
+      const isHome = p.teamId === r.gd?.homeTeamId;
+      if (f.homeaway === 'home' && !isHome) return false;
+      if (f.homeaway === 'away' && isHome)  return false;
+    }
 
     // Pitcher H/9
     const ps  = pit?.seasonStats || {};
