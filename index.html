@@ -12775,6 +12775,22 @@ function _teamPitchArsenalEdge(batters, pitcherId) {
   return clamp(Math.round(wSum / wTotal), -8, 8);
 }
 
+function _teamPlatoonEdge(batters, pitcherHand) {
+  if (!pitcherHand || !batters.length) return 0;
+  let wAdv = 0, wTotal = 0;
+  for (const b of batters) {
+    const bat = b.batSide || 'R';
+    const pos = Math.max(0, Math.min(8, (b.orderPos || 5) - 1));
+    const w   = LINEUP_WEIGHTS[pos];
+    const hasAdv = bat === 'S' || (bat === 'R' && pitcherHand === 'L') || (bat === 'L' && pitcherHand === 'R');
+    if (hasAdv) wAdv += w;
+    wTotal += w;
+  }
+  if (wTotal === 0) return 0;
+  const advRatio = wAdv / wTotal;            // 0..1, weighted share of lineup with the platoon edge
+  return Math.round((advRatio - 0.5) * 6);   // centered on a balanced lineup, range -3..+3
+}
+
 function runTeamScan(onProgress) {
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const results  = [];
@@ -12802,7 +12818,8 @@ function runTeamScan(onProgress) {
     const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF, gd.awayBullpenHR9);
     const awayConf         = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
     const awayArsenalEdge  = _teamPitchArsenalEdge(awayPlayers, gd.homePitcher?.id);
-    const awayScore        = awayLineup + awayForm + context + awayStarter + awayBullpen + awayConf + awayArsenalEdge;
+    const awayPlatoon      = _teamPlatoonEdge(awayPlayers, gd.homePitcher?.pitchHand);
+    const awayScore        = awayLineup + awayForm + context + awayStarter + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon;
 
     const homeLineup       = _lineupScore(homeRes);
     const homeForm         = _teamRecentForm(homePlayers);
@@ -12812,7 +12829,8 @@ function runTeamScan(onProgress) {
     const homeBullpen      = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF, gd.homeBullpenHR9);
     const homeConf         = _lineupConfidenceAdj(homePosted, homePlayers.length);
     const homeArsenalEdge  = _teamPitchArsenalEdge(homePlayers, gd.awayPitcher?.id);
-    const homeScore        = homeLineup + homeForm + context + 3 + homeStarter + homeBullpen + homeConf + homeArsenalEdge;
+    const homePlatoon      = _teamPlatoonEdge(homePlayers, gd.awayPitcher?.pitchHand);
+    const homeScore        = homeLineup + homeForm + context + 3 + homeStarter + homeBullpen + homeConf + homeArsenalEdge + homePlatoon;
 
     const hasArsenal   = awayArsenalEdge !== 0 || homeArsenalEdge !== 0;
     const margin       = Math.abs(awayScore - homeScore);
@@ -12859,8 +12877,8 @@ function runTeamScan(onProgress) {
       awayEraTrap, homeEraTrap,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
-      awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf, arsenal: awayArsenalEdge },
-      homeComponents: { lineup: homeLineup, form: homeForm, starter: homeStarter, bullpen: homeBullpen, context: context + 3 + homeConf, arsenal: homeArsenalEdge },
+      awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf + awayPlatoon, arsenal: awayArsenalEdge },
+      homeComponents: { lineup: homeLineup, form: homeForm, starter: homeStarter, bullpen: homeBullpen, context: context + 3 + homeConf + homePlatoon, arsenal: homeArsenalEdge },
       awayArsenalEdge, homeArsenalEdge,
       awayProjRuns: _awayProjRuns,
       homeProjRuns: _homeProjRuns,
