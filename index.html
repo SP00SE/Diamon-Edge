@@ -2785,6 +2785,100 @@ main { padding: 28px 0 60px; }
           <button class="lab-compare-btn" id="labGlobalCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
           <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
         </div>
+
+        <!-- Top Picks Filters -->
+        <div id="globalFilters" class="ahf-filter-panel" style="display:none">
+          <div class="ahf-filter-section-lbl">BATTER</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Lineup Spot</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="lineupspot" data-val="any"  onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="top3" onclick="setGlobalFilter(this)">Top 3</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="top5" onclick="setGlobalFilter(this)">Top 5</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="low"  onclick="setGlobalFilter(this)">6–9</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Season AVG</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minavg" data-val="0"    onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.260" onclick="setGlobalFilter(this)">.260+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.275" onclick="setGlobalFilter(this)">.275+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.290" onclick="setGlobalFilter(this)">.290+</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Batter K%</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxkpct" data-val="100" onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="25"  onclick="setGlobalFilter(this)">≤ 25%</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="20"  onclick="setGlobalFilter(this)">≤ 20%</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="15"  onclick="setGlobalFilter(this)">≤ 15% (low K)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Platoon</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="platoon" data-val="any"    onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="platoon" data-val="adv"    onclick="setGlobalFilter(this)">Adv only</button>
+              <button class="ahf-filter-btn"                            data-ahf="platoon" data-val="switch" onclick="setGlobalFilter(this)">Switch</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Lineup Status</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="lineup" data-val="any"  onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineup" data-val="conf" onclick="setGlobalFilter(this)">Confirmed</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Home/Away</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="homeaway" data-val="any"  onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="homeaway" data-val="home" onclick="setGlobalFilter(this)">Home</button>
+              <button class="ahf-filter-btn"                            data-ahf="homeaway" data-val="away" onclick="setGlobalFilter(this)">Away</button>
+            </div>
+          </div>
+          <div class="ahf-filter-section-lbl" style="margin-top:8px">PITCHER</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">H/9 (hits allowed)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minh9" data-val="0"   onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="8.5" onclick="setGlobalFilter(this)">8.5+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="9.0" onclick="setGlobalFilter(this)">9.0+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="9.5" onclick="setGlobalFilter(this)">9.5+ (hittable)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">K/9 (contact pitchers)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxk9" data-val="99" onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="8"  onclick="setGlobalFilter(this)">≤ 8</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="7"  onclick="setGlobalFilter(this)">≤ 7</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="6"  onclick="setGlobalFilter(this)">≤ 6 (contact)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">BB/9 (control)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxbb9" data-val="99"  onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="3.5" onclick="setGlobalFilter(this)">≤ 3.5</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="3.0" onclick="setGlobalFilter(this)">≤ 3.0</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="2.5" onclick="setGlobalFilter(this)">≤ 2.5 (elite ctrl)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Matchup Score</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minedge" data-val="-99" onclick="setGlobalFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="1"   onclick="setGlobalFilter(this)">Favorable+ (55+)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="4"   onclick="setGlobalFilter(this)">Strong (65+)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="6"   onclick="setGlobalFilter(this)">Elite only (75+)</button>
+            </div>
+          </div>
+          <button class="ahf-filter-reset" onclick="resetGlobalFilters()">↺ Reset all filters</button>
+        </div>
+
         <div id="labGlobalEliteCards"></div>
       </div>
       <!-- Screen 1c: Hit Leaderboard Scan Results -->
@@ -2799,6 +2893,100 @@ main { padding: 28px 0 60px; }
           <button class="lab-compare-btn" id="labLeaderCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
           <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
         </div>
+
+        <!-- Hit Leaderboard Filters -->
+        <div id="leaderFilters" class="ahf-filter-panel" style="display:none">
+          <div class="ahf-filter-section-lbl">BATTER</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Lineup Spot</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="lineupspot" data-val="any"  onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="top3" onclick="setLeaderFilter(this)">Top 3</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="top5" onclick="setLeaderFilter(this)">Top 5</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineupspot" data-val="low"  onclick="setLeaderFilter(this)">6–9</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Season AVG</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minavg" data-val="0"    onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.260" onclick="setLeaderFilter(this)">.260+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.275" onclick="setLeaderFilter(this)">.275+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minavg" data-val="0.290" onclick="setLeaderFilter(this)">.290+</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Batter K%</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxkpct" data-val="100" onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="25"  onclick="setLeaderFilter(this)">≤ 25%</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="20"  onclick="setLeaderFilter(this)">≤ 20%</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxkpct" data-val="15"  onclick="setLeaderFilter(this)">≤ 15% (low K)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Platoon</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="platoon" data-val="any"    onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="platoon" data-val="adv"    onclick="setLeaderFilter(this)">Adv only</button>
+              <button class="ahf-filter-btn"                            data-ahf="platoon" data-val="switch" onclick="setLeaderFilter(this)">Switch</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Lineup Status</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="lineup" data-val="any"  onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="lineup" data-val="conf" onclick="setLeaderFilter(this)">Confirmed</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Home/Away</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="homeaway" data-val="any"  onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="homeaway" data-val="home" onclick="setLeaderFilter(this)">Home</button>
+              <button class="ahf-filter-btn"                            data-ahf="homeaway" data-val="away" onclick="setLeaderFilter(this)">Away</button>
+            </div>
+          </div>
+          <div class="ahf-filter-section-lbl" style="margin-top:8px">PITCHER</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">H/9 (hits allowed)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minh9" data-val="0"   onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="8.5" onclick="setLeaderFilter(this)">8.5+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="9.0" onclick="setLeaderFilter(this)">9.0+</button>
+              <button class="ahf-filter-btn"                            data-ahf="minh9" data-val="9.5" onclick="setLeaderFilter(this)">9.5+ (hittable)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">K/9 (contact pitchers)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxk9" data-val="99" onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="8"  onclick="setLeaderFilter(this)">≤ 8</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="7"  onclick="setLeaderFilter(this)">≤ 7</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxk9" data-val="6"  onclick="setLeaderFilter(this)">≤ 6 (contact)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">BB/9 (control)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="maxbb9" data-val="99"  onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="3.5" onclick="setLeaderFilter(this)">≤ 3.5</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="3.0" onclick="setLeaderFilter(this)">≤ 3.0</button>
+              <button class="ahf-filter-btn"                            data-ahf="maxbb9" data-val="2.5" onclick="setLeaderFilter(this)">≤ 2.5 (elite ctrl)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">Matchup Score</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minedge" data-val="-99" onclick="setLeaderFilter(this)">Any</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="1"   onclick="setLeaderFilter(this)">Favorable+ (55+)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="4"   onclick="setLeaderFilter(this)">Strong (65+)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="6"   onclick="setLeaderFilter(this)">Elite only (75+)</button>
+            </div>
+          </div>
+          <button class="ahf-filter-reset" onclick="resetLeaderFilters()">↺ Reset all filters</button>
+        </div>
+
         <div id="labLeaderScanCards"></div>
       </div>
       <!-- Screen 1d: Team Win Predictor Results -->
@@ -10435,93 +10623,102 @@ function _arsenalHitCardHTML(r, rank) {
   </div>`;
 }
 
-// ── Arsenal filter state ──────────────────────────────────────────────────
-let _ahfResults = [];   // full unfiltered results, cached after scan
-const _ahfState = {
-  lineupspot: 'any', minavg: 0, maxkpct: 100, platoon: 'any', lineup: 'any', homeaway: 'any',
-  minh9: 0, maxk9: 99, maxbb9: 99, minedge: -99,
-};
+// ── Shared lab filter factory ─────────────────────────────────────────────
+function _makeFilterState() {
+  return { lineupspot:'any', minavg:0, maxkpct:100, platoon:'any', lineup:'any', homeaway:'any',
+           minh9:0, maxk9:99, maxbb9:99, minedge:-99 };
+}
+let _ahfResults        = [];
+let _globalScanResults = [];
+let _leaderResults     = [];
+const _ahfState      = _makeFilterState();
+let _globalScanState = _makeFilterState();
+let _leaderScanState = _makeFilterState();
 
-function setAhfFilter(btn) {
+// ── Shared filter DOM helpers ─────────────────────────────────────────────
+function _setSectionFilter(btn, panelId, stateObj, renderFn) {
   const key = btn.dataset.ahf;
   const raw = btn.dataset.val;
-  _ahfState[key] = isNaN(raw) ? raw : parseFloat(raw);
-  document.querySelectorAll(`#ahfFilters .ahf-filter-btn[data-ahf="${key}"]`)
+  stateObj[key] = isNaN(raw) ? raw : parseFloat(raw);
+  document.querySelectorAll(`#${panelId} .ahf-filter-btn[data-ahf="${key}"]`)
     .forEach(b => b.classList.toggle('active', b === btn));
-  _renderAhfFiltered();
+  renderFn();
+}
+function _resetSectionFilters(panelId, stateObj, renderFn) {
+  Object.assign(stateObj, _makeFilterState());
+  document.querySelectorAll(`#${panelId} .ahf-filter-btn`)
+    .forEach(b => b.classList.toggle('active', b.dataset.active === 'true'));
+  renderFn();
 }
 
-function resetAhfFilters() {
-  Object.assign(_ahfState, {
-    lineupspot:'any', minavg:0, maxkpct:100, platoon:'any', lineup:'any', homeaway:'any',
-    minh9:0, maxk9:99, maxbb9:99, minedge:-99,
-  });
-  document.querySelectorAll('#ahfFilters .ahf-filter-btn')
-    .forEach(b => b.classList.toggle('active', b.dataset.active === 'true'));
-  _renderAhfFiltered();
+// AHF wrappers — existing onclick attrs in HTML stay unchanged
+function setAhfFilter(btn)  { _setSectionFilter(btn, 'ahfFilters', _ahfState, _renderAhfFiltered); }
+function resetAhfFilters()  { _resetSectionFilters('ahfFilters', _ahfState, _renderAhfFiltered); }
+// Top Picks handlers
+function setGlobalFilter(btn)  { _setSectionFilter(btn, 'globalFilters', _globalScanState, _renderGlobalFiltered); }
+function resetGlobalFilters()  { _resetSectionFilters('globalFilters', _globalScanState, _renderGlobalFiltered); }
+// Leaderboard handlers
+function setLeaderFilter(btn)  { _setSectionFilter(btn, 'leaderFilters', _leaderScanState, _renderLeaderFiltered); }
+function resetLeaderFilters()  { _resetSectionFilters('leaderFilters', _leaderScanState, _renderLeaderFiltered); }
+
+// ── Shared filter predicate ───────────────────────────────────────────────
+// scale: 'ahf' = score is -15..+15  |  'elite' = score is 0..100
+function _passesFilters(r, f, scale) {
+  const p   = r.player;
+  const pit = r.pitcher;
+  const ss  = p.seasonStats || {};
+  const _pa = ss.plateAppearances || 0;
+  const kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : 100;
+
+  const pos = p.orderPos || 0;
+  if (f.lineupspot === 'top3' && !(pos >= 1 && pos <= 3)) return false;
+  if (f.lineupspot === 'top5' && !(pos >= 1 && pos <= 5)) return false;
+  if (f.lineupspot === 'low'  && !(pos >= 6))             return false;
+
+  if (f.minavg > 0 && (ss.avg || 0) < f.minavg) return false;
+  if (f.maxkpct < 100 && kpct > f.maxkpct) return false;
+
+  if (f.platoon !== 'any') {
+    const bat  = p.batSide || 'R';
+    const hand = pit?.pitchHand || 'R';
+    if (f.platoon === 'adv' && !((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R'))) return false;
+    if (f.platoon === 'switch' && bat !== 'S') return false;
+  }
+
+  const gd = r.gd || state.predictions?.[r.gamePk];
+  if (f.lineup === 'conf' && !gd?.lineupPosted) return false;
+  if (f.homeaway !== 'any') {
+    const isHome = p.teamId === gd?.homeTeamId;
+    if (f.homeaway === 'home' && !isHome) return false;
+    if (f.homeaway === 'away' && isHome)  return false;
+  }
+
+  const ps   = pit?.seasonStats || {};
+  const pIP  = parseFloat(ps.inningsPitched) || 0;
+  const pW   = parseFloat(ps.whip)           || 0;
+  const pBB  = parseFloat(ps.baseOnBalls)    || 0;
+  const pK   = parseFloat(ps.strikeOuts)     || 0;
+  const pH2  = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const h9r  = pIP > 0 ? pH2 / pIP * 9 : 0;
+  const k9r  = pIP > 0 ? pK  / pIP * 9 : 0;
+  const bb9r = pIP > 0 ? pBB / pIP * 9 : 0;
+  if (f.minh9  > 0  && h9r  < f.minh9)  return false;
+  if (f.maxk9  < 99 && k9r  > f.maxk9)  return false;
+  if (f.maxbb9 < 99 && bb9r > f.maxbb9) return false;
+
+  if (scale === 'elite') {
+    // Map AHF threshold values to 0-100 score equivalents
+    if (f.minedge >= 6 && r.score < 75) return false;
+    else if (f.minedge >= 4 && r.score < 65) return false;
+    else if (f.minedge >= 1 && r.score < 55) return false;
+  } else {
+    if (r.score < f.minedge) return false;
+  }
+  return true;
 }
 
 function _renderAhfFiltered() {
-  const f = _ahfState;
-  const filtered = _ahfResults.filter(r => {
-    const p   = r.player;
-    const pit = r.pitcher;
-    const ss  = p.seasonStats || {};
-    const _pa = ss.plateAppearances || 0;
-    const kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : 100;
-
-    // Lineup spot
-    const pos = p.orderPos || 0;
-    if (f.lineupspot === 'top3' && !(pos >= 1 && pos <= 3)) return false;
-    if (f.lineupspot === 'top5' && !(pos >= 1 && pos <= 5)) return false;
-    if (f.lineupspot === 'low'  && !(pos >= 6))             return false;
-
-    // Batter AVG
-    if (f.minavg > 0 && (ss.avg || 0) < f.minavg) return false;
-
-    // Batter K%
-    if (f.maxkpct < 100 && kpct > f.maxkpct) return false;
-
-    // Platoon
-    if (f.platoon !== 'any') {
-      const bat = p.batSide || 'R';
-      const hand = pit?.pitchHand || 'R';
-      if (f.platoon === 'adv') {
-        if (!((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R'))) return false;
-      }
-      if (f.platoon === 'switch' && bat !== 'S') return false;
-    }
-
-    // Lineup status
-    if (f.lineup === 'conf' && !r.gd?.lineupPosted) return false;
-
-    // Home/Away
-    if (f.homeaway !== 'any') {
-      const isHome = p.teamId === r.gd?.homeTeamId;
-      if (f.homeaway === 'home' && !isHome) return false;
-      if (f.homeaway === 'away' && isHome)  return false;
-    }
-
-    // Pitcher H/9
-    const ps  = pit?.seasonStats || {};
-    const pIP = parseFloat(ps.inningsPitched) || 0;
-    const pW  = parseFloat(ps.whip) || 0;
-    const pBB = parseFloat(ps.baseOnBalls) || 0;
-    const pK  = parseFloat(ps.strikeOuts)  || 0;
-    const pH2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
-    const h9r = pIP > 0 ? pH2 / pIP * 9 : 0;
-    const k9r = pIP > 0 ? pK  / pIP * 9 : 0;
-    const bb9r = pIP > 0 ? pBB / pIP * 9 : 0;
-    if (f.minh9 > 0  && h9r  < f.minh9)  return false;
-    if (f.maxk9 < 99 && k9r  > f.maxk9)  return false;
-    if (f.maxbb9 < 99 && bb9r > f.maxbb9) return false;
-
-    // Edge score
-    if (r.score < f.minedge) return false;
-
-    return true;
-  });
-
+  const filtered = _ahfResults.filter(r => _passesFilters(r, _ahfState, 'ahf'));
   const cards = document.getElementById('labArsenalCards');
   if (!cards) return;
   if (!filtered.length) {
@@ -10529,6 +10726,242 @@ function _renderAhfFiltered() {
     return;
   }
   cards.innerHTML = filtered.map((r, i) => _arsenalHitCardHTML(r, i + 1)).join('');
+}
+
+// ── Elite result helpers ──────────────────────────────────────────────────
+// Converts pitchHighlights (from computePitchMixMatchup) to the matches shape
+// used by _arsenalHitCardHTML pitch rows, so _richScanCardHTML can reuse them.
+function _highlightsToMatches(highlights) {
+  return (highlights || []).map(h => ({
+    pitchName: h.pitchName, pitchType: h.pitchName,
+    usage: Math.round((h.usage || 0) * 100), ba: h.ba || 0,
+    edge: h.pts >= 1 ? Math.round(h.pts * 2) : h.pts <= -1 ? Math.round(h.pts * 2) : 0,
+    weighted: h.pts || 0, bWhiff: 0, bPa: 0, sampleScale: 1, typeColor: '#94a3b8',
+  }));
+}
+
+// Rich player card for Top Picks and Hit Leaderboard — same layout as AHF.
+// opts.scoreScale: 'elite' (0-100) | 'ahf' (-15..+15)
+// opts.isGlobal:   true | 'leader' | false  — governs action button routing
+function _richScanCardHTML(r, rank, opts) {
+  opts = opts || {};
+  const { player, pitcher, score, reasons, pitchHighlights, gameLabel } = r;
+  const _avg = v => fmtAvg(v, null);
+
+  // Edge label and stripe color (scale-aware)
+  const edgeLabel = r.edgeLabel || buildScoreLabel(score);
+  const stripeClr = opts.scoreScale === 'elite'
+    ? (score >= 75 ? '#22c55e' : score >= 60 ? '#86efac' : score >= 45 ? '#4a5168' : score >= 30 ? '#f87171' : '#dc2626')
+    : (score >= 6  ? '#22c55e' : score >= 3  ? '#86efac' : score >= -2 ? '#4a5168' : score >= -6  ? '#f87171' : '#dc2626');
+
+  // Score meter percentage
+  const meterPct = opts.scoreScale === 'elite'
+    ? clamp(score, 0, 100)
+    : Math.round(50 + (clamp(score, -15, 15) / 15) * 45);
+
+  const photoUrl = headshotUrl(player.id);
+  const initial  = (player.name || '?')[0].toUpperCase();
+  const ss  = player.seasonStats || {};
+  const l7  = player.last7Stats  || {};
+  const pHand_ = pitcher?.pitchHand || 'R';
+
+  const pPhotoUrl = pitcher?.id ? headshotUrl(pitcher.id) : null;
+  const pName     = pitcher?.fullName || pitcher?.name || null;
+  const pInitial  = (pName || 'SP')[0].toUpperCase();
+  const ps   = pitcher?.seasonStats || {};
+  const pIP  = parseFloat(ps.inningsPitched) || 0;
+  const pK   = parseFloat(ps.strikeOuts)     || 0;
+  const pBB  = parseFloat(ps.baseOnBalls)    || 0;
+  const pW   = parseFloat(ps.whip)           || 0;
+  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const k9   = pIP > 0 ? (pK     / pIP * 9).toFixed(1) : null;
+  const h9   = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
+  const bb9  = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
+
+  // Live / Final badge + achievement tracking
+  const _ld = (state.allGamesLiveData || {})[r.gamePk];
+  const _bs = _ld?.statsMap?.[player.id];
+  const _ab = _bs?.atBats || 0;
+  let achieveHTML = '';
+  let liveBadge   = '';
+  if (_ld && _bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+    const _pip    = _ld.isLive
+      ? `<span class="bb-live-pip">● LIVE</span>`
+      : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+    const _hitBdg = (_bs.hits || 0) > 0
+      ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit ${_bs.hits}/${_ab}</span>`
+      : _ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ 0/${_ab}</span>` : '';
+    achieveHTML = `<div class="bb-achieve-row" style="margin:2px 14px 6px">${_pip}${_hitBdg}</div>`;
+    liveBadge   = _pip;
+  } else if (_ld?.isLive) {
+    liveBadge = `<span class="bb-live-pip">● LIVE</span>`;
+  } else if (_ld?.isFinal) {
+    liveBadge = `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
+  }
+
+  const gd = r.gd || state.predictions?.[r.gamePk];
+  const lineupBadge = gd?.lineupPosted
+    ? `<span class="ahf-lineup-conf">✓ Confirmed</span>`
+    : player._projected
+    ? `<span class="ahf-lineup-proj">Projected</span>`
+    : `<span class="ahf-lineup-unk">? Lineup</span>`;
+
+  const _pa   = ss.plateAppearances || 0;
+  const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
+  const relSplit = pHand_ === 'L' ? player.vsLHP : (player.vsRHP || null);
+  const relLabel = pHand_ === 'L' ? 'vs LHP ★' : 'vs RHP ★';
+  const locSplit = player.isAway ? player.awayStats : player.homeStats;
+  const locLabel = player.isAway ? 'Away' : 'Home';
+  const _rawGame = (state.games || []).find(g => g.gamePk === r.gamePk);
+  const _isNight = _rawGame ? _rawGame.dayNight === 'night' : null;
+  const timeSplit = _isNight === true ? player.nightStats : _isNight === false ? player.dayStats : null;
+  const timeLabel = _isNight === true ? 'Night' : 'Day';
+
+  const _bat = player.batSide || 'R';
+  const platoonBadge = _bat === 'S'
+    ? `<span class="ahf-platoon ahf-platoon-switch">⚡ Switch Hit</span>`
+    : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R'))
+    ? `<span class="ahf-platoon ahf-platoon-adv">✓ Platoon Edge</span>`
+    : `<span class="ahf-platoon ahf-platoon-neutral">= Same Side</span>`;
+  const pitcherPlatBadge = _bat === 'S'
+    ? `<span class="ahf-platoon ahf-platoon-switch">⚡ vs Switch</span>`
+    : ((pitcher?.pitchHand === 'R' && _bat === 'R') || (pitcher?.pitchHand === 'L' && _bat === 'L'))
+    ? `<span class="ahf-platoon ahf-platoon-pit-adv">⚠ Pitcher Adv</span>`
+    : `<span class="ahf-platoon ahf-platoon-bat-adv">✓ Batter Adv</span>`;
+
+  const _pill = (lbl, val, cls='') => val != null
+    ? `<div class="ahf-pill"><div class="ahf-pill-lbl">${lbl}</div><div class="ahf-pill-val${cls?' '+cls:''}">${val}</div></div>`
+    : '';
+  const batPills = [
+    _pill('AVG', _avg(ss.avg), ss.avg >= 0.285 ? ' pos' : ss.avg > 0 && ss.avg < 0.230 ? ' neg' : ''),
+    _pill('H',   ss.hits > 0 ? ss.hits : null),
+    _pill('OBP', _avg(ss.obp), ss.obp >= 0.340 ? ' pos' : ss.obp > 0 && ss.obp < 0.290 ? ' neg' : ''),
+    _pill('K%',  _kpct != null ? _kpct + '%' : null, _kpct != null && _kpct <= 15 ? ' pos' : _kpct != null && _kpct >= 28 ? ' neg' : ''),
+    _pill('L7',  _avg(l7.avg), l7.avg >= 0.300 ? ' pos' : l7.avg > 0 && l7.avg < 0.210 ? ' neg' : ''),
+    relSplit?.atBats >= 10 ? `<div class="ahf-pill ahf-pill-rel"><div class="ahf-pill-lbl">${relLabel}</div><div class="ahf-pill-val pos">${_avg(relSplit.avg)||'---'}</div></div>` : '',
+    locSplit?.atBats >= 10 ? _pill(locLabel, _avg(locSplit.avg), locSplit.avg >= 0.285 ? ' pos' : locSplit.avg > 0 && locSplit.avg < 0.230 ? ' neg' : '') : '',
+    timeSplit?.atBats >= 5 ? _pill(timeLabel, _avg(timeSplit.avg), timeSplit.avg >= 0.285 ? ' pos' : timeSplit.avg > 0 && timeSplit.avg < 0.230 ? ' neg' : '') : '',
+  ].filter(Boolean).join('');
+
+  const pitStatsLine = [
+    ps.era  > 0 ? `<span class="ahf-pit-chip ${ps.era  >= 4.75 ? 'g' : ps.era  <= 3.25 ? 'r' : 'n'}">ERA ${(+ps.era).toFixed(2)}</span>`  : '',
+    h9 && +h9  > 0 ? `<span class="ahf-pit-chip ${+h9  >= 9.0 ? 'g' : +h9  <= 7.5 ? 'r' : 'n'}">H/9 ${h9}</span>`  : '',
+    k9 && +k9  > 0 ? `<span class="ahf-pit-chip ${+k9  < 6.5  ? 'g' : +k9  >= 9.5 ? 'r' : 'n'}">K/9 ${k9}</span>`  : '',
+    bb9 && +bb9 > 0 ? `<span class="ahf-pit-chip ${+bb9 <= 2.5 ? 'g' : +bb9 >= 4.0 ? 'r' : 'n'}">BB/9 ${bb9}</span>` : '',
+    pIP > 0 ? `<span class="ahf-pit-chip n">IP ${pIP.toFixed(0)}</span>` : '',
+  ].filter(Boolean).join('');
+
+  const matches = r.matches || _highlightsToMatches(pitchHighlights);
+  const risks   = r.risks   || [];
+  const sampleWarning = r.sampleWarning || false;
+  const pitchRows = matches.map(m => {
+    const ba      = m.ba > 0 ? '.' + Math.round(m.ba * 1000).toString().padStart(3,'0') : '---';
+    const verdict = m.ba >= 0.300 ? '▲ CRUSHES' : m.ba >= 0.270 ? '↑ Good'
+                  : m.ba >= 0.240 ? '→ Neutral'  : m.ba >= 0.210 ? '↓ Weak' : '▼ Struggles';
+    const vClr    = m.ba >= 0.300 ? '#22c55e' : m.ba >= 0.270 ? '#86efac'
+                  : m.ba >= 0.240 ? '#4a5168' : m.ba >= 0.210 ? '#f87171' : '#dc2626';
+    const barFill = m.ba >= 0.270 ? `rgba(52,211,153,.35)` : m.ba >= 0.240 ? `rgba(255,255,255,.06)` : `rgba(248,113,113,.3)`;
+    const barW    = Math.min(Math.round(m.usage), 60);
+    return `<div class="ahf-pitch-row">
+      <span class="ahf-pitch-code" style="color:${vClr}">${escHtml(m.pitchType)}</span>
+      <div class="ahf-pitch-bar-wrap"><div class="ahf-pitch-bar" style="width:${barW}%;background:${barFill}"></div></div>
+      <span class="ahf-pitch-pct">${m.usage.toFixed(0)}%</span>
+      <span class="ahf-pitch-ba" style="color:${vClr}">${ba}</span>
+      <span class="ahf-pitch-verdict" style="color:${vClr}">${verdict}</span>
+    </div>`;
+  }).join('');
+
+  const _lastName = n => (n||'').trim().split(' ').pop() || 'He';
+  const avgTier = !ss.avg ? null
+    : ss.avg >= 0.300 ? 'a strong hitter' : ss.avg >= 0.275 ? 'a solid hitter'
+    : ss.avg >= 0.250 ? 'an average hitter' : ss.avg >= 0.220 ? 'a weak bat' : 'a struggling bat';
+  const discTag = _kpct == null ? '' : _kpct <= 15 ? ' with sharp plate discipline' : _kpct >= 28 ? ' but chase-prone' : '';
+  const formTag = !l7.avg ? '' : l7.avg >= 0.300 ? ', riding a hot streak' : (l7.avg > 0 && l7.avg < 0.210) ? ', currently cold' : '';
+  const platTag = _bat === 'S' ? ' — switch hitter, no platoon disadvantage'
+    : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R')) ? ' — holds the platoon edge tonight'
+    : ' — same-side matchup, no platoon edge';
+  const batterNarrative = avgTier ? `${escHtml(_lastName(player.name))} is ${avgTier} (${_avg(ss.avg)||'—'})${discTag}${formTag}${platTag}.` : '';
+
+  const eraTag  = !ps.era ? null : ps.era <= 3.00 ? 'an elite arm' : ps.era <= 4.00 ? 'a solid starter' : ps.era <= 5.00 ? 'a hittable arm' : 'a vulnerable arm';
+  const h9Tag   = !h9  ? '' : +h9  >= 9.5 ? ', allows hits freely' : +h9  >= 8.5 ? ', is hit-prone' : +h9  <= 7.0 ? ', suppresses hits well' : '';
+  const k9Tag   = !k9  ? '' : +k9  >= 9.5 ? ' with swing-and-miss stuff' : +k9 < 6.5 ? ` but doesn't miss many bats` : '';
+  const bb9Tag  = !bb9 ? '' : +bb9 >= 4.0 ? ' and is wild in the zone' : '';
+  const pitcherNarrative = eraTag ? `${escHtml(_lastName(pName))} is ${eraTag} (${(+ps.era).toFixed(2)} ERA)${h9Tag}${k9Tag}${bb9Tag}.` : '';
+
+  const onAnalyze = opts.isGlobal === 'leader'
+    ? `labLeaderSelectPlayer(${player.id},${r.gamePk})`
+    : opts.isGlobal
+    ? `labGlobalSelectPlayer(${player.id},${r.gamePk})`
+    : `openLabFor(${player.id},'arsenal')`;
+  const glId = `rsc-gl-${player.id}-${rank}`;
+
+  return `<div class="ahf-card" style="border-left-color:${stripeClr}">
+    <div class="ahf-id">
+      <div class="ahf-id-top">
+        <span class="ahf-id-rank">#${rank}</span>
+        <img class="ahf-id-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+        <div class="ahf-id-fallback" style="display:none">${initial}</div>
+        <div class="ahf-id-info">
+          <div class="ahf-id-name">${escHtml(player.name||'Unknown')}</div>
+          <div class="ahf-id-sub">
+            ${escHtml(player.teamAbbr||player.team||'')}${player.position?' · '+escHtml(player.position):''}
+            · <span style="color:#4a6080">${escHtml(gameLabel)}</span>
+            · ${escHtml(_bat)}HB vs ${pitcher?.pitchHand||'?'}HP
+            ${player.orderPos > 0 ? `<span class="ahf-order-badge">#${player.orderPos} spot</span>` : ''}
+            ${liveBadge} ${lineupBadge}
+          </div>
+        </div>
+        <span class="ahf-edge-lbl" style="border-color:${stripeClr}40;background:${stripeClr}18;color:${stripeClr}">${escHtml(edgeLabel)}</span>
+      </div>
+      <div class="ahf-id-badges">${platoonBadge}</div>
+    </div>
+    <div class="ahf-pills-row">${batPills}</div>
+    ${batterNarrative ? `<div class="ahf-narrative">${batterNarrative}</div>` : ''}
+    ${achieveHTML}
+    <div class="ahf-sp-row">
+      ${pPhotoUrl
+        ? `<img class="ahf-sp-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-sp-fallback" style="display:none">${pInitial}</div>`
+        : `<div class="ahf-sp-fallback">${pInitial}</div>`}
+      <div class="ahf-sp-info">
+        <div class="ahf-sp-name">${escHtml(pName||'Unknown SP')} <span style="color:#2a3a52">(${pitcher?.pitchHand||'?'}HP)</span></div>
+        <div class="ahf-pit-chips">${pitStatsLine||'<span class="ahf-pit-chip n">No stats</span>'}</div>
+        ${pitcherNarrative ? `<div class="ahf-narrative">${pitcherNarrative}</div>` : ''}
+      </div>
+      ${pitcherPlatBadge}
+    </div>
+    ${matches.length ? `<div class="ahf-arsenal">
+      <div class="ahf-arsenal-hdr"><span>Arsenal Matchup${sampleWarning?' <span class="ahf-sample-warn">⚠ small sample</span>':''}</span></div>
+      ${pitchRows}
+    </div>` : '<div class="ahf-no-arsenal">No Savant pitch data available for this pitcher — pitch bars unavailable.</div>'}
+    ${reasons && reasons.length ? `<div class="ahf-reason">${escHtml(reasons[0])}</div>` : ''}
+    ${risks.length ? `<div class="ahf-risks">${risks.map(rk=>`<span class="ahf-risk-chip">⚠ ${escHtml(rk)}</span>`).join('')}</div>` : ''}
+    <div class="ahf-actions">
+      <button class="lab-quick-btn" onclick="event.stopPropagation();${onAnalyze}">🔬 Lab Analysis</button>
+      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
+        Last 7 Games <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="streak-gamelog" id="${glId}"></div>
+  </div>`;
+}
+
+// ── Filtered render functions for each section ────────────────────────────
+function _renderGlobalFiltered() {
+  const filtered = _globalScanResults.filter(r => _passesFilters(r, _globalScanState, 'elite'));
+  const cards = document.getElementById('labGlobalEliteCards');
+  if (!cards) return;
+  cards.innerHTML = filtered.length
+    ? filtered.map((r, i) => _richScanCardHTML(r, i + 1, { scoreScale: 'elite', isGlobal: true })).join('')
+    : '<div class="ahf-no-data">No players match the current filters — try relaxing a filter.</div>';
+}
+
+function _renderLeaderFiltered() {
+  const filtered = _leaderResults.filter(r => _passesFilters(r, _leaderScanState, 'elite'));
+  const cards = document.getElementById('labLeaderScanCards');
+  if (!cards) return;
+  cards.innerHTML = filtered.length
+    ? filtered.map((r, i) => _richScanCardHTML(r, i + 1, { scoreScale: 'elite', isGlobal: 'leader' })).join('')
+    : '<div class="ahf-no-data">No players match the current filters — try relaxing a filter.</div>';
 }
 
 async function handleArsenalHitFinder() {
@@ -10634,12 +11067,18 @@ function labInit() {
   if (_gsBtn)  { _gsBtn.disabled = false; _gsBtn.textContent = '🌐 Scan All Games for Top Picks'; }
   if (_gcards) _gcards.innerHTML = '';
   if (_gcBar)  _gcBar.style.display = 'none';
+  _globalScanResults = []; Object.assign(_globalScanState, _makeFilterState());
+  const _gfp = document.getElementById('globalFilters');
+  if (_gfp) { _gfp.style.display = 'none'; document.querySelectorAll('#globalFilters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
   const _lsBtn   = document.getElementById('labLeaderScanBtn');
   const _lscards = document.getElementById('labLeaderScanCards');
   const _lsBar   = document.getElementById('labLeaderCompareBar');
   if (_lsBtn)   { _lsBtn.disabled = false; _lsBtn.textContent = '🏆 Scan Hit Leaderboard'; }
   if (_lscards) _lscards.innerHTML = '';
   if (_lsBar)   _lsBar.style.display = 'none';
+  _leaderResults = []; Object.assign(_leaderScanState, _makeFilterState());
+  const _lfp = document.getElementById('leaderFilters');
+  if (_lfp) { _lfp.style.display = 'none'; document.querySelectorAll('#leaderFilters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
   const _tsBtn   = document.getElementById('labTeamScanBtn');
   const _tscards = document.getElementById('labTeamScanCards');
   if (_tsBtn)   { _tsBtn.disabled = false; _tsBtn.textContent = '🏟️ Team Win Predictor'; }
@@ -11770,9 +12209,9 @@ async function handleGlobalScan() {
   const btn = document.getElementById('labGlobalScanBtn');
   if (!btn) return;
 
-  // If results are already loaded, just navigate back to them — don't re-scan
-  const _existingCards = document.getElementById('labGlobalEliteCards');
-  if (_existingCards && _existingCards.children.length > 0) {
+  // If results are already cached, re-render from cache and navigate
+  if (_globalScanResults.length > 0) {
+    _renderGlobalFiltered();
     _labShow('labScreenGlobalScan');
     return;
   }
@@ -11807,14 +12246,14 @@ async function handleGlobalScan() {
     btn.disabled = false;
     _scanRestoreLoading();
 
-    const cards = document.getElementById('labGlobalEliteCards');
-    if (!cards) return;
     if (elites.length === 0) {
-      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No player data available for today\'s slate — check back once lineups are posted.</div>';
+      const cards = document.getElementById('labGlobalEliteCards');
+      if (cards) cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No player data available for today\'s slate — check back once lineups are posted.</div>';
     } else {
-      cards.innerHTML = elites.map(({ player, score, reasons, gameLabel, gamePk, pitcher, pf, pitchHighlights }) =>
-        _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, true, pitcher, pf, pitchHighlights)
-      ).join('');
+      _globalScanResults = elites;
+      _renderGlobalFiltered();
+      const fp = document.getElementById('globalFilters');
+      if (fp) fp.style.display = 'block';
     }
     _labShow('labScreenGlobalScan');
   } catch {
@@ -11829,9 +12268,9 @@ async function handleLeaderboardScan() {
   const btn = document.getElementById('labLeaderScanBtn');
   if (!btn) return;
 
-  // If results are already loaded, navigate back to them
-  const _existingCards = document.getElementById('labLeaderScanCards');
-  if (_existingCards && _existingCards.children.length > 0) {
+  // If results are already cached, re-render from cache and navigate
+  if (_leaderResults.length > 0) {
+    _renderLeaderFiltered();
     _labShow('labScreenLeaderScan');
     return;
   }
@@ -11887,14 +12326,14 @@ async function handleLeaderboardScan() {
     btn.disabled = false;
     _scanRestoreLoading();
 
-    const cards = document.getElementById('labLeaderScanCards');
-    if (!cards) return;
     if (results.length === 0) {
-      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No leaderboard players have matchup data available — check back once lineups are posted.</div>';
+      const cards = document.getElementById('labLeaderScanCards');
+      if (cards) cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No leaderboard players have matchup data available — check back once lineups are posted.</div>';
     } else {
-      cards.innerHTML = results.map(({ player, score, reasons, gameLabel, gamePk, pitcher, pf, pitchHighlights }) =>
-        _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, 'leader', pitcher, pf, pitchHighlights)
-      ).join('');
+      _leaderResults = results;
+      _renderLeaderFiltered();
+      const fp = document.getElementById('leaderFilters');
+      if (fp) fp.style.display = 'block';
     }
     _labShow('labScreenLeaderScan');
   } catch {
