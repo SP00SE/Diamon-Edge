@@ -826,6 +826,17 @@ main { padding: 28px 0 60px; }
 .bts2-sep         { color:var(--text-muted); font-size:10px; }
 .bts2-reg-badge   { font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(34,197,94,.12); color:#22c55e; margin-left:4px; }
 .bts2-reg-badge.neg { background:rgba(248,113,113,.08); color:#f87171; }
+.bts2-sort-bar    { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.bts2-sort-lbl    { font-size:11px; color:var(--text-muted); }
+.bts2-sort-btn    { font-size:11px; padding:4px 10px; border-radius:5px; border:1px solid var(--border); background:var(--bg-hover); color:var(--text-muted); cursor:pointer; }
+.bts2-sort-btn.active { background:rgba(34,197,94,.12); border-color:rgba(34,197,94,.3); color:#22c55e; }
+.bts2-sort-count  { font-size:11px; color:var(--text-muted); margin-left:4px; }
+.bts2-why         { margin:6px 14px 8px; padding:8px 10px; background:rgba(34,197,94,.05); border:1px solid rgba(34,197,94,.12); border-radius:6px; }
+.bts2-why-hdr     { font-size:9px; font-weight:700; letter-spacing:.6px; color:#22c55e; text-transform:uppercase; margin-bottom:6px; }
+.bts2-why-row     { display:flex; gap:6px; align-items:flex-start; margin-bottom:4px; }
+.bts2-why-row:last-child { margin-bottom:0; }
+.bts2-why-icon    { font-size:11px; flex-shrink:0; margin-top:1px; }
+.bts2-why-txt     { font-size:11px; color:var(--text-primary); line-height:1.4; }
 .ahf-platoon        { font-size:9px; font-weight:700; letter-spacing:.4px; padding:2px 7px; border-radius:3px; margin-bottom:5px; text-align:center; }
 .ahf-platoon-adv    { background:rgba(52,211,153,.12); color:#34d399; border:1px solid rgba(52,211,153,.25); }
 .ahf-platoon-switch { background:rgba(251,191,36,.10); color:#fbbf24; border:1px solid rgba(251,191,36,.2); }
@@ -3005,6 +3016,11 @@ main { padding: 28px 0 60px; }
         </div>
         <div class="lab-global-elite-header">🎯 BTS Elite 2 · Best Picks for Beat the Streak</div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Composite of BTS, Lab, and Arsenal scoring. Only everyday regulars vs weak pitching — the two picks where every signal aligns. Filters apply instantly to loaded results.</div>
+        <div class="bts2-sort-bar">
+          <span class="bts2-sort-lbl">Sort:</span>
+          <button id="bts2SortBtn" class="bts2-sort-btn active" onclick="toggleBts2Sort()">▼ Highest Score</button>
+          <span class="bts2-sort-count" id="bts2SortCount"></span>
+        </div>
         <!-- BTS2 Filters -->
         <div id="bts2Filters" class="ahf-filter-panel" style="display:none">
           <div class="ahf-filter-section-lbl">BATTER</div>
@@ -10798,12 +10814,22 @@ function _makeBts2FilterState() {
 }
 let _bts2Results = [];
 let _bts2State   = _makeBts2FilterState();
+let _bts2Sort    = 'desc';  // 'desc' = highest first, 'asc' = lowest first
 // BTS2 handlers
 function setBts2Filter(btn)  { _setSectionFilter(btn, 'bts2Filters', _bts2State, _renderBts2Filtered); }
 function resetBts2Filters() {
   Object.assign(_bts2State, _makeBts2FilterState());
   document.querySelectorAll('#bts2Filters .ahf-filter-btn')
     .forEach(b => b.classList.toggle('active', b.dataset.active === 'true'));
+  _renderBts2Filtered();
+}
+function toggleBts2Sort() {
+  _bts2Sort = _bts2Sort === 'desc' ? 'asc' : 'desc';
+  const btn = document.getElementById('bts2SortBtn');
+  if (btn) {
+    btn.textContent = _bts2Sort === 'desc' ? '▼ Highest Score' : '▲ Lowest Score';
+    btn.classList.toggle('active', _bts2Sort === 'desc');
+  }
   _renderBts2Filtered();
 }
 
@@ -11244,18 +11270,40 @@ function _bts2CardHTML(r, rank) {
   const btsClr = bts >= 75 ? 'pos' : bts >= 55 ? '' : 'neg';
   const labClr = lab >= 75 ? 'pos' : lab >= 55 ? '' : 'neg';
   const ahfClr = ahf != null ? (ahf >= 75 ? 'pos' : ahf >= 55 ? '' : 'neg') : '';
+
+  // Sub-score strip + regularity badge
   const breakdownHTML = `<div class="bts2-breakdown">` +
     `<span class="bts2-sub ${btsClr}">BTS ${bts||'—'}</span>` +
     `<span class="bts2-sep">·</span>` +
     `<span class="bts2-sub ${labClr}">Lab ${lab||'—'}</span>` +
     (ahf != null ? `<span class="bts2-sep">·</span><span class="bts2-sub ${ahfClr}">AHF ${ahf}</span>` : '') +
-    (r.isRegular ? `<span class="bts2-reg-badge">✓ Regular</span>` : `<span class="bts2-reg-badge neg">⚠ Part-time</span>`) +
+    (r.isRegular ? `<span class="bts2-reg-badge">✓ Everyday Regular</span>` : `<span class="bts2-reg-badge neg">⚠ Part-time</span>`) +
     `</div>`;
-  return base.replace('<div class="ahf-pills-row">', breakdownHTML + '<div class="ahf-pills-row">');
+
+  // "Why this pick?" full multi-reason block (replaces the single ahf-reason line)
+  const icons = ['🎯','📈','⚾','🏟️','🔥','🛡️'];
+  const whyRows = (r.reasons || []).map((reason, i) =>
+    `<div class="bts2-why-row"><span class="bts2-why-icon">${icons[i]||'·'}</span><span class="bts2-why-txt">${escHtml(reason)}</span></div>`
+  ).join('');
+  const whyHTML = whyRows
+    ? `<div class="bts2-why"><div class="bts2-why-hdr">Why this pick</div>${whyRows}</div>`
+    : '';
+
+  let html = base.replace('<div class="ahf-pills-row">', breakdownHTML + '<div class="ahf-pills-row">');
+  // Replace the single ahf-reason line with the full why block
+  html = html.replace(/<div class="ahf-reason">[^<]*<\/div>/, whyHTML);
+  // If there were no reasons (empty match), insert before ahf-actions
+  if (whyHTML && !html.includes('bts2-why')) {
+    html = html.replace('<div class="ahf-actions">', whyHTML + '<div class="ahf-actions">');
+  }
+  return html;
 }
 
 function _renderBts2Filtered() {
   const filtered = _bts2Results.filter(r => _passesFilters(r, _bts2State, 'bts2'));
+  if (_bts2Sort === 'asc') filtered.sort((a, b) => a.score - b.score);
+  const countEl = document.getElementById('bts2SortCount');
+  if (countEl) countEl.textContent = filtered.length ? `${filtered.length} player${filtered.length !== 1 ? 's' : ''}` : '';
   const cards = document.getElementById('labBts2Cards');
   if (!cards) return;
   cards.innerHTML = filtered.length
@@ -11421,7 +11469,9 @@ function labInit() {
   const _b2cards = document.getElementById('labBts2Cards');
   if (_b2Btn)   { _b2Btn.disabled = false; _b2Btn.textContent = '🎯 BTS Elite 2 Picks'; }
   if (_b2cards) _b2cards.innerHTML = '';
-  _bts2Results = []; Object.assign(_bts2State, _makeBts2FilterState());
+  _bts2Results = []; _bts2Sort = 'desc'; Object.assign(_bts2State, _makeBts2FilterState());
+  const _b2SortBtn = document.getElementById('bts2SortBtn');
+  if (_b2SortBtn) { _b2SortBtn.textContent = '▼ Highest Score'; _b2SortBtn.classList.add('active'); }
   const _b2fp = document.getElementById('bts2Filters');
   if (_b2fp) { _b2fp.style.display = 'none'; document.querySelectorAll('#bts2Filters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
   const _tsBtn   = document.getElementById('labTeamScanBtn');
