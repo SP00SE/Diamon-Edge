@@ -826,6 +826,59 @@ main { padding: 28px 0 60px; }
 .bts2-sep         { color:var(--text-muted); font-size:10px; }
 .bts2-reg-badge   { font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(34,197,94,.12); color:#22c55e; margin-left:4px; }
 .bts2-reg-badge.neg { background:rgba(248,113,113,.08); color:#f87171; }
+.bts2-pick-btn    { margin-left:auto; padding:5px 14px; border-radius:6px; border:1px solid rgba(251,191,36,.4); background:rgba(251,191,36,.12); color:#fbbf24; font-size:12px; font-weight:700; cursor:pointer; letter-spacing:.3px; }
+.bts2-pick-btn:hover { background:rgba(251,191,36,.22); }
+/* Deep pick analysis card */
+.bpick-card       { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; margin-bottom:16px; overflow:hidden; }
+.bpick-pick-badge { font-size:10px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; padding:6px 14px; border-bottom:1px solid var(--border); }
+.bpick-confidence-row { display:flex; justify-content:space-between; align-items:center; padding:6px 14px 0; }
+.bpick-confidence { font-size:12px; font-weight:700; }
+.bpick-composite-score { font-size:12px; font-weight:700; }
+.bpick-player-row { display:flex; align-items:center; gap:10px; padding:8px 14px 10px; }
+.bpick-photo      { width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
+.bpick-photo-fb   { width:44px; height:44px; border-radius:50%; background:var(--bg-hover); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:var(--text-muted); flex-shrink:0; }
+.bpick-player-info { flex:1; min-width:0; }
+.bpick-player-name { font-size:15px; font-weight:700; color:var(--text-primary); }
+.bpick-player-sub  { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.bpick-scores      { padding:6px 14px 10px; display:flex; flex-direction:column; gap:5px; }
+.bpick-score-row   { display:flex; align-items:center; gap:8px; }
+.bpick-score-lbl   { font-size:10px; font-weight:700; color:var(--text-muted); width:28px; flex-shrink:0; }
+.bpick-meter-wrap  { flex:1; height:6px; background:var(--bg-hover); border-radius:3px; overflow:hidden; }
+.bpick-meter-fill  { height:100%; border-radius:3px; transition:width .3s; }
+.bpick-score-val   { font-size:11px; font-weight:700; width:24px; text-align:right; flex-shrink:0; }
+.bpick-why         { margin:4px 14px 2px; padding:10px 12px; background:rgba(34,197,94,.05); border:1px solid rgba(34,197,94,.15); border-radius:6px; }
+.bpick-why-hdr     { font-size:9px; font-weight:700; letter-spacing:.6px; color:#22c55e; text-transform:uppercase; margin-bottom:8px; }
+.bpick-why-row     { display:flex; gap:7px; align-items:flex-start; margin-bottom:5px; }
+.bpick-why-row:last-child { margin-bottom:0; }
+.bpick-why-icon    { font-size:12px; flex-shrink:0; margin-top:1px; }
+.bpick-why-txt     { font-size:12px; color:var(--text-primary); line-height:1.4; }
+.bpick-section     { padding:10px 14px; border-top:1px solid var(--border); }
+.bpick-sect-hdr    { font-size:9px; font-weight:700; letter-spacing:.6px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; }
+.bpick-stat-grid   { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+.bpick-stat-cell   { display:flex; flex-direction:column; align-items:center; min-width:44px; }
+.bpick-stat-val    { font-size:16px; font-weight:700; color:var(--text-primary); line-height:1.2; }
+.bpick-stat-lbl    { font-size:9px; color:var(--text-muted); text-align:center; margin-top:2px; }
+.bpick-h2h-row     { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+.bpick-h2h-stat    { display:flex; flex-direction:column; align-items:center; }
+.bpick-h2h-val     { font-size:17px; font-weight:700; color:var(--text-primary); line-height:1.2; }
+.bpick-h2h-lbl     { font-size:9px; color:var(--text-muted); text-align:center; margin-top:2px; }
+.bpick-park-factor { font-size:11px; color:var(--text-muted); margin-bottom:4px; }
+.bpick-verdict-line{ font-size:12px; line-height:1.4; margin-top:4px; }
+.bpick-sp-mini-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:6px; }
+.bpick-sp-face     { width:38px; height:38px; border-radius:50%; object-fit:cover; border:1px solid var(--border); flex-shrink:0; }
+.bpick-sp-face-fb  { width:38px; height:38px; border-radius:50%; background:var(--bg-hover); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-muted); flex-shrink:0; }
+.bpick-pitch-row   { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+.bpick-pitch-type  { font-size:10px; font-weight:700; width:38px; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+.bpick-pitch-bar-wrap { flex:1; height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden; }
+.bpick-pitch-bar   { height:100%; border-radius:3px; }
+.bpick-pitch-pct   { font-size:10px; color:var(--text-muted); width:28px; text-align:right; flex-shrink:0; }
+.bpick-pitch-ba    { font-size:11px; font-weight:700; width:34px; text-align:right; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+.bpick-pitch-verd  { font-size:10px; width:68px; flex-shrink:0; font-weight:600; }
+.bpick-risks-section { background:rgba(248,113,113,.04); }
+.bpick-risk-row    { font-size:11px; color:#f87171; margin-bottom:4px; line-height:1.4; }
+.bpick-verdict-section { background:rgba(34,197,94,.04); }
+.bpick-verdict-paragraph { font-size:13px; line-height:1.6; color:var(--text-primary); }
+.bpick-actions     { padding:10px 14px; border-top:1px solid var(--border); }
 .bts2-sort-bar    { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
 .bts2-sort-lbl    { font-size:11px; color:var(--text-muted); }
 .bts2-sort-btn    { font-size:11px; padding:4px 10px; border-radius:5px; border:1px solid var(--border); background:var(--bg-hover); color:var(--text-muted); cursor:pointer; }
@@ -3020,6 +3073,7 @@ main { padding: 28px 0 60px; }
           <span class="bts2-sort-lbl">Sort:</span>
           <button id="bts2SortBtn" class="bts2-sort-btn active" onclick="toggleBts2Sort()">▼ Highest Score</button>
           <span class="bts2-sort-count" id="bts2SortCount"></span>
+          <button id="bts2PickBtn" class="bts2-pick-btn" onclick="handleBts2PickMe2()" style="display:none">🎯 Pick Me 2</button>
         </div>
         <!-- BTS2 Filters -->
         <div id="bts2Filters" class="ahf-filter-panel" style="display:none">
@@ -3133,6 +3187,16 @@ main { padding: 28px 0 60px; }
           <button class="ahf-filter-reset" onclick="resetBts2Filters()">↺ Reset all filters</button>
         </div>
         <div id="labBts2Cards"></div>
+      </div>
+      <!-- Screen 1f: BTS Elite 2 — Deep Pick Analysis -->
+      <div id="labScreenBts2Pick" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenBts2')">← BTS Elite 2</button>
+          <span class="lab-back-crumb">Today's Best 2 BTS Picks</span>
+        </div>
+        <div class="lab-global-elite-header">🎯 BTS Elite 2 · Deep Pick Analysis</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.45">These are the two picks where every signal aligns — regularity, pitcher vulnerability, arsenal matchup, park history, and form all point the same direction.</div>
+        <div id="labBts2PickContent"></div>
       </div>
       <!-- Screen 1d: Team Win Predictor Results -->
       <div id="labScreenTeamScan" class="lab-screen" style="display:none;">
@@ -11311,6 +11375,261 @@ function _renderBts2Filtered() {
     : '<div class="ahf-no-data">No players match the current filters — try relaxing a filter.</div>';
 }
 
+function handleBts2PickMe2() {
+  const filtered = _bts2Results.filter(r => _passesFilters(r, _bts2State, 'bts2'));
+  if (!filtered.length) return;
+  const sorted = [...filtered].sort((a, b) => b.score - a.score);
+  const pick1 = sorted[0];
+  let pick2 = null;
+  for (const r of sorted.slice(1)) {
+    if (r.gamePk !== pick1.gamePk) { pick2 = r; break; }
+  }
+  if (!pick2 && sorted.length > 1) pick2 = sorted[1];
+  const picks = [pick1, pick2].filter(Boolean);
+  const content = document.getElementById('labBts2PickContent');
+  if (content) content.innerHTML = picks.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
+  _labShow('labScreenBts2Pick');
+}
+
+function _buildBts2DeepCard(r, pickNum) {
+  const player  = r.player;
+  const pitcher = r.pitcher;
+  const ss  = player.seasonStats || {};
+  const l7  = player.last7Stats  || {};
+  const ps  = pitcher?.seasonStats || {};
+  const pIP = parseFloat(ps.inningsPitched) || 0;
+  const pBB = parseFloat(ps.baseOnBalls)    || 0;
+  const pW  = parseFloat(ps.whip)           || 0;
+  const pK  = parseFloat(ps.strikeOuts)     || 0;
+  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const h9  = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
+  const k9  = pIP > 0 ? (pK    / pIP * 9).toFixed(1) : null;
+  const bb9 = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
+  const { lab, bts, ahf } = r.subScores || {};
+  const pHand = pitcher?.pitchHand || 'R';
+  const bat   = player.batSide    || 'R';
+
+  const confidence = r.score >= 85 ? 'Elite Confidence' : r.score >= 75 ? 'High Confidence' : r.score >= 65 ? 'Good Confidence' : 'Moderate Confidence';
+  const confClr    = r.score >= 85 ? '#22c55e' : r.score >= 75 ? '#86efac' : r.score >= 65 ? '#fbbf24' : '#94a3b8';
+  const pickBadgeClr = pickNum === 1 ? '#fbbf24' : '#94a3b8';
+  const pickLabel    = pickNum === 1 ? '1st Pick' : '2nd Pick';
+
+  const _meter = val => {
+    const pct = Math.round(clamp(val || 0, 0, 100));
+    const clr = pct >= 75 ? '#22c55e' : pct >= 55 ? '#86efac' : pct >= 40 ? '#94a3b8' : '#f87171';
+    return `<div class="bpick-meter-wrap"><div class="bpick-meter-fill" style="width:${pct}%;background:${clr}"></div></div>`;
+  };
+
+  // ── H2H vs pitcher ─────────────────────────────────────────────────────────
+  let h2hHTML = '';
+  if (r.h2h && r.h2h.ab >= 3) {
+    const h2hClr     = r.h2h.avg >= 0.300 ? '#22c55e' : r.h2h.avg >= 0.250 ? '#fbbf24' : '#f87171';
+    const h2hVerdict = r.h2h.avg >= 0.300 ? '✅ Proven track record — he hits this pitcher'
+      : r.h2h.avg >= 0.250 ? '→ Decent history — has gotten hits against this pitcher'
+      : '⚠ Struggles against this pitcher historically';
+    h2hHTML = `<div class="bpick-section">
+      <div class="bpick-sect-hdr">🆚 Career vs ${escHtml(pitcher?.fullName||pitcher?.name||'SP')}</div>
+      <div class="bpick-stat-grid">
+        <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${h2hClr}">${fmtAvg(r.h2h.avg)}</div><div class="bpick-stat-lbl">AVG</div></div>
+        <div class="bpick-stat-cell"><div class="bpick-stat-val">${r.h2h.h}-for-${r.h2h.ab}</div><div class="bpick-stat-lbl">H / AB</div></div>
+        ${r.h2h.hr > 0  ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${r.h2h.hr}</div><div class="bpick-stat-lbl">HR</div></div>` : ''}
+        ${r.h2h.bb > 0  ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${r.h2h.bb}</div><div class="bpick-stat-lbl">BB</div></div>` : ''}
+        ${r.h2h.k  != null ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${r.h2h.k}</div><div class="bpick-stat-lbl">K</div></div>` : ''}
+      </div>
+      <div class="bpick-verdict-line" style="color:${h2hClr}">${h2hVerdict}</div>
+    </div>`;
+  } else if (r.h2h != null) {
+    h2hHTML = `<div class="bpick-section">
+      <div class="bpick-sect-hdr">🆚 Career vs ${escHtml(pitcher?.fullName||pitcher?.name||'SP')}</div>
+      <div class="bpick-verdict-line" style="color:var(--text-muted)">→ No prior matchup on record — first time facing this pitcher this season</div>
+    </div>`;
+  }
+
+  // ── Park history ───────────────────────────────────────────────────────────
+  const parkName = r.gd?.venueName || '';
+  let parkHTML = '';
+  if (r.parkStats && r.parkStats.ab >= 5) {
+    const pkAvg  = r.parkStats.avg || 0;
+    const pkClr  = pkAvg >= 0.300 ? '#22c55e' : pkAvg >= 0.260 ? '#fbbf24' : '#f87171';
+    const pkVerd = pkAvg >= 0.300 ? `✅ Thrives at ${parkName||'this park'} — strong personal history`
+      : pkAvg >= 0.260 ? `→ Solid history at ${parkName||'this park'}`
+      : `⚠ Below-average history at ${parkName||'this park'}`;
+    parkHTML = `<div class="bpick-section">
+      <div class="bpick-sect-hdr">🏟️ History at ${escHtml(parkName||'This Park')}</div>
+      <div class="bpick-stat-grid">
+        <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${pkClr}">${fmtAvg(pkAvg)}</div><div class="bpick-stat-lbl">AVG</div></div>
+        <div class="bpick-stat-cell"><div class="bpick-stat-val">${r.parkStats.h}-for-${r.parkStats.ab}</div><div class="bpick-stat-lbl">H / AB</div></div>
+        <div class="bpick-stat-cell"><div class="bpick-stat-val">${r.parkStats.games}</div><div class="bpick-stat-lbl">Games</div></div>
+        ${r.parkStats.hr > 0 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${r.parkStats.hr}</div><div class="bpick-stat-lbl">HR</div></div>` : ''}
+      </div>
+      ${r.pf ? `<div class="bpick-park-factor">Park factor ${(r.pf.overall||1).toFixed(2)}${r.pf.isHitter?' — hitter-friendly park':r.pf.overall<0.97?' — pitcher-friendly park':' — neutral park'}</div>` : ''}
+      <div class="bpick-verdict-line" style="color:${pkClr}">${pkVerd}</div>
+    </div>`;
+  } else if (r.pf) {
+    const pfClr = r.pf.isHitter ? '#22c55e' : r.pf.overall >= 1.00 ? '#fbbf24' : '#94a3b8';
+    parkHTML = `<div class="bpick-section">
+      <div class="bpick-sect-hdr">🏟️ Park Factor — ${escHtml(parkName||"Today's Park")}</div>
+      <div class="bpick-park-factor" style="color:${pfClr}">${(r.pf.overall||1).toFixed(2)}${r.pf.isHitter?' — hitter-friendly':r.pf.overall<0.97?' — pitcher-friendly':' — neutral'}</div>
+      <div class="bpick-verdict-line" style="color:var(--text-muted)">No personal park history on record yet this season</div>
+    </div>`;
+  }
+
+  // ── SP breakdown ───────────────────────────────────────────────────────────
+  const eraClr = !ps.era ? '#94a3b8' : +ps.era >= 5.00 ? '#22c55e' : +ps.era >= 4.00 ? '#fbbf24' : '#f87171';
+  const h9Clr  = !h9 ? '#94a3b8' : +h9 >= 9.5 ? '#22c55e' : +h9 >= 8.0 ? '#fbbf24' : '#f87171';
+  const spVerd = !ps.era ? 'No SP stats available.'
+    : +ps.era >= 5.00 ? 'Vulnerable arm — giving up hits and runs at a high rate. Ideal BTS matchup.'
+    : +ps.era >= 4.50 ? 'Hittable arm — above-average ERA signals contact opportunity.'
+    : +ps.era >= 4.00 ? 'League-average arm. Enough contact opportunity for an elite hitter.'
+    : +ps.era <= 3.00 ? 'Elite arm — the toughest part of this pick. High reward offset by tough opponent.'
+    : 'Solid starter, but a disciplined hitter with this profile can find gaps.';
+  const pPhotoUrl = pitcher?.id ? headshotUrl(pitcher.id) : null;
+  const pInitial  = (pitcher?.fullName||pitcher?.name||'SP')[0].toUpperCase();
+  const spHTML = `<div class="bpick-section">
+    <div class="bpick-sect-hdr">⚔️ Opposing SP — ${escHtml(pitcher?.fullName||pitcher?.name||'Unknown')}</div>
+    <div class="bpick-sp-mini-row">
+      ${pPhotoUrl ? `<img class="bpick-sp-face" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="bpick-sp-face-fb" style="display:none">${pInitial}</div>` : `<div class="bpick-sp-face-fb">${pInitial}</div>`}
+      <div class="bpick-stat-grid" style="flex:1">
+        ${ps.era  > 0  ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${eraClr}">${(+ps.era).toFixed(2)}</div><div class="bpick-stat-lbl">ERA</div></div>` : ''}
+        ${h9           ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${h9Clr}">${h9}</div><div class="bpick-stat-lbl">H/9</div></div>` : ''}
+        ${k9           ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${k9}</div><div class="bpick-stat-lbl">K/9</div></div>` : ''}
+        ${bb9          ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${bb9}</div><div class="bpick-stat-lbl">BB/9</div></div>` : ''}
+        ${pW > 0       ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${pW.toFixed(2)}</div><div class="bpick-stat-lbl">WHIP</div></div>` : ''}
+        ${pIP > 0      ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${pIP.toFixed(0)}</div><div class="bpick-stat-lbl">IP</div></div>` : ''}
+      </div>
+    </div>
+    <div class="bpick-verdict-line" style="color:${eraClr}">${spVerd}</div>
+  </div>`;
+
+  // ── Arsenal ────────────────────────────────────────────────────────────────
+  const arsenalHTML = r.matches && r.matches.length ? `<div class="bpick-section">
+    <div class="bpick-sect-hdr">⚾ Pitch Arsenal Matchup</div>
+    ${r.matches.map(m => {
+      const ba   = m.ba > 0 ? '.'+Math.round(m.ba*1000).toString().padStart(3,'0') : '---';
+      const verd = m.ba >= 0.300 ? '▲ CRUSHES' : m.ba >= 0.270 ? '↑ Good' : m.ba >= 0.240 ? '→ Neutral' : '▼ Struggles';
+      const vClr = m.ba >= 0.300 ? '#22c55e' : m.ba >= 0.270 ? '#86efac' : m.ba >= 0.240 ? '#94a3b8' : '#f87171';
+      const barW = Math.min(Math.round(m.usage||0), 60);
+      const barFill = m.ba >= 0.270 ? 'rgba(52,211,153,.35)' : m.ba >= 0.240 ? 'rgba(255,255,255,.06)' : 'rgba(248,113,113,.3)';
+      return `<div class="bpick-pitch-row">
+        <span class="bpick-pitch-type" style="color:${vClr}">${escHtml(m.pitchType||m.pitchName||'')}</span>
+        <div class="bpick-pitch-bar-wrap"><div class="bpick-pitch-bar" style="width:${barW}%;background:${barFill}"></div></div>
+        <span class="bpick-pitch-pct">${(m.usage||0).toFixed(0)}%</span>
+        <span class="bpick-pitch-ba" style="color:${vClr}">${ba}</span>
+        <span class="bpick-pitch-verd" style="color:${vClr}">${verd}</span>
+      </div>`;
+    }).join('')}
+    ${r.arsenalCoverageBonus > 0 ? `<div class="bpick-verdict-line" style="color:#22c55e">✅ Crushes ${(r.matches||[]).filter(m=>m.ba>=0.280).length} of SP's primary pitch types — multi-pitch coverage bonus applied</div>` : ''}
+  </div>` : '';
+
+  // ── Regularity & form ──────────────────────────────────────────────────────
+  const rs = player.recentStarts || 0;
+  const regClr = rs >= 6 ? '#22c55e' : rs >= 4 ? '#fbbf24' : '#f87171';
+  const regHTML = `<div class="bpick-section">
+    <div class="bpick-sect-hdr">📅 Regularity & Recent Form</div>
+    <div class="bpick-stat-grid">
+      <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${regClr}">${rs}/7</div><div class="bpick-stat-lbl">Recent Starts</div></div>
+      <div class="bpick-stat-cell"><div class="bpick-stat-val">${player.hitGames7||0}/7</div><div class="bpick-stat-lbl">Hit Games L7</div></div>
+      <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(l7.avg||0)>=0.300?'#22c55e':(l7.avg>0&&l7.avg<0.210)?'#f87171':'inherit'}">${fmtAvg(l7.avg)||'---'}</div><div class="bpick-stat-lbl">L7 AVG</div></div>
+      <div class="bpick-stat-cell"><div class="bpick-stat-val">${l7.atBats||0}</div><div class="bpick-stat-lbl">L7 ABs</div></div>
+      <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(ss.avg||0)>=0.285?'#22c55e':(ss.avg>0&&ss.avg<0.235)?'#f87171':'inherit'}">${fmtAvg(ss.avg)||'---'}</div><div class="bpick-stat-lbl">Season AVG</div></div>
+      <div class="bpick-stat-cell"><div class="bpick-stat-val">#${player.orderPos||'?'}</div><div class="bpick-stat-lbl">Lineup Spot</div></div>
+    </div>
+    <div class="bpick-verdict-line" style="color:${regClr}">${rs>=6?`✅ Everyday player — ${rs}/7 recent starts. He will be in the lineup and getting ABs.`:rs>=4?`→ Regular starter (${rs}/7 recent). Occasionally rested but generally plays daily.`:`⚠ Part-time role — only ${rs}/7 recent starts. Day-off risk is real.`}</div>
+  </div>`;
+
+  // ── Splits ─────────────────────────────────────────────────────────────────
+  const relSplit = pHand === 'L' ? player.vsLHP : player.vsRHP;
+  const relLabel = pHand === 'L' ? 'vs LHP' : 'vs RHP';
+  const locSplit = player.isAway ? player.awayStats : player.homeStats;
+  const locLabel = player.isAway ? 'Away' : 'Home';
+  const platoonAdv = (bat === 'R' && pHand === 'L') || (bat === 'L' && pHand === 'R');
+  const splitsHTML = (relSplit?.atBats >= 10 || locSplit?.atBats >= 10) ? `<div class="bpick-section">
+    <div class="bpick-sect-hdr">📊 Situational Splits</div>
+    <div class="bpick-stat-grid">
+      ${relSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(relSplit.avg||0)>=0.280?'#22c55e':(relSplit.avg>0&&relSplit.avg<0.230)?'#f87171':'inherit'}">${fmtAvg(relSplit.avg)||'---'}</div><div class="bpick-stat-lbl">${relLabel} AVG</div></div>` : ''}
+      ${relSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${relSplit.atBats||0}</div><div class="bpick-stat-lbl">${relLabel} ABs</div></div>` : ''}
+      ${locSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(locSplit.avg||0)>=0.280?'#22c55e':(locSplit.avg>0&&locSplit.avg<0.230)?'#f87171':'inherit'}">${fmtAvg(locSplit.avg)||'---'}</div><div class="bpick-stat-lbl">${locLabel} AVG</div></div>` : ''}
+      ${locSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${locSplit.atBats||0}</div><div class="bpick-stat-lbl">${locLabel} ABs</div></div>` : ''}
+    </div>
+    <div class="bpick-verdict-line" style="color:${platoonAdv?'#22c55e':bat==='S'?'#fbbf24':'#94a3b8'}">${bat==='S'?'⚡ Switch hitter — adapts to any pitching hand, no platoon weakness.':platoonAdv?`✅ Platoon edge — ${bat==='R'?'right-handed batter vs left-handed pitcher':'left-handed batter vs right-handed pitcher'} — historically one of the biggest advantages in baseball.`:`→ Same-side matchup (${bat}HB vs ${pHand}HP). No platoon advantage but not a disadvantage either.`}</div>
+  </div>` : '';
+
+  // ── Bullpen ────────────────────────────────────────────────────────────────
+  const bpEra = r.bullpenEra || 0;
+  const bpH9  = r.bullpenH9  || 0;
+  const bullpenHTML = bpEra > 0 ? `<div class="bpick-section">
+    <div class="bpick-sect-hdr">🛡️ Opponent Bullpen Quality</div>
+    <div class="bpick-stat-grid">
+      <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${bpEra>=4.50?'#22c55e':bpEra>=3.75?'#fbbf24':'#f87171'}">${bpEra.toFixed(2)}</div><div class="bpick-stat-lbl">BP ERA</div></div>
+      ${bpH9>0?`<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${bpH9>=9.0?'#22c55e':bpH9>=8.0?'#fbbf24':'#f87171'}">${bpH9.toFixed(1)}</div><div class="bpick-stat-lbl">BP H/9</div></div>`:''}
+    </div>
+    <div class="bpick-verdict-line" style="color:${bpEra>=4.50?'#22c55e':bpEra>=3.75?'#fbbf24':'#f87171'}">${bpEra>=4.50?'✅ Soft bullpen — if the starter exits early, relief opportunity continues.':bpEra>=3.75?'→ Average bullpen — neutral late-game factor.':'⚠ Strong bullpen — hit opportunity may narrow if the starter exits early.'}</div>
+  </div>` : '';
+
+  // ── Risk ───────────────────────────────────────────────────────────────────
+  const risksHTML = r.risks && r.risks.length ? `<div class="bpick-section bpick-risks-section">
+    <div class="bpick-sect-hdr">⚠️ Risk Factors</div>
+    ${r.risks.map(rk => `<div class="bpick-risk-row">⚠ ${escHtml(rk)}</div>`).join('')}
+  </div>` : `<div class="bpick-section">
+    <div class="bpick-sect-hdr">✅ Risk Assessment</div>
+    <div class="bpick-verdict-line" style="color:#22c55e">No significant red flags identified. All major signals point in the same direction.</div>
+  </div>`;
+
+  // ── Auto verdict ───────────────────────────────────────────────────────────
+  const _ln = n => (n||'').trim().split(' ').pop() || 'This player';
+  const pLast  = escHtml(_ln(player.name));
+  const spLast = pitcher ? escHtml(_ln(pitcher.fullName||pitcher.name)) : 'the SP';
+  const parts  = [];
+  if ((ss.avg||0) >= 0.285)  parts.push(`a quality hitter (.${Math.round((ss.avg||0)*1000).toString().padStart(3,'0')} season avg)`);
+  if ((l7.avg||0) >= 0.300)  parts.push(`currently on a hot streak (.${Math.round((l7.avg||0)*1000).toString().padStart(3,'0')} last 7)`);
+  if (rs >= 6)               parts.push(`an everyday player (${rs}/7 recent starts)`);
+  if ((ps.era||0) >= 5.00)   parts.push(`facing a vulnerable ${spLast} (${(+ps.era).toFixed(2)} ERA)`);
+  else if ((ps.era||0) >= 4.00) parts.push(`going against a hittable ${spLast} (${(+ps.era).toFixed(2)} ERA)`);
+  if (r.h2h?.ab >= 5 && r.h2h.avg >= 0.280) parts.push(`with a proven track record against ${spLast} (${fmtAvg(r.h2h.avg)} career)`);
+  if (r.parkStats?.ab >= 10 && r.parkStats.avg >= 0.290) parts.push(`at a park he hits well (${fmtAvg(r.parkStats.avg)} career there)`);
+  if (r.arsenalCoverageBonus > 0) parts.push(`crushing ${(r.matches||[]).filter(m=>m.ba>=0.280).length} of the SP's primary pitch types`);
+  if (platoonAdv) parts.push(`with the platoon edge`);
+  const verdictText = pLast + ' is ' + (parts.slice(0, 5).join(', ') || 'a solid pick for today') + '. '
+    + ((!r.risks || !r.risks.length) ? 'No red flags — this is as clean a BTS pick as you will find today.' : 'The risk factors above are worth noting, but the overall edge is firmly in the batter\'s favor.');
+
+  const verdictHTML = `<div class="bpick-section bpick-verdict-section">
+    <div class="bpick-sect-hdr">🏆 Final Verdict</div>
+    <div class="bpick-verdict-paragraph">${verdictText}</div>
+  </div>`;
+
+  // ── Card header ────────────────────────────────────────────────────────────
+  const photoUrl  = headshotUrl(player.id);
+  const initial   = (player.name||'?')[0].toUpperCase();
+  const gd        = r.gd || state.predictions?.[r.gamePk];
+  const lineupBdg = gd?.lineupPosted ? `<span class="ahf-lineup-conf">✓ Confirmed</span>` : player._projected ? `<span class="ahf-lineup-proj">Projected</span>` : `<span class="ahf-lineup-unk">? Lineup</span>`;
+
+  return `<div class="bpick-card">
+    <div class="bpick-pick-badge" style="background:${pickBadgeClr}20;border:1px solid ${pickBadgeClr}40;color:${pickBadgeClr}">${pickLabel}</div>
+    <div class="bpick-confidence-row"><span class="bpick-confidence" style="color:${confClr}">● ${confidence}</span><span class="bpick-composite-score" style="color:${confClr}">Score ${r.score}</span></div>
+    <div class="bpick-player-row">
+      <img class="bpick-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <div class="bpick-photo-fb" style="display:none">${initial}</div>
+      <div class="bpick-player-info">
+        <div class="bpick-player-name">${escHtml(player.name||'Unknown')}</div>
+        <div class="bpick-player-sub">${escHtml(player.teamAbbr||player.team||'')}${player.position?' · '+escHtml(player.position):''} · <span style="color:#4a6080">${escHtml(r.gameLabel||'')}</span>${player.orderPos>0?` <span class="ahf-order-badge">#${player.orderPos} spot</span>`:''} ${lineupBdg}</div>
+      </div>
+    </div>
+    <div class="bpick-scores">
+      <div class="bpick-score-row"><span class="bpick-score-lbl">BTS</span>${_meter(bts)}<span class="bpick-score-val" style="color:${(bts||0)>=75?'#22c55e':(bts||0)>=55?'#86efac':'#f87171'}">${bts||'—'}</span></div>
+      <div class="bpick-score-row"><span class="bpick-score-lbl">Lab</span>${_meter(lab)}<span class="bpick-score-val" style="color:${(lab||0)>=75?'#22c55e':(lab||0)>=55?'#86efac':'#f87171'}">${lab||'—'}</span></div>
+      ${ahf!=null?`<div class="bpick-score-row"><span class="bpick-score-lbl">AHF</span>${_meter(ahf)}<span class="bpick-score-val" style="color:${ahf>=75?'#22c55e':ahf>=55?'#86efac':'#f87171'}">${ahf}</span></div>`:''}
+    </div>
+    <div class="bpick-why">
+      <div class="bpick-why-hdr">Why This Pick</div>
+      ${(r.reasons||[]).map((reason,i)=>{const ic=['🎯','📈','⚾','🏟️','🔥','🛡️'];return `<div class="bpick-why-row"><span class="bpick-why-icon">${ic[i]||'·'}</span><span class="bpick-why-txt">${escHtml(reason)}</span></div>`;}).join('')}
+    </div>
+    ${h2hHTML}${parkHTML}${spHTML}${arsenalHTML}${regHTML}${splitsHTML}${bullpenHTML}${risksHTML}${verdictHTML}
+    <div class="bpick-actions">
+      <button class="lab-quick-btn" onclick="labBts2SelectPlayer(${player.id},${r.gamePk})">🔬 Full Lab Analysis</button>
+    </div>
+  </div>`;
+}
+
 async function runBts2Scan(onProgress) {
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const allEntries = allGames.flatMap(gd =>
@@ -11344,6 +11663,12 @@ async function runBts2Scan(onProgress) {
         gameLabel:           `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
         gamePk:              gd.gamePk,
         pf:                  eliteData.pf,
+        h2h:                 eliteData.h2h,
+        parkStats:           eliteData.parkStats,
+        ghp:                 eliteData.ghp,
+        bullpenEra:          eliteData.bullpenEra,
+        bullpenH9:           eliteData.bullpenH9,
+        bullpenHBF:          eliteData.bullpenHBF,
       });
     } catch {}
   }));
@@ -11406,7 +11731,7 @@ async function handleArsenalHitFinder() {
 }
 
 function _labShow(screenId) {
-  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
+  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenBts2Pick','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
   window.scrollTo(0, 0);
 }
@@ -11472,6 +11797,10 @@ function labInit() {
   _bts2Results = []; _bts2Sort = 'desc'; Object.assign(_bts2State, _makeBts2FilterState());
   const _b2SortBtn = document.getElementById('bts2SortBtn');
   if (_b2SortBtn) { _b2SortBtn.textContent = '▼ Highest Score'; _b2SortBtn.classList.add('active'); }
+  const _b2PickBtn = document.getElementById('bts2PickBtn');
+  if (_b2PickBtn) _b2PickBtn.style.display = 'none';
+  const _b2PickContent = document.getElementById('labBts2PickContent');
+  if (_b2PickContent) _b2PickContent.innerHTML = '';
   const _b2fp = document.getElementById('bts2Filters');
   if (_b2fp) { _b2fp.style.display = 'none'; document.querySelectorAll('#bts2Filters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
   const _tsBtn   = document.getElementById('labTeamScanBtn');
@@ -12818,6 +13147,8 @@ async function handleBts2Scan() {
       _renderBts2Filtered();
       const fp = document.getElementById('bts2Filters');
       if (fp) fp.style.display = 'block';
+      const pickBtn = document.getElementById('bts2PickBtn');
+      if (pickBtn) pickBtn.style.display = '';
     }
     _labShow('labScreenBts2');
   } catch {
