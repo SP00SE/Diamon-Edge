@@ -11237,6 +11237,23 @@ function _computeRegularity(player) {
   return Math.max(-15, Math.min(10, s));
 }
 
+function _computeH2HAdjustment(h2h) {
+  if (!h2h || (h2h.ab || 0) < 5) return { adj: 0, disqualified: false, flag: null };
+  const ab = h2h.ab, avg = h2h.avg || 0, h = h2h.h || 0;
+  const kRate = ab > 0 ? (h2h.k || 0) / ab : 0;
+
+  if (avg <= 0.150) {
+    return { adj: -25, disqualified: true, flag: `Just ${h}-for-${ab} (${fmtAvg(avg, '.000')}) career vs this SP` };
+  }
+  if (ab >= 8 && kRate >= 0.45) {
+    return { adj: -18, disqualified: true, flag: `Strikes out in ${Math.round(kRate*100)}% of career ABs vs this SP (${h2h.k}/${ab})` };
+  }
+  if (avg < 0.220) {
+    return { adj: -8, disqualified: false, flag: `Below-average history vs this SP (${h}-for-${ab}, ${fmtAvg(avg)})` };
+  }
+  return { adj: 0, disqualified: false, flag: null };
+}
+
 function _computeBts2Composite(player, gd, eliteData, btsResult, arsenalResult) {
   const labScore = eliteData.score;
   const btsScore = btsResult.score;
@@ -11264,12 +11281,15 @@ function _computeBts2Composite(player, gd, eliteData, btsResult, arsenalResult) 
   const strongPitchCount = (arsenalResult.matches || []).filter(m => m.ba >= 0.280).length;
   const arsenalCoverageBonus = strongPitchCount >= 3 ? 4 : strongPitchCount >= 2 ? 2 : 0;
 
-  const final = clamp(Math.round(composite + regAdj + situationalBonus + arsenalCoverageBonus), 0, 100);
+  const h2hAdj = _computeH2HAdjustment(eliteData.h2h);
+
+  const final = clamp(Math.round(composite + regAdj + situationalBonus + arsenalCoverageBonus + h2hAdj.adj), 0, 100);
   return {
     score: final,
     subScores: { lab: Math.round(labScore), bts: Math.round(btsScore), ahf: ahfScore },
     regularityAdj: regAdj, situationalBonus, arsenalCoverageBonus,
     isRegular: regAdj >= 0, hasSavant: arsenalResult.hasData,
+    h2hAdjustment: h2hAdj.adj, h2hFlag: h2hAdj.flag, h2hDisqualified: h2hAdj.disqualified,
   };
 }
 
@@ -11378,7 +11398,9 @@ function _renderBts2Filtered() {
 function handleBts2PickMe2() {
   const filtered = _bts2Results.filter(r => _passesFilters(r, _bts2State, 'bts2'));
   if (!filtered.length) return;
-  const sorted = [...filtered].sort((a, b) => b.score - a.score);
+  const eligible = filtered.filter(r => !r.h2hDisqualified);
+  const pool = eligible.length ? eligible : filtered;
+  const sorted = [...pool].sort((a, b) => b.score - a.score);
   const pick1 = sorted[0];
   let pick2 = null;
   for (const r of sorted.slice(1)) {
@@ -11426,6 +11448,7 @@ function _buildBts2DeepCard(r, pickNum) {
     const h2hClr     = r.h2h.avg >= 0.300 ? '#22c55e' : r.h2h.avg >= 0.250 ? '#fbbf24' : '#f87171';
     const h2hVerdict = r.h2h.avg >= 0.300 ? '✅ Proven track record — he hits this pitcher'
       : r.h2h.avg >= 0.250 ? '→ Decent history — has gotten hits against this pitcher'
+      : r.h2h.avg <= 0.150 ? '🚫 Major red flag — historically shut down by this pitcher'
       : '⚠ Struggles against this pitcher historically';
     h2hHTML = `<div class="bpick-section">
       <div class="bpick-sect-hdr">🆚 Career vs ${escHtml(pitcher?.fullName||pitcher?.name||'SP')}</div>
@@ -11655,8 +11678,11 @@ async function runBts2Scan(onProgress) {
         arsenalCoverageBonus: composite.arsenalCoverageBonus,
         isRegular:           composite.isRegular,
         hasSavant:           composite.hasSavant,
+        h2hDisqualified:     composite.h2hDisqualified,
+        h2hFlag:             composite.h2hFlag,
+        h2hAdjustment:       composite.h2hAdjustment,
         reasons,
-        risks:               arsenalResult.risks || [],
+        risks:               [...(arsenalResult.risks || []), ...(composite.h2hFlag ? [composite.h2hFlag] : [])],
         matches:             arsenalResult.matches || _highlightsToMatches(eliteData.pitchMatchup?.highlights || []),
         pitchHighlights:     eliteData.pitchMatchup?.highlights || [],
         sampleWarning:       arsenalResult.sampleWarning || false,
