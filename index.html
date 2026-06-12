@@ -674,11 +674,6 @@ main { padding: 28px 0 60px; }
             background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); color:#f59e0b; }
 .lab-flag-warn { background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); color:#f59e0b; }
 .lab-flag-info { background:rgba(148,163,184,.08); border-color:rgba(148,163,184,.2); color:#94a3b8; }
-.lab-lineup-banner { border-radius:8px; padding:6px 10px; margin-bottom:10px;
-                     font-size:11px; font-family:monospace; display:flex; align-items:center; gap:6px; }
-.lab-lineup-confirmed { background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25); color:#34d399; }
-.lab-lineup-projected { background:rgba(245,158,11,.08);  border:1px solid rgba(245,158,11,.25);  color:#f59e0b; }
-.lab-lineup-unknown   { background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.25); color:#94a3b8; }
 /* ── Pitch Arsenal cards ──────────────────────────────────────────────── */
 .pa-ars-wrap          { margin-top:14px; }
 .pa-ars-header        { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
@@ -8278,7 +8273,6 @@ async function startFetch() {
   }
 }
 
-// ─── AUTO REFRESH ─────────────────────────────────────────────────────────
 // ─── HIT FORGE ENGINE ─────────────────────────────────────────────────────
 const hfCache = new Map();
 let _hfScoredCache = null;        // locked after all lineups confirmed — cleared on manual refresh
@@ -8509,15 +8503,9 @@ function hfLiveBadge(p) {
   const bs = ld.statsMap?.[p.id];
   const ab = bs?.atBats || 0;
   if (!bs || (ab === 0 && (bs.hits||0) === 0)) return '';
-  const pip = ld.isLive
-    ? `<span class="bb-live-pip">● LIVE</span>`
-    : `<span class="bb-live-pip bb-pip-final">● FINAL</span>`;
-  const hitBadge = (bs.hits||0) > 0
-    ? `<span class="bb-achieve-badge bb-achieve-yes">✅ Hit (${bs.hits}/${ab})</span>`
-    : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No Hit (0/${ab})</span>` : '';
-  const hrBadge = (bs.homeRuns||0) > 0
-    ? `<span class="bb-achieve-badge bb-achieve-yes">✅ HR</span>`
-    : ab > 0 ? `<span class="bb-achieve-badge bb-achieve-no">❌ No HR</span>` : '';
+  const pip = buildLivePip(ld.isLive);
+  const hitBadge = buildHitBadge(bs.hits||0, ab);
+  const hrBadge = buildHRBadge(bs.homeRuns||0, ab);
   return `<div class="bb-achieve-row" style="margin-top:5px;flex-wrap:wrap;">${pip}${hitBadge}${hrBadge}</div>`;
 }
 
@@ -10043,16 +10031,6 @@ function renderLabScoreCard(result, ctx, isHR) {
     '</div>'+
     scoreHtml+reasonsHtml+bdHtml+flagsHtml+'</div>';
 }
-function renderLabLineupBanner(lineupStatus) {
-  var map = {
-    confirmed:{ cls:'lab-lineup-confirmed', text:'✓ Confirmed Lineup' },
-    projected:{ cls:'lab-lineup-projected', text:'⚠ Projected Lineup — scores are preliminary' },
-    unknown:  { cls:'lab-lineup-unknown',   text:'? Lineup Status Unknown' },
-  };
-  var b = map[lineupStatus] || map.unknown;
-  return '<div class="lab-lineup-banner '+b.cls+'">'+b.text+'</div>';
-}
-
 // ─── THE LAB ──────────────────────────────────────────────────────────────
 let _labState = { gamePk: null, playerId: null, source: null };
 let _labCompareSet = new Set();
@@ -11409,6 +11387,7 @@ async function handleArsenalHitFinder() {
   }
 }
 
+// ─── THE LAB — NAVIGATION & SHELL ────────────────────────────────────────
 function _labShow(screenId) {
   ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenBts2Pick','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
@@ -11796,6 +11775,7 @@ function labSearchSelect(playerId) {
   if (sd) { sd.style.display = 'none'; sd.innerHTML = ''; }
 }
 
+// ─── THE LAB — LAB COMPARE ────────────────────────────────────────────────
 async function fetchLabAnalysisData(playerId) {
   const player = state.playerMap?.[playerId];
   if (!player) return null;
@@ -12368,6 +12348,7 @@ function computePitchMixMatchup(batterId, pitcherId) {
 // computeLabMatchupScore removed — all scoring paths now use LabScorer.computeHitScore(ctx)
 
 
+// ─── THE LAB — ELITE SCAN: SHARED STEP/TAB & CORE HELPERS ────────────────
 function _labStep(id, st) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -12607,6 +12588,7 @@ function _scanRestoreLoading() {
   if (titleEl) titleEl.textContent = '⚙️ Running Analysis';
 }
 
+// ─── THE LAB — GLOBAL ELITE SCAN ─────────────────────────────────────────
 async function runGlobalEliteScan(onProgress) {
   const allGames   = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const allEntries = allGames.flatMap(gd => (gd.players||[]).filter(p => p.id).map(p => ({ player: p, gd })));
@@ -12690,6 +12672,7 @@ async function handleGlobalScan() {
   }
 }
 
+// ─── THE LAB — LEADERBOARD SCAN ──────────────────────────────────────────
 async function handleLeaderboardScan() {
   const btn = document.getElementById('labLeaderScanBtn');
   if (!btn) return;
@@ -12792,6 +12775,7 @@ async function runLeaderboardScan(entries, onProgress) {
   return results.sort((a, b) => b.score - a.score);
 }
 
+// ─── THE LAB — SCAN HANDLERS (BTS Elite 2 / Team Win Predictor) ──────────
 async function handleBts2Scan() {
   const btn = document.getElementById('labBts2Btn');
   if (!btn) return;
@@ -12923,6 +12907,7 @@ async function handleTeamScan() {
 }
 
 // Batting order weights: top of order weighted more; positions 2-5 upgraded per spec
+// ─── THE LAB — TEAM WIN PREDICTOR ────────────────────────────────────────
 const LINEUP_WEIGHTS = [1.15, 1.12, 1.10, 1.08, 1.05, 1.00, 0.95, 0.92, 0.90];
 
 function _lineupScore(results) {
@@ -13766,6 +13751,7 @@ function toggleTeamPredExpand(bkId, btnId) {
   btn.innerHTML     = open ? '&#9660; Player Breakdown' : '&#9650; Player Breakdown';
 }
 
+// ─── THE LAB — LAB ELITE SCAN (single-game roster) ───────────────────────
 async function runLabEliteScan(onProgress) {
   const gamePk = _labState.gamePk;
   const gd = state.predictions[gamePk];
@@ -13842,6 +13828,7 @@ async function handleLabScan() {
   }
 }
 
+// ─── THE LAB — LAB ANALYSIS (player profile) ─────────────────────────────
 async function runLabAnalysis() {
   const { playerId } = _labState;
   const player = state.playerMap?.[playerId];
