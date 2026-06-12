@@ -92,9 +92,9 @@ Present four facts:
 - Integration tests must use raw MLB API field names (`inningsPitched`, `strikeOuts`, `homeRuns`) — not pre-computed `kpct`/`hr9` — because that is what `mapPitcherStats` produces.
 
 ### What not to break
-- Beat the Streak, Daily Dominator, Player Analyzer, Share Results, Overall Top Picks — treat as untouchable unless the user explicitly targets them.
-- `openPlayerAnalyzer`, `openPlayerModal`, `labSelectPlayer`, `toggleStreakGameLog` — critical user-facing entry points; never rename or remove.
-- Lab shortcut buttons and Analyze buttons — preserve `onclick` attributes exactly.
+- Beat the Streak, Daily Dominator, The Lab, Share Results, Overall Top Picks — treat as untouchable unless the user explicitly targets them.
+- `openPlayerModal`, `openLabFor`, `labSelectPlayer`, `toggleStreakGameLog` — critical user-facing entry points; never rename or remove.
+- The "🔬 Lab" button (`openLabFor`) is the sole player-detail entry point from player rows/modals — preserve its `onclick` attributes exactly. The standalone "🔍 Analyze" / Player Analyzer panel was removed; do not recreate it.
 
 ### Commit hygiene
 - One logical change per commit.
