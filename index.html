@@ -507,8 +507,8 @@ main { padding: 28px 0 60px; }
 .lab-global-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
 .lab-global-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#a78bfa; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #7c3aed33; margin-bottom:10px; margin-top:14px; }
 .lab-period-tabs { display:flex; gap:4px; flex-wrap:wrap; }
-.lab-period-tab, .lab-split-tab { background:var(--bg-hover); border:1px solid var(--border); border-radius:5px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:background .15s; }
-.lab-period-tab.active, .lab-split-tab.active { background:#3b0764; border-color:#7c3aed; color:#c4b5fd; }
+.lab-period-tab, .lab-split-tab, .lab-arsenal-tab { background:var(--bg-hover); border:1px solid var(--border); border-radius:5px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:background .15s; }
+.lab-period-tab.active, .lab-split-tab.active, .lab-arsenal-tab.active { background:#3b0764; border-color:#7c3aed; color:#c4b5fd; }
 .lab-split-tab.today-split { border-color:#eab308; color:#fde047; }
 .lab-split-tab.today-split.active { background:#422006; border-color:#eab308; color:#fde047; }
 .lab-global-game-badge { display:inline-block; font-size:10px; color:#c4b5fd; font-weight:600; background:#2e1065; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
@@ -3867,8 +3867,13 @@ let state = {
   allGamesLiveData: {}, // gamePk -> { statsMap, isLive, isFinal }
   savantPitcher:    null,  // Map<playerId, row[]> — loaded once per session from Baseball Savant
   savantBatter:     null,  // Map<playerId, row[]>
+  savantPitcherVsL: null,  // Map<playerId, row[]> — pitcher stats vs LHB (hand-split)
+  savantPitcherVsR: null,  // Map<playerId, row[]> — pitcher stats vs RHB
+  savantBatterVsL:  null,  // Map<playerId, row[]> — batter stats vs LHP
+  savantBatterVsR:  null,  // Map<playerId, row[]> — batter stats vs RHP
   savantPitchRanks: null,  // Map<pitch_type, Map<player_id, rank>> — rank vs all pitchers of same type
   savantLoading:    false,
+  savantHandSplitLoading: false,
   savantFailed:     false, // true after a session-level fetch failure — prevents retry storm
   savantYear:       null,
   sigmoidSlope:  null,
@@ -12294,6 +12299,40 @@ async function ensureSavantData(year) {
   finally { state.savantLoading = false; }
 }
 
+async function ensureSavantHandSplits(year) {
+  if (state.savantPitcherVsL && state.savantPitcherVsR &&
+      state.savantBatterVsL  && state.savantBatterVsR  &&
+      state.savantYear === year) return;
+  if (state.savantHandSplitLoading) {
+    while (state.savantHandSplitLoading) await new Promise(r => setTimeout(r, 100));
+    return;
+  }
+  state.savantHandSplitLoading = true;
+  try {
+    const base = 'https://baseballsavant.mlb.com/leaderboard/pitch-arsenal-stats';
+    const [pL, pR, bL, bR] = await Promise.all([
+      fetch(`${base}?type=pitcher&year=${year}&min=10&bat_hand=L&csv=true`).then(r => r.text()),
+      fetch(`${base}?type=pitcher&year=${year}&min=10&bat_hand=R&csv=true`).then(r => r.text()),
+      fetch(`${base}?type=batter&year=${year}&min=10&pitch_hand=L&csv=true`).then(r => r.text()),
+      fetch(`${base}?type=batter&year=${year}&min=10&pitch_hand=R&csv=true`).then(r => r.text()),
+    ]);
+    const buildMap = rows => {
+      const m = new Map();
+      for (const row of rows) {
+        if (!row.player_id) continue;
+        if (!m.has(row.player_id)) m.set(row.player_id, []);
+        m.get(row.player_id).push(row);
+      }
+      return m;
+    };
+    state.savantPitcherVsL = buildMap(parseSavantCSV(pL));
+    state.savantPitcherVsR = buildMap(parseSavantCSV(pR));
+    state.savantBatterVsL  = buildMap(parseSavantCSV(bL));
+    state.savantBatterVsR  = buildMap(parseSavantCSV(bR));
+  } catch { /* non-fatal — split tabs show "no data" message */ }
+  finally { state.savantHandSplitLoading = false; }
+}
+
 function computePitchMixMatchup(batterId, pitcherId) {
   const pitcherRows = state.savantPitcher?.get(String(pitcherId));
   const batterRows  = state.savantBatter?.get(String(batterId));
@@ -12381,6 +12420,17 @@ function _labSplitTab(period, btn) {
   const target = document.getElementById('labSplit' + period);
   if (target) target.style.display = '';
   document.querySelectorAll('.lab-split-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function _labArsenalTab(period, btn) {
+  ['Season','VsLHP','VsRHP'].forEach(p => {
+    const el = document.getElementById('labArs' + p);
+    if (el) el.style.display = 'none';
+  });
+  const target = document.getElementById('labArs' + period);
+  if (target) target.style.display = '';
+  document.querySelectorAll('.lab-arsenal-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
 }
 
@@ -13986,6 +14036,7 @@ async function runLabAnalysis() {
       }
     })(),
     (async () => { try { await ensureSavantData(new Date().getFullYear()); } catch {} })(),
+    (async () => { try { await ensureSavantHandSplits(new Date().getFullYear()); } catch {} })(),
   ]);
   _labStep('ls4','done');
 
@@ -13995,32 +14046,14 @@ async function runLabAnalysis() {
 
   const _savantPitchArsenal = (() => {
     if (!pitcher?.id) return '';
-    const pRows = state.savantPitcher?.get(String(pitcher.id)) || [];
-    if (!pRows.length) return '';
-    const bRows = state.savantBatter?.get(String(player.id)) || [];
-    const bMap  = new Map(bRows.map(r => [r.pitch_type, r]));
-    const pitches = [...pRows].filter(p => parseFloat(p.pitch_usage) >= 5)
-      .sort((a, b) => parseFloat(b.pitch_usage) - parseFloat(a.pitch_usage));
-    if (!pitches.length) return '';
+    const pRowsSeason = state.savantPitcher?.get(String(pitcher.id)) || [];
+    if (!pRowsSeason.length) return '';
 
-    // Pitch family color by type code
-    const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
-      : ['SL','CU','ST','KC','SV'].includes(code)              ? '#f59e0b'
+    // Shared color/format helpers
+    const _typeColor  = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
+      : ['SL','CU','ST','KC','SV'].includes(code)               ? '#f59e0b'
       : '#a855f7';
-
-    // Best pitcher pitch: lowest RV/100 (most dominant)
-    const withRv   = pitches.filter(p => !isNaN(parseFloat(p.run_value_per_100)));
-    const bestPitch = withRv.length ? withRv.reduce((b, p) =>
-      parseFloat(p.run_value_per_100) < parseFloat(b.run_value_per_100) ? p : b) : null;
-
-    // Batter's worst matchup: lowest batter BA (hardest pitch to hit)
-    const withBat = pitches.filter(p => { const b = bMap.get(p.pitch_type); return b && parseFloat(b.ba) > 0; });
-    const worstMatch = withBat.length ? withBat.reduce((w, p) => {
-      const ba = parseFloat(bMap.get(p.pitch_type)?.ba);
-      return ba < parseFloat(bMap.get(w.pitch_type)?.ba) ? p : w;
-    }) : null;
-
-    const _baFmt  = fmtAvg;
+    const _baFmt      = fmtAvg;
     const _rv100Color = v => isNaN(v) ? 'var(--text-muted)'
       : v <= -2 ? '#22c55e' : v <= 0 ? '#86efac' : v <= 2 ? '#f59e0b' : '#ef4444';
     const _wobaColor  = v => v <= 0 ? 'var(--text-muted)'
@@ -14029,84 +14062,106 @@ async function runLabAnalysis() {
       : v >= 0.290 ? '#22c55e' : v <= 0.210 ? '#ef4444' : v <= 0.240 ? '#f59e0b' : 'var(--text-primary)';
     const _kColor     = v => v == null ? 'var(--text-muted)'
       : v >= 35 ? '#ef4444' : v >= 25 ? '#f59e0b' : '#22c55e';
+    const lastName    = escHtml(player.name?.split(' ').pop() || 'Batter');
 
-    const lastName = escHtml(player.name?.split(' ').pop() || 'Batter');
+    function _buildCards(pRows, bRows) {
+      const bMap    = new Map(bRows.map(r => [r.pitch_type, r]));
+      const pitches = [...pRows].filter(p => parseFloat(p.pitch_usage) >= 5)
+        .sort((a, b) => parseFloat(b.pitch_usage) - parseFloat(a.pitch_usage));
+      if (!pitches.length) return `<div style="padding:12px;color:var(--text-muted);font-size:12px;text-align:center">No pitch data for this split.</div>`;
 
-    const cards = pitches.map(p => {
-      const usage    = parseFloat(p.pitch_usage);
-      const pWhiff   = parseFloat(p.whiff_percent) || 0;
-      const velo     = parseFloat(p.avg_speed) || 0;
-      const rv100    = parseFloat(p.run_value_per_100);
-      const pWoba    = parseFloat(p.woba) || 0;
-      const putAway  = parseFloat(p.put_away_percent) || 0;
-      const pKpct    = parseFloat(p.k_percent) || 0;
-      const rkMap    = state.savantPitchRanks?.get(p.pitch_type);
-      const rank     = rkMap?.get(p.player_id) ?? null;
-      const rankTotal = rkMap?.size ?? null;
-      const b        = bMap.get(p.pitch_type);
-      const ba       = b ? (parseFloat(b.ba) || 0) : null;
-      const bWhiff   = b ? (parseFloat(b.whiff_percent) || 0) : null;
+      const withRv     = pitches.filter(p => !isNaN(parseFloat(p.run_value_per_100)));
+      const bestPitch  = withRv.length ? withRv.reduce((b, p) =>
+        parseFloat(p.run_value_per_100) < parseFloat(b.run_value_per_100) ? p : b) : null;
+      const withBat    = pitches.filter(p => { const b = bMap.get(p.pitch_type); return b && parseFloat(b.ba) > 0; });
+      const worstMatch = withBat.length ? withBat.reduce((w, p) => {
+        const ba = parseFloat(bMap.get(p.pitch_type)?.ba);
+        return ba < parseFloat(bMap.get(w.pitch_type)?.ba) ? p : w;
+      }) : null;
 
-      const isBest  = bestPitch?.pitch_type === p.pitch_type;
-      const isWorst = worstMatch?.pitch_type === p.pitch_type && b;
-      const batEdge = ba != null && ba >= 0.290;
-      const spEdge  = ba != null && (ba <= 0.210 || (pWhiff >= 28 && bWhiff != null && bWhiff >= 28));
-      const edgeCls = batEdge ? 'batter' : spEdge ? 'pitcher' : 'neutral';
-      const edgeLbl = batEdge ? 'Batter ↑' : spEdge ? 'SP ↑' : 'Even';
+      return pitches.map(p => {
+        const usage     = parseFloat(p.pitch_usage);
+        const pWhiff    = parseFloat(p.whiff_percent) || 0;
+        const velo      = parseFloat(p.avg_speed) || 0;
+        const rv100     = parseFloat(p.run_value_per_100);
+        const pWoba     = parseFloat(p.woba) || 0;
+        const putAway   = parseFloat(p.put_away_percent) || 0;
+        const pKpct     = parseFloat(p.k_percent) || 0;
+        const rkMap     = state.savantPitchRanks?.get(p.pitch_type);
+        const rank      = rkMap?.get(p.player_id) ?? null;
+        const rankTotal = rkMap?.size ?? null;
+        const b         = bMap.get(p.pitch_type);
+        const ba        = b ? (parseFloat(b.ba) || 0) : null;
+        const bWhiff    = b ? (parseFloat(b.whiff_percent) || 0) : null;
 
-      const rv100v   = isNaN(rv100) ? null : rv100;
-      const typeClr  = _typeColor(p.pitch_type);
-      const cardBg   = isBest
-        ? 'background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.20)'
-        : isWorst ? 'background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.20)' : '';
-      const usageBarW = Math.min(usage / 60 * 100, 100).toFixed(1);
+        const isBest    = bestPitch?.pitch_type === p.pitch_type;
+        const isWorst   = worstMatch?.pitch_type === p.pitch_type && b;
+        const batEdge   = ba != null && ba >= 0.290;
+        const spEdge    = ba != null && (ba <= 0.210 || (pWhiff >= 28 && bWhiff != null && bWhiff >= 28));
+        const edgeCls   = batEdge ? 'batter' : spEdge ? 'pitcher' : 'neutral';
+        const edgeLbl   = batEdge ? 'Batter ↑' : spEdge ? 'SP ↑' : 'Even';
+        const rv100v    = isNaN(rv100) ? null : rv100;
+        const typeClr   = _typeColor(p.pitch_type);
+        const cardBg    = isBest
+          ? 'background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.20)'
+          : isWorst ? 'background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.20)' : '';
+        const usageBarW = Math.min(usage / 60 * 100, 100).toFixed(1);
 
-      return `<div class="pa-ars-card" style="${cardBg}">
-        <div class="pa-ars-card-top">
-          <div class="pa-ars-pitch-id">
-            <span class="pa-ars-type-pill" style="background:${typeClr}22;color:${typeClr};border-color:${typeClr}44">${escHtml(p.pitch_type)}</span>
-            <div>
-              <div class="pa-ars-name">${escHtml(p.pitch_name || p.pitch_type)}${isBest ? '&nbsp;<span class="pa-ars-tag pa-ars-tag-best">⚡ Best</span>' : ''}${isWorst ? '&nbsp;<span class="pa-ars-tag pa-ars-tag-risk">⚠ Risk</span>' : ''}</div>
-              ${velo > 0 ? `<div class="pa-ars-velo">${velo.toFixed(0)} mph</div>` : ''}
+        return `<div class="pa-ars-card" style="${cardBg}">
+          <div class="pa-ars-card-top">
+            <div class="pa-ars-pitch-id">
+              <span class="pa-ars-type-pill" style="background:${typeClr}22;color:${typeClr};border-color:${typeClr}44">${escHtml(p.pitch_type)}</span>
+              <div>
+                <div class="pa-ars-name">${escHtml(p.pitch_name || p.pitch_type)}${isBest ? '&nbsp;<span class="pa-ars-tag pa-ars-tag-best">⚡ Best</span>' : ''}${isWorst ? '&nbsp;<span class="pa-ars-tag pa-ars-tag-risk">⚠ Risk</span>' : ''}</div>
+                ${velo > 0 ? `<div class="pa-ars-velo">${velo.toFixed(0)} mph</div>` : ''}
+              </div>
             </div>
+            <span class="pa-ars-edge pa-ars-edge-${edgeCls}">${edgeLbl}</span>
           </div>
-          <span class="pa-ars-edge pa-ars-edge-${edgeCls}">${edgeLbl}</span>
-        </div>
-        <div class="pa-ars-usage-row">
-          <span class="pa-ars-usage-label">${usage.toFixed(0)}% use</span>
-          <div class="pa-ars-usage-track"><div class="pa-ars-usage-fill" style="width:${usageBarW}%;background:${typeClr}"></div></div>
-        </div>
-        <div class="pa-ars-stats">
-          <div class="pa-ars-stat-group">
-            <div class="pa-ars-stat-hdr" style="display:flex;align-items:center;gap:4px">Pitcher ${rank && rankTotal ? (() => {
-                const c  = rank <= 5  ? '#22c55e'
-                         : rank <= 15 ? '#86efac'
-                         : rank <= 30 ? '#f59e0b' : '#94a3b8';
-                const bg = rank <= 5  ? '#22c55e1a'
-                         : rank <= 15 ? '#86efac15'
-                         : rank <= 30 ? '#f59e0b1a' : '#94a3b815';
-                return `<span class="pa-ars-rk-badge" style="color:${c};background:${bg};border-color:${c}55">RK&nbsp;#${rank}<span style="opacity:.55">/${rankTotal}</span></span>`;
-              })() : ''}</div>
-            <div class="pa-ars-stat-row">
-              <div class="pa-ars-stat"><span>Whiff</span><strong style="color:#94a3b8">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</strong></div>
-              <div class="pa-ars-stat"><span>K%</span><strong style="color:${pKpct >= 30 ? '#22c55e' : pKpct >= 22 ? '#86efac' : pKpct >= 15 ? '#94a3b8' : '#f59e0b'}">${pKpct > 0 ? pKpct.toFixed(0) + '%' : '—'}</strong></div>
-              <div class="pa-ars-stat"><span>RV/100</span><strong style="color:${_rv100Color(rv100v)}">${rv100v != null ? (rv100v > 0 ? '+' : '') + rv100v.toFixed(1) : '—'}</strong></div>
-              <div class="pa-ars-stat"><span>wOBA</span><strong style="color:${_wobaColor(pWoba)}">${_baFmt(pWoba)}</strong></div>
-              ${putAway > 0 ? `<div class="pa-ars-stat"><span>PutAwy</span><strong style="color:#94a3b8">${putAway.toFixed(0)}%</strong></div>` : ''}
-            </div>
+          <div class="pa-ars-usage-row">
+            <span class="pa-ars-usage-label">${usage.toFixed(0)}% use</span>
+            <div class="pa-ars-usage-track"><div class="pa-ars-usage-fill" style="width:${usageBarW}%;background:${typeClr}"></div></div>
           </div>
-          ${b ? `<div class="pa-ars-divider"></div>
-          <div class="pa-ars-stat-group">
-            <div class="pa-ars-stat-hdr">${lastName}</div>
-            <div class="pa-ars-stat-row">
-              <div class="pa-ars-stat"><span>BA</span><strong style="color:${_baColor(ba)}">${_baFmt(ba)}</strong></div>
-              <div class="pa-ars-stat"><span>K%</span><strong style="color:${_kColor(bWhiff)}">${bWhiff != null ? Math.round(bWhiff) + '%' : '—'}</strong></div>
+          <div class="pa-ars-stats">
+            <div class="pa-ars-stat-group">
+              <div class="pa-ars-stat-hdr" style="display:flex;align-items:center;gap:4px">Pitcher ${rank && rankTotal ? (() => {
+                  const c  = rank <= 5  ? '#22c55e'
+                           : rank <= 15 ? '#86efac'
+                           : rank <= 30 ? '#f59e0b' : '#94a3b8';
+                  const bg = rank <= 5  ? '#22c55e1a'
+                           : rank <= 15 ? '#86efac15'
+                           : rank <= 30 ? '#f59e0b1a' : '#94a3b815';
+                  return `<span class="pa-ars-rk-badge" style="color:${c};background:${bg};border-color:${c}55">RK&nbsp;#${rank}<span style="opacity:.55">/${rankTotal}</span></span>`;
+                })() : ''}</div>
+              <div class="pa-ars-stat-row">
+                <div class="pa-ars-stat"><span>Whiff</span><strong style="color:#94a3b8">${pWhiff > 0 ? pWhiff.toFixed(0) + '%' : '—'}</strong></div>
+                <div class="pa-ars-stat"><span>K%</span><strong style="color:${pKpct >= 30 ? '#22c55e' : pKpct >= 22 ? '#86efac' : pKpct >= 15 ? '#94a3b8' : '#f59e0b'}">${pKpct > 0 ? pKpct.toFixed(0) + '%' : '—'}</strong></div>
+                <div class="pa-ars-stat"><span>RV/100</span><strong style="color:${_rv100Color(rv100v)}">${rv100v != null ? (rv100v > 0 ? '+' : '') + rv100v.toFixed(1) : '—'}</strong></div>
+                <div class="pa-ars-stat"><span>wOBA</span><strong style="color:${_wobaColor(pWoba)}">${_baFmt(pWoba)}</strong></div>
+                ${putAway > 0 ? `<div class="pa-ars-stat"><span>PutAwy</span><strong style="color:#94a3b8">${putAway.toFixed(0)}%</strong></div>` : ''}
+              </div>
             </div>
-          </div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
+            ${b ? `<div class="pa-ars-divider"></div>
+            <div class="pa-ars-stat-group">
+              <div class="pa-ars-stat-hdr">${lastName}</div>
+              <div class="pa-ars-stat-row">
+                <div class="pa-ars-stat"><span>BA</span><strong style="color:${_baColor(ba)}">${_baFmt(ba)}</strong></div>
+                <div class="pa-ars-stat"><span>K%</span><strong style="color:${_kColor(bWhiff)}">${bWhiff != null ? Math.round(bWhiff) + '%' : '—'}</strong></div>
+              </div>
+            </div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    }
 
+    // Split rows — may be empty if hand-split fetch is still in flight or unavailable
+    const bRowsSeason = state.savantBatter?.get(String(player.id))      || [];
+    const pRowsVsL    = state.savantPitcherVsL?.get(String(pitcher.id)) || [];
+    const pRowsVsR    = state.savantPitcherVsR?.get(String(pitcher.id)) || [];
+    const bRowsVsL    = state.savantBatterVsL?.get(String(player.id))   || [];
+    const bRowsVsR    = state.savantBatterVsR?.get(String(player.id))   || [];
+
+    // Overall matchup edge label (season data, stable across tabs)
     const edgeClr = pitchMatchup.score > 2 ? '#22c55e'
       : pitchMatchup.score < -2 ? '#ef4444' : '#94a3b8';
     const edgeLbl = pitchMatchup.score > 2 ? 'Lineup Edge'
@@ -14116,12 +14171,27 @@ async function runLabAnalysis() {
     const summaryCallout = pitchMatchup.reasons.length
       ? `<div class="pa-ars-summary-callout" style="border-left-color:${calloutBdr}">${pitchMatchup.score > 0 ? '📈' : pitchMatchup.score < 0 ? '📉' : '→'} ${escHtml(pitchMatchup.reasons[0])}</div>` : '';
 
+    // Auto-select the tab that matches today's pitcher hand
+    const _arsDefault = pitcherHand === 'L' ? 'VsLHP' : pitcherHand === 'R' ? 'VsRHP' : 'Season';
+    const _arsVis    = p => p === _arsDefault ? '' : 'display:none';
+    const _arsActive = p => p === _arsDefault ? ' active' : '';
+    const _noData    = msg => `<div style="padding:12px;color:var(--text-muted);font-size:12px;text-align:center">${msg}</div>`;
+
     return `<div class="pa-ars-wrap">
       <div class="pa-ars-header">
         <div><span class="pa-ars-section-title">SP Arsenal vs ${escHtml(player.name)}</span><span class="pa-ars-source">Baseball Savant 2026</span></div>
-        <span class="pa-ars-overall" style="color:${edgeClr};border-color:${edgeClr}44;background:${edgeClr}11">${edgeLbl}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="lab-period-tabs">
+            <button class="lab-arsenal-tab${_arsActive('Season')}" onclick="_labArsenalTab('Season',this)">Season</button>
+            <button class="lab-arsenal-tab${_arsActive('VsLHP')}" onclick="_labArsenalTab('VsLHP',this)">vs LHP</button>
+            <button class="lab-arsenal-tab${_arsActive('VsRHP')}" onclick="_labArsenalTab('VsRHP',this)">vs RHP</button>
+          </div>
+          <span class="pa-ars-overall" style="color:${edgeClr};border-color:${edgeClr}44;background:${edgeClr}11">${edgeLbl}</span>
+        </div>
       </div>
-      <div class="pa-ars-cards">${cards}</div>
+      <div id="labArsSeason" style="${_arsVis('Season')}"><div class="pa-ars-cards">${_buildCards(pRowsSeason, bRowsSeason)}</div></div>
+      <div id="labArsVsLHP"  style="${_arsVis('VsLHP')}"><div class="pa-ars-cards">${pRowsVsL.length ? _buildCards(pRowsVsL, bRowsVsL) : _noData('Loading vs LHP split data…')}</div></div>
+      <div id="labArsVsRHP"  style="${_arsVis('VsRHP')}"><div class="pa-ars-cards">${pRowsVsR.length ? _buildCards(pRowsVsR, bRowsVsR) : _noData('Loading vs RHP split data…')}</div></div>
       ${summaryCallout}
       <div class="pa-ars-legend">RV/100: negative = dominant pitch. Bat BA/K% = ${escHtml(player.name)}'s 2026 vs this pitch type.</div>
     </div>`;
