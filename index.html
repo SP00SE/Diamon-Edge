@@ -13921,6 +13921,10 @@ async function runLabAnalysis() {
   _labStep('ls4','active');
   let parkStats = null, bullpenEra = 0, bullpenH9 = 0, bullpenHBF = 0, bullpenHR9 = 0, ghp = null, ghpGames = 0, ghpHitGames = 0, ghpL10 = null, ghpL10HitGames = 0, ghpL10Games = 0;
   let ghpL7 = null, ghpL7HitGames = 0, ghpL7Games = 0, ghpL30 = null, ghpL30HitGames = 0, ghpL30Games = 0;
+  let ghpHome = null, ghpHomeHit = 0, ghpHomeGames = 0;
+  let ghpAway = null, ghpAwayHit = 0, ghpAwayGames = 0;
+  let ghpDay  = null, ghpDayHit  = 0, ghpDayGames  = 0;
+  let ghpNight= null, ghpNightHit= 0, ghpNightGames= 0;
   let _labFullLog = []; // hoisted so lib scorer can use game log for context enrichment
   await Promise.all([
     (async () => {
@@ -13943,6 +13947,22 @@ async function runLabAnalysis() {
         ghpL30Games     = _l30Log.length;
         ghpL30HitGames  = _l30Log.filter(g => (g.stat?.hits || 0) >= 1).length;
         if (ghpL30Games >= 10) ghpL30 = ghpL30HitGames / ghpL30Games;
+        const _homeLog  = fullLog.filter(g => g.isHome === true);
+        ghpHomeGames    = _homeLog.length;
+        ghpHomeHit      = _homeLog.filter(g => (g.stat?.hits||0) >= 1).length;
+        if (ghpHomeGames >= 5) ghpHome = ghpHomeHit / ghpHomeGames;
+        const _awayLog  = fullLog.filter(g => g.isHome === false);
+        ghpAwayGames    = _awayLog.length;
+        ghpAwayHit      = _awayLog.filter(g => (g.stat?.hits||0) >= 1).length;
+        if (ghpAwayGames >= 5) ghpAway = ghpAwayHit / ghpAwayGames;
+        const _dayLog   = fullLog.filter(g => g.dayNight === 'day');
+        ghpDayGames     = _dayLog.length;
+        ghpDayHit       = _dayLog.filter(g => (g.stat?.hits||0) >= 1).length;
+        if (ghpDayGames >= 5) ghpDay = ghpDayHit / ghpDayGames;
+        const _nightLog = fullLog.filter(g => g.dayNight === 'night');
+        ghpNightGames   = _nightLog.length;
+        ghpNightHit     = _nightLog.filter(g => (g.stat?.hits||0) >= 1).length;
+        if (ghpNightGames >= 5) ghpNight = ghpNightHit / ghpNightGames;
         const parkGames = fullLog.filter(g =>
           player.isAway ? (g.isHome === false && Number(g.opponent?.id) === oppTeamId)
                          : (g.isHome === true)
@@ -14394,10 +14414,10 @@ async function runLabAnalysis() {
       </div>
       <div id="labSplitVsLHP"  style="display:none">${_rfGrid(player.vsLHP    || {}, null, null, null)}</div>
       <div id="labSplitVsRHP"  style="display:none">${_rfGrid(player.vsRHP    || {}, null, null, null)}</div>
-      <div id="labSplitHome"   style="display:none">${_rfGrid(player.homeStats|| {}, null, null, null)}</div>
-      <div id="labSplitAway"   style="display:none">${_rfGrid(player.awayStats|| {}, null, null, null)}</div>
-      <div id="labSplitDay"    style="display:none">${_rfGrid(player.dayStats || {}, null, null, null)}</div>
-      <div id="labSplitNight"  style="display:none">${_rfGrid(player.nightStats||{}, null, null, null)}</div>
+      <div id="labSplitHome"   style="display:none">${_rfGrid(player.homeStats|| {}, ghpHome,  ghpHomeHit,  ghpHomeGames)}</div>
+      <div id="labSplitAway"   style="display:none">${_rfGrid(player.awayStats|| {}, ghpAway,  ghpAwayHit,  ghpAwayGames)}</div>
+      <div id="labSplitDay"    style="display:none">${_rfGrid(player.dayStats || {}, ghpDay,   ghpDayHit,   ghpDayGames)}</div>
+      <div id="labSplitNight"  style="display:none">${_rfGrid(player.nightStats||{}, ghpNight, ghpNightHit, ghpNightGames)}</div>
       <!-- Today's split highlight -->
       <div class="lab-split-banner ${splitBannerCls}">${splitBannerTxt}</div>
       <!-- Recent form toggle: L7 / L10 / L30 -->
