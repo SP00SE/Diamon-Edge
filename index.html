@@ -14266,8 +14266,8 @@ async function runLabAnalysis() {
             <div class="pa-ars-stat"><span>ERA</span><strong style="color:${_ec(pitEra,3.50,4.50)}">${fE(pitEra)}</strong></div>
             <div class="pa-ars-stat"><span>WHIP</span><strong style="color:${_ec(pitWhip,1.15,1.40)}">${fE(pitWhip)}</strong></div>
             <div class="pa-ars-stat"><span>AVG</span><strong style="color:${_bc(pitAvg)}">${f3(pitAvg)}</strong></div>
-            <div class="pa-ars-stat"><span>K%</span><strong style="color:${pitBF&&pitK!=null&&(pitK/pitBF)>=0.28?'#22c55e':(pitK/pitBF)>=0.20?'#86efac':'#94a3b8'}">${fP(pitK,pitBF)}</strong></div>
-            <div class="pa-ars-stat"><span>BB%</span><strong style="color:${pitBF&&pitBB!=null&&(pitBB/pitBF)<=0.07?'#22c55e':(pitBB/pitBF)>=0.11?'#ef4444':'#94a3b8'}">${fP(pitBB,pitBF)}</strong></div>
+            <div class="pa-ars-stat"><span>K%</span><strong style="color:${pitBF>0&&(pitK/pitBF)>=0.28?'#22c55e':pitBF>0&&(pitK/pitBF)>=0.20?'#86efac':'#94a3b8'}">${fP(pitK,pitBF)}</strong></div>
+            <div class="pa-ars-stat"><span>BB%</span><strong style="color:${pitBF>0&&(pitBB/pitBF)<=0.07?'#22c55e':pitBF>0&&(pitBB/pitBF)>=0.11?'#ef4444':'#94a3b8'}">${fP(pitBB,pitBF)}</strong></div>
             ${pitIP > 0 ? `<div class="pa-ars-stat"><span>IP</span><strong style="color:#94a3b8">${pitIP.toFixed(1)}</strong></div>` : ''}
           </div>` : `<div style="color:var(--text-muted);font-size:11px">No split data</div>`}
         </div>
