@@ -7385,7 +7385,7 @@ function renderBeatTheStreak() {
 
     const pitcher = player.teamId === gd.homeTeamId ? gd.awayPitcher : gd.homePitcher;
     const pName = pitcher?.name || pitcher?.fullName || '—';
-    const pEra  = pitcher?.seasonStats?.era ? pitcher.seasonStats.era.toFixed(2) : '—';
+    const pEra  = pitcher?.seasonStats?.era != null ? (+pitcher.seasonStats.era).toFixed(2) : '—';
 
     const oppId = player.teamId === gd.homeTeamId ? gd.awayTeamId : gd.homeTeamId;
     const oppTi = TEAM_INFO[oppId] || {};
@@ -14367,8 +14367,8 @@ async function runLabAnalysis() {
   const scoreLbl = score>=80?'Strong Hitter Edge':score>=65?'Hitter Leaning':score>=45?'Neutral Matchup':score>=30?'Pitcher Leaning':'Strong Pitcher Edge';
   const barColor = score>=65?'#22c55e':score>=45?'#94a3b8':'#ef4444';
 
-  const splitKey  = pitcherHand==='L' ? 'vsLHP' : 'vsRHP';
-  const split     = player[splitKey];
+  const splitKey  = pitcherHand==='L' ? 'vsLHP' : pitcherHand==='R' ? 'vsRHP' : null;
+  const split     = splitKey ? player[splitKey] : null;
   const splitAvg  = split?.avg || 0;
   const splitAB   = split?.atBats || 0;
   const splitOBP  = split?.obp || 0;
@@ -14378,7 +14378,9 @@ async function runLabAnalysis() {
   const isSplitFav = splitAB>=20 && splitDiff > 0.020;
   const isSplitBad = splitAB>=20 && splitDiff < -0.020 && splitAvg < 0.265;
   const splitBannerCls = isSplitFav ? 'good' : isSplitBad ? 'bad' : 'neu';
-  const splitBannerTxt = splitAB>=20
+  const splitBannerTxt = !splitKey
+    ? 'Pitcher TBD — split stats unavailable until pitcher is confirmed'
+    : splitAB>=20
     ? (isSplitFav ? `✅ Favorable — hits ${fmt3(splitAvg)} vs ${pitcherHand}HP (+${Math.round(splitDiff*1000)} pts above season avg, ${splitAB} AB)`
      : isSplitBad ? `⚠️ Unfavorable — only ${fmt3(splitAvg)} vs ${pitcherHand}HP (${Math.round(splitDiff*1000)} pts below avg, ${splitAB} AB)`
      : splitDiff < -0.020 ? `➡️ Solid — hits ${fmt3(splitAvg)} vs ${pitcherHand}HP (${Math.round(Math.abs(splitDiff)*1000)} pts below season avg but still a productive number, ${splitAB} AB)`
