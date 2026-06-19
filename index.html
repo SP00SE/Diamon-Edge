@@ -7428,7 +7428,7 @@ function renderBeatTheStreak() {
       <div class="bts-card">
         <div class="bts-card-rank">${rankLabel}</div>
         <div class="bts-card-header">
-          <img class="bts-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${player.name}">
+          <img class="bts-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${player.name}">
           <div>
             <div class="bts-card-name td-player-link" onclick="openPlayerModal(${player.id})" style="cursor:pointer">${player.name}</div>
             <div style="margin-top:3px">${lineupBadge}</div>
@@ -7576,7 +7576,7 @@ async function renderDailyDominators() {
       <div class="dom-card">
         <div class="dom-card-rank">${rankLabel}</div>
         <div class="dom-card-header">
-          <img class="dom-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${escHtml(p.name)}">
+          <img class="dom-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
           <div>
             <div class="dom-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="dom-card-meta">
@@ -7737,7 +7737,7 @@ async function renderRisingStars() {
       <div class="rising-card">
         <div class="rising-card-rank">${rankLabel}</div>
         <div class="rising-card-header">
-          <img class="rising-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${escHtml(p.name)}">
+          <img class="rising-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
           <div style="min-width:0">
             <div class="rising-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="rising-card-meta">
@@ -7898,7 +7898,7 @@ async function renderDueForHit() {
       <div class="dfh-card">
         <div class="dfh-card-rank">${rankLabel}</div>
         <div class="dfh-card-header">
-          <img class="dfh-card-photo" src="${photoUrl}" onerror="this.src=''" alt="${escHtml(p.name)}">
+          <img class="dfh-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
           <div style="min-width:0">
             <div class="dfh-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="dfh-card-meta">
@@ -10045,6 +10045,7 @@ let _lastCompareData = null;
 
 function computeArsenalHitEdge(player, gd) {
   if (!state.savantPitcher || !state.savantBatter) return { score: 0, hasData: false };
+  if (!gd) return { score: 0, hasData: false };
   const pitcher = player.isAway ? gd.homePitcher : gd.awayPitcher;
   if (!pitcher?.id) return { score: 0, hasData: false };
 
@@ -12498,6 +12499,7 @@ function labBts2SelectPlayer(playerId, gamePk) {
 // Full data fetch for one player: H2H + game log (GHP + park history) + bullpen.
 // Produces the same score as runLabAnalysis so scan and individual analysis match.
 async function fetchElitePlayerData(player, gd) {
+  if (!gd) throw new Error('fetchElitePlayerData: missing game data');
   await ensureSavantData(new Date().getFullYear());
 
   const pitcher   = player.isAway ? gd.homePitcher : gd.awayPitcher;
