@@ -11124,7 +11124,7 @@ function _buildBts2DeepCard(r, pickNum) {
   const k9  = pIP > 0 ? (pK    / pIP * 9).toFixed(1) : null;
   const bb9 = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
   const { lab, bts, ahf } = r.subScores || {};
-  const pHand = pitcher?.pitchHand || 'R';
+  const pHand = pitcher?.pitchHand || null;
   const bat   = player.batSide    || 'R';
 
   const confidence = r.score >= 85 ? 'Elite Confidence' : r.score >= 75 ? 'High Confidence' : r.score >= 65 ? 'Good Confidence' : 'Moderate Confidence';
@@ -11257,11 +11257,11 @@ function _buildBts2DeepCard(r, pickNum) {
   </div>`;
 
   // ── Splits ─────────────────────────────────────────────────────────────────
-  const relSplit = pHand === 'L' ? player.vsLHP : player.vsRHP;
+  const relSplit = pHand === 'L' ? player.vsLHP : pHand === 'R' ? player.vsRHP : null;
   const relLabel = pHand === 'L' ? 'vs LHP' : 'vs RHP';
   const locSplit = player.isAway ? player.awayStats : player.homeStats;
   const locLabel = player.isAway ? 'Away' : 'Home';
-  const platoonAdv = (bat === 'R' && pHand === 'L') || (bat === 'L' && pHand === 'R');
+  const platoonAdv = pHand && ((bat === 'R' && pHand === 'L') || (bat === 'L' && pHand === 'R'));
   const splitsHTML = (relSplit?.atBats >= 10 || locSplit?.atBats >= 10) ? `<div class="bpick-section">
     <div class="bpick-sect-hdr">📊 Situational Splits</div>
     <div class="bpick-stat-grid">
@@ -11270,7 +11270,7 @@ function _buildBts2DeepCard(r, pickNum) {
       ${locSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(locSplit.avg||0)>=0.280?'#22c55e':(locSplit.avg>0&&locSplit.avg<0.230)?'#f87171':'inherit'}">${fmtAvg(locSplit.avg)||'---'}</div><div class="bpick-stat-lbl">${locLabel} AVG</div></div>` : ''}
       ${locSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${locSplit.atBats||0}</div><div class="bpick-stat-lbl">${locLabel} ABs</div></div>` : ''}
     </div>
-    <div class="bpick-verdict-line" style="color:${platoonAdv?'#22c55e':bat==='S'?'#fbbf24':'#94a3b8'}">${bat==='S'?'⚡ Switch hitter — adapts to any pitching hand, no platoon weakness.':platoonAdv?`✅ Platoon edge — ${bat==='R'?'right-handed batter vs left-handed pitcher':'left-handed batter vs right-handed pitcher'} — historically one of the biggest advantages in baseball.`:`→ Same-side matchup (${bat}HB vs ${pHand}HP). No platoon advantage but not a disadvantage either.`}</div>
+    <div class="bpick-verdict-line" style="color:${platoonAdv?'#22c55e':bat==='S'?'#fbbf24':'#94a3b8'}">${!pHand?'? Pitcher TBD — platoon data unavailable until SP is confirmed.':bat==='S'?'⚡ Switch hitter — adapts to any pitching hand, no platoon weakness.':platoonAdv?`✅ Platoon edge — ${bat==='R'?'right-handed batter vs left-handed pitcher':'left-handed batter vs right-handed pitcher'} — historically one of the biggest advantages in baseball.`:`→ Same-side matchup (${bat}HB vs ${pHand}HP). No platoon advantage but not a disadvantage either.`}</div>
   </div>` : '';
 
   // ── Bullpen ────────────────────────────────────────────────────────────────
