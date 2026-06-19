@@ -7084,7 +7084,7 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
 
   // ── 7. HANDEDNESS SPLIT (min 20 AB — neutral = 0, not +5) ────────────────
   const pitcherHand = oppPitcher?.pitchHand?.code || oppPitcher?.pitchHand;
-  const splitStats  = pitcherHand === 'L' ? player.vsLHP : player.vsRHP;
+  const splitStats  = pitcherHand === 'L' ? player.vsLHP : pitcherHand === 'R' ? player.vsRHP : null;
   const splitAvg    = splitStats?.avg    || 0;
   const splitAB     = splitStats?.atBats || 0;
   if (splitAvg && seasonAvg && splitAB >= 20) {
