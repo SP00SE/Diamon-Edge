@@ -13976,6 +13976,7 @@ async function runLabAnalysis() {
   let ghpDay  = null, ghpDayHit  = 0, ghpDayGames  = 0;
   let ghpNight= null, ghpNightHit= 0, ghpNightGames= 0;
   let _labFullLog = []; // hoisted so lib scorer can use game log for context enrichment
+  let pitcherVsLHBRaw = null, pitcherVsRHBRaw = null;
   await Promise.all([
     (async () => {
       try {
@@ -14036,7 +14037,17 @@ async function runLabAnalysis() {
       }
     })(),
     (async () => { try { await ensureSavantData(new Date().getFullYear()); } catch {} })(),
-    (async () => { try { await ensureSavantHandSplits(new Date().getFullYear()); } catch {} })(),
+    (async () => {
+      if (pitcher?.id) {
+        try {
+          const yr  = new Date().getFullYear();
+          const d   = await cachedFetch(`https://statsapi.mlb.com/api/v1/people/${pitcher.id}/stats?stats=statSplits&season=${yr}&group=pitching&gameType=R&sitCodes=vl,vr`);
+          const spl = d?.stats?.[0]?.splits || [];
+          pitcherVsLHBRaw = spl.find(x => x.split?.code === 'vl')?.stat || null;
+          pitcherVsRHBRaw = spl.find(x => x.split?.code === 'vr')?.stat || null;
+        } catch {}
+      }
+    })(),
   ]);
   _labStep('ls4','done');
 
@@ -14154,12 +14165,59 @@ async function runLabAnalysis() {
       }).join('');
     }
 
-    // Split rows — may be empty if hand-split fetch is still in flight or unavailable
-    const bRowsSeason = state.savantBatter?.get(String(player.id))      || [];
-    const pRowsVsL    = state.savantPitcherVsL?.get(String(pitcher.id)) || [];
-    const pRowsVsR    = state.savantPitcherVsR?.get(String(pitcher.id)) || [];
-    const bRowsVsL    = state.savantBatterVsL?.get(String(player.id))   || [];
-    const bRowsVsR    = state.savantBatterVsR?.get(String(player.id))   || [];
+    // Season batter rows for the Savant per-pitch tab
+    const bRowsSeason = state.savantBatter?.get(String(player.id)) || [];
+
+    // Build the MLB statSplits hand panel (pitcher vs LHB/RHB + batter vs LHP/RHP)
+    function _buildHandPanel(pitRaw, batSplit, pitLabel, batLabel) {
+      const f3 = v => v > 0 ? '.' + Math.round(v * 1000).toString().padStart(3,'0') : '—';
+      const fE = v => v > 0 ? v.toFixed(2) : '—';
+      const fP = (v, denom) => denom > 0 ? Math.round(v / denom * 100) + '%' : '—';
+
+      const pitEra  = pitRaw ? parseFloat(pitRaw.era)              || 0 : null;
+      const pitWhip = pitRaw ? parseFloat(pitRaw.whip)             || 0 : null;
+      const pitAvg  = pitRaw ? parseFloat(pitRaw.avg)              || 0 : null;
+      const pitK    = pitRaw ? (pitRaw.strikeOuts   || 0) : null;
+      const pitBB   = pitRaw ? (pitRaw.baseOnBalls  || 0) : null;
+      const pitBF   = pitRaw ? (pitRaw.battersFaced || (pitRaw.atBats ? parseInt(pitRaw.atBats) + parseInt(pitRaw.baseOnBalls||0) + parseInt(pitRaw.hitByPitch||0) : 0)) : null;
+      const pitIP   = pitRaw ? parseFloat(pitRaw.inningsPitched)   || 0 : null;
+
+      const batAvg  = batSplit?.avg  || 0;
+      const batObp  = batSplit?.obp  || 0;
+      const batSlg  = batSplit?.slg  || 0;
+      const batOps  = batSplit?.ops  || (batObp + batSlg);
+      const batAB   = batSplit?.atBats || 0;
+
+      const _ec = (v, goodBelow, badAbove) => v == null ? 'var(--text-muted)'
+        : v <= goodBelow ? '#22c55e' : v >= badAbove ? '#ef4444' : '#f59e0b';
+      const _bc = v => v >= 0.290 ? '#22c55e' : v >= 0.250 ? '#86efac' : v > 0 ? '#f59e0b' : 'var(--text-muted)';
+
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 4px">
+        <div>
+          <div class="pa-ars-stat-hdr" style="margin-bottom:6px">${escHtml(pitLabel)}</div>
+          ${pitRaw ? `
+          <div class="pa-ars-stat-row" style="flex-wrap:wrap;gap:6px">
+            <div class="pa-ars-stat"><span>ERA</span><strong style="color:${_ec(pitEra,3.50,4.50)}">${fE(pitEra)}</strong></div>
+            <div class="pa-ars-stat"><span>WHIP</span><strong style="color:${_ec(pitWhip,1.15,1.40)}">${fE(pitWhip)}</strong></div>
+            <div class="pa-ars-stat"><span>AVG</span><strong style="color:${_bc(pitAvg)}">${f3(pitAvg)}</strong></div>
+            <div class="pa-ars-stat"><span>K%</span><strong style="color:${pitBF&&pitK!=null&&(pitK/pitBF)>=0.28?'#22c55e':(pitK/pitBF)>=0.20?'#86efac':'#94a3b8'}">${fP(pitK,pitBF)}</strong></div>
+            <div class="pa-ars-stat"><span>BB%</span><strong style="color:${pitBF&&pitBB!=null&&(pitBB/pitBF)<=0.07?'#22c55e':(pitBB/pitBF)>=0.11?'#ef4444':'#94a3b8'}">${fP(pitBB,pitBF)}</strong></div>
+            ${pitIP > 0 ? `<div class="pa-ars-stat"><span>IP</span><strong style="color:#94a3b8">${pitIP.toFixed(1)}</strong></div>` : ''}
+          </div>` : `<div style="color:var(--text-muted);font-size:11px">No split data</div>`}
+        </div>
+        <div style="border-left:1px solid var(--border);padding-left:10px">
+          <div class="pa-ars-stat-hdr" style="margin-bottom:6px">${escHtml(batLabel)}</div>
+          ${batSplit && batAB >= 5 ? `
+          <div class="pa-ars-stat-row" style="flex-wrap:wrap;gap:6px">
+            <div class="pa-ars-stat"><span>AVG</span><strong style="color:${_bc(batAvg)}">${f3(batAvg)}</strong></div>
+            <div class="pa-ars-stat"><span>OBP</span><strong style="color:${batObp>=0.370?'#22c55e':batObp>=0.310?'#86efac':batObp>0?'#f59e0b':'var(--text-muted)'}">${f3(batObp)}</strong></div>
+            <div class="pa-ars-stat"><span>SLG</span><strong style="color:${batSlg>=0.500?'#22c55e':batSlg>=0.380?'#86efac':batSlg>0?'#f59e0b':'var(--text-muted)'}">${f3(batSlg)}</strong></div>
+            <div class="pa-ars-stat"><span>OPS</span><strong style="color:${batOps>=0.850?'#22c55e':batOps>=0.700?'#86efac':batOps>0?'#f59e0b':'var(--text-muted)'}">${f3(batOps)}</strong></div>
+            <div class="pa-ars-stat"><span>AB</span><strong style="color:#94a3b8">${batAB}</strong></div>
+          </div>` : `<div style="color:var(--text-muted);font-size:11px">${batSplit ? 'Insufficient sample (<5 AB)' : 'No split data'}</div>`}
+        </div>
+      </div>`;
+    }
 
     // Overall matchup edge label (season data, stable across tabs)
     const edgeClr = pitchMatchup.score > 2 ? '#22c55e'
@@ -14175,7 +14233,8 @@ async function runLabAnalysis() {
     const _arsDefault = pitcherHand === 'L' ? 'VsLHP' : pitcherHand === 'R' ? 'VsRHP' : 'Season';
     const _arsVis    = p => p === _arsDefault ? '' : 'display:none';
     const _arsActive = p => p === _arsDefault ? ' active' : '';
-    const _noData    = msg => `<div style="padding:12px;color:var(--text-muted);font-size:12px;text-align:center">${msg}</div>`;
+
+    const pName = escHtml(pitcher?.fullName || pitcher?.name || 'Pitcher');
 
     return `<div class="pa-ars-wrap">
       <div class="pa-ars-header">
@@ -14190,10 +14249,10 @@ async function runLabAnalysis() {
         </div>
       </div>
       <div id="labArsSeason" style="${_arsVis('Season')}"><div class="pa-ars-cards">${_buildCards(pRowsSeason, bRowsSeason)}</div></div>
-      <div id="labArsVsLHP"  style="${_arsVis('VsLHP')}"><div class="pa-ars-cards">${pRowsVsL.length ? _buildCards(pRowsVsL, bRowsVsL) : _noData('Loading vs LHP split data…')}</div></div>
-      <div id="labArsVsRHP"  style="${_arsVis('VsRHP')}"><div class="pa-ars-cards">${pRowsVsR.length ? _buildCards(pRowsVsR, bRowsVsR) : _noData('Loading vs RHP split data…')}</div></div>
+      <div id="labArsVsLHP"  style="${_arsVis('VsLHP')}">${_buildHandPanel(pitcherVsLHBRaw, player.vsLHP, `${pName} vs LHB`, `${escHtml(player.name)} vs LHP`)}</div>
+      <div id="labArsVsRHP"  style="${_arsVis('VsRHP')}">${_buildHandPanel(pitcherVsRHBRaw, player.vsRHP, `${pName} vs RHB`, `${escHtml(player.name)} vs RHP`)}</div>
       ${summaryCallout}
-      <div class="pa-ars-legend">RV/100: negative = dominant pitch. Bat BA/K% = ${escHtml(player.name)}'s 2026 vs this pitch type.</div>
+      <div class="pa-ars-legend">Season tab: Savant per-pitch data (all batters). vs LHP/RHP: MLB split stats — pitcher vs that batter hand, batter vs that pitcher hand. GHP available for Season/L7/L10/L30 only.</div>
     </div>`;
   })();
 
