@@ -10238,7 +10238,7 @@ function _arsenalHitCardHTML(r, rank) {
   const initial  = (player.name||'?')[0].toUpperCase();
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
-  const pHand_ = pitcher?.pitchHand || 'R';
+  const pHand_ = pitcher?.pitchHand || null;
 
   // ── Pitcher metadata ───────────────────────────────────────────────────
   const pPhotoUrl = pitcher?.id
@@ -10293,7 +10293,7 @@ function _arsenalHitCardHTML(r, rank) {
   // ── Batter stat grid ────────────────────────────────────────────────────
   const _pa   = ss.plateAppearances || 0;
   const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
-  const relSplit = pHand_ === 'L' ? player.vsLHP : (player.vsRHP || null);
+  const relSplit = pHand_ === 'L' ? player.vsLHP : pHand_ === 'R' ? player.vsRHP : null;
   const relLabel = pHand_ === 'L' ? 'vs LHP ★' : 'vs RHP ★';
   const locSplit = player.isAway ? player.awayStats : player.homeStats;
   const locLabel = player.isAway ? 'Away' : 'Home';
@@ -10304,15 +10304,19 @@ function _arsenalHitCardHTML(r, rank) {
 
   // ── Platoon badge (computed once, used in identity header) ─────────────
   const _bat = player.batSide || 'R';
-  const platoonBadge = _bat === 'S'
+  const platoonBadge = !pHand_
+    ? `<span class="ahf-platoon ahf-platoon-neutral">? Pitcher TBD</span>`
+    : _bat === 'S'
     ? `<span class="ahf-platoon ahf-platoon-switch">⚡ Switch Hit</span>`
     : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R'))
     ? `<span class="ahf-platoon ahf-platoon-adv">✓ Platoon Edge</span>`
     : `<span class="ahf-platoon ahf-platoon-neutral">= Same Side</span>`;
 
-  const pitcherPlatBadge = _bat === 'S'
+  const pitcherPlatBadge = !pHand_
+    ? `<span class="ahf-platoon ahf-platoon-neutral">? Pitcher TBD</span>`
+    : _bat === 'S'
     ? `<span class="ahf-platoon ahf-platoon-switch">⚡ vs Switch</span>`
-    : ((pitcher?.pitchHand === 'R' && _bat === 'R') || (pitcher?.pitchHand === 'L' && _bat === 'L'))
+    : ((pHand_ === 'R' && _bat === 'R') || (pHand_ === 'L' && _bat === 'L'))
     ? `<span class="ahf-platoon ahf-platoon-pit-adv">⚠ Pitcher Adv</span>`
     : `<span class="ahf-platoon ahf-platoon-bat-adv">✓ Batter Adv</span>`;
 
@@ -10374,7 +10378,8 @@ function _arsenalHitCardHTML(r, rank) {
     : l7.avg >= 0.300 ? ', riding a hot streak'
     : (l7.avg > 0 && l7.avg < 0.210) ? ', currently cold'
     : '';
-  const platTag = _bat === 'S' ? ' — switch hitter, no platoon disadvantage'
+  const platTag = !pHand_ ? ''
+    : _bat === 'S' ? ' — switch hitter, no platoon disadvantage'
     : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R')) ? ' — holds the platoon edge tonight'
     : ' — same-side matchup, no platoon edge';
   const batterNarrative = avgTier
@@ -10642,7 +10647,7 @@ function _richScanCardHTML(r, rank, opts) {
   const initial  = (player.name || '?')[0].toUpperCase();
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
-  const pHand_ = pitcher?.pitchHand || 'R';
+  const pHand_ = pitcher?.pitchHand || null;
 
   const pPhotoUrl = pitcher?.id ? headshotUrl(pitcher.id) : null;
   const pName     = pitcher?.fullName || pitcher?.name || null;
@@ -10687,7 +10692,7 @@ function _richScanCardHTML(r, rank, opts) {
 
   const _pa   = ss.plateAppearances || 0;
   const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
-  const relSplit = pHand_ === 'L' ? player.vsLHP : (player.vsRHP || null);
+  const relSplit = pHand_ === 'L' ? player.vsLHP : pHand_ === 'R' ? player.vsRHP : null;
   const relLabel = pHand_ === 'L' ? 'vs LHP ★' : 'vs RHP ★';
   const locSplit = player.isAway ? player.awayStats : player.homeStats;
   const locLabel = player.isAway ? 'Away' : 'Home';
@@ -10697,14 +10702,18 @@ function _richScanCardHTML(r, rank, opts) {
   const timeLabel = _isNight === true ? 'Night' : 'Day';
 
   const _bat = player.batSide || 'R';
-  const platoonBadge = _bat === 'S'
+  const platoonBadge = !pHand_
+    ? `<span class="ahf-platoon ahf-platoon-neutral">? Pitcher TBD</span>`
+    : _bat === 'S'
     ? `<span class="ahf-platoon ahf-platoon-switch">⚡ Switch Hit</span>`
     : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R'))
     ? `<span class="ahf-platoon ahf-platoon-adv">✓ Platoon Edge</span>`
     : `<span class="ahf-platoon ahf-platoon-neutral">= Same Side</span>`;
-  const pitcherPlatBadge = _bat === 'S'
+  const pitcherPlatBadge = !pHand_
+    ? `<span class="ahf-platoon ahf-platoon-neutral">? Pitcher TBD</span>`
+    : _bat === 'S'
     ? `<span class="ahf-platoon ahf-platoon-switch">⚡ vs Switch</span>`
-    : ((pitcher?.pitchHand === 'R' && _bat === 'R') || (pitcher?.pitchHand === 'L' && _bat === 'L'))
+    : ((pHand_ === 'R' && _bat === 'R') || (pHand_ === 'L' && _bat === 'L'))
     ? `<span class="ahf-platoon ahf-platoon-pit-adv">⚠ Pitcher Adv</span>`
     : `<span class="ahf-platoon ahf-platoon-bat-adv">✓ Batter Adv</span>`;
 
@@ -10756,7 +10765,8 @@ function _richScanCardHTML(r, rank, opts) {
     : ss.avg >= 0.250 ? 'an average hitter' : ss.avg >= 0.220 ? 'a weak bat' : 'a struggling bat';
   const discTag = _kpct == null ? '' : _kpct <= 15 ? ' with sharp plate discipline' : _kpct >= 28 ? ' but chase-prone' : '';
   const formTag = !l7.avg ? '' : l7.avg >= 0.300 ? ', riding a hot streak' : (l7.avg > 0 && l7.avg < 0.210) ? ', currently cold' : '';
-  const platTag = _bat === 'S' ? ' — switch hitter, no platoon disadvantage'
+  const platTag = !pHand_ ? ''
+    : _bat === 'S' ? ' — switch hitter, no platoon disadvantage'
     : ((_bat === 'R' && pHand_ === 'L') || (_bat === 'L' && pHand_ === 'R')) ? ' — holds the platoon edge tonight'
     : ' — same-side matchup, no platoon edge';
   const batterNarrative = avgTier ? `${escHtml(_lastName(player.name))} is ${avgTier} (${_avg(ss.avg)||'—'})${discTag}${formTag}${platTag}.` : '';
