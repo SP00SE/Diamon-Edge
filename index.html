@@ -12481,6 +12481,11 @@ function _labSplitTab(period, btn) {
   if (target) target.style.display = '';
   document.querySelectorAll('.lab-split-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  const banner = document.getElementById('labSplitBannerMsg');
+  if (banner && btn) {
+    banner.className = 'lab-split-banner ' + (btn.dataset.bannerCls || 'neu');
+    banner.textContent = btn.dataset.bannerTxt || '';
+  }
 }
 
 function _labArsenalTab(period, btn) {
@@ -14397,6 +14402,30 @@ async function runLabAnalysis() {
      : `➡️ Neutral — ${fmt3(splitAvg)} vs ${pitcherHand}HP (within range of ${fmt3(seasAvg)} season avg, ${splitAB} AB)`)
     : `vs ${pitcherHand}HP — insufficient split sample (<20 AB)`;
 
+  // Per-tab banners (used to update the context banner when switching split tabs)
+  const _mkBanner = (s, label) => {
+    if (!s || !(s.atBats)) return { cls: 'neu', txt: `${label} — no data available` };
+    const ab   = s.atBats || 0;
+    const avg  = s.avg    || 0;
+    const diff = avg - seasAvg;
+    if (ab < 10) return { cls: 'neu', txt: `${label} — insufficient sample (<10 AB)` };
+    const fav  = diff >  0.020;
+    const bad  = diff < -0.020 && avg < 0.265;
+    if (fav)  return { cls: 'good', txt: `✅ Favorable — hits ${fmt3(avg)} ${label} (+${Math.round(diff*1000)} pts above season avg, ${ab} AB)` };
+    if (bad)  return { cls: 'bad',  txt: `⚠️ Unfavorable — only ${fmt3(avg)} ${label} (${Math.round(diff*1000)} pts below avg, ${ab} AB)` };
+    if (diff < -0.020) return { cls: 'neu', txt: `➡️ Solid — hits ${fmt3(avg)} ${label} (${Math.round(Math.abs(diff)*1000)} pts below season avg but productive, ${ab} AB)` };
+    return { cls: 'neu', txt: `➡️ Neutral — ${fmt3(avg)} ${label} (within range of ${fmt3(seasAvg)} season avg, ${ab} AB)` };
+  };
+  const _tabBanners = {
+    Season: { cls: splitBannerCls, txt: splitBannerTxt },
+    VsLHP:  _mkBanner(player.vsLHP,      'vs LHP'),
+    VsRHP:  _mkBanner(player.vsRHP,      'vs RHP'),
+    Home:   _mkBanner(player.homeStats,  'at Home'),
+    Away:   _mkBanner(player.awayStats,  'Away'),
+    Day:    _mkBanner(player.dayStats,   'in Day games'),
+    Night:  _mkBanner(player.nightStats, 'in Night games'),
+  };
+
   const l7   = player.last7Stats  || {};
   const l10  = player.last10Stats || player.last7Stats || {};
   const l30  = player.last30Stats || {};
@@ -14596,13 +14625,13 @@ async function runLabAnalysis() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px">
         <span class="lab-section-label" style="margin:0">2026 Season Stats</span>
         <div class="lab-period-tabs">
-          <button class="lab-split-tab active" onclick="_labSplitTab('Season',this)">Season</button>
-          <button class="lab-split-tab${_todaySplitTabs.has('VsLHP')?' today-split':''}" onclick="_labSplitTab('VsLHP',this)">vs LHP</button>
-          <button class="lab-split-tab${_todaySplitTabs.has('VsRHP')?' today-split':''}" onclick="_labSplitTab('VsRHP',this)">vs RHP</button>
-          <button class="lab-split-tab${_todaySplitTabs.has('Home')?' today-split':''}" onclick="_labSplitTab('Home',this)">Home</button>
-          <button class="lab-split-tab${_todaySplitTabs.has('Away')?' today-split':''}" onclick="_labSplitTab('Away',this)">Away</button>
-          <button class="lab-split-tab${_todaySplitTabs.has('Day')?' today-split':''}" onclick="_labSplitTab('Day',this)">Day</button>
-          <button class="lab-split-tab${_todaySplitTabs.has('Night')?' today-split':''}" onclick="_labSplitTab('Night',this)">Night</button>
+          <button class="lab-split-tab active" onclick="_labSplitTab('Season',this)" data-banner-cls="${_tabBanners.Season.cls}" data-banner-txt="${escHtml(_tabBanners.Season.txt)}">Season</button>
+          <button class="lab-split-tab${_todaySplitTabs.has('VsLHP')?' today-split':''}" onclick="_labSplitTab('VsLHP',this)" data-banner-cls="${_tabBanners.VsLHP.cls}" data-banner-txt="${escHtml(_tabBanners.VsLHP.txt)}">vs LHP</button>
+          <button class="lab-split-tab${_todaySplitTabs.has('VsRHP')?' today-split':''}" onclick="_labSplitTab('VsRHP',this)" data-banner-cls="${_tabBanners.VsRHP.cls}" data-banner-txt="${escHtml(_tabBanners.VsRHP.txt)}">vs RHP</button>
+          <button class="lab-split-tab${_todaySplitTabs.has('Home')?' today-split':''}" onclick="_labSplitTab('Home',this)" data-banner-cls="${_tabBanners.Home.cls}" data-banner-txt="${escHtml(_tabBanners.Home.txt)}">Home</button>
+          <button class="lab-split-tab${_todaySplitTabs.has('Away')?' today-split':''}" onclick="_labSplitTab('Away',this)" data-banner-cls="${_tabBanners.Away.cls}" data-banner-txt="${escHtml(_tabBanners.Away.txt)}">Away</button>
+          <button class="lab-split-tab${_todaySplitTabs.has('Day')?' today-split':''}" onclick="_labSplitTab('Day',this)" data-banner-cls="${_tabBanners.Day.cls}" data-banner-txt="${escHtml(_tabBanners.Day.txt)}">Day</button>
+          <button class="lab-split-tab${_todaySplitTabs.has('Night')?' today-split':''}" onclick="_labSplitTab('Night',this)" data-banner-cls="${_tabBanners.Night.cls}" data-banner-txt="${escHtml(_tabBanners.Night.txt)}">Night</button>
         </div>
       </div>
       <div id="labSplitSeason">
@@ -14626,7 +14655,7 @@ async function runLabAnalysis() {
       <div id="labSplitDay"    style="display:none">${_rfGrid(player.dayStats || {}, ghpDay,   ghpDayHit,   ghpDayGames)}</div>
       <div id="labSplitNight"  style="display:none">${_rfGrid(player.nightStats||{}, ghpNight, ghpNightHit, ghpNightGames)}</div>
       <!-- Today's split highlight -->
-      <div class="lab-split-banner ${splitBannerCls}">${splitBannerTxt}</div>
+      <div id="labSplitBannerMsg" class="lab-split-banner ${splitBannerCls}">${splitBannerTxt}</div>
       <!-- Recent form toggle: L7 / L10 / L30 -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px">
         <span class="lab-section-label" style="margin:0">Recent Form</span>
