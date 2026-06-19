@@ -14006,14 +14006,29 @@ async function runLabAnalysis() {
         ghpAwayGames    = _awayLog.length;
         ghpAwayHit      = _awayLog.filter(g => (g.stat?.hits||0) >= 1).length;
         if (ghpAwayGames >= 5) ghpAway = ghpAwayHit / ghpAwayGames;
-        const _dayLog   = fullLog.filter(g => g.dayNight === 'day');
-        ghpDayGames     = _dayLog.length;
-        ghpDayHit       = _dayLog.filter(g => (g.stat?.hits||0) >= 1).length;
-        if (ghpDayGames >= 5) ghpDay = ghpDayHit / ghpDayGames;
-        const _nightLog = fullLog.filter(g => g.dayNight === 'night');
-        ghpNightGames   = _nightLog.length;
-        ghpNightHit     = _nightLog.filter(g => (g.stat?.hits||0) >= 1).length;
-        if (ghpNightGames >= 5) ghpNight = ghpNightHit / ghpNightGames;
+        // Day/Night GHP — game log entries don't carry dayNight; fetch it in
+        // one batch schedule call using all gamePks from the log.
+        const _gamePks = [...new Set(fullLog.map(g => g.gamePk).filter(Boolean))];
+        if (_gamePks.length > 0) {
+          try {
+            const _schedUrl = `https://statsapi.mlb.com/api/v1/schedule?gamePks=${_gamePks.join(',')}&fields=dates,games,gamePk,dayNight`;
+            const _sched    = await cachedFetch(_schedUrl);
+            const _dnMap    = new Map();
+            for (const d of (_sched?.dates || [])) {
+              for (const gm of (d?.games || [])) {
+                if (gm.gamePk && gm.dayNight) _dnMap.set(gm.gamePk, gm.dayNight);
+              }
+            }
+            const _dayLog   = fullLog.filter(g => _dnMap.get(g.gamePk) === 'day');
+            ghpDayGames     = _dayLog.length;
+            ghpDayHit       = _dayLog.filter(g => (g.stat?.hits||0) >= 1).length;
+            if (ghpDayGames >= 5) ghpDay = ghpDayHit / ghpDayGames;
+            const _nightLog = fullLog.filter(g => _dnMap.get(g.gamePk) === 'night');
+            ghpNightGames   = _nightLog.length;
+            ghpNightHit     = _nightLog.filter(g => (g.stat?.hits||0) >= 1).length;
+            if (ghpNightGames >= 5) ghpNight = ghpNightHit / ghpNightGames;
+          } catch {}
+        }
         const parkGames = fullLog.filter(g =>
           player.isAway ? (g.isHome === false && Number(g.opponent?.id) === oppTeamId)
                          : (g.isHome === true)
