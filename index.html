@@ -10337,7 +10337,7 @@ function _arsenalHitCardHTML(r, rank) {
 
   // ── Pitcher key stats (inline chips in arsenal header) ─────────────────
   const pitStatsLine = [
-    ps.era  > 0 ? `<span class="ahf-pit-chip ${ps.era  >= 4.75 ? 'g' : ps.era  <= 3.25 ? 'r' : 'n'}">ERA ${(+ps.era).toFixed(2)}</span>`  : '',
+    ps.era  != null ? `<span class="ahf-pit-chip ${ps.era  >= 4.75 ? 'g' : ps.era  <= 3.25 ? 'r' : 'n'}">ERA ${(+ps.era).toFixed(2)}</span>`  : '',
     h9 && +h9  > 0 ? `<span class="ahf-pit-chip ${+h9  >= 9.0 ? 'g' : +h9  <= 7.5 ? 'r' : 'n'}">H/9 ${h9}</span>`  : '',
     k9 && +k9  > 0 ? `<span class="ahf-pit-chip ${+k9  < 6.5  ? 'g' : +k9  >= 9.5 ? 'r' : 'n'}">K/9 ${k9}</span>`  : '',
     bb9 && +bb9 > 0 ? `<span class="ahf-pit-chip ${+bb9 <= 2.5 ? 'g' : +bb9 >= 4.0 ? 'r' : 'n'}">BB/9 ${bb9}</span>` : '',
@@ -10386,7 +10386,7 @@ function _arsenalHitCardHTML(r, rank) {
     ? `${escHtml(_lastName(player.name))} is ${avgTier} (${_avg(ss.avg)||'—'})${discTag}${formTag}${platTag}.`
     : '';
 
-  const eraTag = !ps.era ? null
+  const eraTag = ps.era == null ? null
     : ps.era <= 3.00 ? 'an elite arm'
     : ps.era <= 4.00 ? 'a solid starter'
     : ps.era <= 5.00 ? 'a hittable arm'
@@ -10732,7 +10732,7 @@ function _richScanCardHTML(r, rank, opts) {
   ].filter(Boolean).join('');
 
   const pitStatsLine = [
-    ps.era  > 0 ? `<span class="ahf-pit-chip ${ps.era  >= 4.75 ? 'g' : ps.era  <= 3.25 ? 'r' : 'n'}">ERA ${(+ps.era).toFixed(2)}</span>`  : '',
+    ps.era  != null ? `<span class="ahf-pit-chip ${ps.era  >= 4.75 ? 'g' : ps.era  <= 3.25 ? 'r' : 'n'}">ERA ${(+ps.era).toFixed(2)}</span>`  : '',
     h9 && +h9  > 0 ? `<span class="ahf-pit-chip ${+h9  >= 9.0 ? 'g' : +h9  <= 7.5 ? 'r' : 'n'}">H/9 ${h9}</span>`  : '',
     k9 && +k9  > 0 ? `<span class="ahf-pit-chip ${+k9  < 6.5  ? 'g' : +k9  >= 9.5 ? 'r' : 'n'}">K/9 ${k9}</span>`  : '',
     bb9 && +bb9 > 0 ? `<span class="ahf-pit-chip ${+bb9 <= 2.5 ? 'g' : +bb9 >= 4.0 ? 'r' : 'n'}">BB/9 ${bb9}</span>` : '',
@@ -10771,7 +10771,7 @@ function _richScanCardHTML(r, rank, opts) {
     : ' — same-side matchup, no platoon edge';
   const batterNarrative = avgTier ? `${escHtml(_lastName(player.name))} is ${avgTier} (${_avg(ss.avg)||'—'})${discTag}${formTag}${platTag}.` : '';
 
-  const eraTag  = !ps.era ? null : ps.era <= 3.00 ? 'an elite arm' : ps.era <= 4.00 ? 'a solid starter' : ps.era <= 5.00 ? 'a hittable arm' : 'a vulnerable arm';
+  const eraTag  = ps.era == null ? null : ps.era <= 3.00 ? 'an elite arm' : ps.era <= 4.00 ? 'a solid starter' : ps.era <= 5.00 ? 'a hittable arm' : 'a vulnerable arm';
   const h9Tag   = !h9  ? '' : +h9  >= 9.5 ? ', allows hits freely' : +h9  >= 8.5 ? ', is hit-prone' : +h9  <= 7.0 ? ', suppresses hits well' : '';
   const k9Tag   = !k9  ? '' : +k9  >= 9.5 ? ' with swing-and-miss stuff' : +k9 < 6.5 ? ` but doesn't miss many bats` : '';
   const bb9Tag  = !bb9 ? '' : +bb9 >= 4.0 ? ' and is wild in the zone' : '';
@@ -11194,9 +11194,9 @@ function _buildBts2DeepCard(r, pickNum) {
   }
 
   // ── SP breakdown ───────────────────────────────────────────────────────────
-  const eraClr = !ps.era ? '#94a3b8' : +ps.era >= 5.00 ? '#22c55e' : +ps.era >= 4.00 ? '#fbbf24' : '#f87171';
+  const eraClr = ps.era == null ? '#94a3b8' : +ps.era >= 5.00 ? '#22c55e' : +ps.era >= 4.00 ? '#fbbf24' : '#f87171';
   const h9Clr  = !h9 ? '#94a3b8' : +h9 >= 9.5 ? '#22c55e' : +h9 >= 8.0 ? '#fbbf24' : '#f87171';
-  const spVerd = !ps.era ? 'No SP stats available.'
+  const spVerd = ps.era == null ? 'No SP stats available.'
     : +ps.era >= 5.00 ? 'Vulnerable arm — giving up hits and runs at a high rate. Ideal BTS matchup.'
     : +ps.era >= 4.50 ? 'Hittable arm — above-average ERA signals contact opportunity.'
     : +ps.era >= 4.00 ? 'League-average arm. Enough contact opportunity for an elite hitter.'
@@ -11209,7 +11209,7 @@ function _buildBts2DeepCard(r, pickNum) {
     <div class="bpick-sp-mini-row">
       ${pPhotoUrl ? `<img class="bpick-sp-face" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="bpick-sp-face-fb" style="display:none">${pInitial}</div>` : `<div class="bpick-sp-face-fb">${pInitial}</div>`}
       <div class="bpick-stat-grid" style="flex:1">
-        ${ps.era  > 0  ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${eraClr}">${(+ps.era).toFixed(2)}</div><div class="bpick-stat-lbl">ERA</div></div>` : ''}
+        ${ps.era  != null ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${eraClr}">${(+ps.era).toFixed(2)}</div><div class="bpick-stat-lbl">ERA</div></div>` : ''}
         ${h9           ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${h9Clr}">${h9}</div><div class="bpick-stat-lbl">H/9</div></div>` : ''}
         ${k9           ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${k9}</div><div class="bpick-stat-lbl">K/9</div></div>` : ''}
         ${bb9          ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${bb9}</div><div class="bpick-stat-lbl">BB/9</div></div>` : ''}
@@ -14543,7 +14543,7 @@ async function runLabAnalysis() {
   // ── Stat pills for hitter card ────────────────────────────────────────────
   const _labPills = [];
   if (seasAvg > 0) _labPills.push(`<span class="bts-score-pill bts-pill-hit">AVG ${fmt3(seasAvg)}${(l10?.avg||0)>0?' · L10 '+fmt3(l10.avg):''}</span>`);
-  if (era > 0) _labPills.push(`<span class="bts-score-pill bts-pill-era">vs ERA ${era.toFixed(2)}</span>`);
+  if (era != null) _labPills.push(`<span class="bts-score-pill bts-pill-era">vs ERA ${era.toFixed(2)}</span>`);
   if ((pf.overall||1) >= 1.03) _labPills.push(`<span class="bts-score-pill bts-pill-park">Park ${(pf.overall).toFixed(2)}× ↑</span>`);
   else if ((pf.overall||1) <= 0.97) _labPills.push(`<span class="bts-score-pill bts-pill-park" style="color:#94a3b8;border-color:#94a3b830">Park ${(pf.overall).toFixed(2)}× ↓</span>`);
   if ((player.hitStreak||0) >= 1) _labPills.push(`<span class="bts-score-pill bts-pill-streak">${player.hitStreak}-game hit streak 🔥</span>`);
