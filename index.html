@@ -11031,19 +11031,68 @@ function _renderBts2Filtered() {
     : '<div class="ahf-no-data">No players match the current filters — try relaxing a filter.</div>';
 }
 
+function _computePickWeight(r) {
+  const player  = r.player;
+  const pitcher = r.pitcher;
+  const gd      = r.gd;
+  let bonus = 0;
+
+  // 1. Platoon advantage: use the split matching the actual pitcher hand
+  const bat  = player.batSide    || 'R';
+  const hand = pitcher?.pitchHand || 'R';
+  const hasPlatAdv = (bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R') || bat === 'S';
+  const vsHandSplit = hand === 'L' ? (player.vsLHP || {}) : (player.vsRHP || {});
+  const vsHandAvg   = vsHandSplit.avg    || 0;
+  const vsHandAB    = vsHandSplit.atBats || 0;
+  if (vsHandAB >= 20) {
+    if      (vsHandAvg >= 0.320) bonus += hasPlatAdv ? 20 : 12;
+    else if (vsHandAvg >= 0.300) bonus += hasPlatAdv ? 14 : 8;
+    else if (vsHandAvg >= 0.270) bonus += hasPlatAdv ? 6  : 3;
+    else if (vsHandAvg <  0.220) bonus -= 10;
+  }
+
+  // 2. Home/Away context
+  const isHome   = player.teamId === gd?.homeTeamId;
+  const locSplit = isHome ? (player.homeStats || {}) : (player.awayStats || {});
+  const locAvg   = locSplit.avg    || 0;
+  const locAB    = locSplit.atBats || 0;
+  if (locAB >= 20) {
+    if      (locAvg >= 0.310) bonus += 8;
+    else if (locAvg >= 0.280) bonus += 4;
+    else if (locAvg <  0.230) bonus -= 5;
+  }
+
+  // 3. Arsenal pitch-type matchup quality
+  const strongMatches = (r.matches || []).filter(m => m.ba >= 0.280).length;
+  bonus += strongMatches >= 3 ? 12 : strongMatches >= 2 ? 7 : strongMatches >= 1 ? 3 : 0;
+
+  // 4. SP vulnerability (H/9)
+  const ps  = pitcher?.seasonStats || {};
+  const pIP = parseFloat(ps.inningsPitched) || 0;
+  const pW  = parseFloat(ps.whip)           || 0;
+  const pBB = parseFloat(ps.baseOnBalls)    || 0;
+  const pH2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const h9r = pIP > 0 ? pH2 / pIP * 9 : 0;
+  if      (h9r >= 10.0) bonus += 8;
+  else if (h9r >=  9.0) bonus += 5;
+  else if (h9r <=  6.5) bonus -= 4;
+
+  return r.score + bonus;
+}
+
 function handleBts2PickMe2() {
-  const filtered = _bts2Results.filter(r => _passesFilters(r, _bts2State, 'bts2'));
-  if (!filtered.length) return;
-  const eligible = filtered.filter(r => !r.h2hDisqualified);
-  const pool = eligible.length ? eligible : filtered;
-  const sorted = [...pool].sort((a, b) => b.score - a.score);
-  const pick1 = sorted[0];
-  let pick2 = null;
+  if (!_bts2Results.length) return;
+  // Ignore active filters — pick from the full pool
+  const eligible = _bts2Results.filter(r => !r.h2hDisqualified);
+  const pool     = eligible.length ? eligible : [..._bts2Results];
+  const sorted   = [...pool].sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
+  const pick1    = sorted[0];
+  let pick2      = null;
   for (const r of sorted.slice(1)) {
     if (r.gamePk !== pick1.gamePk) { pick2 = r; break; }
   }
   if (!pick2 && sorted.length > 1) pick2 = sorted[1];
-  const picks = [pick1, pick2].filter(Boolean);
+  const picks   = [pick1, pick2].filter(Boolean);
   const content = document.getElementById('labBts2PickContent');
   if (content) content.innerHTML = picks.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
   _labShow('labScreenBts2Pick');
