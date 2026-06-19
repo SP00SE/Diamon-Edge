@@ -11050,9 +11050,9 @@ function _computePickWeight(r) {
 
   // 1. Platoon advantage: use the split matching the actual pitcher hand
   const bat  = player.batSide    || 'R';
-  const hand = pitcher?.pitchHand || 'R';
-  const hasPlatAdv = (bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R') || bat === 'S';
-  const vsHandSplit = hand === 'L' ? (player.vsLHP || {}) : (player.vsRHP || {});
+  const hand = pitcher?.pitchHand || null;
+  const hasPlatAdv = hand && ((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R') || bat === 'S');
+  const vsHandSplit = hand === 'L' ? (player.vsLHP || {}) : hand === 'R' ? (player.vsRHP || {}) : {};
   const vsHandAvg   = vsHandSplit.avg    || 0;
   const vsHandAB    = vsHandSplit.atBats || 0;
   if (vsHandAB >= 20) {
