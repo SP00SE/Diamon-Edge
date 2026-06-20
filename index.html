@@ -6760,7 +6760,7 @@ function computeBtsScore(player, gameData) {
 
   // Home batter faces away pitcher; away batter faces home pitcher
   const pitcher = player.isAway ? gameData?.homePitcher : gameData?.awayPitcher;
-  const pEra    = pitcher?.seasonStats?.era            || 0;
+  const pEra    = pitcher?.seasonStats?.era            ?? null;
   const pWhip   = pitcher?.seasonStats?.whip           || 0;
   const pIP     = pitcher?.seasonStats?.inningsPitched || 0;
   const pBB     = pitcher?.seasonStats?.baseOnBalls    || 0;
@@ -6924,7 +6924,7 @@ function computeBtsScore(player, gameData) {
   }
 
   // ERA: secondary context only — max ±2
-  if (pEra > 0) {
+  if (pEra != null) {
     if      (pEra >= 5.00) { starterMatchup += 2; reasons.push(`H/9 ${pH9.toFixed(1)} — Weak Starter`); }
     else if (pEra >= 4.25) { starterMatchup += 1; }
     else if (pEra <= 3.00) { starterMatchup -= 2; reasons.push(`H/9 ${pH9.toFixed(1)} — Elite Starter`); }
