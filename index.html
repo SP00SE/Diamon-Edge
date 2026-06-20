@@ -11970,10 +11970,10 @@ function buildCompareHTML(dataA, dataB) {
   score(addRow('HR',    pA.seasonStats?.homeRuns,  pB.seasonStats?.homeRuns, v => v ?? '—', true));
 
   // Opp pitcher ERA: higher ERA = better for batter
-  const eraA = dataA.pitcher?.seasonStats?.era || 0;
-  const eraB = dataB.pitcher?.seasonStats?.era || 0;
-  if (eraA > 0 || eraB > 0) {
-    score(addRow('Opp ERA', eraA||null, eraB||null, fmtE, true));
+  const eraA = dataA.pitcher?.seasonStats?.era ?? null;
+  const eraB = dataB.pitcher?.seasonStats?.era ?? null;
+  if (eraA != null || eraB != null) {
+    score(addRow('Opp ERA', eraA, eraB, fmtE, true));
   } else {
     rows.push({ label:'Opp ERA', aDisp:'TBD', bDisp:'TBD', aWins:null });
   }
@@ -13356,15 +13356,15 @@ function _winProbability(scoreDiff) {
 
 function _predictionConfidence(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra, hasArsenal) {
   if (!awayPosted && !homePosted) return 'Preliminary';
-  // When both starters are unproven (no season ERA), the pitcher component is entirely unknown
-  const awayEra = awayPitcher?.seasonStats?.era;
-  const homeEra = homePitcher?.seasonStats?.era;
-  if (!(awayEra > 0) && !(homeEra > 0)) return 'Preliminary';
+  // When both starters have no season ERA data, the pitcher component is entirely unknown
+  const awayEra = awayPitcher?.seasonStats?.era ?? null;
+  const homeEra = homePitcher?.seasonStats?.era ?? null;
+  if (awayEra == null && homeEra == null) return 'Preliminary';
   let pts = 0;
   if (awayPosted)                           pts += 3;
   if (homePosted)                           pts += 3;
-  if (awayPitcher?.seasonStats?.era > 0)    pts += 1;
-  if (homePitcher?.seasonStats?.era > 0)    pts += 1;
+  if (awayEra != null)                      pts += 1;
+  if (homeEra != null)                      pts += 1;
   if (awayBullpenEra > 0)                   pts += 1;
   if (homeBullpenEra > 0)                   pts += 1;
   if (hasWeather)                           pts += 1;
