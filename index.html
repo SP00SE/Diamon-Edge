@@ -10558,8 +10558,8 @@ function _passesFilters(r, f, scale) {
 
   if (f.platoon !== 'any') {
     const bat  = p.batSide || 'R';
-    const hand = pit?.pitchHand || 'R';
-    if (f.platoon === 'adv' && !((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R'))) return false;
+    const hand = pit?.pitchHand || null;
+    if (f.platoon === 'adv' && (!hand || !((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R')))) return false;
     if (f.platoon === 'switch' && bat !== 'S') return false;
   }
 
@@ -12619,12 +12619,13 @@ function _buildEliteReasons(player, pitcher, pf, bullpenEra, ghp, bullpenH9 = 0,
   } else if (era > 4.20) {
     reasons.push(`Contact opportunity (${h9Disp})`);
   }
-  const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : 'vsRHP';
-  const split = player[splitKey];
+  const splitKey = pitcher?.pitchHand === 'L' ? 'vsLHP' : pitcher?.pitchHand === 'R' ? 'vsRHP' : null;
+  const split = splitKey ? player[splitKey] : null;
   if (split && (split.atBats||0) >= 20) {
     const diff = (split.avg||0) - (player.seasonStats?.avg||0);
-    if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher?.pitchHand||'?'}HP (${split.avg?.toFixed(3)||'—'})`);
-    else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher?.pitchHand||'?'}HP (+${Math.round(diff*1000)} pts)`);
+    const splitAvgFmt = (split.avg > 0 && !isNaN(split.avg)) ? split.avg.toFixed(3) : '—';
+    if      (diff > 0.040) reasons.push(`Dominant vs ${pitcher.pitchHand}HP (${splitAvgFmt})`);
+    else if (diff > 0.020) reasons.push(`Favorable vs ${pitcher.pitchHand}HP (+${Math.round(diff*1000)} pts)`);
   }
   if      (pf.overall >= 1.08) reasons.push('Hitter-friendly park');
   else if (pf.overall >= 1.04) reasons.push('Slight hitter park edge');
