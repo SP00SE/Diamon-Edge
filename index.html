@@ -8271,7 +8271,16 @@ async function startFetch() {
   } catch (err) {
     state.loading = false;
     console.error('Fetch error:', err);
-    showError('MLB Stats API connection error (ECONNRESET). This is usually temporary — wait a few seconds and tap Retry.');
+    const _em = (err?.message || '').toLowerCase();
+    let _errDetail;
+    if (_em.includes('abort') || _em.includes('timeout')) {
+      _errDetail = 'The MLB Stats API timed out. It may be temporarily slow.';
+    } else if (/http [45]\d\d/.test(_em)) {
+      _errDetail = `The MLB Stats API returned an error (${err.message}).`;
+    } else {
+      _errDetail = 'Could not reach the MLB Stats API. Check your connection.';
+    }
+    showError(`${_errDetail} The app already retried automatically — wait a moment and tap Retry.`);
   } finally {
     state.loading = false;
     document.getElementById('refreshBtn').disabled = false;
