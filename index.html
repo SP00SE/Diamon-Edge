@@ -7838,7 +7838,7 @@ async function renderDueForHit() {
 
     const gd = p._gd;
     const oppPitcher = p.isAway ? gd.homePitcher : gd.awayPitcher;
-    const pitcherEra  = oppPitcher?.seasonStats?.era  || 0;
+    const pitcherEra  = oppPitcher?.seasonStats?.era  ?? null;
     const pitcherName = oppPitcher?.fullName || oppPitcher?.name || '';
     const seasonAvg   = p.seasonStats?.avg || 0;
 
@@ -7918,7 +7918,7 @@ async function renderDueForHit() {
           <span class="dfh-stat-pill dfh-pill-ba">Season AVG ${fmt(seasonAvg)}</span>
           <span class="dfh-stat-pill dfh-pill-ba">L7 AVG ${fmt(lAvg)}</span>
           ${ss.homeRuns ? `<span class="dfh-stat-pill dfh-pill-opp">${ss.homeRuns} HR</span>` : ''}
-          ${pitcherEra > 0 ? `<span class="dfh-stat-pill dfh-pill-era">vs ERA ${pitcherEra.toFixed(2)}</span>` : ''}
+          ${pitcherEra != null ? `<span class="dfh-stat-pill dfh-pill-era">vs ERA ${pitcherEra.toFixed(2)}</span>` : ''}
           <span class="dfh-stat-pill dfh-pill-opp">vs ${oppAbbr}</span>
         </div>
         ${liveHTML}
