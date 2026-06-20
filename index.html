@@ -9818,7 +9818,7 @@ function buildPlayerAnalysisShareText() {
     `⚾ Diamond Edge — ${d.playerName} (${d.team})`,
     `Matchup: ${d.matchup}`,
     `${d.pickEmoji || ''} ${d.pickLabel || ''} | Score: ${d.matchupScore ?? '—'}`,
-    `Pitcher: ${d.pitcherName}${d.pEra ? ` | ERA ${d.pEra}` : ''}`,
+    `Pitcher: ${d.pitcherName}${d.pEra != null ? ` | ERA ${d.pEra}` : ''}`,
     d.ssAvg != null ? `AVG: ${d.ssAvg.toFixed(3)} | OBP: ${(d.ssObp||0).toFixed(3)}` : '',
     d.l7Avg != null ? `L7 AVG: ${d.l7Avg.toFixed(3)}` : '',
     (d.hitStreak || 0) > 0 ? `Hit streak: ${d.hitStreak}` : '',
@@ -12246,7 +12246,7 @@ function labSelectPlayer(playerId) {
 
 function buildPitcherProfile(pitcher) {
   const ss   = pitcher?.seasonStats || {};
-  const era  = ss.era  || 0;
+  const era  = ss.era  ?? null;
   const whip = ss.whip || 0;
   const ip   = ss.inningsPitched || 0;
   const k    = ss.strikeOuts || 0;
@@ -12261,7 +12261,7 @@ function buildPitcherProfile(pitcher) {
   const pitBABIP = ss.babip || 0;
   const pitBACON = ss.bacon || 0;
 
-  let eraTier = !era ? { label:'Unknown',      cls:'score-neutral', desc:'No 2026 stats available — treat as a neutral matchup.' }
+  let eraTier = era == null ? { label:'Unknown',      cls:'score-neutral', desc:'No 2026 stats available — treat as a neutral matchup.' }
     : era <= 2.50 ? { label:'Elite Ace',          cls:'score-great',   desc:'Commands multiple pitches with elite precision. Mistake pitches are rare.' }
     : era <= 3.30 ? { label:'Strong',             cls:'score-good',    desc:'Above-average effectiveness with solid command. Keeps hitters off-balance.' }
     : era <= 4.20 ? { label:'Average',            cls:'score-neutral', desc:'Serviceable but attackable when behind in counts. Disciplined hitters find opportunities.' }
@@ -14491,7 +14491,7 @@ async function runLabAnalysis() {
     } else if (lbl === 'Elevated ERA') {
       pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) — elevated ERA, but contact opportunity depends on K rate (${Math.round(_labKpct*100)}%) and H/9 (${profile.h9 > 0 ? profile.h9.toFixed(1) : '—'}).`;
     } else {
-      pitDesc = `${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era?era.toFixed(2):'—'}) — ${lbl.toLowerCase()} arm.`;
+      pitDesc = `${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era != null ? era.toFixed(2) : '—'}) — ${lbl.toLowerCase()} arm.`;
     }
     narrative.push(pitDesc);
   }
@@ -14506,7 +14506,7 @@ async function runLabAnalysis() {
   const _labCounterPts = [];
   if (_labKpct >= 0.22)
     _labCounterPts.push(`${pitcher?.fullName||'the pitcher'} carries a ${Math.round(_labKpct*100)}% K rate — strikeout risk remains regardless of ERA`);
-  if (era > 0 && era <= 3.50)
+  if (era != null && era <= 3.50)
     _labCounterPts.push(`contact-limiting arm (ERA ${era.toFixed(2)}, ${Math.round(_labKpct*100)}% K rate)`);
   else if (profile.h9 > 0 && profile.h9 <= 7.0 && era > 3.50)
     _labCounterPts.push(`starter suppresses hits (H/9 ${profile.h9.toFixed(1)}) despite the ERA tier`);
@@ -14728,7 +14728,7 @@ async function runLabAnalysis() {
       <!-- Stat grid -->
       <div class="lab-section-label">2026 Season Stats</div>
       <div class="lab-pitcher-stat-grid">
-        <div class="lab-pstat"><div class="lab-pstat-label">ERA</div><div class="lab-pstat-val ${profile.eraTier.cls}">${era?era.toFixed(2):'—'}</div><div class="lab-pstat-tier">${profile.eraTier.label}</div></div>
+        <div class="lab-pstat"><div class="lab-pstat-label">ERA</div><div class="lab-pstat-val ${profile.eraTier.cls}">${era != null ? era.toFixed(2) : '—'}</div><div class="lab-pstat-tier">${profile.eraTier.label}</div></div>
         <div class="lab-pstat"><div class="lab-pstat-label">H/9</div><div class="lab-pstat-val ${profile.h9&&profile.h9>=9.5?'bad':profile.h9&&profile.h9>=8.5?'avg':profile.h9&&profile.h9>0?'good':''}">${profile.h9>0?profile.h9.toFixed(1):'—'}</div><div class="lab-pstat-tier">${profile.h9Tend||'—'}</div></div>
         <div class="lab-pstat"><div class="lab-pstat-label">K/9</div><div class="lab-pstat-val ${k9n>=9?'good':k9n>=6?'avg':k9n>0?'bad':''}">${k9n>0?profile.k9:'—'}</div><div class="lab-pstat-tier">${profile.kTend||'—'}</div></div>
         <div class="lab-pstat"><div class="lab-pstat-label">BB/9</div><div class="lab-pstat-val ${bb9n>0&&bb9n<=2.5?'good':bb9n>0&&bb9n<=3.5?'avg':bb9n>3.5?'bad':''}">${bb9n>0?profile.bb9:'—'}</div></div>
@@ -14886,7 +14886,7 @@ async function runLabAnalysis() {
     riskBullets: _lRisk,
     pitcherName: pitcher?.fullName || pitcher?.name || '—',
     pitcherHand,
-    pEra: profile.era || null,
+    pEra: profile.era ?? null,
     pH9: _lH9,
     pHBF: _lHBF,
     pKpct: _lKpct,
