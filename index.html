@@ -4951,7 +4951,7 @@ function mapPitcherStats(raw) {
   const con  = ip * 3 + h - k;        // contact plays against
   const bf   = ip > 0 ? ip * (3 + whip) : 0; // batters faced (outs + H + BB)
   return {
-    era:  parseFloat(raw.era) || 0,
+    era:  raw.era != null ? parseFloat(raw.era) : null,
     whip,
     strikeOuts:     k,
     baseOnBalls:    bb,
