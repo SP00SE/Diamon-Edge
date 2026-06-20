@@ -7026,9 +7026,9 @@ function computePickConfidence(player, gameData, lineupPosted, mode = 'combined'
   // ── 2. OPPOSING PITCHER (6-tier smooth ramp) ─────────────────────────────
   const oppPitcher = player.teamId === gameData?.homeTeamId
     ? gameData.awayPitcher : gameData.homePitcher;
-  const pEra  = oppPitcher?.seasonStats?.era  || 0;
-  const pWhip = oppPitcher?.seasonStats?.whip || 0;
-  const elitePitcher = pEra > 0 && (pEra <= 2.50 || pWhip <= 0.95);
+  const pEra  = oppPitcher?.seasonStats?.era  ?? null;
+  const pWhip = oppPitcher?.seasonStats?.whip ?? null;
+  const elitePitcher = pEra != null && (pEra <= 2.50 || pWhip <= 0.95);
   if (!oppPitcher?.seasonStats) {
     score -= 3;  // no stats = small uncertainty penalty
   } else if (elitePitcher) {
@@ -7257,7 +7257,7 @@ function renderBeatTheStreak() {
     for (const player of gd.players) {
       const avg = player.seasonStats?.avg || 0;
       const pitcher = player.teamId === gd.homeTeamId ? gd.awayPitcher : gd.homePitcher;
-      const era = pitcher?.seasonStats?.era || 0;
+      const era = pitcher?.seasonStats?.era ?? null;
       const oppBullpenEra  = player.isAway ? (gd.homeBullpenEra  || 0) : (gd.awayBullpenEra  || 0);
       const oppBullpenWhip = player.isAway ? (gd.homeBullpenWhip || 0) : (gd.awayBullpenWhip || 0);
       const oppBullpenH9   = player.isAway ? (gd.homeBullpenH9   || 0) : (gd.awayBullpenH9   || 0);
@@ -8377,8 +8377,8 @@ function computeHFScore(player, pitcher, gd, bvp, bullpenEra, teamAvg7, oppAllow
   const kPct    = pa > 0 ? ks / pa : 0;
   const l7avg   = player.last7Stats?.avg || 0;
   const pos     = player.orderPos || 9;
-  const era     = pitcher?.seasonStats?.era  || 0;
-  const whip    = pitcher?.seasonStats?.whip || 0;
+  const era     = pitcher?.seasonStats?.era  ?? null;
+  const whip    = pitcher?.seasonStats?.whip ?? null;
   const pf      = gd.parkFactor?.overall || 1.0;
   const ws      = gd.weather?.windSpeed  || 0;
   const wd      = gd.weather?.windDir    || 0;
@@ -8414,8 +8414,8 @@ function computeHFScore(player, pitcher, gd, bvp, bullpenEra, teamAvg7, oppAllow
   if (obp >= 0.350)      { score+=8;  factors.push({t:`OBP ${obp.toFixed(3)} (≥.350)`,pos:true}); }
   if (pa > 0 && kPct <= 0.18) { score+=6; factors.push({t:`K% ${(kPct*100).toFixed(0)}% — contact hitter`,pos:true}); }
   if (bvp.ab >= 10 && bvp.avg >= 0.300) { score+=8; factors.push({t:`${bvp.avg.toFixed(3)} vs pitcher (${bvp.hits}/${bvp.ab} AB)`,pos:true}); }
-  if (whip >= 1.35) { score+=6; factors.push({t:`Opp WHIP ${whip.toFixed(2)} (≥1.35)`,pos:true}); }
-  if (era  >= 4.50) { score+=6; factors.push({t:`Opp ERA ${era.toFixed(2)} (≥4.50)`,pos:true}); }
+  if (whip != null && whip >= 1.35) { score+=6; factors.push({t:`Opp WHIP ${whip.toFixed(2)} (≥1.35)`,pos:true}); }
+  if (era  != null && era  >= 4.50) { score+=6; factors.push({t:`Opp ERA ${era.toFixed(2)} (≥4.50)`,pos:true}); }
   if      (bullpenEra >= 5.50) { score+=8; factors.push({t:`Opp Team ERA ${bullpenEra.toFixed(2)} (terrible pen)`,pos:true}); }
   else if (bullpenEra >= 4.50) { score+=4; factors.push({t:`Opp Team ERA ${bullpenEra.toFixed(2)} (weak pen)`,pos:true}); }
   else if (bullpenEra >  0 && bullpenEra <= 3.00) { score-=10; factors.push({t:`Opp Team ERA ${bullpenEra.toFixed(2)} (elite pen)`,pos:false}); }
@@ -8445,7 +8445,7 @@ function computeHFScore(player, pitcher, gd, bvp, bullpenEra, teamAvg7, oppAllow
   }
 
   // SUBS
-  if (era <= 3.00 && whip <= 1.10) { score-=10; factors.push({t:`Elite pitcher ERA ${era.toFixed(2)} WHIP ${whip.toFixed(2)}`,pos:false}); }
+  if (era != null && era <= 3.00 && whip != null && whip <= 1.10) { score-=10; factors.push({t:`Elite pitcher ERA ${era.toFixed(2)} WHIP ${whip.toFixed(2)}`,pos:false}); }
   if (pa > 0 && kPct >= 0.25)      { score-=8;  factors.push({t:`K% ${(kPct*100).toFixed(0)}% — high strikeout risk`,pos:false}); }
   if (l7avg > 0 && l7avg <= 0.200) { score-=6;  factors.push({t:`Slumping .${Math.round(l7avg*1000)} last 7d`,pos:false}); }
   if (bvp.ab >= 10 && bvp.avg < 0.200) { score-=6; factors.push({t:`${bvp.avg.toFixed(3)} vs pitcher — dominated`,pos:false}); }
@@ -8810,7 +8810,7 @@ function renderSafestParlay(isReroll = false) {
 
     // Opposing pitcher: away batters face home pitcher and vice versa
     const pitcher    = p.isAway ? gd.homePitcher : gd.awayPitcher;
-    const pEra       = pitcher?.seasonStats?.era || 0;
+    const pEra       = pitcher?.seasonStats?.era ?? null;
     const pName      = pitcher?.fullName || pitcher?.name || '?';
 
     // Opposing team abbr (display)
@@ -8829,11 +8829,11 @@ function renderSafestParlay(isReroll = false) {
 
     // Filter: batter must hit decently, pitcher must not be elite, opponent must not be strong
     if (sznAvg < 0.250)                   return null;  // below .250 → not a safe pick
-    if (pEra > 0 && pEra < 4.00)          return null;  // known good pitcher → skip (ERA=0 = unknown, allowed)
+    if (pEra != null && pEra < 4.00)       return null;  // known good pitcher → skip; null = TBD (allowed)
     if (oppWinPct > 0.530)                return null;  // clearly winning team → skip
 
     // Composite safety score: higher = safer pick
-    const eraScore  = pEra > 0 ? Math.min(40, (pEra - 4.00) * 10) : 5;  // unknown ERA gets small neutral bonus
+    const eraScore  = pEra != null ? Math.min(40, (pEra - 4.00) * 10) : 5;  // null/TBD ERA gets small neutral bonus
     const avgScore  = Math.min(30, (sznAvg - 0.250) * 300);
     const oppScore  = Math.min(30, (0.530 - oppWinPct) * 100);
     const composite = eraScore + avgScore + oppScore;
@@ -8859,8 +8859,8 @@ function renderSafestParlay(isReroll = false) {
     const avgPass  = deduped2.filter(p => (p.seasonStats?.avg||0) >= 0.250).length;
     const eraPass  = deduped2.filter(p => {
       const pit = p.isAway ? p._gd.homePitcher : p._gd.awayPitcher;
-      const era = pit?.seasonStats?.era || 0;
-      return era === 0 || era >= 4.00;
+      const era = pit?.seasonStats?.era ?? null;
+      return era === null || era >= 4.00;
     }).length;
     el.innerHTML = `<div class="soa-empty">No players meet all criteria today.<br><span style="font-size:10px;opacity:.6">AVG ≥.250: ${avgPass} players · Pitcher ERA ≥4.00: ${eraPass} players · Both + weak opp: 0</span></div>`;
     return;
@@ -9647,7 +9647,7 @@ async function _labCopyCompareSummary() {
   if (!pA || !pB) { _paToast('No comparison data.'); return; }
   const d = _lastCompareData;
   const fmt3 = v => v != null && v > 0 ? v.toFixed(3).replace(/^0/,'') : '—';
-  const fmtE = v => v != null && v > 0 ? v.toFixed(2) : '—';
+  const fmtE = v => v != null ? v.toFixed(2) : '—';
   const pct  = v => v != null ? Math.round(v * 100) + '%' : '—';
   const _cPitIPa = d.dataA.pitcher?.seasonStats?.inningsPitched||0;
   const _cPitIPb = d.dataB.pitcher?.seasonStats?.inningsPitched||0;
@@ -9668,7 +9668,7 @@ async function _labCopyCompareSummary() {
     `HR:             ${d.dataA.hr ?? '—'} vs ${d.dataB.hr ?? '—'}`,
     `RBI:            ${d.dataA.rbi ?? '—'} vs ${d.dataB.rbi ?? '—'}`,
     ``,
-    `Opp Starter ERA: ${fmtE(d.dataA.pitcher?.seasonStats?.era||0)} vs ${fmtE(d.dataB.pitcher?.seasonStats?.era||0)}`,
+    `Opp Starter ERA: ${fmtE(d.dataA.pitcher?.seasonStats?.era ?? null)} vs ${fmtE(d.dataB.pitcher?.seasonStats?.era ?? null)}`,
     `Opp Starter K%:  ${cPitKpctA} vs ${cPitKpctB}`,
     `Opp Bullpen ERA: ${fmtE(d.dataA.bullpenEra||0)} vs ${fmtE(d.dataB.bullpenEra||0)}`,
     `— Diamond Edge MLB Analysis  🔬`,
@@ -12167,7 +12167,7 @@ async function copyLabCompareText() {
   if (!dataA || !dataB) return;
   const pA = dataA.player, pB = dataB.player;
   const fmt3 = v => (v != null && v > 0) ? v.toFixed(3).replace(/^0/,'') : '—';
-  const fmtE = v => (v != null && v > 0) ? v.toFixed(2) : '—';
+  const fmtE = v => v != null ? v.toFixed(2) : '—';
   const pad  = (s, n) => String(s).padEnd(n);
 
   const winA = pA.name.length > 18 ? pA.name.slice(0,17)+'…' : pA.name;
@@ -12194,7 +12194,7 @@ async function copyLabCompareText() {
   const penH9B  = pB.isAway ? (dataB.gd?.homeBullpenH9||0)  : (dataB.gd?.awayBullpenH9||0);
   const penHBFA = pA.isAway ? (dataA.gd?.homeBullpenHBF||0) : (dataA.gd?.awayBullpenHBF||0);
   const penHBFB = pB.isAway ? (dataB.gd?.homeBullpenHBF||0) : (dataB.gd?.awayBullpenHBF||0);
-  const eraA = dataA.pitcher?.seasonStats?.era||0, eraB = dataB.pitcher?.seasonStats?.era||0;
+  const eraA = dataA.pitcher?.seasonStats?.era ?? null, eraB = dataB.pitcher?.seasonStats?.era ?? null;
   const _pitIPa = dataA.pitcher?.seasonStats?.inningsPitched||0, _pitIPb = dataB.pitcher?.seasonStats?.inningsPitched||0;
   const _pitKa  = dataA.pitcher?.seasonStats?.strikeOuts||0,    _pitKb  = dataB.pitcher?.seasonStats?.strikeOuts||0;
   const pitKpctA = _pitIPa > 0 ? _pitKa / (_pitIPa * 4.3) : 0;
@@ -12224,7 +12224,7 @@ async function copyLabCompareText() {
     line(ghpA,                          'GHP (L7)',            ghpB,                          gt(pA.hitGames7,pB.hitGames7)),
     line((pA.hitStreak||0)>0?`${pA.hitStreak}G`:'—', 'Hit Streak', (pB.hitStreak||0)>0?`${pB.hitStreak}G`:'—', gt(pA.hitStreak||0,pB.hitStreak||0)),
     line(splAvgA!=null?`${fmt3(splAvgA)} (${splAbA}AB vs ${phA}HP)`:'—', 'Split vs Pitcher', splAvgB!=null?`${fmt3(splAvgB)} (${splAbB}AB vs ${phB}HP)`:'—', splAbA>=20&&splAbB>=20?gt(splAvgA,splAvgB):null),
-    line(fmtE(eraA||null),             'Opp ERA',             fmtE(eraB||null),              gt(eraA,eraB)),
+    line(fmtE(eraA),                   'Opp ERA',             fmtE(eraB),                    gt(eraA,eraB)),
     line(pitKpctA>0?Math.round(pitKpctA*100)+'%':'—', 'Opp Starter K%', pitKpctB>0?Math.round(pitKpctB*100)+'%':'—', lt(pitKpctA||null,pitKpctB||null)),
     line(h2hDispA,                      'H2H vs Pitcher',     h2hDispB,                      dataA.h2h?.ab>=5&&dataB.h2h?.ab>=5?gt(dataA.h2h.avg,dataB.h2h.avg):null),
     line(pkDispA,                       'Park AVG',           pkDispB,                       dataA.parkStats?.ab>=5&&dataB.parkStats?.ab>=5?gt(dataA.parkStats.avg,dataB.parkStats.avg):null),
