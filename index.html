@@ -13506,8 +13506,8 @@ function runTeamScan(onProgress) {
       actualWinner: _actWinner,
       awayPitcherName: gd.awayPitcher?.name || gd.awayPitcher?.fullName || null,
       homePitcherName: gd.homePitcher?.name || gd.homePitcher?.fullName || null,
-      awayPitcherEra:  gd.awayPitcher?.seasonStats?.era  || null,
-      homePitcherEra:  gd.homePitcher?.seasonStats?.era  || null,
+      awayPitcherEra:  gd.awayPitcher?.seasonStats?.era  ?? null,
+      homePitcherEra:  gd.homePitcher?.seasonStats?.era  ?? null,
       awayEraTrap, homeEraTrap,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
@@ -13602,7 +13602,7 @@ function _teamScanCardHTML(r) {
 
   // SP sub-label (pitcher names + ERA)
   const _fmtSp = (name, era) => name
-    ? escHtml(name) + (era != null && parseFloat(era) > 0 ? ` <span style="color:var(--text-muted)">(${parseFloat(era).toFixed(2)} ERA)</span>` : '')
+    ? escHtml(name) + (era != null ? ` <span style="color:var(--text-muted)">(${parseFloat(era).toFixed(2)} ERA)</span>` : '')
     : '';
   const awaySpStr = _fmtSp(awayPitcherName, awayPitcherEra);
   const homeSpStr = _fmtSp(homePitcherName, homePitcherEra);
@@ -13702,7 +13702,7 @@ function _teamScanCardHTML(r) {
       const eraTrapName = winner === 'away' ? (awayEraTrap && awayPitcherName) : (homeEraTrap && homePitcherName);
       const eraTrapEra  = winner === 'away' ? awayPitcherEra : homePitcherEra;
       if (!eraTrapName) return '';
-      const eraStr = eraTrapEra > 0 ? ` (${parseFloat(eraTrapEra).toFixed(2)} ERA)` : '';
+      const eraStr = eraTrapEra != null ? ` (${parseFloat(eraTrapEra).toFixed(2)} ERA)` : '';
       return `<div class="twp-trap-warning" style="border-top:none;padding-top:2px">&#9888; ERA Trap: ${escHtml(eraTrapName)}${eraStr} — model used K%/pitch-mix. High ERA may still allow traffic. Verify H/9 and H/BF%.</div>`;
     })()}
 
@@ -13783,7 +13783,7 @@ function _teamScanCardHTML(r) {
         const runMargin    = actWinRuns != null && actProjRuns != null ? actWinRuns - actProjRuns : null;
 
         if (wrongEdges.some(d => d.label === 'Starting Pitcher')) {
-          const eraNote = predSpEra > 0 ? ` (${parseFloat(predSpEra).toFixed(2)} ERA)` : '';
+          const eraNote = predSpEra != null ? ` (${parseFloat(predSpEra).toFixed(2)} ERA)` : '';
           tips.push(`The model overweighted ${predSpName ? escHtml(predSpName) + eraNote : 'the starter'} as a run-prevention edge. Next time, pair ERA with K% and last-3-start ERA — a starter with a high ERA but elite K% is an ERA trap, not a run target.`);
         }
         if (wrongEdges.some(d => d.label === 'Offense & Form')) {
@@ -13794,7 +13794,7 @@ function _teamScanCardHTML(r) {
           tips.push(`${predAbbr}'s bullpen looked stronger on paper but didn't hold. Next time, reduce bullpen confidence when ERA/H9 data is from the season — bullpen rest and recent workload (prior 2 days) are not in the model and can flip this edge.`);
         }
         if (missedEdges.some(d => d.label === 'Starting Pitcher')) {
-          const aEra = actualSpEra > 0 ? ` (${parseFloat(actualSpEra).toFixed(2)} ERA)` : '';
+          const aEra = actualSpEra != null ? ` (${parseFloat(actualSpEra).toFixed(2)} ERA)` : '';
           tips.push(`${actualName}'s starter${actualSpName ? ' ' + escHtml(actualSpName) + aEra : ''} outperformed their ERA. Next time, check Savant whiff% and put-away pitch effectiveness — a high-ERA pitcher who generates whiffs suppresses scoring even when ERA says otherwise.`);
         }
         if (missedEdges.some(d => d.label === 'Offense & Form')) {
