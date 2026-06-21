@@ -13588,8 +13588,8 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
     mainReason = 'Neither team holds a meaningful edge — treat as a coin-flip.';
   }
 
-  // Detect 7 traps
-  let trapWarning = '';
+  // Collect all matching traps — no else-if so multiple can fire simultaneously
+  const traps = [];
   const winnerStSc = winner === 'away' ? homeStarterSc : awayStarterSc; // starter they face
   const winnerBpSc = winner === 'away' ? homeBullpenSc : awayBullpenSc;
   const loserStSc  = winner === 'away' ? awayStarterSc : homeStarterSc;
@@ -13600,30 +13600,30 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
   if (winner !== 'tie') {
     // Trap 1: High ERA but high-K starter opposing the predicted winner
     if (winnerStSc <= 42 && loserK9 >= 9.5 && loserEra >= 4.00)
-      trapWarning = 'High ERA but strikeout upside — starter may limit clean offense despite ERA.';
+      traps.push('High ERA but strikeout upside — starter may limit clean offense despite ERA.');
     // Trap 2: Weak starter but strong bullpen (loser side)
-    else if (loserStSc >= 65 && loserBpSc <= 40)
-      trapWarning = 'Early opportunity against a hittable starter, but elite bullpen may shut down later innings.';
+    if (loserStSc >= 65 && loserBpSc <= 40)
+      traps.push('Early opportunity against a hittable starter, but elite bullpen may shut down later innings.');
     // Trap 3: Strong starter but weak bullpen (winner side)
-    else if (winnerStSc <= 38 && winnerBpSc >= 62)
-      trapWarning = `${winnerAbbr}'s starter edge may not hold — their bullpen is below average if the game gets long.`;
+    if (winnerStSc <= 38 && winnerBpSc >= 62)
+      traps.push(`${winnerAbbr}'s starter edge may not hold — their bullpen is below average if the game gets long.`);
     // Trap 4: Hitter-friendly park but weak offense
-    else if ((pf?.overall ?? 1.0) >= 1.08 && awayScore < 52 && homeScore < 52)
-      trapWarning = 'Hitter-friendly park, but neither lineup is showing strong offensive signals.';
+    if ((pf?.overall ?? 1.0) >= 1.08 && awayScore < 52 && homeScore < 52)
+      traps.push('Hitter-friendly park, but neither lineup is showing strong offensive signals.');
     // Trap 5: Strong lineup but bad pitch-type fit (winner has arsenal disadvantage)
-    else if (winArsenal <= -3)
-      trapWarning = `${winnerAbbr}'s lineup is strong overall, but the starter's arsenal attacks their weaker pitch-type profiles.`;
+    if (winArsenal <= -3)
+      traps.push(`${winnerAbbr}'s lineup is strong overall, but the starter's arsenal attacks their weaker pitch-type profiles.`);
     // Trap 6: Contact-heavy lineup, low power ceiling
-    else if (winArsenal >= 0 && (winner === 'away' ? awayArsenalEdge : homeArsenalEdge) < 2 && pf?.isHitter)
-      trapWarning = 'Hit volume may be solid but run ceiling could be limited without extra-base damage in this park.';
-    // Trap 7: Projected lineups only
-    else if (!awayPosted && !homePosted)
-      trapWarning = 'Both lineups are projected. Prediction is preliminary — confidence will improve once official lineups are posted.';
+    if (winArsenal >= 0 && (winner === 'away' ? awayArsenalEdge : homeArsenalEdge) < 2 && pf?.isHitter)
+      traps.push('Hit volume may be solid but run ceiling could be limited without extra-base damage in this park.');
+    // Trap 7: Projected lineups
+    if (!awayPosted && !homePosted)
+      traps.push('Both lineups are projected. Prediction is preliminary — confidence will improve once official lineups are posted.');
     else if (!awayPosted || !homePosted)
-      trapWarning = 'One lineup is still projected. Monitor for late scratches before committing.';
+      traps.push('One lineup is still projected. Monitor for late scratches before committing.');
     // Trap 8: Predicted winner's starter on short rest
-    else if (winRest <= -5)
-      trapWarning = `${winnerAbbr}'s starter is on short rest — fatigue could reduce effectiveness and limit pitch count.`;
+    if (winRest <= -5)
+      traps.push(`${winnerAbbr}'s starter is on short rest — fatigue could reduce effectiveness and limit pitch count.`);
   }
 
   // mainRisk
@@ -13651,7 +13651,7 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
   else if ((pf?.overall ?? 1.0) < 0.95) parts.push('Pitcher-friendly park suppresses scoring.');
   if (pf?.isDome) parts.push('Dome / roof — weather-neutral environment.');
 
-  return { summaryText: parts.join(' '), mainReason, mainRisk, trapWarning };
+  return { summaryText: parts.join(' '), mainReason, mainRisk, trapWarnings: traps };
 }
 
 function _starterBonus(pitcher, gameLog = null) {
@@ -14372,7 +14372,7 @@ function runTeamScan(onProgress, filterPk = null) {
       summaryText:  _summary.summaryText,
       mainReason:   _summary.mainReason,
       mainRisk:     _summary.mainRisk,
-      trapWarning:  _summary.trapWarning,
+      trapWarnings: _summary.trapWarnings,
     });
     onProgress?.();
   }
@@ -14385,7 +14385,7 @@ function _teamScanCardHTML(r) {
     gamePk, gameDate, gameLabel, awayAbbr, homeAbbr, awayTeamId, homeTeamId,
     winner, awayPlayers, homePlayers,
     awayProjRuns, homeProjRuns, predTotal,
-    summaryText, mainReason, mainRisk, trapWarning,
+    summaryText, mainReason, mainRisk, trapWarnings,
     awayComponents, homeComponents,
     awayWinProb, homeWinProb, confidence, winEdge,
     awayPosted, homePosted,
@@ -14666,7 +14666,7 @@ function _teamScanCardHTML(r) {
 
     ${(mainReason || summaryText) ? `<div class="twp-reasoning-banner">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b80"> · Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
 
-    ${trapWarning ? `<div class="twp-trap-warning">&#9888; ${escHtml(trapWarning)}</div>` : ''}
+    ${(trapWarnings || []).slice(0, 3).map(w => `<div class="twp-trap-warning">&#9888; ${escHtml(w)}</div>`).join('')}
     ${(() => {
       const eraTrapName = winner === 'away' ? (awayEraTrap && awayPitcherName) : (homeEraTrap && homePitcherName);
       const eraTrapEra  = winner === 'away' ? awayPitcherEra : homePitcherEra;
