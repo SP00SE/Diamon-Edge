@@ -13943,6 +13943,15 @@ function _streakAdj(standings) {
   return isWin ? (n >= 6 ? 2 : 1) : (n >= 6 ? -2 : -1);
 }
 
+// Bullpen fatigue proxy — winning streaks imply heavy recent bullpen usage in close games.
+// No per-game usage data available; streak length is the best available proxy.
+function _bullpenFatigueAdj(standings) {
+  const code = standings?.streak || '';
+  if (!code || code.length < 2 || code.charAt(0) !== 'W') return 0;
+  const n = parseInt(code.slice(1)) || 0;
+  return n >= 7 ? -2 : n >= 5 ? -1 : 0;
+}
+
 // Returns 1–5: strong home teams or weak road opponents push it up, vice versa.
 function _homeFieldAdj(homeStandings, awayStandings) {
   let adv = 3;
@@ -14242,7 +14251,7 @@ function runTeamScan(onProgress, filterPk = null) {
     const _awayStarterRaw  = _starterBonus(gd.awayPitcher, gd.awayPitcherGameLog);
     const awayStarter      = typeof _awayStarterRaw === 'object' ? _awayStarterRaw.score : _awayStarterRaw;
     const awayEraTrap      = typeof _awayStarterRaw === 'object' && _awayStarterRaw.eraTrap;
-    const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF, gd.awayBullpenHR9);
+    const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF, gd.awayBullpenHR9) + _bullpenFatigueAdj(state.teamStandings?.get(String(gd.awayTeamId)) ?? null);
     const awayConf         = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
     const awayRestAdj      = _starterRestAdj(gd.awayPitcherGameLog, gd.gameDate);
     const _rawGameDN       = (state.games || []).find(g => g.gamePk === gd.gamePk);
@@ -14269,7 +14278,7 @@ function runTeamScan(onProgress, filterPk = null) {
     const _homeStarterRaw  = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
     const homeStarter      = typeof _homeStarterRaw === 'object' ? _homeStarterRaw.score : _homeStarterRaw;
     const homeEraTrap      = typeof _homeStarterRaw === 'object' && _homeStarterRaw.eraTrap;
-    const homeBullpen      = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF, gd.homeBullpenHR9);
+    const homeBullpen      = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF, gd.homeBullpenHR9) + _bullpenFatigueAdj(state.teamStandings?.get(String(gd.homeTeamId)) ?? null);
     const homeConf         = _lineupConfidenceAdj(homePosted, homePlayers.length);
     const homeRestAdj      = _starterRestAdj(gd.homePitcherGameLog, gd.gameDate);
     const homeArsenalResult = _teamPitchArsenalEdge(homePlayers, gd.awayPitcher?.id);
