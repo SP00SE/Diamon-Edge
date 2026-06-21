@@ -644,6 +644,17 @@ main { padding: 28px 0 60px; }
 .twp-postmortem { padding:7px 14px 9px; font-size:11px; color:#94a3b8; line-height:1.5; border-top:1px solid #1e293b; background:#0f172a; }
 .twp-pred-label { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); font-weight:700; margin-right:6px; }
 .twp-result-neutral { background:#94a3b822; color:#94a3b8; border:1px solid #94a3b844; }
+@media (max-width:600px) {
+  .twp-body { flex-direction:column; }
+  .twp-team { width:100%; flex:unset; padding:10px 12px 8px; flex-direction:row; justify-content:space-between; align-items:center; gap:8px; }
+  .twp-center { display:none; }
+  .twp-edge-row { gap:4px; flex-wrap:wrap; }
+  .twp-matchup-note { padding-left:8px !important; }
+  .twp-player-name { max-width:160px; }
+  .twp-winner-strip { flex-direction:column; align-items:flex-start; gap:4px; padding:8px 12px; }
+  .twp-edge-label { min-width:52px; font-size:9px; }
+  .twp-header { flex-wrap:wrap; gap:4px; }
+}
 .lab-compare-table { width:100%; table-layout:fixed; border-collapse:collapse; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:16px; }
 .lab-compare-table th { padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); background:var(--bg-hover); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-compare-table th:first-child  { text-align:right; width:40%; }
