@@ -14058,9 +14058,15 @@ function _calibrateSigmoidSlope(finalResults) {
   return (lo + hi) / 2;
 }
 
-function _winProbability(scoreDiff) {
+function _winProbability(scoreDiff, homeProjRuns, awayProjRuns) {
   const k = state.sigmoidSlope ?? 0.023;
-  return Math.round(100 / (1 + Math.exp(-k * scoreDiff)));
+  const scoreProb = 100 / (1 + Math.exp(-k * scoreDiff));
+  if (homeProjRuns == null || awayProjRuns == null || !Number.isFinite(homeProjRuns) || !Number.isFinite(awayProjRuns)) {
+    return Math.round(scoreProb);
+  }
+  const runDiff = homeProjRuns - awayProjRuns;
+  const runProb = 100 / (1 + Math.exp(-0.35 * runDiff));
+  return Math.round(0.70 * scoreProb + 0.30 * runProb);
 }
 
 function _predictionConfidence(awayPosted, homePosted, awayPitcher, homePitcher, hasWeather, awayBullpenEra, homeBullpenEra, hasArsenal) {
@@ -14278,7 +14284,14 @@ function runTeamScan(onProgress, filterPk = null) {
     const hasArsenal   = awayArsenalEdge !== 0 || homeArsenalEdge !== 0;
     const margin       = Math.abs(awayScore - homeScore);
     const winner       = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
-    const homeWinProb  = _winProbability(homeScore - awayScore);
+
+    // Projected runs computed early so win probability can blend run-differential signal
+    const _projTemp     = weather?.temp ?? 70;
+    const _projIsDome   = pf?.isDome ?? false;
+    const _awayProjRuns = _projRuns(awayLineup + awayBBMatchup + awayKMatchup + awayParkPower, homeStarter, homeBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
+    const _homeProjRuns = _projRuns(homeLineup + homeBBMatchup + homeKMatchup + homeParkPower, awayStarter, awayBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
+
+    const homeWinProb  = _winProbability(homeScore - awayScore, _homeProjRuns, _awayProjRuns);
     const awayWinProb  = 100 - homeWinProb;
     const confidence   = _predictionConfidence(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!(weather && !pf?.isDome), gd.awayBullpenEra, gd.homeBullpenEra, hasArsenal);
     const winEdge      = _winEdgeLabel(awayWinProb, homeWinProb);
@@ -14289,11 +14302,6 @@ function runTeamScan(onProgress, filterPk = null) {
     const _actHome    = _isFinal ? (_rawGame?.teams?.home?.score ?? null) : null;
     const _actWinner  = (_actAway != null && _actHome != null)
       ? (_actAway > _actHome ? 'away' : _actAway < _actHome ? 'home' : 'tie') : null;
-
-    const _projTemp     = weather?.temp ?? 70;
-    const _projIsDome   = pf?.isDome ?? false;
-    const _awayProjRuns = _projRuns(awayLineup + awayBBMatchup + awayKMatchup + awayParkPower, homeStarter, homeBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
-    const _homeProjRuns = _projRuns(homeLineup + homeBBMatchup + homeKMatchup + homeParkPower, awayStarter, awayBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
 
     const _daysRest = (log, gdate) => {
       if (!log?.length || !gdate) return null;
