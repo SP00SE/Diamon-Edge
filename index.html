@@ -153,12 +153,12 @@ main { padding: 28px 0 60px; }
   padding: 12px 14px 0;
   margin-bottom: 24px;
 }
-.chip-actions {
-  display: flex; gap: 4px; margin-top: 8px; border-top: 1px solid var(--border);
-  padding-top: 8px;
+.chip-btns {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px;
 }
 .chip-action-btn {
-  flex: 1; padding: 5px 4px; border-radius: 5px; font-size: 10px; font-weight: 600;
+  padding: 5px 4px; border-radius: 5px; font-size: 10px; font-weight: 600;
   cursor: pointer; border: 1px solid var(--border); background: var(--bg-input);
   color: var(--text-muted); transition: all .15s; font-family: 'Outfit', sans-serif;
   text-align: center; white-space: nowrap;
@@ -168,6 +168,57 @@ main { padding: 28px 0 60px; }
   border-color: var(--accent-green-glow);
 }
 .chip-action-btn:hover:not(.chip-action-active) { color: var(--text-secondary); background: var(--bg-card-hover); }
+.chip-analyze-btn { padding:5px 4px; border-radius:5px; font-size:10px; font-weight:700; cursor:pointer; border:1px solid #7c3aed55; background:#1e0a3c; color:#c4b5fd; text-align:center; white-space:nowrap; transition:background .15s; letter-spacing:.2px; }
+.chip-analyze-btn:hover { background:#2e1065; border-color:#7c3aed; }
+.chip-analyze-btn.gap-active { background:#2e1065; border-color:#a78bfa; color:#e9d5ff; }
+/* Game Analysis Panel */
+.gap-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; margin:4px 0 2px; overflow:hidden; }
+.gap-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px 9px; border-bottom:1px solid var(--border); background:#0a0f1a; }
+.gap-title { font-size:13px; font-weight:700; color:#e2e8f0; }
+.gap-subtitle { font-size:10px; color:var(--text-muted); margin-top:1px; }
+.gap-close { background:none; border:none; color:var(--text-muted); font-size:16px; cursor:pointer; padding:0 2px; line-height:1; }
+.gap-close:hover { color:#e2e8f0; }
+.gap-loading { padding:20px; text-align:center; font-size:12px; color:var(--text-muted); }
+.gap-picks-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.gap-picks-team { padding:10px 14px; }
+.gap-picks-team:first-child { border-right:1px solid var(--border); }
+.gap-picks-hdr { font-size:9px; text-transform:uppercase; letter-spacing:.7px; color:var(--text-muted); font-weight:700; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+.gap-pick-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #0f172a; }
+.gap-pick-row:last-child { border-bottom:none; }
+.gap-pick-rank { font-size:10px; font-weight:800; color:#334155; width:14px; flex-shrink:0; text-align:center; }
+.gap-pick-name { font-size:11px; font-weight:600; color:#cbd5e1; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gap-pick-score { font-size:12px; font-weight:800; flex-shrink:0; }
+.gap-pick-reason { font-size:9px; color:var(--text-muted); flex-shrink:0; max-width:70px; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gap-matchup-bar { display:flex; border-top:1px solid var(--border); }
+.gap-matchup-sp { flex:1; padding:8px 14px; font-size:10px; color:var(--text-muted); }
+.gap-matchup-sp:first-child { border-right:1px solid var(--border); }
+.gap-matchup-sp-name { font-weight:600; color:#cbd5e1; margin-bottom:2px; }
+.gap-twp-wrap { padding:10px 14px; }
+/* Pick row interactive */
+.gap-pick-row { cursor:pointer; }
+.gap-pick-row:hover:not(.gap-pick-active) { background:#0f172a; border-radius:4px; }
+.gap-pick-row.gap-pick-active { background:#1e0a3c; border-radius:4px; }
+/* Player profile panel */
+.gap-profile { border-top:1px solid var(--border); padding:12px 14px; background:#060b14; }
+.gap-profile-hdr { display:flex; align-items:flex-start; gap:10px; margin-bottom:10px; }
+.gap-profile-name { font-size:13px; font-weight:700; color:#e2e8f0; }
+.gap-profile-meta { font-size:10px; color:var(--text-muted); margin-top:2px; }
+.gap-profile-score { font-size:15px; font-weight:800; line-height:1; }
+.gap-stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-bottom:10px; }
+.gap-stat-cell { background:#0f172a; border-radius:6px; padding:5px 4px; text-align:center; }
+.gap-stat-val { font-size:12px; font-weight:700; color:#e2e8f0; font-family:'JetBrains Mono',monospace; }
+.gap-stat-lbl { font-size:9px; color:var(--text-muted); margin-top:1px; text-transform:uppercase; letter-spacing:.4px; }
+.gap-l7-hdr { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); font-weight:700; margin-bottom:5px; }
+.gap-l7-table { width:100%; border-collapse:collapse; margin-bottom:10px; }
+.gap-l7-table th { font-size:9px; color:var(--text-muted); text-align:center; padding:3px 4px; border-bottom:1px solid var(--border); font-weight:600; letter-spacing:.3px; }
+.gap-l7-table td { font-size:10px; font-family:'JetBrains Mono',monospace; text-align:center; padding:4px 4px; border-bottom:1px solid #0f172a; color:#64748b; }
+.gap-l7-table td.gl-hit { color:#22c55e; font-weight:700; }
+.gap-l7-table td.gl-hr  { color:#f59e0b; font-weight:700; }
+.gap-l7-table td.gl-k   { color:#ef444480; }
+.gap-profile-actions { display:flex; gap:6px; }
+.gap-profile-close { padding:7px 10px; border-radius:6px; font-size:10px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:var(--bg-input); color:var(--text-muted); white-space:nowrap; }
+.gap-profile-lab   { flex:1; padding:7px 10px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer; border:1px solid #7c3aed55; background:#1e0a3c; color:#c4b5fd; text-align:center; transition:background .15s; }
+.gap-profile-lab:hover { background:#2e1065; border-color:#7c3aed; }
 
 /* ===== GAME CHIPS ===== */
 .games-scroll-wrap {
@@ -403,41 +454,42 @@ main { padding: 28px 0 60px; }
 .lab-col-name { font-size:12px; font-weight:700; }
 .lab-col-badge { font-size:9px; text-transform:uppercase; letter-spacing:1px; background:var(--accent-blue-dim); color:var(--accent-blue); border-radius:8px; padding:2px 7px; margin-left:auto; }
 /* Lab — Stat/H2H tables inside analysis cards */
-.lab-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0; }
-.lab-stat-cell { display:flex; flex-direction:column; gap:2px; }
-.lab-stat-cell-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
-.lab-stat-cell-val { font-size:16px; font-weight:700; }
+.lab-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0; }
+.lab-stat-cell { display:flex; flex-direction:column; gap:3px; background:#090d14; border-radius:8px; padding:10px 6px; text-align:center; border:1px solid #1a2030; }
+.lab-stat-cell-label { font-size:8px; text-transform:uppercase; letter-spacing:.9px; color:var(--text-muted); }
+.lab-stat-cell-val { font-size:16px; font-weight:800; font-family:'JetBrains Mono',monospace; line-height:1.1; }
 .lab-stat-cell-val.good { color:#22c55e; }
 .lab-stat-cell-val.avg  { color:#f59e0b; }
 .lab-stat-cell-val.bad  { color:#ef4444; }
-.lab-stat-cell-sub { font-size:10px; color:var(--text-muted); }
-.lab-h2h-table { width:100%; border-collapse:collapse; font-size:12px; margin:10px 0; }
-.lab-h2h-table th { text-align:center; padding:4px 6px; font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); border-bottom:1px solid var(--border); }
-.lab-h2h-table td { text-align:center; padding:5px 6px; font-weight:600; }
+.lab-stat-cell-sub { font-size:9px; color:var(--text-muted); margin-top:1px; }
+.lab-h2h-table { width:100%; border-collapse:collapse; font-size:12px; margin:10px 0; border-radius:8px; overflow:hidden; }
+.lab-h2h-table th { text-align:center; padding:5px 6px; font-size:9px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); background:#090d14; border-bottom:1px solid var(--border); }
+.lab-h2h-table td { text-align:center; padding:6px 6px; font-weight:700; font-family:'JetBrains Mono',monospace; background:#0d111a; }
+.lab-h2h-table tr:last-child td { border-bottom:none; }
 .lab-h2h-first { font-size:12px; color:var(--text-muted); font-style:italic; padding:8px 0; }
 .lab-split-banner { padding:8px 12px; border-radius:8px; font-size:12px; font-weight:600; margin:10px 0; }
 .lab-split-banner.good { background:#22c55e18; color:#22c55e; border:1px solid #22c55e30; }
 .lab-split-banner.bad  { background:#ef444418; color:#ef4444; border:1px solid #ef444430; }
 .lab-split-banner.neu  { background:var(--bg-hover); color:var(--text-muted); border:1px solid var(--border); }
-.lab-deep-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px; }
-.lab-deep-header { display:flex; align-items:center; gap:10px; padding:12px 16px; background:var(--bg-hover); border-bottom:1px solid var(--border); }
-.lab-deep-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+.lab-deep-card { background:var(--bg-card); border:1px solid #1e2330; border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,.4); }
+.lab-deep-header { display:flex; align-items:center; gap:10px; padding:11px 16px; background:#090d14; border-bottom:1px solid #1a2030; }
+.lab-deep-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#64748b; }
 .lab-deep-body { padding:16px; }
-.lab-hero-row { display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); }
-.lab-hero-photo-lg { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
-.lab-hero-name { font-size:17px; font-weight:800; }
-.lab-hero-meta { font-size:11px; color:var(--text-muted); margin-top:3px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-.lab-pitcher-stat-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin:12px 0; }
-.lab-pstat { display:flex; flex-direction:column; gap:2px; text-align:center; }
-.lab-pstat-label { font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
-.lab-pstat-val { font-size:15px; font-weight:700; }
+.lab-hero-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.lab-hero-photo-lg { width:72px; height:72px; border-radius:50%; object-fit:cover; border:2px solid #7c3aed55; flex-shrink:0; box-shadow:0 0 14px #7c3aed20; }
+.lab-hero-name { font-size:18px; font-weight:800; color:#f1f5f9; line-height:1.2; }
+.lab-hero-meta { font-size:11px; color:var(--text-muted); margin-top:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.lab-pitcher-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0; }
+.lab-pstat { display:flex; flex-direction:column; gap:3px; text-align:center; background:#090d14; border-radius:8px; padding:9px 4px; border:1px solid #1a2030; }
+.lab-pstat-label { font-size:8px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-muted); }
+.lab-pstat-val { font-size:14px; font-weight:800; font-family:'JetBrains Mono',monospace; }
 .lab-pstat-val.good { color:#22c55e; }
 .lab-pstat-val.avg  { color:#f59e0b; }
 .lab-pstat-val.bad  { color:#ef4444; }
-.lab-pstat-tier { font-size:9px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.lab-narrative { font-size:13px; color:var(--text-secondary); line-height:1.7; margin-top:14px; }
-.lab-section-label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin:14px 0 6px; font-weight:700; }
-.lab-stat-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.lab-pstat-tier { font-size:8px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lab-narrative { font-size:13px; color:var(--text-secondary); line-height:1.75; margin-top:14px; }
+.lab-section-label { font-size:9px; text-transform:uppercase; letter-spacing:1.1px; color:#64748b; margin:16px 0 8px; font-weight:700; padding-left:8px; border-left:2px solid #7c3aed40; }
+.lab-stat-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:12px; }
 .lab-stat-row:last-child { border-bottom:none; }
 .lab-stat-label { color:var(--text-muted); }
 .lab-stat-val { font-weight:700; }
@@ -446,7 +498,6 @@ main { padding: 28px 0 60px; }
 .lab-stat-val.bad  { color:#ef4444; }
 @media(max-width:700px){
   .lab-player-columns { grid-template-columns:1fr; }
-  .lab-pitcher-stat-grid { grid-template-columns:repeat(3,1fr); }
   .lab-stat-grid { grid-template-columns:repeat(2,1fr); }
 }
 .lab-player-card { background:var(--bg-card); border-bottom:1px solid var(--border); padding:10px 12px; cursor:pointer; transition:background .12s; display:flex; align-items:flex-start; gap:8px; }
@@ -507,8 +558,9 @@ main { padding: 28px 0 60px; }
 .lab-global-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
 .lab-global-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#a78bfa; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #7c3aed33; margin-bottom:10px; margin-top:14px; }
 .lab-period-tabs { display:flex; gap:4px; flex-wrap:wrap; }
-.lab-period-tab, .lab-split-tab, .lab-arsenal-tab { background:var(--bg-hover); border:1px solid var(--border); border-radius:5px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:background .15s; }
-.lab-period-tab.active, .lab-split-tab.active, .lab-arsenal-tab.active { background:#3b0764; border-color:#7c3aed; color:#c4b5fd; }
+.lab-period-tab, .lab-split-tab, .lab-arsenal-tab { background:#090d14; border:1px solid #1a2030; border-radius:5px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--text-muted); cursor:pointer; transition:all .15s; }
+.lab-period-tab:hover:not(.active), .lab-split-tab:hover:not(.active), .lab-arsenal-tab:hover:not(.active) { background:#12172a; border-color:#334155; color:#94a3b8; }
+.lab-period-tab.active, .lab-split-tab.active, .lab-arsenal-tab.active { background:#3b0764; border-color:#7c3aed; color:#c4b5fd; box-shadow:0 0 8px #7c3aed30; }
 .lab-split-tab.today-split { border-color:#eab308; color:#fde047; }
 .lab-split-tab.today-split.active { background:#422006; border-color:#eab308; color:#fde047; }
 .lab-global-game-badge { display:inline-block; font-size:10px; color:#c4b5fd; font-weight:600; background:#2e1065; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
@@ -545,6 +597,16 @@ main { padding: 28px 0 60px; }
 .twp-confirmed { background:#22c55e22; color:#22c55e; border:1px solid #22c55e33; }
 .twp-projected { background:#f59e0b22; color:#f59e0b; border:1px solid #f59e0b33; }
 .twp-proj-runs { font-size:10px; color:var(--text-muted); margin-top:1px; }
+.twp-team-record { margin-top:4px; display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+.twp-rec-chip { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; white-space:nowrap; }
+.twp-rec-home-chip  { background:#22c55e18; color:#22c55e; border:1px solid #22c55e33; }
+.twp-rec-road-chip  { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b44; }
+.twp-rec-ovr-chip   { background:#1e293b; color:#64748b; border:1px solid #33415544; }
+.twp-form-badge { font-size:9px; font-weight:800; padding:2px 6px; border-radius:3px; margin-top:2px; text-transform:uppercase; letter-spacing:.5px; }
+.twp-form-hot  { background:#22c55e18; color:#22c55e; border:1px solid #22c55e44; }
+.twp-form-cold { background:#3b82f618; color:#60a5fa; border:1px solid #3b82f633; }
+.twp-key-factor { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:#7c3aed18; color:#a78bfa; border:1px solid #7c3aed33; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; }
+.twp-reasoning-banner { padding:6px 14px 7px; font-size:10px; color:#64748b; line-height:1.45; border-top:1px solid var(--border); background:#0a0f1a; }
 .twp-center { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; flex-shrink:0; border-bottom:2px solid transparent; }
 .twp-vs { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:1px; }
 .twp-ou { font-size:9px; color:var(--text-muted); text-align:center; margin-top:6px; line-height:1.5; }
@@ -559,6 +621,7 @@ main { padding: 28px 0 60px; }
 .twp-edge-track { flex:1; height:4px; background:var(--bg-hover); border-radius:2px; position:relative; overflow:hidden; }
 .twp-edge-center { position:absolute; left:50%; top:0; width:1px; height:100%; background:#334155; z-index:1; transform:translateX(-50%); }
 .twp-edge-fill { position:absolute; height:100%; top:0; border-radius:2px; }
+.twp-matchup-note { font-size:11px; color:var(--text-muted); padding:2px 0 5px 70px; line-height:1.4; }
 .twp-edge-val { font-size:10px; font-weight:700; width:64px; text-align:right; flex-shrink:0; white-space:nowrap; }
 .twp-sp-sub { font-size:9px; color:var(--text-muted); padding:0 0 4px 70px; line-height:1.3; }
 .twp-winner-strip { padding:9px 14px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); background:linear-gradient(to right,#052e1630,transparent); }
@@ -630,21 +693,21 @@ main { padding: 28px 0 60px; }
 .lab-park-bullets li { font-size:12px; color:var(--text-secondary); padding-left:14px; position:relative; line-height:1.4; }
 .lab-park-bullets li::before { content:'·'; position:absolute; left:4px; color:var(--text-muted); }
 .lab-park-chips { display:flex; gap:8px; flex-wrap:wrap; }
-.lab-score-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px; }
-.lab-score-header { padding:12px 16px; background:var(--bg-hover); border-bottom:1px solid var(--border); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
-.lab-score-body { padding:20px 24px; }
-.lab-score-display { display:flex; align-items:center; gap:24px; margin-bottom:16px; }
+.lab-score-card { background:var(--bg-card); border:1px solid #1e2330; border-radius:var(--radius-lg); overflow:hidden; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,.4); }
+.lab-score-header { padding:11px 16px; background:#090d14; border-bottom:1px solid #1a2030; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#64748b; }
+.lab-score-body { padding:20px 20px 18px; }
+.lab-score-display { display:flex; align-items:center; gap:20px; margin-bottom:14px; }
 .lab-score-num { font-family:'Bebas Neue',cursive; font-size:88px; line-height:1; }
-.lab-score-num.score-great   { color:#22c55e; }
-.lab-score-num.score-good    { color:#86efac; }
-.lab-score-num.score-neutral { color:var(--text-muted); }
+.lab-score-num.score-great   { color:#22c55e; text-shadow:0 0 24px #22c55e40; }
+.lab-score-num.score-good    { color:#86efac; text-shadow:0 0 20px #86efac30; }
+.lab-score-num.score-neutral { color:#64748b; }
 .lab-score-num.score-bad     { color:#f97316; }
-.lab-score-num.score-poor    { color:#ef4444; }
+.lab-score-num.score-poor    { color:#ef4444; text-shadow:0 0 20px #ef444430; }
 .lab-score-right { flex:1; }
-.lab-score-label { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px; }
-.lab-score-bar-track { height:12px; border-radius:6px; background:var(--bg-hover); overflow:hidden; }
+.lab-score-label { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; }
+.lab-score-bar-track { height:8px; border-radius:6px; background:#090d14; overflow:hidden; border:1px solid #1a2030; }
 .lab-score-bar-fill { height:100%; border-radius:6px; }
-.lab-narrative { font-size:13px; line-height:1.7; color:var(--text-secondary); margin-top:14px; }
+.lab-narrative { font-size:13px; line-height:1.75; color:var(--text-secondary); margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
 
 /* ── Lab Score Cards ─────────────────────────────────────────────── */
 .lab-two-card-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
@@ -2218,6 +2281,9 @@ main { padding: 28px 0 60px; }
         <div class="games-chips" id="gamesChips"></div>
       </div>
     </div>
+
+    <!-- GAME QUICK ANALYSIS PANEL (inline, below chips) -->
+    <div id="gameAnalysisPanel" style="display:none;padding:0 0 10px;"></div>
 
     <!-- TAB: HOT STREAKS -->
     <div id="tabStreaks" style="display:none;">
@@ -3825,7 +3891,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.03.1';
+const APP_VERSION = '2026.06.20.1';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -3833,7 +3899,8 @@ const APP_VERSION = '2026.06.03.1';
       // Wipe all keys that belong to this app
       const appKeys = Object.keys(localStorage).filter(k =>
         k.startsWith('btsSnapshot_') || k === 'dbCacheDate' ||
-        k === 'cacheConsent' || k === 'de_app_version'
+        k === 'cacheConsent' || k === 'de_app_version' ||
+        k === 'twpSigmoidSlope'
       );
       appKeys.forEach(k => localStorage.removeItem(k));
       localStorage.setItem('de_app_version', APP_VERSION);
@@ -3876,7 +3943,10 @@ let state = {
   savantHandSplitLoading: false,
   savantFailed:     false, // true after a session-level fetch failure — prevents retry storm
   savantYear:       null,
-  sigmoidSlope:  null,
+  sigmoidSlope:  (() => { try { const v = parseFloat(localStorage.getItem('twpSigmoidSlope')); return isNaN(v) ? null : v; } catch { return null; } })(),
+  teamStandings:    null, // Map<teamId, { wins, losses, homeWins, homeLosses, awayWins, awayLosses }>
+  teamStandingsYear: null,
+  twpResultsByPk:   null, // Map<gamePk, result> — cached after full TWP scan
 };
 
 // pa        : player's season plate appearances
@@ -5111,19 +5181,17 @@ function renderGameChips(games) {
             ${teamLogo(homeInfo.espn, homeAbbr)}
           </div>
         </div>
-        <div class="chip-nicknames">
-          <span>${awayInfo.nick}</span>
-          <span>${homeInfo.nick}</span>
-        </div>
         <div class="chip-records">
           <span>${awayWL || '—'}</span>
           <span>${homeWL || '—'}</span>
         </div>
         ${statusHTML}
         <div class="lineup-status lineup-projected" id="lineup-status-${pk}">⏳ Awaiting lineup</div>
-        <div class="chip-actions" onclick="event.stopPropagation()">
+        <div class="chip-btns" onclick="event.stopPropagation()">
           <button class="chip-action-btn chip-action-active" id="chip-act-top-${pk}" onclick="selectGameView(${pk},'top')">Top Plays</button>
           <button class="chip-action-btn" id="chip-act-breakdown-${pk}" onclick="selectGameView(${pk},'breakdown')">Breakdown</button>
+          <button class="chip-analyze-btn" id="gap-btn-twp-${pk}" onclick="openGameAnalysis(${pk},'twp')">Predict</button>
+          <button class="chip-analyze-btn" id="gap-btn-picks-${pk}" onclick="openGameAnalysis(${pk},'picks')">Top Picks</button>
         </div>
       </div>`;
   }).join('');
@@ -5139,6 +5207,272 @@ function updateChipLineupStatus(gamePk, posted) {
     el.className = 'lineup-status lineup-projected';
     el.textContent = '~ Projected lineup';
   }
+}
+
+// ─── GAME QUICK ANALYSIS ─────────────────────────────────────────────────────
+let _gapState      = { pk: null, mode: null }; // tracks which panel is open
+let _gapProfilePk  = null; // playerId whose inline profile is currently expanded
+
+async function openGameAnalysis(pk, mode) {
+  const panel  = document.getElementById('gameAnalysisPanel');
+  if (!panel) return;
+
+  // Toggle off if same game + mode already open
+  if (_gapState.pk === pk && _gapState.mode === mode) {
+    _gapState = { pk: null, mode: null };
+    _gapProfilePk = null;
+    panel.style.display = 'none';
+    panel.innerHTML = '';
+    document.querySelectorAll('.chip-analyze-btn').forEach(b => b.classList.remove('gap-active'));
+    return;
+  }
+  _gapProfilePk = null; // reset profile when switching game/mode
+
+  // Mark new active button
+  document.querySelectorAll('.chip-analyze-btn').forEach(b => b.classList.remove('gap-active'));
+  const activeBtn = document.getElementById(`gap-btn-${mode}-${pk}`);
+  if (activeBtn) activeBtn.classList.add('gap-active');
+  _gapState = { pk, mode };
+
+  const gd = state.predictions[pk];
+  const rawGame = (state.games || []).find(g => g.gamePk === Number(pk));
+  const awayAbbr = gd?.awayAbbr || rawGame?.teams?.away?.team?.abbreviation || 'Away';
+  const homeAbbr = gd?.homeAbbr || rawGame?.teams?.home?.team?.abbreviation || 'Home';
+  const label = `${awayAbbr} @ ${homeAbbr}`;
+  const modeLabel = mode === 'twp' ? 'Predict Winner' : 'Top Picks';
+
+  panel.innerHTML = `<div class="gap-wrap">
+    <div class="gap-header">
+      <div><div class="gap-title">${escHtml(label)}</div><div class="gap-subtitle">${escHtml(modeLabel)}</div></div>
+      <button class="gap-close" onclick="openGameAnalysis(${pk},'${mode}')">&times;</button>
+    </div>
+    <div class="gap-loading" id="gapLoading">Loading&hellip;</div>
+  </div>`;
+  panel.style.display = 'block';
+
+  if (mode === 'twp') {
+    await _gapRenderTWP(pk, label);
+  } else {
+    _gapRenderPicks(pk, awayAbbr, homeAbbr);
+  }
+}
+
+async function _gapRenderTWP(pk, label) {
+  const panel = document.getElementById('gameAnalysisPanel');
+  if (!panel || _gapState.pk !== pk || _gapState.mode !== 'twp') return;
+
+  // Check cache first
+  let result = state.twpResultsByPk?.get(Number(pk));
+  if (!result) {
+    // Run single-game scan
+    try {
+      const year = new Date().getFullYear();
+      await ensureSavantData(year);
+      await ensureTeamStandings(year);
+      const results = runTeamScan(null, pk);
+      result = results[0] || null;
+      // Merge into cache
+      if (result) {
+        if (!state.twpResultsByPk) state.twpResultsByPk = new Map();
+        state.twpResultsByPk.set(Number(pk), result);
+      }
+    } catch (e) {
+      result = null;
+    }
+  }
+
+  if (_gapState.pk !== pk || _gapState.mode !== 'twp') return; // user closed while loading
+  const rawGame = (state.games || []).find(g => g.gamePk === Number(pk));
+  const awayAbbr = result?.awayAbbr || 'Away';
+  const homeAbbr = result?.homeAbbr || 'Home';
+
+  const inner = document.querySelector('#gameAnalysisPanel .gap-wrap');
+  if (!inner) return;
+  if (!result) {
+    inner.innerHTML = `<div class="gap-header"><div class="gap-title">${escHtml(label)}</div><button class="gap-close" onclick="openGameAnalysis(${pk},'twp')">&times;</button></div>
+      <div class="gap-loading">Unable to score — player data not yet loaded. Try opening Team Win Predictor first.</div>`;
+    return;
+  }
+  inner.innerHTML = `<div class="gap-header" style="justify-content:space-between">
+    <div><div class="gap-title">${escHtml(label)}</div><div class="gap-subtitle">Win Predictor</div></div>
+    <button class="gap-close" onclick="openGameAnalysis(${pk},'twp')">&times;</button>
+  </div>
+  <div class="gap-twp-wrap">${_teamScanCardHTML(result)}</div>`;
+}
+
+function _gapRenderPicks(pk, awayAbbr, homeAbbr) {
+  const panel = document.getElementById('gameAnalysisPanel');
+  if (!panel || _gapState.pk !== pk || _gapState.mode !== 'picks') return;
+  const gd = state.predictions[pk];
+  if (!gd?.players?.length) {
+    const inner = document.querySelector('#gameAnalysisPanel .gap-wrap');
+    if (inner) inner.innerHTML = `<div class="gap-header"><div class="gap-title">${escHtml(awayAbbr)} @ ${escHtml(homeAbbr)}</div><button class="gap-close" onclick="openGameAnalysis(${pk},'picks')">&times;</button></div>
+      <div class="gap-loading">Player data not loaded yet. Wait for the schedule to finish loading.</div>`;
+    return;
+  }
+
+  const _scoreColor = s => s >= 72 ? '#22c55e' : s >= 58 ? '#f59e0b' : '#ef4444';
+  const _quickReason = (p) => {
+    const ss = p.seasonStats || {};
+    const l7 = p.last7Stats  || {};
+    const l7ops  = parseFloat(l7.ops)  || 0;
+    const seaops = parseFloat(ss.ops)  || 0;
+    const babip  = parseFloat(ss.babip) || 0;
+    const obp    = parseFloat(ss.obp)  || 0;
+    if (l7ops > 0 && seaops > 0 && (l7ops - seaops) > 0.070) return 'L7 hot';
+    if (babip  >= 0.340)  return 'High BABIP';
+    if (obp    >= 0.370)  return 'High OBP';
+    if ((parseFloat(ss.avg) || 0) >= 0.300) return 'High AVG';
+    if (p.hitScore >= 72)  return 'Elite score';
+    return 'Solid avg';
+  };
+
+  const _teamRows = (players, label) => {
+    const top5 = [...players]
+      .filter(p => p.hitScore != null)
+      .sort((a, b) => (b.hitScore || 0) - (a.hitScore || 0))
+      .slice(0, 5);
+    if (!top5.length) return `<div class="gap-picks-team"><div class="gap-picks-hdr">${escHtml(label)}</div><div style="font-size:11px;color:var(--text-muted);padding:8px 0">No data</div></div>`;
+    return `<div class="gap-picks-team">
+      <div class="gap-picks-hdr">${escHtml(label)} Top Hitters <span style="font-weight:400;font-size:8px;opacity:.6">tap for profile</span></div>
+      ${top5.map((p, i) => `<div class="gap-pick-row" data-pid="${p.id}" onclick="openPickProfile(${p.id},${pk})">
+        <span class="gap-pick-rank">${i + 1}</span>
+        <span class="gap-pick-name">${escHtml(p.name)}</span>
+        <span class="gap-pick-score" style="color:${_scoreColor(p.hitScore || 0)}">${p.hitScore || '--'}</span>
+        <span class="gap-pick-reason">${escHtml(_quickReason(p))}</span>
+      </div>`).join('')}
+    </div>`;
+  };
+
+  const awayPlayers = gd.players.filter(p => p.id && p.isAway);
+  const homePlayers = gd.players.filter(p => p.id && !p.isAway);
+
+  // SP matchup bar
+  const awayPitcher = gd.awayPitcher;
+  const homePitcher = gd.homePitcher;
+  const _fmtSP = (p) => {
+    if (!p?.fullName) return 'TBD';
+    const era = p.seasonStats?.era != null ? ` · ${parseFloat(p.seasonStats.era).toFixed(2)} ERA` : '';
+    const ip  = p.seasonStats?.inningsPitched != null ? ` · ${parseFloat(p.seasonStats.inningsPitched).toFixed(0)} IP` : '';
+    return `${escHtml(p.fullName)}${era}${ip}`;
+  };
+
+  const inner = document.querySelector('#gameAnalysisPanel .gap-wrap');
+  if (!inner) return;
+  inner.innerHTML = `<div class="gap-header">
+    <div><div class="gap-title">${escHtml(awayAbbr)} @ ${escHtml(homeAbbr)}</div><div class="gap-subtitle">Top Picks — scored by hit probability</div></div>
+    <button class="gap-close" onclick="openGameAnalysis(${pk},'picks')">&times;</button>
+  </div>
+  <div class="gap-picks-grid">
+    ${_teamRows(awayPlayers, awayAbbr)}
+    ${_teamRows(homePlayers, homeAbbr)}
+  </div>
+  <div class="gap-matchup-bar">
+    <div class="gap-matchup-sp"><div class="gap-matchup-sp-name">${awayAbbr} SP</div><div>${_fmtSP(awayPitcher)}</div></div>
+    <div class="gap-matchup-sp"><div class="gap-matchup-sp-name">${homeAbbr} SP</div><div>${_fmtSP(homePitcher)}</div></div>
+  </div>`;
+}
+
+async function openPickProfile(playerId, pk) {
+  const wrap = document.querySelector('#gameAnalysisPanel .gap-wrap');
+  if (!wrap) return;
+
+  // Remove highlight from all rows first
+  wrap.querySelectorAll('.gap-pick-row').forEach(r => r.classList.remove('gap-pick-active'));
+
+  // Toggle off if same player already open
+  let profileEl = wrap.querySelector('.gap-profile');
+  if (_gapProfilePk === playerId) {
+    if (profileEl) profileEl.remove();
+    _gapProfilePk = null;
+    return;
+  }
+
+  // Mark new active player
+  _gapProfilePk = playerId;
+  wrap.querySelectorAll(`.gap-pick-row[data-pid="${playerId}"]`).forEach(r => r.classList.add('gap-pick-active'));
+
+  // Create or reuse profile element (always at bottom of wrap)
+  if (!profileEl) {
+    profileEl = document.createElement('div');
+    profileEl.className = 'gap-profile';
+    wrap.appendChild(profileEl);
+  }
+  profileEl.innerHTML = `<div style="text-align:center;padding:14px;font-size:11px;color:var(--text-muted)">Loading profile...</div>`;
+
+  // Get cached player data
+  const gd = state.predictions?.[pk];
+  const p  = gd?.players?.find(pl => pl.id === playerId);
+  const ss = p?.seasonStats || {};
+  const l7 = p?.last7Stats  || {};
+  const name = p?.name || 'Player';
+  const score = p?.hitScore ?? '--';
+  const scoreColor = score >= 72 ? '#22c55e' : score >= 58 ? '#f59e0b' : '#ef4444';
+
+  const fmtAvg = v => { const n = parseFloat(v); return n > 0 ? '.' + Math.round(n * 1000).toString().padStart(3,'0') : '.---'; };
+  const fmtOps = v => { const n = parseFloat(v); return n > 0 ? n.toFixed(3) : '.---'; };
+
+  const opsDelta = (parseFloat(l7.ops || 0) - parseFloat(ss.ops || 0));
+  const trendColor = opsDelta > 0.07 ? '#22c55e' : opsDelta < -0.07 ? '#ef4444' : '#64748b';
+  const trendLabel = opsDelta > 0.07 ? '▲ HOT' : opsDelta < -0.07 ? '▼ COLD' : '─';
+
+  const orderPos  = p?.orderPos ? `Bats #${p.orderPos}` : '';
+  const teamLabel = p?.teamAbbr || (p?.isAway ? 'Away' : 'Home');
+  const metaParts = [orderPos, teamLabel].filter(Boolean).join(' · ');
+
+  // Fetch last 7 individual games
+  const games = await fetchGameLog(playerId, false, 7);
+
+  const gamesHTML = games.length
+    ? `<table class="gap-l7-table">
+        <tr><th>Date</th><th>Opp</th><th>H/AB</th><th>HR</th><th>RBI</th><th>K</th></tr>
+        ${games.map(g => {
+          const st   = g.stat || {};
+          const date = (g.date || '').slice(5);
+          const oppId   = g.opponent?.id ? Number(g.opponent.id) : null;
+          const oppInfo = oppId ? TEAM_INFO[oppId] : null;
+          const opp  = escHtml(oppInfo?.nick || g.opponent?.abbreviation || '?');
+          const loc  = (g.isHome ?? true) ? 'vs' : '@';
+          const h    = st.hits       ?? 0;
+          const ab   = st.atBats     ?? 0;
+          const hr   = st.homeRuns   ?? 0;
+          const rbi  = st.rbi        ?? 0;
+          const k    = st.strikeOuts ?? 0;
+          return `<tr>
+            <td>${date}</td>
+            <td style="color:#94a3b8">${loc} ${opp}</td>
+            <td class="${h > 0 ? 'gl-hit' : ''}">${h}/${ab}</td>
+            <td class="${hr > 0 ? 'gl-hr' : ''}">${hr || '—'}</td>
+            <td>${rbi || '—'}</td>
+            <td class="${k >= 3 ? 'gl-k' : ''}">${k}</td>
+          </tr>`;
+        }).join('')}
+      </table>`
+    : `<div style="font-size:11px;color:var(--text-muted);padding:4px 0 10px">No recent game data.</div>`;
+
+  profileEl.innerHTML = `
+    <div class="gap-profile-hdr">
+      <div style="flex:1">
+        <div class="gap-profile-name">${escHtml(name)}</div>
+        <div class="gap-profile-meta">${escHtml(metaParts)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="gap-profile-score" style="color:${scoreColor}">${score}</div>
+        <div style="font-size:9px;font-weight:700;color:${trendColor};margin-top:2px">${trendLabel}</div>
+      </div>
+    </div>
+    <div class="gap-stat-grid">
+      <div class="gap-stat-cell"><div class="gap-stat-val">${fmtAvg(ss.avg)}</div><div class="gap-stat-lbl">AVG</div></div>
+      <div class="gap-stat-cell"><div class="gap-stat-val">${fmtAvg(ss.obp)}</div><div class="gap-stat-lbl">OBP</div></div>
+      <div class="gap-stat-cell"><div class="gap-stat-val">${fmtOps(ss.ops)}</div><div class="gap-stat-lbl">OPS</div></div>
+      <div class="gap-stat-cell"><div class="gap-stat-val" style="color:${trendColor}">${fmtOps(l7.ops)}</div><div class="gap-stat-lbl">L7 OPS</div></div>
+    </div>
+    <div class="gap-l7-hdr">Last 7 Games</div>
+    ${gamesHTML}
+    <div class="gap-profile-actions">
+      <button class="gap-profile-close" onclick="openPickProfile(${playerId},${pk})">Close ×</button>
+      <button class="gap-profile-lab" onclick="openLabFor(${playerId},'picks')">⚗️ Full Lab Analysis →</button>
+    </div>`;
 }
 
 function selectGameView(pk, view) {
@@ -8034,6 +8368,15 @@ function switchBbMode(mode, btn) {
 // ─── TABS ─────────────────────────────────────────────────────────────────
 function switchTab(tab, btn) {
   state.activeTab = tab;
+  // Close game analysis panel whenever the user switches sections
+  const _gapPanel = document.getElementById('gameAnalysisPanel');
+  if (_gapPanel && _gapPanel.style.display !== 'none') {
+    _gapState     = { pk: null, mode: null };
+    _gapProfilePk = null;
+    _gapPanel.style.display = 'none';
+    _gapPanel.innerHTML     = '';
+    document.querySelectorAll('.chip-analyze-btn').forEach(b => b.classList.remove('gap-active'));
+  }
   const isGameTab = tab === 'top' || tab === 'breakdown';
 
   // Update active state — game sub-tabs and main tabs are separate button sets
@@ -12317,6 +12660,37 @@ function parseSavantCSV(text) {
   });
 }
 
+async function ensureTeamStandings(year) {
+  if (state.teamStandings && state.teamStandingsYear === year) return;
+  try {
+    const data = await cachedFetch(
+      `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${year}&standingsTypes=regularSeason`
+    );
+    const map = new Map();
+    for (const div of (data?.records || [])) {
+      for (const tr of (div.teamRecords || [])) {
+        const id   = String(tr.team?.id);
+        if (!id) continue;
+        const home = (tr.splitRecords || []).find(r => r.type === 'home') || {};
+        const away = (tr.splitRecords || []).find(r => r.type === 'away') || {};
+        map.set(id, {
+          wins:        tr.wins        ?? 0,
+          losses:      tr.losses      ?? 0,
+          homeWins:    home.wins      ?? 0,
+          homeLosses:  home.losses    ?? 0,
+          awayWins:    away.wins      ?? 0,
+          awayLosses:  away.losses    ?? 0,
+          runsScored:  tr.runsScored  ?? 0,
+          runsAllowed: tr.runsAllowed ?? 0,
+          streak:      tr.streak?.streakCode ?? '', // e.g. "W5" or "L3"
+        });
+      }
+    }
+    state.teamStandings     = map;
+    state.teamStandingsYear = year;
+  } catch { /* non-fatal — records display will be blank */ }
+}
+
 async function ensureSavantData(year) {
   if (state.savantPitcher && state.savantBatter && state.savantYear === year) return;
   // Reset failed flag when year changes (new season — try again)
@@ -12418,36 +12792,60 @@ function computePitchMixMatchup(batterId, pitcherId) {
     if (!b) continue;
 
     const ba     = parseFloat(b.ba)            || 0;
+    const bWoba  = parseFloat(b.woba)          || 0;
     const bWhiff = parseFloat(b.whiff_percent) / 100 || 0;
     const pWhiff = parseFloat(p.whiff_percent) / 100 || 0;
 
     let pts = 0;
-    if      (ba >= 0.340) pts += 8;
-    else if (ba >= 0.310) pts += 5;
-    else if (ba >= 0.275) pts += 2;
-    else if (ba <= 0.160) pts -= 8;
-    else if (ba <= 0.200) pts -= 5;
-    else if (ba <= 0.230) pts -= 2;
+    if (bWoba > 0) {
+      // wOBA weights extra-base hits correctly — better run-value signal than BA alone
+      if      (bWoba >= 0.430) pts += 8;
+      else if (bWoba >= 0.390) pts += 5;
+      else if (bWoba >= 0.350) pts += 2;
+      else if (bWoba <= 0.210) pts -= 8;
+      else if (bWoba <= 0.260) pts -= 5;
+      else if (bWoba <= 0.295) pts -= 2;
+    } else {
+      if      (ba >= 0.340) pts += 8;
+      else if (ba >= 0.310) pts += 5;
+      else if (ba >= 0.275) pts += 2;
+      else if (ba <= 0.160) pts -= 8;
+      else if (ba <= 0.200) pts -= 5;
+      else if (ba <= 0.230) pts -= 2;
+    }
 
     if      (pWhiff >= 0.30 && bWhiff >= 0.30) pts -= 3;
     else if (pWhiff >= 0.25 && bWhiff >= 0.25) pts -= 1;
 
-    const weighted = pts * usage;
+    // Reinforce with pitch run value (negative rv100 = elite pitch = harder for batters)
+    const rv100 = parseFloat(p.run_value_per_100);
+    if (!isNaN(rv100)) {
+      if      (rv100 >= 2.0)  pts += 1;
+      else if (rv100 <= -2.0) pts -= 1;
+    }
+
+    // Scale by batter sample size vs this pitch — avoids overfitting to 3-PA outliers
+    const bPa = parseFloat(b.pa) || parseFloat(b.n_pitches) || 0;
+    const sampleScale = bPa >= 100 ? 1.00 : bPa >= 40 ? 0.85 : bPa >= 15 ? 0.65 : bPa > 0 ? 0.40 : 0.65;
+
+    const weighted = pts * usage * sampleScale;
     raw += weighted;
-    highlights.push({ pitchName: p.pitch_name || p.pitch_type, usage, ba, pts: weighted });
+    highlights.push({ pitchName: p.pitch_name || p.pitch_type, usage, ba, woba: bWoba, pts: weighted });
   }
 
   const score     = clamp(Math.round(raw), -8, 8);
   const byImpact  = [...highlights].sort((a, b) => Math.abs(b.pts) - Math.abs(a.pts));
   const reasons   = [];
   if (byImpact[0]) {
-    const h     = byImpact[0];
-    const pct   = Math.round(h.usage * 100);
-    const baStr = '.' + Math.round(h.ba * 1000).toString().padStart(3, '0');
+    const h      = byImpact[0];
+    const pct    = Math.round(h.usage * 100);
+    const metric = h.woba > 0
+      ? '.' + Math.round(h.woba * 1000).toString().padStart(3, '0') + ' wOBA'
+      : '.' + Math.round(h.ba   * 1000).toString().padStart(3, '0') + ' BA';
     if (h.pts > 0)
-      reasons.push(`Hits ${h.pitchName} well (${baStr} BA) — SP's ${pct}% pitch`);
+      reasons.push(`Hits ${h.pitchName} well (${metric}) — SP's ${pct}% pitch`);
     else
-      reasons.push(`Struggles vs ${h.pitchName} (${baStr} BA) — SP's ${pct}% pitch`);
+      reasons.push(`Struggles vs ${h.pitchName} (${metric}) — SP's ${pct}% pitch`);
   }
   const displayHighlights = [...highlights].sort((a, b) => b.usage - a.usage).slice(0, 4);
   return { score, hasData: true, reasons, highlights: displayHighlights };
@@ -12981,7 +13379,9 @@ async function handleTeamScan() {
   }
 
   try {
-    await ensureSavantData(new Date().getFullYear());
+    const _twpYear = new Date().getFullYear();
+    await ensureSavantData(_twpYear);
+    await ensureTeamStandings(_twpYear);
     _scanShowLoading(
       '🏟️ Team Win Predictor',
       `Scoring ${total} game${total !== 1 ? 's' : ''}…`,
@@ -13019,8 +13419,11 @@ async function handleTeamScan() {
           `</div>` : '';
       cards.innerHTML = diagHtml + results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
     }
+    // Cache results for instant single-game lookup from the main schedule
+    state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
     const _finalForCalib = results.filter(r => r.isFinal && r.actualWinner);
     state.sigmoidSlope = _calibrateSigmoidSlope(_finalForCalib);
+    try { if (state.sigmoidSlope !== 0.023) localStorage.setItem('twpSigmoidSlope', state.sigmoidSlope.toFixed(4)); } catch {}
     _labShow('labScreenTeamScan');
   } catch(e) {
     _scanRestoreLoading();
@@ -13045,7 +13448,23 @@ function _lineupScore(results) {
     wSum += r.score * w;
     wTotal += w;
   });
-  return wTotal > 0 ? wSum / wTotal : 50;
+  // Amplify deviation from 50 so elite lineups clearly outscore weak ones.
+  // Raw weighted averages compress into ~45-72; 1.4x stretch widens that gap.
+  const raw = wTotal > 0 ? wSum / wTotal : 50;
+  return 50 + (raw - 50) * 1.4;
+}
+
+// Lineup stack bonus — consecutive hot batters (hitScore ≥ 65) create multi-run inning potential
+// beyond what the individual weighted average captures.
+function _lineupStackBonus(results) {
+  if (results.length < 3) return 0;
+  const sorted = [...results].sort((a, b) => (a.player.orderPos || 9) - (b.player.orderPos || 9));
+  let maxRun = 0, cur = 0;
+  for (const r of sorted) {
+    if (r.score >= 65) { cur++; maxRun = Math.max(maxRun, cur); }
+    else cur = 0;
+  }
+  return maxRun >= 4 ? 3 : maxRun >= 3 ? 1 : 0;
 }
 
 function _starterEdge(sp) {
@@ -13113,28 +13532,40 @@ function _recentEra(gameLog, seasonEra) {
   const er = starts.reduce((s, g) => s + (parseFloat(g.earnedRuns)     || 0), 0);
   const ip = starts.reduce((s, g) => s + (parseFloat(g.inningsPitched) || 0), 0);
   const recentEra = ip > 0 ? (er / ip) * 9 : seasonEra;
-  return 0.4 * recentEra + 0.6 * seasonEra;
+  // If last 2 starts were both bad (start ERA ≥ 6), trust recent form more —
+  // pitcher is trending in the wrong direction regardless of season number.
+  const lastTwo = starts.slice(-2);
+  const startEra = g => { const gip = parseFloat(g.inningsPitched) || 0; return gip > 0 ? (parseFloat(g.earnedRuns) || 0) / gip * 9 : 99; };
+  const bothBad  = lastTwo.length === 2 && lastTwo.every(g => startEra(g) >= 6.0);
+  const bothGood = lastTwo.length === 2 && lastTwo.every(g => startEra(g) <= 2.50);
+  const rw = bothBad ? 0.65 : bothGood ? 0.55 : 0.40;
+  return rw * recentEra + (1 - rw) * seasonEra;
 }
 
-function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0) {
+function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0, tempF = 70, isDome = false) {
   const batting     = 4.5 + ((lineupComposite - 50) / 30) * 2.0;
   const suppression = (oppSpBonus + oppBullpenBonus) / 33;
-  // Extra amplifier for extreme hitter environments (Coors-tier) where base formula understates scoring
+  // Extra amplifier for extreme hitter environments (Coors-tier)
   const extremeParkAmp = pfVal >= 1.22 ? 1.35 : pfVal >= 1.12 ? 1.12 : 1.0;
-  return Math.max(1.0, (batting - suppression) * pfVal * extremeParkAmp);
+  // Temperature affects ball carry (~1% per 5°F from 70° baseline) — irrelevant for domes
+  const tempFactor = isDome ? 1.0 : Math.max(0.91, Math.min(1.09, 1.0 + (tempF - 70) / 350));
+  return Math.max(1.0, (batting - suppression) * pfVal * extremeParkAmp * tempFactor);
 }
 
-function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc, awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted) {
+function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, homeStarterSc, awayBullpenSc, homeBullpenSc, awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted, awayPlatoon = 0, homePlatoon = 0, awayRestAdj = 0, homeRestAdj = 0) {
   const awayAbbr   = gd.awayAbbr || 'Away';
   const homeAbbr   = gd.homeAbbr || 'Home';
   const winnerAbbr = winner === 'away' ? awayAbbr : winner === 'home' ? homeAbbr : null;
   const loserAbbr  = winner === 'away' ? homeAbbr : winner === 'home' ? awayAbbr : null;
 
   // Determine biggest edge component for mainReason
-  const winSp  = winner === 'away' ? homeStarterSc : awayStarterSc; // starter facing winner's lineup
-  const winBp  = winner === 'away' ? homeBullpenSc : awayBullpenSc;
-  const scoreDiff = Math.abs(awayScore - homeScore);
+  const winSp      = winner === 'away' ? homeStarterSc : awayStarterSc;
+  const winBp      = winner === 'away' ? homeBullpenSc : awayBullpenSc;
+  const scoreDiff  = Math.abs(awayScore - homeScore);
   const winArsenal = winner === 'away' ? awayArsenalEdge : homeArsenalEdge;
+  const winPlatoon = winner === 'away' ? awayPlatoon : homePlatoon;
+  const winRest    = winner === 'away' ? awayRestAdj : homeRestAdj;
+  const loseRest   = winner === 'away' ? homeRestAdj : awayRestAdj;
 
   let mainReason = '';
   if (winnerAbbr) {
@@ -13143,6 +13574,8 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
       { name: 'starting pitcher matchup', val: winSp >= 65 ? winSp - 50 : 0 },
       { name: 'bullpen advantage',        val: winBp >= 60 ? winBp - 50 : 0 },
       { name: 'pitch arsenal fit',        val: Math.abs(winArsenal) >= 2 ? Math.abs(winArsenal) * 3 : 0 },
+      { name: 'platoon split advantage',  val: winPlatoon >= 4 ? winPlatoon * 2 : 0 },
+      { name: 'starter rest advantage',   val: winRest >= 1 && loseRest <= -3 ? 8 : 0 },
     ].sort((a, b) => b.val - a.val);
     const topEdge = edges[0];
     if (topEdge.val > 0) {
@@ -13188,6 +13621,9 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
       trapWarning = 'Both lineups are projected. Prediction is preliminary — confidence will improve once official lineups are posted.';
     else if (!awayPosted || !homePosted)
       trapWarning = 'One lineup is still projected. Monitor for late scratches before committing.';
+    // Trap 8: Predicted winner's starter on short rest
+    else if (winRest <= -5)
+      trapWarning = `${winnerAbbr}'s starter is on short rest — fatigue could reduce effectiveness and limit pitch count.`;
   }
 
   // mainRisk
@@ -13204,7 +13640,7 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
   if (mainReason) parts.push(mainReason);
 
   const w = gd.weather;
-  if (w) {
+  if (w && !pf?.isDome) {
     const isOut = w.windSpeed >= 10 && w.windDir >= 135 && w.windDir <= 315;
     const isIn  = w.windSpeed >= 10 && (w.windDir < 135 || w.windDir > 315);
     if (isOut)  parts.push(`Wind blowing out at ${w.windSpeed}mph — over lean.`);
@@ -13213,6 +13649,7 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
 
   if (pf?.isHitter) parts.push('Park boosts run environment.');
   else if ((pf?.overall ?? 1.0) < 0.95) parts.push('Pitcher-friendly park suppresses scoring.');
+  if (pf?.isDome) parts.push('Dome / roof — weather-neutral environment.');
 
   return { summaryText: parts.join(' '), mainReason, mainRisk, trapWarning };
 }
@@ -13228,16 +13665,30 @@ function _starterBonus(pitcher, gameLog = null) {
     const weightedWhiff = pitches.reduce((acc, r) =>
       acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.whiff_percent) / 100), 0);
     const weightedWOBA  = pitches.reduce((acc, r) =>
-      acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.woba) || 0), 0);
+      acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.woba)     || 0), 0);
+    const weightedEstWOBA = pitches.reduce((acc, r) =>
+      acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.est_woba) || 0), 0);
+    // 50/50 blend of woba and est_woba strips half the batted-ball luck:
+    // lucky pitchers (woba < est_woba) get penalized; unlucky ones get credit
+    const blendedWOBA = weightedEstWOBA > 0 && weightedWOBA > 0
+      ? 0.50 * weightedWOBA + 0.50 * weightedEstWOBA
+      : weightedWOBA;
+    const weightedHardHit = pitches.reduce((acc, r) =>
+      acc + (parseFloat(r.pitch_usage) / 100) * (parseFloat(r.hard_hit_percent) || 38), 0);
     const whiffPts =
       weightedWhiff >= 0.30 ? 12 : weightedWhiff >= 0.25 ? 6 :
       weightedWhiff >= 0.20 ? 2  : weightedWhiff >= 0.15 ? 0 : -8;
     const wobaPts =
-      weightedWOBA <= 0.250 ? 8  : weightedWOBA <= 0.290 ? 3 :
-      weightedWOBA <= 0.330 ? 0  : weightedWOBA <= 0.370 ? -4 : -10;
-    const savantScore = Math.max(-15, Math.min(20, whiffPts + wobaPts));
-    // Tag as ERA trap when pitch-mix scores well but season ERA is high — K% may not translate to run suppression
-    const eraTrap = (s?.era > 4.50 && savantScore >= 6);
+      blendedWOBA <= 0.250 ? 8  : blendedWOBA <= 0.290 ? 3 :
+      blendedWOBA <= 0.330 ? 0  : blendedWOBA <= 0.370 ? -4 : -10;
+    const hardHitPts =
+      weightedHardHit < 28 ? 4 : weightedHardHit < 34 ? 2 :
+      weightedHardHit < 40 ? 0 : weightedHardHit < 46 ? -2 : weightedHardHit < 52 ? -4 : -6;
+    const savantScore = Math.max(-15, Math.min(20, whiffPts + wobaPts + hardHitPts));
+    // ERA trap: pitch-mix scores well but ERA is high (K% may not translate to run suppression)
+    // Also flag when est_woba >> woba (contact quality worse than results — likely regressing soon)
+    const luckGap = weightedEstWOBA > 0 && weightedWOBA > 0 ? weightedEstWOBA - weightedWOBA : 0;
+    const eraTrap = (s?.era > 4.50 && savantScore >= 6) || (luckGap >= 0.035 && savantScore >= 4);
     return eraTrap ? { score: savantScore, eraTrap: true } : savantScore;
   }
 
@@ -13263,20 +13714,122 @@ function _starterBonus(pitcher, gameLog = null) {
     return -8; // true debut — no game log data
   }
 
-  // 3. ERA bracket fallback with last-3-starts recency blend
-  const blendedEra = _recentEra(gameLog, era);
-  let eraScore;
-  if      (blendedEra <= 2.50) eraScore = 15;
-  else if (blendedEra <= 3.25) eraScore = 10;
-  else if (blendedEra <= 3.75) eraScore =  5;
-  else if (blendedEra <= 4.50) eraScore =  0;
-  else if (blendedEra <= 5.25) eraScore = -5;
-  else                         eraScore = -10;
+  // 3. ERA bracket fallback with FIP-ERA blend + last-3-starts recency
   const ip = parseFloat(s.inningsPitched) || 0;
+  // FIP = (13*HR + 3*BB - 2*K) / IP + 3.10 — strips defense/BABIP luck
+  const fip = ip >= 15 && s.homeRuns != null
+    ? (13 * (s.homeRuns || 0) + 3 * (s.baseOnBalls || 0) - 2 * (s.strikeOuts || 0)) / ip + 3.10
+    : null;
+  const blendedEra = _recentEra(gameLog, era);
+  // 55% FIP + 45% ERA-blend — more predictive than ERA alone
+  const effectiveEra = fip != null ? 0.55 * fip + 0.45 * blendedEra : blendedEra;
+  let eraScore;
+  if      (effectiveEra <= 2.50) eraScore = 15;
+  else if (effectiveEra <= 3.25) eraScore = 10;
+  else if (effectiveEra <= 3.75) eraScore =  5;
+  else if (effectiveEra <= 4.50) eraScore =  0;
+  else if (effectiveEra <= 5.25) eraScore = -5;
+  else                           eraScore = -10;
   const k9 = ip > 0 ? (parseFloat(s.strikeOuts) || 0) / ip * 9 : 0;
   const k9Score  = k9 >= 11 ? 5 : k9 >= 9.5 ? 3 : k9 >= 8 ? 1 : k9 >= 6.5 ? 0 : k9 >= 5 ? -2 : ip > 0 ? -5 : 0;
   const durScore = ip >= 50 ? 3 : ip >= 35 ? 1 : ip >= 18 ? 0 : ip > 0 ? -2 : 0;
-  return Math.max(-15, Math.min(20, eraScore + k9Score + durScore));
+  // Recent start inning depth: consistently going 6+ IP signals pitcher is not fading
+  const recentStarts2 = (gameLog || []).filter(g => parseFloat(g.inningsPitched) > 0).slice(-3);
+  const avgRecentIP = recentStarts2.length >= 2
+    ? recentStarts2.reduce((s, g) => s + (parseFloat(g.inningsPitched) || 0), 0) / recentStarts2.length
+    : null;
+  const depthScore = avgRecentIP == null ? 0 : avgRecentIP >= 6.5 ? 2 : avgRecentIP >= 5.5 ? 1 : avgRecentIP < 4.5 ? -2 : 0;
+
+  // Quality start rate — consistent ability to go 6+ IP with ≤3 ER (last 5 starts).
+  // Orthogonal to depthScore: a pitcher can average 5.5 IP (neutral depth) yet rarely deliver
+  // quality outings — or vice versa, always going 6 but frequently allowing 4+ runs.
+  const qsAdj = (() => {
+    const starts = (gameLog || []).filter(g => parseFloat(g.inningsPitched) > 0).slice(-5);
+    if (starts.length < 3) return 0;
+    const qs = starts.filter(g =>
+      parseFloat(g.inningsPitched) >= 6 && parseFloat(g.earnedRuns || 0) <= 3
+    ).length;
+    const qsRate = qs / starts.length;
+    if      (qsRate >= 0.80) return  2;
+    else if (qsRate >= 0.60) return  1;
+    else if (qsRate <= 0.20) return -2;
+    else if (qsRate <= 0.40) return -1;
+    return 0;
+  })();
+
+  // Contact quality — BACON (hit rate on contact allowed) and BABIP detect whether ERA is sustainable.
+  // FIP already adjusts for BABIP luck when IP ≥ 15, so BABIP modifier only fires for small samples.
+  const bacon = s.bacon ?? 0;
+  const babip = s.babip ?? 0;
+  let contactAdj = 0;
+  if (bacon > 0) {
+    if      (bacon >= 0.310) contactAdj -= 2; // hitters crushing contact → ERA understates danger
+    else if (bacon >= 0.295) contactAdj -= 1;
+    else if (bacon <= 0.265) contactAdj += 2; // weak contact generated → ERA is sustainable
+    else if (bacon <= 0.280) contactAdj += 1;
+  }
+  if (fip == null && babip > 0) {
+    // No FIP available: use BABIP as a raw luck flag
+    if      (babip <= 0.255) contactAdj -= 2; // suspiciously low — likely regression coming
+    else if (babip >= 0.340) contactAdj += 1; // possibly unlucky — ERA may overstate danger
+  }
+
+  // WHIP reliability — baserunner rate independent of BACON/FIP.
+  // When FIP is available it already captures BB, so half-weight to avoid double-count.
+  // The H component of WHIP still adds signal that FIP misses.
+  const whipAdj = (() => {
+    const w = s.whip;
+    if (!w || w <= 0) return 0;
+    const factor = fip != null ? 0.5 : 1.0;
+    let raw = 0;
+    if      (w <= 0.95) raw =  2; // very few baserunners allowed
+    else if (w <= 1.10) raw =  1;
+    else if (w >= 1.55) raw = -2; // lots of traffic, ERA likely to rise
+    else if (w >= 1.40) raw = -1;
+    return Math.round(raw * factor);
+  })();
+
+  // ERA trend — compare most recent start vs the two prior to detect momentum shifts.
+  const trendAdj = (() => {
+    const starts = (gameLog || []).filter(g => parseFloat(g.inningsPitched) > 0);
+    if (starts.length < 3) return 0;
+    const last  = starts[starts.length - 1];
+    const prev2 = starts.slice(-3, -1);
+    const lastEra = parseFloat(last.inningsPitched) > 0
+      ? (parseFloat(last.earnedRuns) || 0) / parseFloat(last.inningsPitched) * 9 : null;
+    const p2ip   = prev2.reduce((acc, g) => acc + (parseFloat(g.inningsPitched) || 0), 0);
+    const p2er   = prev2.reduce((acc, g) => acc + (parseFloat(g.earnedRuns)     || 0), 0);
+    const prevEra = p2ip > 0 ? p2er / p2ip * 9 : null;
+    if (lastEra == null || prevEra == null) return 0;
+    const diff = lastEra - prevEra; // positive = last start was worse than prior trend
+    if      (diff <= -2.50) return  2;  // clear hot streak
+    else if (diff <= -1.00) return  1;  // improving trend
+    else if (diff >=  3.00) return -2;  // clear decline
+    else if (diff >=  1.50) return -1;  // fading trend
+    return 0;
+  })();
+
+  // Command trend — recent BB/9 vs season BB/9 detects loss of control before ERA reacts.
+  // Orthogonal to ERA trend: a pitcher can allow fewer runs recently but walk more batters
+  // (BABIP regression coming). Only fires when season IP ≥ 15 (reliable baseline).
+  const commandTrendAdj = (() => {
+    const seasonIP = parseFloat(s.inningsPitched) || 0;
+    if (seasonIP < 15 || !s.baseOnBalls) return 0;
+    const seasonBB9  = (parseFloat(s.baseOnBalls) || 0) / seasonIP * 9;
+    const starts = (gameLog || []).filter(g => parseFloat(g.inningsPitched) > 0).slice(-3);
+    if (starts.length < 2) return 0;
+    const rBB = starts.reduce((a, g) => a + (parseFloat(g.baseOnBalls) || 0), 0);
+    const rIP = starts.reduce((a, g) => a + (parseFloat(g.inningsPitched) || 0), 0);
+    if (rIP <= 0) return 0;
+    const recentBB9 = rBB / rIP * 9;
+    const diff = recentBB9 - seasonBB9; // positive = walking more recently
+    if      (diff >=  2.5) return -2; // command deteriorating significantly
+    else if (diff >=  1.5) return -1;
+    else if (diff <= -1.5) return  1; // unusually sharp control recently
+    return 0;
+  })();
+
+  return Math.max(-15, Math.min(20, eraScore + k9Score + durScore + depthScore + qsAdj + contactAdj + whipAdj + trendAdj + commandTrendAdj));
 }
 
 function _bullpenBonus(era, h9 = 0, hbf = 0, hr9 = 0) {
@@ -13304,15 +13857,20 @@ function _playerOps(stats) {
 
 function _teamRecentForm(players) {
   if (!players.length) return 0;
-  let delta = 0, count = 0;
+  let d7 = 0, d30 = 0, c7 = 0, c30 = 0;
   for (const p of players) {
-    const l7ops  = _playerOps(p.last7Stats);
     const seaOps = _playerOps(p.seasonStats);
-    if (l7ops != null && seaOps != null && seaOps > 0) { delta += (l7ops - seaOps); count++; }
+    if (seaOps == null || seaOps === 0) continue;
+    const l7ops  = _playerOps(p.last7Stats);
+    if (l7ops  != null) { d7  += l7ops  - seaOps; c7++;  }
+    const l30ops = _playerOps(p.last30Stats);
+    if (l30ops != null) { d30 += l30ops - seaOps; c30++; }
   }
-  if (!count) return 0;
-  const avg = delta / count;
-  return avg >= 0.180 ? 8 : avg >= 0.100 ? 5 : avg >= 0.040 ? 2 : avg >= -0.040 ? 0 : avg >= -0.100 ? -2 : avg >= -0.180 ? -5 : -8;
+  if (!c7 && !c30) return 0;
+  const avg7  = c7  > 0 ? d7  / c7  : 0;
+  const avg30 = c30 > 0 ? d30 / c30 : 0;
+  const blended = (c7 > 0 && c30 > 0) ? 0.65 * avg7 + 0.35 * avg30 : c7 > 0 ? avg7 : avg30;
+  return blended >= 0.180 ? 8 : blended >= 0.100 ? 5 : blended >= 0.040 ? 2 : blended >= -0.040 ? 0 : blended >= -0.100 ? -2 : blended >= -0.180 ? -5 : -8;
 }
 
 function _gameContextAdj(pf, weather) {
@@ -13322,7 +13880,7 @@ function _gameContextAdj(pf, weather) {
   else if (pfVal >= 1.07) score += 2;
   else if (pfVal <= 0.87) score -= 4;
   else if (pfVal <= 0.93) score -= 2;
-  if (weather) {
+  if (weather && !pf?.isDome) {
     const temp  = weather.temp      || 70;
     const ws    = weather.windSpeed || 0;
     const wd    = weather.windDir   || 180;
@@ -13339,6 +13897,148 @@ function _gameContextAdj(pf, weather) {
 function _lineupConfidenceAdj(isPosted, playerCount) {
   if (isPosted) return 0;
   return playerCount >= 7 ? -3 : playerCount >= 5 ? -6 : -12;
+}
+
+function _starterRestAdj(gameLog, gameDate) {
+  if (!gameLog?.length || !gameDate) return 0;
+  const starts = gameLog.filter(g => parseFloat(g.inningsPitched) > 0);
+  if (!starts.length) return 0;
+  const last = starts[starts.length - 1];
+  if (!last.date) return 0;
+  const days = Math.round((new Date(gameDate.slice(0, 10)) - new Date(last.date)) / 86400000);
+  if (days <= 0) return 0;
+  if (days <= 3) return -5;  // short rest — fatigue / reduced pitch count
+  if (days <= 5) return  0;  // normal 4-5 day rest
+  if (days <= 7) return  1;  // extra rest — slight freshness bonus
+  return -2;                  // 8+ days — rust risk / possible IL return
+}
+
+// Dynamic home field advantage — replaces flat +3 with season home/road data.
+// Pythagorean regression — teams outperforming run differential tend to regress;
+// underperformers are better than their W-L shows. Returns -2 to +2.
+function _pythagoreanAdj(standings) {
+  if (!standings) return 0;
+  const rs = standings.runsScored;
+  const ra = standings.runsAllowed;
+  const n  = standings.wins + standings.losses;
+  if (!rs || !ra || n < 20) return 0;
+  const expectedWinPct = (rs * rs) / (rs * rs + ra * ra);
+  const actualWinPct   = standings.wins / n;
+  const diff = actualWinPct - expectedWinPct; // positive = over-performing
+  if      (diff >=  0.060) return -2; // very lucky — expect regression
+  else if (diff >=  0.030) return -1;
+  else if (diff <= -0.060) return  2; // genuinely better than record shows
+  else if (diff <= -0.030) return  1;
+  return 0;
+}
+
+// Win/loss streak momentum — short-term signal complementary to Pythagorean quality.
+// Streaks of 3+ games carry real momentum; 6+ are statistically meaningful. Cap ±2.
+function _streakAdj(standings) {
+  const code = standings?.streak || '';
+  if (!code || code.length < 2) return 0;
+  const isWin = code.charAt(0) === 'W';
+  const n     = parseInt(code.slice(1)) || 0;
+  if (n < 3) return 0;
+  return isWin ? (n >= 6 ? 2 : 1) : (n >= 6 ? -2 : -1);
+}
+
+// Returns 1–5: strong home teams or weak road opponents push it up, vice versa.
+function _homeFieldAdj(homeStandings, awayStandings) {
+  let adv = 3;
+  if (homeStandings) {
+    const n = homeStandings.homeWins + homeStandings.homeLosses;
+    if (n >= 15) {
+      const pct = homeStandings.homeWins / n;
+      if      (pct >= 0.650) adv++;   // dominant home fortress
+      else if (pct <= 0.400) adv--;   // poor home record
+    }
+  }
+  if (awayStandings) {
+    const n = awayStandings.awayWins + awayStandings.awayLosses;
+    if (n >= 15) {
+      const pct = awayStandings.awayWins / n;
+      if      (pct >= 0.600) adv--;   // strong road team reduces home edge
+      else if (pct <= 0.350) adv++;   // team that struggles on the road
+    }
+  }
+  return clamp(adv, 1, 5);
+}
+
+function _starterKMatchup(pitcher, opposingPlayers) {
+  if (!pitcher || !opposingPlayers?.length) return 0;
+  const s  = pitcher.seasonStats || {};
+  const ip = parseFloat(s.inningsPitched) || 0;
+  if (ip < 15) return 0;
+  const k9 = (parseFloat(s.strikeOuts) || 0) / ip * 9;
+  if (k9 < 7.5) return 0;
+  let totalK = 0, totalAB = 0, totalBB = 0;
+  for (const p of opposingPlayers) {
+    const ss = p.seasonStats || {};
+    totalK  += parseFloat(ss.strikeOuts)  || 0;
+    totalAB += parseFloat(ss.atBats)      || 0;
+    totalBB += parseFloat(ss.baseOnBalls) || 0;
+  }
+  const pa = totalAB + totalBB;
+  if (pa < 80) return 0;
+  const kPct = totalK / pa;
+  if      (k9 >= 10.0 && kPct >= 0.25) return -3;
+  else if (k9 >= 10.0 && kPct >= 0.21) return -2;
+  else if (k9 >= 10.0 && kPct <= 0.15) return  1;
+  else if (k9 >=  9.0 && kPct >= 0.25) return -2;
+  else if (k9 >=  9.0 && kPct >= 0.21) return -1;
+  else if (k9 >=  7.5 && kPct >= 0.25) return -1;
+  return 0;
+}
+
+function _parkPowerBonus(players, pf) {
+  if (!pf || !players?.length) return 0;
+  let totalISO = 0, totalBoost = 0, count = 0;
+  for (const p of players) {
+    const ss = p.seasonStats || {};
+    const slg = parseFloat(ss.slg) || 0;
+    const avg = parseFloat(ss.avg) || 0;
+    if (slg <= 0) continue;
+    const iso = Math.max(0, slg - avg);
+    // Use handedness-specific HR factor when available
+    const hrFactor = p.batSide === 'L' ? (pf.hrL ?? pf.overall ?? 1.0) : (pf.hrR ?? pf.overall ?? 1.0);
+    totalISO   += iso;
+    totalBoost += hrFactor - 1.0;
+    count++;
+  }
+  if (!count) return 0;
+  const avgISO   = totalISO   / count;
+  const parkBoost = totalBoost / count;
+  if (parkBoost < 0.06) return 0;
+  if      (avgISO >= 0.190 && parkBoost >= 0.12) return 3;
+  else if (avgISO >= 0.160 && parkBoost >= 0.09) return 2;
+  else if (avgISO >= 0.140 && parkBoost >= 0.08) return 2;
+  else if (avgISO >= 0.120 && parkBoost >= 0.06) return 1;
+  else if (avgISO >= 0.160 && parkBoost >= 0.06) return 1;
+  return 0;
+}
+
+function _starterBBMatchup(pitcher, opposingPlayers) {
+  // Returns positive benefit to the BATTING team when facing a wild SP with a patient lineup.
+  if (!pitcher || !opposingPlayers?.length) return 0;
+  const s = pitcher.seasonStats || {};
+  const bbPct = parseFloat(s.bbBfPct) || 0;
+  if (bbPct < 0.09) return 0;
+  let totalOBP = 0, count = 0;
+  for (const p of opposingPlayers) {
+    const ss = p.seasonStats || {};
+    const obp = parseFloat(ss.obp) || 0;
+    if (obp > 0) { totalOBP += obp; count++; }
+  }
+  if (!count) return 0;
+  const teamOBP = totalOBP / count;
+  if      (bbPct >= 0.12 && teamOBP >= 0.340) return 3;
+  else if (bbPct >= 0.12 && teamOBP >= 0.320) return 2;
+  else if (bbPct >= 0.11 && teamOBP >= 0.340) return 2;
+  else if (bbPct >= 0.10 && teamOBP >= 0.340) return 2;
+  else if (bbPct >= 0.10 && teamOBP >= 0.320) return 1;
+  else if (bbPct >= 0.09 && teamOBP >= 0.355) return 1;
+  return 0;
 }
 
 function _calibrateSigmoidSlope(finalResults) {
@@ -13390,11 +14090,12 @@ function _winEdgeLabel(awayWinProb, homeWinProb) {
 }
 
 function _teamPitchArsenalEdge(batters, pitcherId) {
-  if (!state.savantPitcher || !state.savantBatter || !pitcherId) return 0;
+  if (!state.savantPitcher || !state.savantBatter || !pitcherId) return { score: 0, callout: null };
   const pitcherRows = state.savantPitcher.get(String(pitcherId)) || [];
-  if (!pitcherRows.some(r => parseFloat(r.pitch_usage) >= 10)) return 0;
+  if (!pitcherRows.some(r => parseFloat(r.pitch_usage) >= 10)) return { score: 0, callout: null };
   const LINEUP_W = LINEUP_WEIGHTS;
   let wSum = 0, wTotal = 0, withData = 0;
+  const pitchMap = new Map(); // pitchType → { wBASum, wBATotal, pitchName, usagePct }
   for (const b of batters) {
     if (!b.id) continue;
     const res = computePitchMixMatchup(b.id, pitcherId);
@@ -13404,32 +14105,117 @@ function _teamPitchArsenalEdge(batters, pitcherId) {
     wSum += res.score * w;
     wTotal += w;
     withData++;
+    // Collect per-pitch BA for callout
+    const batterRows = state.savantBatter.get(String(b.id)) || [];
+    for (const pr of pitcherRows) {
+      if (parseFloat(pr.pitch_usage) < 10) continue;
+      const bRow = batterRows.find(br => br.pitch_type === pr.pitch_type);
+      const ba   = bRow ? parseFloat(bRow.ba) : NaN;
+      if (!isNaN(ba)) {
+        const entry = pitchMap.get(pr.pitch_type) || { wBASum: 0, wBATotal: 0, pitchName: pr.pitch_name || pr.pitch_type, usagePct: Math.round(parseFloat(pr.pitch_usage)) };
+        entry.wBASum   += ba * w;
+        entry.wBATotal += w;
+        pitchMap.set(pr.pitch_type, entry);
+      }
+    }
   }
-  if (withData < 2 || wTotal === 0) return 0;
-  return clamp(Math.round(wSum / wTotal), -8, 8);
+  if (withData < 2 || wTotal === 0) return { score: 0, callout: null };
+  const score = clamp(Math.round(wSum / wTotal), -8, 8);
+  // Build callout: find the pitch with highest |delta| * usagePct
+  let topPitch = null, topImpact = 0;
+  for (const [, entry] of pitchMap) {
+    if (entry.wBATotal === 0) continue;
+    const teamBA = entry.wBASum / entry.wBATotal;
+    const delta  = teamBA - 0.250;
+    const impact = Math.abs(delta) * entry.usagePct;
+    if (impact > topImpact) { topImpact = impact; topPitch = { ...entry, teamBA, delta }; }
+  }
+  let callout = null;
+  if (topPitch && Math.abs(topPitch.delta) >= 0.030) {
+    const baStr = '.' + Math.round(topPitch.teamBA * 1000).toString().padStart(3, '0');
+    callout = topPitch.delta >= 0.030
+      ? `Lineup hits ${topPitch.pitchName} (${topPitch.usagePct}%) well — ${baStr} avg`
+      : `SP's ${topPitch.pitchName} (${topPitch.usagePct}%) neutralizes lineup — ${baStr} avg`;
+  }
+  return { score, callout };
 }
 
-function _teamPlatoonEdge(batters, pitcherHand) {
-  if (!pitcherHand || !batters.length) return 0;
-  let wAdv = 0, wTotal = 0;
+function _teamPlatoonEdge(batters, pitcherHand, isHome, isNight) {
+  if (!batters.length) return { score: 0, topBatters: [] };
+  const _fmtSplit = d => (d >= 0 ? '+' : '-') + '.' + Math.abs(Math.round(d * 1000)).toString().padStart(3, '0');
+  let wSum = 0, wTotal = 0;
+  const batterScores = [];
   for (const b of batters) {
     const bat = b.batSide || 'R';
+    const ss  = b.seasonStats || {};
     const pos = Math.max(0, Math.min(8, (b.orderPos || 5) - 1));
     const w   = LINEUP_WEIGHTS[pos];
-    const hasAdv = bat === 'S' || (bat === 'R' && pitcherHand === 'L') || (bat === 'L' && pitcherHand === 'R');
-    if (hasAdv) wAdv += w;
     wTotal += w;
+    // 1. Handedness component — use actual vs-hand OPS split when sufficient sample, else fixed fallback
+    let handScore = 0;
+    if (pitcherHand) {
+      const vsHandStats = pitcherHand === 'R' ? b.vsRHP : b.vsLHP;
+      const vsAB = vsHandStats?.atBats || 0;
+      if (vsAB >= 20 && ss.ops > 0 && vsHandStats?.ops != null) {
+        // Data-driven: OPS diff vs season baseline, scaled to -5..+5
+        handScore = clamp(Math.round((vsHandStats.ops - ss.ops) * 15), -5, 5);
+      } else {
+        // Fallback: coarse fixed scores
+        if (bat === 'S') handScore = 2;
+        else if ((bat === 'R' && pitcherHand === 'L') || (bat === 'L' && pitcherHand === 'R')) handScore = 3;
+        else handScore = -1;
+      }
+    }
+    // 2. Location component: home/away split vs season avg (up to ±2)
+    const locSplit = isHome ? b.homeStats : b.awayStats;
+    const locAB    = locSplit?.atBats || 0;
+    const locDiff  = locAB >= 15 && ss.avg > 0 ? (locSplit.avg || 0) - ss.avg : null;
+    const locScore = locDiff != null ? clamp(Math.round(locDiff * 50), -2, 2) : 0;
+    // 3. Day/Night component: time-of-day split vs season avg (up to ±1)
+    const timeSplit = isNight ? b.nightStats : b.dayStats;
+    const timeAB    = timeSplit?.atBats || 0;
+    const timeDiff  = timeAB >= 10 && ss.avg > 0 ? (timeSplit.avg || 0) - ss.avg : null;
+    const timeScore = timeDiff != null ? clamp(Math.round(timeDiff * 30), -1, 1) : 0;
+    const baterRaw  = handScore + locScore + timeScore;
+    wSum += baterRaw * w;
+    // Build reason label for top batter callout
+    let reason = '';
+    if (pitcherHand) {
+      const vsHandStats = pitcherHand === 'R' ? b.vsRHP : b.vsLHP;
+      const vsAB = vsHandStats?.atBats || 0;
+      if (vsAB >= 20 && vsHandStats?.ops != null && ss.ops > 0) {
+        const opsDiff = vsHandStats.ops - ss.ops;
+        if (Math.abs(handScore) > 0) reason = `${_fmtSplit(opsDiff)} OPS vs ${pitcherHand}HP`;
+      } else if (bat === 'S') {
+        reason = 'switch';
+      } else if (handScore > 0) {
+        reason = `${bat} vs ${pitcherHand}HP`;
+      }
+    }
+    if (locDiff != null && Math.abs(locScore) > 0) {
+      reason += (reason ? ', ' : '') + `${_fmtSplit(locDiff)} ${isHome ? 'home' : 'away'}`;
+    } else if (timeDiff != null && Math.abs(timeScore) > 0) {
+      reason += (reason ? ', ' : '') + `${_fmtSplit(timeDiff)} ${isNight ? 'night' : 'day'}`;
+    }
+    batterScores.push({ name: b.name || '?', score: baterRaw, reason: reason || '—' });
   }
-  if (wTotal === 0) return 0;
-  const advRatio = wAdv / wTotal;            // 0..1, weighted share of lineup with the platoon edge
-  return Math.round((advRatio - 0.5) * 6);   // centered on a balanced lineup, range -3..+3
+  if (wTotal === 0) return { score: 0, topBatters: [] };
+  // Scale weighted avg to -8..+8 (per-batter max ≈+6, min ≈-4; typical avg ≈-3..+5)
+  const weightedAvg = wSum / wTotal;
+  const finalScore  = clamp(Math.round(weightedAvg * 8 / 5), -8, 8);
+  const topBatters  = batterScores
+    .filter(b => b.score > 0)
+    .sort((a, b2) => b2.score - a.score)
+    .slice(0, 3);
+  return { score: finalScore, topBatters };
 }
 
-function runTeamScan(onProgress) {
+function runTeamScan(onProgress, filterPk = null) {
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const results  = [];
 
   for (const gd of allGames) {
+    if (filterPk != null && gd.gamePk !== Number(filterPk)) { onProgress?.(); continue; }
     const awayPlayers = (gd.players||[]).filter(p => p.id && p.isAway);
     const homePlayers = (gd.players||[]).filter(p => p.id && !p.isAway);
     // Keep games where at least one side has data — missing side scores at baseline (50)
@@ -13445,33 +14231,56 @@ function runTeamScan(onProgress) {
 
     const context      = _gameContextAdj(pf, weather);
     const awayLineup   = _lineupScore(awayRes);
+    const awayStack    = _lineupStackBonus(awayRes);
     const awayForm     = _teamRecentForm(awayPlayers);
     const _awayStarterRaw  = _starterBonus(gd.awayPitcher, gd.awayPitcherGameLog);
     const awayStarter      = typeof _awayStarterRaw === 'object' ? _awayStarterRaw.score : _awayStarterRaw;
     const awayEraTrap      = typeof _awayStarterRaw === 'object' && _awayStarterRaw.eraTrap;
     const awayBullpen  = _bullpenBonus(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF, gd.awayBullpenHR9);
     const awayConf         = _lineupConfidenceAdj(awayPosted, awayPlayers.length);
-    const awayArsenalEdge  = _teamPitchArsenalEdge(awayPlayers, gd.homePitcher?.id);
-    const awayPlatoon      = _teamPlatoonEdge(awayPlayers, gd.homePitcher?.pitchHand);
-    const awayScore        = awayLineup + awayForm + context + awayStarter + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon;
+    const awayRestAdj      = _starterRestAdj(gd.awayPitcherGameLog, gd.gameDate);
+    const _rawGameDN       = (state.games || []).find(g => g.gamePk === gd.gamePk);
+    const _isNight         = _rawGameDN?.dayNight === 'night';
+    const awayArsenalResult = _teamPitchArsenalEdge(awayPlayers, gd.homePitcher?.id);
+    const awayArsenalEdge   = awayArsenalResult.score;
+    const awayPlatoonResult = _teamPlatoonEdge(awayPlayers, gd.homePitcher?.pitchHand, false, _isNight);
+    const awayPlatoon       = awayPlatoonResult.score;
+    const awayKMatchup      = _starterKMatchup(gd.homePitcher, awayPlayers);
+    const awayBBMatchup     = _starterBBMatchup(gd.homePitcher, awayPlayers);
+    const awayParkPower     = _parkPowerBonus(awayPlayers, pf);
+    const awayStandings    = state.teamStandings?.get(String(gd.awayTeamId)) ?? null;
+    const homeStandings    = state.teamStandings?.get(String(gd.homeTeamId)) ?? null;
+    const homeAdv          = _homeFieldAdj(homeStandings, awayStandings);
+    const awayPyth         = _pythagoreanAdj(awayStandings);
+    const homePyth         = _pythagoreanAdj(homeStandings);
+    const awayStreak       = _streakAdj(awayStandings);
+    const homeStreak       = _streakAdj(homeStandings);
+    const awayScore        = awayLineup + awayStack + awayForm + context + awayPyth + awayStreak + awayStarter + awayRestAdj + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon + awayKMatchup + awayBBMatchup + awayParkPower;
 
     const homeLineup       = _lineupScore(homeRes);
+    const homeStack        = _lineupStackBonus(homeRes);
     const homeForm         = _teamRecentForm(homePlayers);
     const _homeStarterRaw  = _starterBonus(gd.homePitcher, gd.homePitcherGameLog);
     const homeStarter      = typeof _homeStarterRaw === 'object' ? _homeStarterRaw.score : _homeStarterRaw;
     const homeEraTrap      = typeof _homeStarterRaw === 'object' && _homeStarterRaw.eraTrap;
     const homeBullpen      = _bullpenBonus(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF, gd.homeBullpenHR9);
     const homeConf         = _lineupConfidenceAdj(homePosted, homePlayers.length);
-    const homeArsenalEdge  = _teamPitchArsenalEdge(homePlayers, gd.awayPitcher?.id);
-    const homePlatoon      = _teamPlatoonEdge(homePlayers, gd.awayPitcher?.pitchHand);
-    const homeScore        = homeLineup + homeForm + context + 3 + homeStarter + homeBullpen + homeConf + homeArsenalEdge + homePlatoon;
+    const homeRestAdj      = _starterRestAdj(gd.homePitcherGameLog, gd.gameDate);
+    const homeArsenalResult = _teamPitchArsenalEdge(homePlayers, gd.awayPitcher?.id);
+    const homeArsenalEdge   = homeArsenalResult.score;
+    const homePlatoonResult = _teamPlatoonEdge(homePlayers, gd.awayPitcher?.pitchHand, true,  _isNight);
+    const homePlatoon       = homePlatoonResult.score;
+    const homeKMatchup      = _starterKMatchup(gd.awayPitcher, homePlayers);
+    const homeBBMatchup     = _starterBBMatchup(gd.awayPitcher, homePlayers);
+    const homeParkPower     = _parkPowerBonus(homePlayers, pf);
+    const homeScore        = homeLineup + homeStack + homeForm + context + homeAdv + homePyth + homeStreak + homeStarter + homeRestAdj + homeBullpen + homeConf + homeArsenalEdge + homePlatoon + homeKMatchup + homeBBMatchup + homeParkPower;
 
     const hasArsenal   = awayArsenalEdge !== 0 || homeArsenalEdge !== 0;
     const margin       = Math.abs(awayScore - homeScore);
     const winner       = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
     const homeWinProb  = _winProbability(homeScore - awayScore);
     const awayWinProb  = 100 - homeWinProb;
-    const confidence   = _predictionConfidence(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!weather, gd.awayBullpenEra, gd.homeBullpenEra, hasArsenal);
+    const confidence   = _predictionConfidence(awayPosted, homePosted, gd.awayPitcher, gd.homePitcher, !!(weather && !pf?.isDome), gd.awayBullpenEra, gd.homeBullpenEra, hasArsenal);
     const winEdge      = _winEdgeLabel(awayWinProb, homeWinProb);
 
     const _rawGame    = (state.games || []).find(g => g.gamePk === gd.gamePk);
@@ -13481,14 +14290,27 @@ function runTeamScan(onProgress) {
     const _actWinner  = (_actAway != null && _actHome != null)
       ? (_actAway > _actHome ? 'away' : _actAway < _actHome ? 'home' : 'tie') : null;
 
-    const _awayProjRuns = _projRuns(awayLineup, homeStarter, homeBullpen, pf?.overall ?? 1.0);
-    const _homeProjRuns = _projRuns(homeLineup, awayStarter, awayBullpen, pf?.overall ?? 1.0);
+    const _projTemp     = weather?.temp ?? 70;
+    const _projIsDome   = pf?.isDome ?? false;
+    const _awayProjRuns = _projRuns(awayLineup + awayBBMatchup + awayKMatchup + awayParkPower, homeStarter, homeBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
+    const _homeProjRuns = _projRuns(homeLineup + homeBBMatchup + homeKMatchup + homeParkPower, awayStarter, awayBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
+
+    const _daysRest = (log, gdate) => {
+      if (!log?.length || !gdate) return null;
+      const starts = log.filter(g => parseFloat(g.inningsPitched) > 0);
+      if (!starts.length) return null;
+      const last = starts[starts.length - 1];
+      return last.date ? Math.round((new Date(gdate.slice(0, 10)) - new Date(last.date)) / 86400000) : null;
+    };
+    const awayStarterDays = _daysRest(gd.awayPitcherGameLog, gd.gameDate);
+    const homeStarterDays = _daysRest(gd.homePitcherGameLog, gd.gameDate);
 
     const _summary = _teamScanSummary(gd, winner, awayScore, homeScore, pf,
       _starterEdge(gd.homePitcher), _starterEdge(gd.awayPitcher),
       _bullpenEdge(gd.awayBullpenEra, gd.awayBullpenH9, gd.awayBullpenHBF),
       _bullpenEdge(gd.homeBullpenEra, gd.homeBullpenH9, gd.homeBullpenHBF),
-      awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted);
+      awayArsenalEdge, homeArsenalEdge, awayPosted, homePosted,
+      awayPlatoon, homePlatoon, awayRestAdj, homeRestAdj);
 
     results.push({
       gamePk: gd.gamePk,
@@ -13511,9 +14333,22 @@ function runTeamScan(onProgress) {
       awayEraTrap, homeEraTrap,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
-      awayComponents: { lineup: awayLineup, form: awayForm, starter: awayStarter, bullpen: awayBullpen, context: context + awayConf + awayPlatoon, arsenal: awayArsenalEdge },
-      homeComponents: { lineup: homeLineup, form: homeForm, starter: homeStarter, bullpen: homeBullpen, context: context + 3 + homeConf + homePlatoon, arsenal: homeArsenalEdge },
+      awayComponents: { lineup: awayLineup + awayStack, form: awayForm + awayStreak, starter: awayStarter, rest: awayRestAdj, bullpen: awayBullpen, context: context + awayConf + awayPyth, arsenal: awayArsenalEdge, platoon: awayPlatoon, kMatchup: awayKMatchup, bbMatchup: awayBBMatchup, parkPower: awayParkPower },
+      homeComponents: { lineup: homeLineup + homeStack, form: homeForm + homeStreak, starter: homeStarter, rest: homeRestAdj, bullpen: homeBullpen, context: context + homeAdv + homeConf + homePyth, arsenal: homeArsenalEdge, platoon: homePlatoon, kMatchup: homeKMatchup, bbMatchup: homeBBMatchup, parkPower: homeParkPower },
       awayArsenalEdge, homeArsenalEdge,
+      awayArsenalCallout: awayArsenalResult.callout,
+      homeArsenalCallout: homeArsenalResult.callout,
+      awayPlatoon, homePlatoon,
+      awayPlatoonData: awayPlatoonResult,
+      homePlatoonData: homePlatoonResult,
+      awayRestAdj, homeRestAdj,
+      awayStarterDays, homeStarterDays,
+      parkFactor: pf?.overall ?? 1.0,
+      isDome: pf?.isDome ?? false,
+      venueName: gd.venueName || null,
+      weather: weather || null,
+      awayStandings, homeStandings, homeAdv,
+      hasArsenal,
       awayProjRuns: _awayProjRuns,
       homeProjRuns: _homeProjRuns,
       predTotal: _awayProjRuns + _homeProjRuns,
@@ -13538,11 +14373,19 @@ function _teamScanCardHTML(r) {
     awayWinProb, homeWinProb, confidence, winEdge,
     awayPosted, homePosted,
     awayArsenalEdge, homeArsenalEdge,
+    awayArsenalCallout, homeArsenalCallout,
+    awayPlatoon, homePlatoon,
+    awayPlatoonData, homePlatoonData,
+    awayRestAdj, homeRestAdj,
+    awayStarterDays, homeStarterDays,
+    parkFactor, isDome, venueName, weather,
+    awayStandings, homeStandings, homeAdv, hasArsenal,
     awayPitcherName, homePitcherName, awayPitcherEra, homePitcherEra,
     isFinal, actualAwayScore, actualHomeScore, actualWinner,
     awayEraTrap, homeEraTrap,
   } = r;
 
+  const isTossup = winEdge === 'Toss-Up';
   const awayTi   = TEAM_INFO[awayTeamId] || {};
   const homeTi   = TEAM_INFO[homeTeamId] || {};
   const awayLogo = awayTi.espn
@@ -13581,6 +14424,32 @@ function _teamScanCardHTML(r) {
   const bpDelta      = (homeComponents?.bullpen ?? 0) - (awayComponents?.bullpen ?? 0);
   const ctxDelta     = (homeComponents?.context ?? 0) - (awayComponents?.context ?? 0);
   const arsenalDelta = (homeArsenalEdge ?? 0)         - (awayArsenalEdge ?? 0);
+  const platoonDelta = (homePlatoon ?? 0)             - (awayPlatoon ?? 0);
+  const restDelta    = (homeRestAdj  ?? 0)            - (awayRestAdj  ?? 0);
+
+  // Situation sub-label: park factor + weather context
+  const _ctxNotes = (() => {
+    const parts = [];
+    const pfVal = parkFactor ?? 1.0;
+    if (Math.abs(pfVal - 1.0) >= 0.07) {
+      const pct = Math.round((pfVal - 1.0) * 100);
+      parts.push(`Park ${pct > 0 ? '+' : ''}${pct}%${venueName ? ' · ' + venueName : ''}`);
+    }
+    if (weather && !isDome) {
+      const { windSpeed = 0, windDir = 180, temp } = weather;
+      if (windSpeed >= 10) {
+        const isOut = windDir >= 135 && windDir <= 315;
+        parts.push(`Wind ${windSpeed}mph ${isOut ? 'out ↑' : 'in ↓'}`);
+      }
+      if (temp != null && (temp <= 50 || temp >= 85)) parts.push(`${Math.round(temp)}°F`);
+    } else if (isDome) {
+      parts.push('Dome / Roof — weather neutral');
+    }
+    if (homeAdv != null && homeAdv !== 3) {
+      parts.push(homeAdv >= 4 ? `Strong home advantage (+${homeAdv})` : `Reduced home advantage (+${homeAdv})`);
+    }
+    return parts;
+  })();
 
   const _edgeVal = (delta) => {
     if (Math.abs(delta) <= 2) return `<span style="color:var(--text-muted)">EVEN</span>`;
@@ -13600,12 +14469,16 @@ function _teamScanCardHTML(r) {
     return `<div class="twp-edge-center"></div><div class="twp-edge-fill" ${fill}></div>`;
   };
 
-  // SP sub-label (pitcher names + ERA)
-  const _fmtSp = (name, era) => name
-    ? escHtml(name) + (era != null ? ` <span style="color:var(--text-muted)">(${parseFloat(era).toFixed(2)} ERA)</span>` : '')
-    : '';
-  const awaySpStr = _fmtSp(awayPitcherName, awayPitcherEra);
-  const homeSpStr = _fmtSp(homePitcherName, homePitcherEra);
+  // SP sub-label (pitcher names + ERA + rest days)
+  const _fmtSp = (name, era, days) => {
+    if (!name) return '';
+    let s = escHtml(name);
+    if (era != null) s += ` <span style="color:var(--text-muted)">(${parseFloat(era).toFixed(2)} ERA)</span>`;
+    if (days != null && days <= 3) s += ` <span style="color:#f59e0b;font-size:10px;font-weight:600">&#9888; ${days}d rest</span>`;
+    return s;
+  };
+  const awaySpStr = _fmtSp(awayPitcherName, awayPitcherEra, awayStarterDays);
+  const homeSpStr = _fmtSp(homePitcherName, homePitcherEra, homeStarterDays);
   const spSubLabel = (awaySpStr || homeSpStr)
     ? `<div class="twp-sp-sub">${awaySpStr}${awaySpStr && homeSpStr ? ' <span style="color:#334155">vs</span> ' : ''}${homeSpStr}</div>` : '';
 
@@ -13614,6 +14487,30 @@ function _teamScanCardHTML(r) {
   const _rows = arr => arr.map(p =>
     `<div class="twp-player-row"><span class="twp-player-name">${escHtml(p.name)}</span><span class="twp-player-score" style="color:${_sc(p.score)}">${p.score}</span></div>`
   ).join('');
+
+  // Form badges
+  const _afSc = awayComponents?.form ?? 0;
+  const _hfSc = homeComponents?.form ?? 0;
+  const awayFormBadge = _afSc >= 5 ? '<div class="twp-form-badge twp-form-hot">HOT</div>' : _afSc <= -5 ? '<div class="twp-form-badge twp-form-cold">COLD</div>' : '';
+  const homeFormBadge = _hfSc >= 5 ? '<div class="twp-form-badge twp-form-hot">HOT</div>' : _hfSc <= -5 ? '<div class="twp-form-badge twp-form-cold">COLD</div>' : '';
+
+  // W% helper for record chips
+  const _recPct = (w, l) => { const n = w + l; return n >= 10 ? ` <span style="color:#475569">(${(w/n).toFixed(3).replace('0.','.') })</span>` : ''; };
+
+  // Key factor — biggest decisive edge driving the prediction
+  const _keyEdge = (() => {
+    const edges = [
+      { label: 'Offense',   delta: offDelta },
+      { label: 'Starter',   delta: spDelta  },
+      { label: 'Bullpen',   delta: bpDelta  },
+      { label: 'Situation', delta: ctxDelta },
+      { label: 'Arsenal',   delta: arsenalDelta },
+      { label: 'Platoon',   delta: platoonDelta },
+      { label: 'SP Rest',   delta: restDelta   },
+    ].filter(e => Math.abs(e.delta) >= 4);
+    if (!edges.length) return null;
+    return edges.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0];
+  })();
 
   const bkId  = `tp_bk_${gamePk}`;
   const btnId = `tp_btn_${gamePk}`;
@@ -13629,26 +14526,30 @@ function _teamScanCardHTML(r) {
     </div>
 
     <div class="twp-body">
-      <div class="twp-team${winner==='away' ? ' twp-winner' : ''}">
+      <div class="twp-team${winner==='away' && !isTossup ? ' twp-winner' : ''}">
         ${awayLogo}
         <div class="twp-team-name">${escHtml(awayName)}</div>
-        <div class="twp-prob-num${winner==='away' ? ' twp-win' : ''}">${awayWinProb != null ? awayWinProb : '--'}%</div>
+        <div class="twp-prob-num${winner==='away' && !isTossup ? ' twp-win' : ''}">${awayWinProb != null ? awayWinProb : '--'}%</div>
         <div class="twp-prob-lbl">Win Prob</div>
         ${awayBadge}
         ${awayProjRuns != null ? `<div class="twp-proj-runs">~${awayProjRuns.toFixed(1)} R proj</div>` : ''}
+        ${awayStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-road-chip">Road ${awayStandings.awayWins}-${awayStandings.awayLosses}${_recPct(awayStandings.awayWins, awayStandings.awayLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${awayStandings.wins}-${awayStandings.losses}</span></div>` : ''}
+        ${awayFormBadge}
       </div>
       <div class="twp-center">
         <div class="twp-vs">VS</div>
         ${awayProjRuns != null && homeProjRuns != null ? `<div class="twp-proj-score">${escHtml(awayAbbr||'?')} ${Math.round(awayProjRuns)} – ${Math.round(homeProjRuns)} ${escHtml(homeAbbr||'?')}</div>` : ''}
         ${predTotal != null ? `<div class="twp-ou">O/U: <strong style="color:#cbd5e1">${predTotal.toFixed(1)}</strong></div>` : ''}
       </div>
-      <div class="twp-team${winner==='home' ? ' twp-winner' : ''}">
+      <div class="twp-team${winner==='home' && !isTossup ? ' twp-winner' : ''}">
         ${homeLogo}
         <div class="twp-team-name">${escHtml(homeName)}</div>
-        <div class="twp-prob-num${winner==='home' ? ' twp-win' : ''}">${homeWinProb != null ? homeWinProb : '--'}%</div>
+        <div class="twp-prob-num${winner==='home' && !isTossup ? ' twp-win' : ''}">${homeWinProb != null ? homeWinProb : '--'}%</div>
         <div class="twp-prob-lbl">Win Prob</div>
         ${homeBadge}
         ${homeProjRuns != null ? `<div class="twp-proj-runs">~${homeProjRuns.toFixed(1)} R proj</div>` : ''}
+        ${homeStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-home-chip">Home ${homeStandings.homeWins}-${homeStandings.homeLosses}${_recPct(homeStandings.homeWins, homeStandings.homeLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${homeStandings.wins}-${homeStandings.losses}</span></div>` : ''}
+        ${homeFormBadge}
       </div>
     </div>
 
@@ -13662,12 +14563,28 @@ function _teamScanCardHTML(r) {
     </div>
 
     <div class="twp-edges">
-      <div class="twp-edges-hdr">Edge Breakdown</div>
+      <div class="twp-edges-hdr" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Edge Breakdown</span>
+        <span style="font-size:9px;font-weight:600;color:var(--text-muted)"><span style="color:#f59e0b">${escHtml(awayAbbr||'Away')}</span> &larr; &nbsp; &rarr; <span style="color:#22c55e">${escHtml(homeAbbr||'Home')}</span></span>
+      </div>
       <div class="twp-edge-row">
         <div class="twp-edge-label">Offense</div>
         <div class="twp-edge-track">${_edgeBar(offDelta)}</div>
         <div class="twp-edge-val">${_edgeVal(offDelta)}</div>
       </div>
+      ${(() => {
+        const awayForm = awayComponents?.form ?? 0;
+        const homeForm = homeComponents?.form ?? 0;
+        const bigForm  = Math.abs(awayForm) >= 4 || Math.abs(homeForm) >= 4;
+        if (!bigForm) return '';
+        const hotSide  = homeForm >= awayForm ? homeAbbr : awayAbbr;
+        const hotPlayers = (homeForm >= awayForm ? homePlayers : awayPlayers)
+          .map(p => { const l7 = _playerOps(p.last7Stats); const sea = _playerOps(p.seasonStats); return { name: p.name, d: l7 != null && sea != null ? l7 - sea : null }; })
+          .filter(p => p.d != null && p.d > 0.060)
+          .sort((a,b) => b.d - a.d).slice(0,3);
+        if (!hotPlayers.length) return '';
+        return `<div class="twp-matchup-note"><span style="color:#22c55e;font-weight:600">${escHtml(hotSide)} hot:</span> ${hotPlayers.map(p => escHtml(p.name)).join(', ')}</div>`;
+      })()}
       <div class="twp-edge-row">
         <div class="twp-edge-label">Starter</div>
         <div class="twp-edge-track">${_edgeBar(spDelta)}</div>
@@ -13684,18 +14601,53 @@ function _teamScanCardHTML(r) {
         <div class="twp-edge-track">${_edgeBar(ctxDelta)}</div>
         <div class="twp-edge-val">${_edgeVal(ctxDelta)}</div>
       </div>
+      ${_ctxNotes.length ? `<div class="twp-matchup-note">${_ctxNotes.map(n => escHtml(n)).join(' · ')}</div>` : ''}
       <div class="twp-edge-row">
         <div class="twp-edge-label">Arsenal</div>
         <div class="twp-edge-track">${Math.abs(arsenalDelta) <= 1 ? '<div class="twp-edge-center"></div>' : _edgeBar(arsenalDelta)}</div>
-        <div class="twp-edge-val">${Math.abs(arsenalDelta) <= 1 ? '<span style="color:var(--text-muted)">NO DATA</span>' : _edgeVal(arsenalDelta)}</div>
+        <div class="twp-edge-val">${Math.abs(arsenalDelta) <= 1 ? `<span style="color:var(--text-muted)">${hasArsenal ? 'EVEN' : 'NO DATA'}</span>` : _edgeVal(arsenalDelta)}</div>
+      </div>
+      ${(() => {
+        const notes = [];
+        if (awayArsenalCallout) notes.push(`<span style="color:var(--text-muted);font-weight:600">${escHtml(awayAbbr||'Away')}:</span> ${escHtml(awayArsenalCallout)}`);
+        if (homeArsenalCallout) notes.push(`<span style="color:var(--text-muted);font-weight:600">${escHtml(homeAbbr||'Home')}:</span> ${escHtml(homeArsenalCallout)}`);
+        return notes.map(n => `<div class="twp-matchup-note">${n}</div>`).join('');
+      })()}
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">Platoon</div>
+        <div class="twp-edge-track">${Math.abs(platoonDelta) <= 1 ? '<div class="twp-edge-center"></div>' : _edgeBar(platoonDelta)}</div>
+        <div class="twp-edge-val">${Math.abs(platoonDelta) <= 1 ? '<span style="color:var(--text-muted)">EVEN</span>' : _edgeVal(platoonDelta)}</div>
+      </div>
+      ${(() => {
+        const winData = platoonDelta > 1 ? homePlatoonData : platoonDelta < -1 ? awayPlatoonData : null;
+        const winAbbr = platoonDelta > 1 ? (homeAbbr||'Home') : (awayAbbr||'Away');
+        const tops    = winData?.topBatters?.slice(0, 3) || [];
+        if (!tops.length) return '';
+        return `<div class="twp-matchup-note"><span style="color:var(--text-muted);font-weight:600">${escHtml(winAbbr)}:</span> ${tops.map(b => `${escHtml(b.name)} (${escHtml(b.reason)})`).join(', ')}</div>`;
+      })()}
+      ${(awayRestAdj !== 0 || homeRestAdj !== 0) ? `
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">SP Rest</div>
+        <div class="twp-edge-track">${Math.abs(restDelta) <= 1 ? '<div class="twp-edge-center"></div>' : _edgeBar(restDelta)}</div>
+        <div class="twp-edge-val">${Math.abs(restDelta) <= 1 ? '<span style="color:var(--text-muted)">EVEN</span>' : _edgeVal(restDelta)}</div>
+      </div>` : ''}
+    </div>
+
+    <div class="twp-winner-strip" style="background:${isTossup ? 'rgba(245,158,11,0.05)' : winner==='home' ? 'linear-gradient(to right,#052e1650,#052e1615)' : winner==='away' ? 'linear-gradient(to right,#42200640,#42200618)' : 'none'}">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0">
+        <span class="twp-pred-label">Prediction</span>
+        ${isTossup || winner === 'tie'
+          ? `<span class="twp-winner-tie" style="${isTossup ? 'color:#f59e0b' : ''}">&#9878; Toss-Up</span>${isTossup && winnerName ? `<span style="color:#64748b;font-size:10px">· lean ${escHtml(winnerName)}</span>` : ''}`
+          : `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span>`}
+        ${!isTossup && winner !== 'tie' ? `<span class="twp-win-edge">${escHtml(winEdge||'')}</span>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        ${_keyEdge ? `<span class="twp-key-factor">${escHtml(_keyEdge.label)}</span>` : ''}
+        <span class="twp-winner-conf">${winnerProb}%</span>
       </div>
     </div>
 
-    <div class="twp-winner-strip">
-      ${winner !== 'tie'
-        ? `<span class="twp-pred-label">Prediction</span><span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span><span class="twp-win-edge">${escHtml(winEdge||'')}</span><span class="twp-winner-conf">${winnerProb}%</span>`
-        : `<span class="twp-pred-label">Prediction</span><span class="twp-winner-tie">&#9878; Toss-Up</span><span class="twp-win-edge">Toss-Up</span><span class="twp-winner-conf">${homeWinProb}%</span>`}
-    </div>
+    ${(mainReason || summaryText) ? `<div class="twp-reasoning-banner">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b80"> · Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
 
     ${trapWarning ? `<div class="twp-trap-warning">&#9888; ${escHtml(trapWarning)}</div>` : ''}
     ${(() => {
@@ -13733,6 +14685,12 @@ function _teamScanCardHTML(r) {
           { label: 'Starting Pitcher', delta: (predComps.starter||0) - (actualComps.starter||0) },
           { label: 'Bullpen',          delta: (predComps.bullpen||0) - (actualComps.bullpen||0) },
           { label: 'Situation / Park', delta: (predComps.context||0) - (actualComps.context||0) },
+          { label: 'Arsenal Matchup',  delta: (predComps.arsenal||0)   - (actualComps.arsenal||0)   },
+          { label: 'Platoon Edge',     delta: (predComps.platoon||0)   - (actualComps.platoon||0)   },
+          { label: 'Starter Rest',     delta: (predComps.rest||0)      - (actualComps.rest||0)      },
+          { label: 'K-Rate Matchup',   delta: (predComps.kMatchup||0)   - (actualComps.kMatchup||0)   },
+          { label: 'Walk Matchup',      delta: (predComps.bbMatchup||0)  - (actualComps.bbMatchup||0)  },
+          { label: 'Park Power',        delta: (predComps.parkPower||0)  - (actualComps.parkPower||0)  },
         ];
         const meaningful = components.filter(d => Math.abs(d.delta) >= 2);
         const wrongEdges  = meaningful.filter(d => d.delta > 0).sort((a, b) => b.delta - a.delta);
@@ -13766,6 +14724,16 @@ function _teamScanCardHTML(r) {
           missType = 'Bullpen Dominance — opposing pen shut down offense';
         else if (biggestMissed === 'Offense & Form')
           missType = 'Lineup Underrated — actual winner offense was stronger';
+        else if (biggestMissed === 'Arsenal Matchup')
+          missType = 'Arsenal Mismatch — opposing pitcher exploited pitch-type weaknesses';
+        else if (biggestMissed === 'Platoon Edge')
+          missType = 'Platoon Flip — handedness/location/time splits favored actual winner';
+        else if (biggestMissed === 'K-Rate Matchup')
+          missType = 'K-Rate Edge Missed — opposing SP strikeout ability exploited lineup weakness';
+        else if (biggestMissed === 'Walk Matchup')
+          missType = 'Walk Flood — opposing SP control issues against patient lineup underweighted';
+        else if (biggestMissed === 'Park Power')
+          missType = 'Park Power Underrated — lineup power in HR-friendly park exceeded projection';
         else if (!awayPosted && !homePosted)
           missType = 'Lineup Uncertainty — both sides were projected';
         else
@@ -13850,8 +14818,6 @@ function _teamScanCardHTML(r) {
         ${resultBadge}
       </div>${correctNote}${postmortem}`;
     })() : ''}
-
-    ${(mainReason || summaryText) ? `<div class="twp-reasoning">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b">Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
 
     <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
     <div class="twp-breakdown" id="${bkId}" style="display:none">
@@ -14611,17 +15577,21 @@ async function runLabAnalysis() {
 
   document.getElementById('labHitterCard').innerHTML = `
   <div class="lab-deep-card">
-    <div class="lab-deep-header" style="display:flex;align-items:center;justify-content:space-between">
-      <span class="lab-deep-title">🎯 Hitter Profile — ${escHtml(player.name)}</span>
-      ${score > 0 ? `<span style="font-family:'Bebas Neue',cursive;font-size:26px;color:${score>=90?'#22c55e':score>=75?'#a78bfa':score>=60?'#f59e0b':'#94a3b8'};line-height:1" title="Matchup Score">${score}</span>` : ''}
+    <div style="height:3px;background:linear-gradient(90deg,${barColor}90 0%,${barColor}20 60%,transparent 100%)"></div>
+    <div class="lab-deep-header">
+      <span class="lab-deep-title">🎯 Hitter Analysis</span>
+      ${score > 0 ? `<div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+        <span style="font-size:10px;font-weight:600;color:${barColor};text-transform:uppercase;letter-spacing:.8px;opacity:.8">${scoreLbl}</span>
+        <span style="font-family:'Bebas Neue',cursive;font-size:26px;color:${barColor};line-height:1;background:${barColor}12;border:1px solid ${barColor}30;border-radius:7px;padding:0 9px">${score}</span>
+      </div>` : ''}
     </div>
     <div class="lab-deep-body">
       <div class="lab-hero-row">
-        <img class="lab-hero-photo-lg" src="${photoUrl}" onerror="this.style.display='none'" alt="">
+        <img class="lab-hero-photo-lg" style="border-color:${barColor}55;box-shadow:0 0 16px ${barColor}22" src="${photoUrl}" onerror="this.style.display='none'" alt="">
         <div style="flex:1">
-          <div class="lab-hero-name" style="display:flex;align-items:center;gap:8px">
+          <div class="lab-hero-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${escHtml(player.name)}
-            ${_labOrderLabel ? `<span style="font-family:'Bebas Neue',cursive;font-size:20px;color:#7c3aed;line-height:1" title="Batting order">${_labOrderLabel}</span>` : ''}
+            ${_labOrderLabel ? `<span style="font-family:'Bebas Neue',cursive;font-size:18px;color:#7c3aed;line-height:1;background:#7c3aed18;border:1px solid #7c3aed33;border-radius:5px;padding:0 6px" title="Batting order">${_labOrderLabel}</span>` : ''}
           </div>
           <div class="lab-hero-meta">
             ${slug?`<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:14px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`:''}
@@ -14719,9 +15689,10 @@ async function runLabAnalysis() {
   // ── Card 2: Pitcher + Bullpen ─────────────────────────────────────────────
   document.getElementById('labPitcherCard').innerHTML = `
   <div class="lab-deep-card">
+    <div style="height:3px;background:linear-gradient(90deg,${profile.eraTier.cls==='score-great'?'#22c55e':profile.eraTier.cls==='score-good'?'#86efac':profile.eraTier.cls==='score-bad'?'#f97316':'#ef4444'}60 0%,transparent 80%)"></div>
     <div class="lab-deep-header">
-      <span class="lab-deep-title">⚾ Pitcher — ${pitcher?.fullName?escHtml(pitcher.fullName):'TBD'} (${pitcherHand}HP)</span>
-      <span style="margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;background:var(--bg-card)" class="${profile.eraTier.cls}">${profile.eraTier.label}</span>
+      <span class="lab-deep-title">⚾ Pitcher Matchup</span>
+      <span style="margin-left:auto;font-size:10px;font-weight:700;padding:2px 9px;border-radius:6px;background:#090d14;border:1px solid #1a2030;letter-spacing:.4px" class="${profile.eraTier.cls}">${profile.eraTier.label}</span>
     </div>
     <div class="lab-deep-body">
       <div class="lab-hero-row">
@@ -14824,6 +15795,7 @@ async function runLabAnalysis() {
   // ── Card 4: Matchup Score ─────────────────────────────────────────────────
   document.getElementById('labScoreCard').innerHTML = `
   <div class="lab-score-card">
+    <div style="height:3px;background:linear-gradient(90deg,${barColor}90 0%,${barColor}20 60%,transparent 100%)"></div>
     <div class="lab-score-header">📊 Matchup Score</div>
     <div class="lab-score-body">
       <div class="lab-score-display">
