@@ -2664,7 +2664,7 @@ main { padding: 28px 0 60px; }
         <button id="labGlobalScanBtn" class="lab-global-scan-btn" onclick="handleGlobalScan()" style="margin-top:8px">🌐 Scan All Games for Top Picks</button>
         <button id="labLeaderScanBtn" class="lab-global-scan-btn" onclick="handleLeaderboardScan()" style="margin-top:8px">🏆 Scan Hit Leaderboard</button>
         <button id="labArsenalBtn" class="lab-global-scan-btn" onclick="handleArsenalHitFinder()" style="margin-top:8px">⚾ Arsenal Hit Finder</button>
-        <button id="labBts2Btn" class="lab-global-scan-btn" onclick="handleBts2Scan()" style="margin-top:8px">🎯 BTS Elite 2 Picks</button>
+        <button id="labBts2Btn" class="lab-global-scan-btn" onclick="handleBts2Scan()" style="margin-top:8px">🎯 Multi-Model Top Picks</button>
         <div class="lab-game-grid" id="labGameGrid"></div>
       </div>
       <!-- Screen Arsenal Hit Finder -->
@@ -3004,10 +3004,10 @@ main { padding: 28px 0 60px; }
       <div id="labScreenBts2" class="lab-screen" style="display:none;">
         <div class="lab-back-bar">
           <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
-          <span class="lab-back-crumb">BTS Elite — Best 2 Daily Picks</span>
+          <span class="lab-back-crumb">All Models — Overall Top Picks</span>
         </div>
-        <div class="lab-global-elite-header">🎯 BTS Elite 2 · Best Picks for Beat the Streak</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Composite of BTS, Lab, and Arsenal scoring. Only everyday regulars vs weak pitching — the two picks where every signal aligns. Filters apply instantly to loaded results.</div>
+        <div class="lab-global-elite-header">🎯 Multi-Model Top Picks · Overall Best Plays</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Composite of BTS, Lab Matchup, and Arsenal scoring across all models. Only everyday regulars vs weak pitching — players where every signal aligns. Filters apply instantly to loaded results.</div>
         <div class="bts2-sort-bar">
           <span class="bts2-sort-lbl">Sort:</span>
           <button id="bts2SortBtn" class="bts2-sort-btn active" onclick="toggleBts2Sort()">▼ Highest Score</button>
@@ -3130,11 +3130,11 @@ main { padding: 28px 0 60px; }
       <!-- Screen 1f: BTS Elite 2 — Deep Pick Analysis -->
       <div id="labScreenBts2Pick" class="lab-screen" style="display:none;">
         <div class="lab-back-bar">
-          <button class="lab-back-btn" onclick="_labShow('labScreenBts2')">← BTS Elite 2</button>
-          <span class="lab-back-crumb">Today's Best 2 BTS Picks</span>
+          <button class="lab-back-btn" onclick="_labShow('labScreenBts2')">← Top Picks</button>
+          <span class="lab-back-crumb">Overall Best Plays · Deep Analysis</span>
         </div>
-        <div class="lab-global-elite-header">🎯 BTS Elite 2 · Deep Pick Analysis</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.45">These are the two picks where every signal aligns — regularity, pitcher vulnerability, arsenal matchup, park history, and form all point the same direction.</div>
+        <div class="lab-global-elite-header">🎯 Multi-Model Top Picks · Deep Analysis</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.45">These are the picks where every signal aligns across all models — regularity, pitcher vulnerability, arsenal matchup, park history, and recent form all point the same direction.</div>
         <div id="labBts2PickContent"></div>
       </div>
       <!-- Screen 1d: Team Win Predictor Results -->
@@ -11878,7 +11878,7 @@ function labInit() {
   if (_lfp) { _lfp.style.display = 'none'; document.querySelectorAll('#leaderFilters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
   const _b2Btn   = document.getElementById('labBts2Btn');
   const _b2cards = document.getElementById('labBts2Cards');
-  if (_b2Btn)   { _b2Btn.disabled = false; _b2Btn.textContent = '🎯 BTS Elite 2 Picks'; }
+  if (_b2Btn)   { _b2Btn.disabled = false; _b2Btn.textContent = '🎯 Multi-Model Top Picks'; }
   if (_b2cards) _b2cards.innerHTML = '';
   _bts2Results = []; _bts2Sort = 'desc'; Object.assign(_bts2State, _makeBts2FilterState());
   const _b2SortBtn = document.getElementById('bts2SortBtn');
@@ -13367,7 +13367,7 @@ async function handleBts2Scan() {
     _scanRestoreLoading();
     _labShow('labScreenGame');
     btn.disabled = false;
-    btn.textContent = '🎯 BTS Elite 2 Picks';
+    btn.textContent = '🎯 Multi-Model Top Picks';
   }
 }
 
