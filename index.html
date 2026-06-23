@@ -3911,7 +3911,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.22.1';
+const APP_VERSION = '2026.06.22.2';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -13469,7 +13469,7 @@ async function handleTeamScan() {
   btn.disabled = true;
   btn.textContent = '⏳ Scanning…';
 
-  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const total    = allGames.length;
   if (!total) {
     btn.disabled = false;
@@ -14347,15 +14347,13 @@ function _teamPlatoonEdge(batters, pitcherHand, isHome, isNight) {
 }
 
 function runTeamScan(onProgress, filterPk = null) {
-  const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
+  const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const results  = [];
 
   for (const gd of allGames) {
     if (filterPk != null && gd.gamePk !== Number(filterPk)) { onProgress?.(); continue; }
     const awayPlayers = (gd.players||[]).filter(p => p.id && p.isAway);
     const homePlayers = (gd.players||[]).filter(p => p.id && !p.isAway);
-    // Keep games where at least one side has data — missing side scores at baseline (50)
-    if (!awayPlayers.length && !homePlayers.length) { onProgress?.(); continue; }
 
     const awayRes = awayPlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
     const homeRes = homePlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
