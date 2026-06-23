@@ -2676,6 +2676,9 @@ main { padding: 28px 0 60px; }
         <div class="lab-global-elite-header">⚾ Arsenal Hit Finder · Pitch-Type Matchup Rankings</div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Hitters ranked by pitch-type matchup fit vs today's starting pitchers. Filters apply instantly to already-loaded results.</div>
         <div id="labArsenalSummaryBar" style="display:none"></div>
+        <div class="bts2-sort-bar" id="ahfPickBar" style="display:none">
+          <button id="ahfPickBtn" class="bts2-pick-btn" onclick="handleArsenalPickMe2()">🎯 Pick Me 2</button>
+        </div>
 
         <!-- Arsenal Filters -->
         <div id="ahfFilters" class="ahf-filter-panel" style="display:none">
@@ -2796,6 +2799,9 @@ main { padding: 28px 0 60px; }
           <button class="lab-compare-btn" id="labGlobalCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
           <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
         </div>
+        <div class="bts2-sort-bar" id="globalPickBar" style="display:none">
+          <button id="globalPickBtn" class="bts2-pick-btn" onclick="handleGlobalPickMe2()">🎯 Pick Me 2</button>
+        </div>
 
         <!-- Top Picks Filters -->
         <div id="globalFilters" class="ahf-filter-panel" style="display:none">
@@ -2903,6 +2909,9 @@ main { padding: 28px 0 60px; }
           <span id="labLeaderCompareCount">0 of 2 selected</span>
           <button class="lab-compare-btn" id="labLeaderCompareBtn" onclick="runLabCompare()" disabled>Compare Players</button>
           <button class="lab-compare-clear" onclick="clearCompareSelection()">✕ Clear</button>
+        </div>
+        <div class="bts2-sort-bar" id="leaderPickBar" style="display:none">
+          <button id="leaderPickBtn" class="bts2-pick-btn" onclick="handleLeaderPickMe2()">🎯 Pick Me 2</button>
         </div>
 
         <!-- Hit Leaderboard Filters -->
@@ -3902,7 +3911,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.20.3';
+const APP_VERSION = '2026.06.22.1';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -11469,6 +11478,65 @@ function handleBts2PickMe2() {
   const picks   = [pick1, pick2].filter(Boolean);
   const content = document.getElementById('labBts2PickContent');
   if (content) content.innerHTML = picks.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
+  const backBtn = document.querySelector('#labScreenBts2Pick .lab-back-btn');
+  if (backBtn) { backBtn.onclick = () => _labShow('labScreenBts2'); backBtn.textContent = '← Top Picks'; }
+  _labShow('labScreenBts2Pick');
+}
+
+function handleGlobalPickMe2() {
+  if (!_globalScanResults.length) return;
+  const eligible = _globalScanResults.filter(r => !r.h2hDisqualified);
+  const pool     = eligible.length ? eligible : [..._globalScanResults];
+  const sorted   = [...pool].sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
+  const pick1    = sorted[0];
+  let pick2      = null;
+  for (const r of sorted.slice(1)) {
+    if (r.gamePk !== pick1.gamePk) { pick2 = r; break; }
+  }
+  if (!pick2 && sorted.length > 1) pick2 = sorted[1];
+  const picks   = [pick1, pick2].filter(Boolean);
+  const content = document.getElementById('labBts2PickContent');
+  if (content) content.innerHTML = picks.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
+  const backBtn = document.querySelector('#labScreenBts2Pick .lab-back-btn');
+  if (backBtn) { backBtn.onclick = () => _labShow('labScreenGlobalScan'); backBtn.textContent = '← Top Picks'; }
+  _labShow('labScreenBts2Pick');
+}
+
+function handleLeaderPickMe2() {
+  if (!_leaderResults.length) return;
+  const eligible = _leaderResults.filter(r => !r.h2hDisqualified);
+  const pool     = eligible.length ? eligible : [..._leaderResults];
+  const sorted   = [...pool].sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
+  const pick1    = sorted[0];
+  let pick2      = null;
+  for (const r of sorted.slice(1)) {
+    if (r.gamePk !== pick1.gamePk) { pick2 = r; break; }
+  }
+  if (!pick2 && sorted.length > 1) pick2 = sorted[1];
+  const picks   = [pick1, pick2].filter(Boolean);
+  const content = document.getElementById('labBts2PickContent');
+  if (content) content.innerHTML = picks.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
+  const backBtn = document.querySelector('#labScreenBts2Pick .lab-back-btn');
+  if (backBtn) { backBtn.onclick = () => _labShow('labScreenLeaderScan'); backBtn.textContent = '← Hit Leaderboard'; }
+  _labShow('labScreenBts2Pick');
+}
+
+function handleArsenalPickMe2() {
+  if (!_ahfResults.length) return;
+  const eligible = _ahfResults.filter(r => !r.h2hDisqualified);
+  const pool     = eligible.length ? eligible : [..._ahfResults];
+  const sorted   = [...pool].sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
+  const pick1    = sorted[0];
+  let pick2      = null;
+  for (const r of sorted.slice(1)) {
+    if (r.gamePk !== pick1.gamePk) { pick2 = r; break; }
+  }
+  if (!pick2 && sorted.length > 1) pick2 = sorted[1];
+  const picks   = [pick1, pick2].filter(Boolean);
+  const content = document.getElementById('labBts2PickContent');
+  if (content) content.innerHTML = picks.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
+  const backBtn = document.querySelector('#labScreenBts2Pick .lab-back-btn');
+  if (backBtn) { backBtn.onclick = () => _labShow('labScreenArsenal'); backBtn.textContent = '← Arsenal Hit Finder'; }
   _labShow('labScreenBts2Pick');
 }
 
@@ -11799,6 +11867,8 @@ async function handleArsenalHitFinder() {
     // Show filter panel once results are loaded
     const fp = document.getElementById('ahfFilters');
     if (fp) fp.style.display = results.length ? 'block' : 'none';
+    const ahfPickBar = document.getElementById('ahfPickBar');
+    if (ahfPickBar) ahfPickBar.style.display = results.length ? '' : 'none';
 
     const cards = document.getElementById('labArsenalCards');
     if (!cards) return;
@@ -11867,6 +11937,8 @@ function labInit() {
   _globalScanResults = []; Object.assign(_globalScanState, _makeFilterState());
   const _gfp = document.getElementById('globalFilters');
   if (_gfp) { _gfp.style.display = 'none'; document.querySelectorAll('#globalFilters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
+  const _gPickBar = document.getElementById('globalPickBar');
+  if (_gPickBar) _gPickBar.style.display = 'none';
   const _lsBtn   = document.getElementById('labLeaderScanBtn');
   const _lscards = document.getElementById('labLeaderScanCards');
   const _lsBar   = document.getElementById('labLeaderCompareBar');
@@ -11876,6 +11948,8 @@ function labInit() {
   _leaderResults = []; Object.assign(_leaderScanState, _makeFilterState());
   const _lfp = document.getElementById('leaderFilters');
   if (_lfp) { _lfp.style.display = 'none'; document.querySelectorAll('#leaderFilters .ahf-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.active === 'true')); }
+  const _lPickBar = document.getElementById('leaderPickBar');
+  if (_lPickBar) _lPickBar.style.display = 'none';
   const _b2Btn   = document.getElementById('labBts2Btn');
   const _b2cards = document.getElementById('labBts2Cards');
   if (_b2Btn)   { _b2Btn.disabled = false; _b2Btn.textContent = '🎯 Multi-Model Top Picks'; }
@@ -13137,6 +13211,12 @@ async function runGlobalEliteScan(onProgress) {
         player, score: data.score,
         pitcher: data.pitcher,
         pf: data.pf,
+        h2h: data.h2h,
+        parkStats: data.parkStats,
+        gd,
+        matches: _highlightsToMatches(data.pitchMatchup?.highlights),
+        bullpenEra: data.bullpenEra,
+        bullpenH9:  data.bullpenH9,
         reasons:        _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp, data.bullpenH9, data.pitchMatchup?.reasons),
         pitchHighlights: data.pitchMatchup?.highlights || [],
         gameLabel: `${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
@@ -13197,6 +13277,8 @@ async function handleGlobalScan() {
       _renderGlobalFiltered();
       const fp = document.getElementById('globalFilters');
       if (fp) fp.style.display = 'block';
+      const globalPickBar = document.getElementById('globalPickBar');
+      if (globalPickBar) globalPickBar.style.display = '';
     }
     _labShow('labScreenGlobalScan');
   } catch {
@@ -13278,6 +13360,8 @@ async function handleLeaderboardScan() {
       _renderLeaderFiltered();
       const fp = document.getElementById('leaderFilters');
       if (fp) fp.style.display = 'block';
+      const leaderPickBar = document.getElementById('leaderPickBar');
+      if (leaderPickBar) leaderPickBar.style.display = '';
     }
     _labShow('labScreenLeaderScan');
   } catch {
@@ -13300,6 +13384,12 @@ async function runLeaderboardScan(entries, onProgress) {
         player, score: data.score,
         pitcher: data.pitcher,
         pf: data.pf,
+        h2h: data.h2h,
+        parkStats: data.parkStats,
+        gd,
+        matches: _highlightsToMatches(data.pitchMatchup?.highlights),
+        bullpenEra: data.bullpenEra,
+        bullpenH9:  data.bullpenH9,
         reasons:        _buildEliteReasons(player, data.pitcher, data.pf, data.bullpenEra, data.ghp, data.bullpenH9, data.pitchMatchup?.reasons),
         pitchHighlights: data.pitchMatchup?.highlights || [],
         gameLabel: `${rankLabel}${gd.awayAbbr||'?'} @ ${gd.homeAbbr||'?'}`,
