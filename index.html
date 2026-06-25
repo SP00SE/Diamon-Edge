@@ -602,6 +602,9 @@ main { padding: 28px 0 60px; }
 .twp-rec-home-chip  { background:#22c55e18; color:#22c55e; border:1px solid #22c55e33; }
 .twp-rec-road-chip  { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b44; }
 .twp-rec-ovr-chip   { background:#1e293b; color:#64748b; border:1px solid #33415544; }
+.twp-streak-chip    { font-size:9px; font-weight:800; padding:2px 6px; border-radius:3px; white-space:nowrap; }
+.twp-streak-w { background:#22c55e18; color:#22c55e; border:1px solid #22c55e44; }
+.twp-streak-l { background:#ef444418; color:#f87171; border:1px solid #ef444433; }
 .twp-form-badge { font-size:9px; font-weight:800; padding:2px 6px; border-radius:3px; margin-top:2px; text-transform:uppercase; letter-spacing:.5px; }
 .twp-form-hot  { background:#22c55e18; color:#22c55e; border:1px solid #22c55e44; }
 .twp-form-cold { background:#3b82f618; color:#60a5fa; border:1px solid #3b82f633; }
@@ -3911,7 +3914,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.22.2';
+const APP_VERSION = '2026.06.24.2';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -3967,6 +3970,8 @@ let state = {
   teamStandings:    null, // Map<teamId, { wins, losses, homeWins, homeLosses, awayWins, awayLosses }>
   teamStandingsYear: null,
   twpResultsByPk:   null, // Map<gamePk, result> — cached after full TWP scan
+  twpCachedHtml:    null, // full rendered HTML of TWP results — prevents re-run on button click
+  twpScanTime:      null, // HH:MM AM/PM timestamp of last TWP scan
 };
 
 // pa        : player's season plate appearances
@@ -8491,8 +8496,11 @@ function clearError() { document.getElementById('errorState').style.display='non
 // ─── DATE CHANGE ──────────────────────────────────────────────────────────
 function onDateChange() {
   state.date = document.getElementById('dateInput').value;
-  state.predictions = {};
-  state.playerMap   = {};
+  state.predictions     = {};
+  state.playerMap       = {};
+  state.twpCachedHtml   = null;
+  state.twpScanTime     = null;
+  state.twpResultsByPk  = null;
   leaderboardLoaded = false;
   cache.clear();
   gameLogCache.clear();
@@ -12752,15 +12760,18 @@ async function ensureTeamStandings(year) {
       `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${year}&standingsTypes=regularSeason`
     );
     const map = new Map();
+    let _debugLogged = false;
     for (const div of (data?.records || [])) {
       for (const tr of (div.teamRecords || [])) {
         const id   = String(tr.team?.id);
         if (!id) continue;
-        const home = (tr.splitRecords || []).find(r => r.type === 'home') || {};
-        const away = (tr.splitRecords || []).find(r => r.type === 'away') || {};
+        if (!_debugLogged) { console.log('[TWP standings debug] first teamRecord:', JSON.stringify({ wins: tr.wins, losses: tr.losses, splitRecords: tr.splitRecords, recordsKeys: tr.records ? Object.keys(tr.records) : null, firstSplit: tr.records?.splitRecords?.[0] || null })); _debugLogged = true; }
+        const splits = tr.records?.splitRecords || tr.splitRecords || [];
+        const home = splits.find(r => r.type?.toLowerCase() === 'home') || {};
+        const away = splits.find(r => r.type?.toLowerCase() === 'away') || {};
         map.set(id, {
-          wins:        tr.wins        ?? 0,
-          losses:      tr.losses      ?? 0,
+          wins:        tr.wins        ?? tr.leagueRecord?.wins   ?? 0,
+          losses:      tr.losses      ?? tr.leagueRecord?.losses ?? 0,
           homeWins:    home.wins      ?? 0,
           homeLosses:  home.losses    ?? 0,
           awayWins:    away.wins      ?? 0,
@@ -13464,8 +13475,8 @@ async function handleBts2Scan() {
 async function handleTeamScan() {
   const btn = document.getElementById('labTeamScanBtn');
   if (!btn) return;
-
   if (btn.disabled) return;
+
   btn.disabled = true;
   btn.textContent = '⏳ Scanning…';
 
@@ -13481,35 +13492,88 @@ async function handleTeamScan() {
 
   try {
     const _twpYear = new Date().getFullYear();
+
+    // Step 1 — fetch all supporting data before scoring
+    const _titleEl = document.getElementById('labLoadingTitle');
+    if (_titleEl) _titleEl.textContent = '🏟️ Team Win Predictor';
+    const _stepsEl = document.getElementById('labLoadingSteps');
+    if (_stepsEl) _stepsEl.innerHTML =
+      `<div class="lab-loading-step active" id="scan_s1"><span class="ls-icon">⏳</span>Fetching lineup &amp; standings data…</div>
+       <div class="lab-loading-step pending" id="scan_s2"><span class="ls-icon">○</span>Scoring ${total} game${total !== 1 ? 's' : ''}…</div>
+       <div class="lab-loading-step pending" id="scan_s3"><span class="ls-icon">○</span>Building predictions…</div>`;
+    _labShow('labScreenLoading');
+
     await ensureSavantData(_twpYear);
     await ensureTeamStandings(_twpYear);
-    _scanShowLoading(
-      '🏟️ Team Win Predictor',
-      `Scoring ${total} game${total !== 1 ? 's' : ''}…`,
-      'Calculating team averages…'
-    );
-    let done = 0;
-    const results = await runTeamScan(() => {
-      done++;
-      const el = document.getElementById('scan_s1');
-      if (el) el.childNodes[1].textContent = `Scoring games… ${done} of ${total} complete`;
-    });
+
+    // Refresh boxscores for any game still missing lineup data so the scorer
+    // works with the latest posted lineups rather than whatever was cached at
+    // startup.
+    await Promise.all(allGames.map(async gd => {
+      const hasPlayers = (gd.players || []).some(p => p.id);
+      if (!hasPlayers) {
+        try {
+          const fresh = await fetchBoxscore(gd.gamePk);
+          const teams = fresh?.teams;
+          if (!teams) return;
+          const extract = (side, isAway) => {
+            const order = teams[side]?.battingOrder || [];
+            const map   = teams[side]?.players || {};
+            return order.map(id => {
+              const entry = map[`ID${id}`] || map[id] || {};
+              return {
+                id:         entry.person?.id || id,
+                fullName:   entry.person?.fullName || '',
+                orderPos:   entry.battingOrder ? Math.ceil(entry.battingOrder / 100) : 0,
+                isAway,
+                batSide:    entry.person?.batSide?.code || 'R',
+                seasonStats: entry.seasonStats?.batting || {},
+              };
+            }).filter(p => p.id && p.orderPos > 0);
+          };
+          const awayPlayers = extract('away', true);
+          const homePlayers = extract('home', false);
+          if (awayPlayers.length || homePlayers.length) {
+            gd.players    = [...awayPlayers, ...homePlayers];
+            gd.awayPosted = awayPlayers.length > 0;
+            gd.homePosted = homePlayers.length > 0;
+          }
+        } catch { /* non-fatal — game scores at baseline */ }
+      }
+    }));
 
     _labStep('scan_s1', 'done');
     _labStep('scan_s2', 'active');
-    await new Promise(r => setTimeout(r, 200));
+
+    // Step 2 — score every game
+    let done = 0;
+    const results = await runTeamScan(() => {
+      done++;
+      const el = document.getElementById('scan_s2');
+      if (el) el.childNodes[1].textContent = `Scoring games… ${done} of ${total} complete`;
+    });
+
     _labStep('scan_s2', 'done');
+    _labStep('scan_s3', 'active');
+    await new Promise(r => setTimeout(r, 200));
+    _labStep('scan_s3', 'done');
     await new Promise(r => setTimeout(r, 150));
+
     btn.textContent = `✅ ${results.length} Game${results.length !== 1 ? 's' : ''} Predicted`;
     btn.disabled = false;
     _scanRestoreLoading();
 
     const cards = document.getElementById('labTeamScanCards');
     if (!cards) return;
+
+    // Timestamp shown in results header
+    const _timeStr = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const _tsBar   = `<div style="font-size:10px;color:var(--text-muted);padding:2px 0 8px">&#128336; Predictions as of ${_timeStr}</div>`;
+
+    let _innerHtml = '';
     if (results.length === 0) {
-      cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No complete game data available — check back once lineups are posted.</div>';
+      _innerHtml = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No complete game data available — check back once lineups are posted.</div>';
     } else {
-      // Show diagnostic if fewer games were scored than are in the schedule
       const scheduleCount = (state.games || []).length;
       const predCount     = Object.keys(state.predictions).length;
       const missingCount  = scheduleCount - predCount;
@@ -13518,8 +13582,9 @@ async function handleTeamScan() {
           `&#9888; ${scheduleCount} games on schedule · ${predCount} loaded · ${results.length} scored` +
           (missingCount > 0 ? ` · ${missingCount} failed to load (see console)` : '') +
           `</div>` : '';
-      cards.innerHTML = diagHtml + results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
+      _innerHtml = diagHtml + results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
     }
+    cards.innerHTML = _tsBar + _innerHtml;
     // Cache results for instant single-game lookup from the main schedule
     state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
     const _finalForCalib = results.filter(r => r.isFinal && r.actualWinner);
@@ -13543,16 +13608,33 @@ const LINEUP_WEIGHTS = [1.15, 1.12, 1.10, 1.08, 1.05, 1.00, 0.95, 0.92, 0.90];
 function _lineupScore(results) {
   if (!results.length) return 50;
   let wSum = 0, wTotal = 0;
+  let opsSum = 0, opsCount = 0;
   results.forEach(r => {
     const pos = Math.max(0, Math.min(8, (r.player.orderPos || 5) - 1));
     const w = LINEUP_WEIGHTS[pos];
     wSum += r.score * w;
     wTotal += w;
+    const ss = r.player?.seasonStats || {};
+    const obp = parseFloat(ss.obp) || 0;
+    const slg = parseFloat(ss.slg) || 0;
+    if (obp > 0 && slg > 0) { opsSum += obp + slg; opsCount++; }
   });
   // Amplify deviation from 50 so elite lineups clearly outscore weak ones.
   // Raw weighted averages compress into ~45-72; 1.4x stretch widens that gap.
   const raw = wTotal > 0 ? wSum / wTotal : 50;
-  return 50 + (raw - 50) * 1.4;
+  let score = 50 + (raw - 50) * 1.4;
+  // OPS bonus — hit-score is AVG-centric; high-OBP/SLG lineups earn extra credit.
+  // Requires ≥4 batters with data to avoid noise from partial lineups.
+  if (opsCount >= 4) {
+    const teamOPS = opsSum / opsCount;
+    if      (teamOPS >= 0.880) score += 7;
+    else if (teamOPS >= 0.840) score += 5;
+    else if (teamOPS >= 0.800) score += 3;
+    else if (teamOPS >= 0.770) score += 1;
+    else if (teamOPS <= 0.640) score -= 4;
+    else if (teamOPS <= 0.680) score -= 2;
+  }
+  return score;
 }
 
 // Lineup stack bonus — consecutive hot batters (hitScore ≥ 65) create multi-run inning potential
@@ -13597,6 +13679,25 @@ function _starterEdge(sp) {
     if (s.bbBfPct >= 0.10) sc += 4;
     else if (s.bbBfPct >= 0.08) sc += 2;
     else if (s.bbBfPct <= 0.05) sc -= 3;
+  }
+  // BABIP — poor contact suppressors (high BABIP) are more vulnerable to contact lineups.
+  // Formula: (H - HR) / (BF - BB - HBP - K - HR). Requires ≥50 BF to be meaningful.
+  {
+    const h   = parseFloat(s.hits       || s.h)   || 0;
+    const hr  = parseFloat(s.homeRuns   || s.hr)  || 0;
+    const k   = parseFloat(s.strikeOuts || s.so)  || 0;
+    const bb  = parseFloat(s.baseOnBalls|| s.bb)  || 0;
+    const hbp = parseFloat(s.hitBatsmen || s.hbp) || 0;
+    const bf  = parseFloat(s.battersFaced)         || 0;
+    const denom = bf - bb - hbp - k - hr;
+    if (bf >= 50 && denom > 20) {
+      const babip = (h - hr) / denom;
+      if      (babip >= 0.340) sc += 7;  // very poor contact suppressor
+      else if (babip >= 0.320) sc += 4;
+      else if (babip >= 0.310) sc += 2;
+      else if (babip <= 0.260) sc -= 4;  // elite contact suppressor
+      else if (babip <= 0.275) sc -= 2;
+    }
   }
   return Math.max(20, Math.min(80, sc));
 }
@@ -13730,6 +13831,12 @@ function _teamScanSummary(gd, winner, awayScore, homeScore, pf, awayStarterSc, h
     // Trap 8: Predicted winner's starter on short rest
     if (winRest <= -5)
       traps.push(`${winnerAbbr}'s starter is on short rest — fatigue could reduce effectiveness and limit pitch count.`);
+    // Trap 9: Blowout potential — hittable loser SP + wide score gap
+    if (loserStSc >= 68 && scoreDiff >= 12)
+      traps.push(`Blowout potential: ${loserAbbr}'s starter is very hittable and the score gap is wide — actual run margin may exceed the model projection significantly.`);
+    // Trap 10: No safe innings — hittable starter AND weak bullpen on same side
+    if (loserStSc >= 65 && loserBpSc >= 63)
+      traps.push(`${loserAbbr} has no safe innings — both starter and bullpen are below average. Run total upside is higher than projected.`);
   }
 
   // mainRisk
@@ -13791,11 +13898,17 @@ function _starterBonus(pitcher, gameLog = null) {
       weightedHardHit < 28 ? 4 : weightedHardHit < 34 ? 2 :
       weightedHardHit < 40 ? 0 : weightedHardHit < 46 ? -2 : weightedHardHit < 52 ? -4 : -6;
     const savantScore = Math.max(-15, Math.min(20, whiffPts + wobaPts + hardHitPts));
-    // ERA trap: pitch-mix scores well but ERA is high (K% may not translate to run suppression)
+    // K/9 modifier — whiff% per pitch ≠ overall strikeout rate; explicitly anchoring to K/9
+    // keeps high-ERA/high-whiff pitchers from being over-rewarded when batters are making contact more often overall.
+    const _ip = parseFloat(s?.inningsPitched) || 0;
+    const _k9 = _ip >= 5 ? (parseFloat(s?.strikeOuts) || 0) / _ip * 9 : null;
+    const k9Adj = _k9 == null ? 0 : _k9 >= 11 ? 3 : _k9 >= 9.5 ? 2 : _k9 >= 8 ? 1 : _k9 >= 6.5 ? 0 : _k9 >= 5 ? -2 : -3;
+    const finalSavantScore = Math.max(-15, Math.min(20, savantScore + k9Adj));
+    // ERA trap: pitch-mix scores well but ERA is high — run suppression may not be holding
     // Also flag when est_woba >> woba (contact quality worse than results — likely regressing soon)
     const luckGap = weightedEstWOBA > 0 && weightedWOBA > 0 ? weightedEstWOBA - weightedWOBA : 0;
-    const eraTrap = (s?.era > 4.50 && savantScore >= 6) || (luckGap >= 0.035 && savantScore >= 4);
-    return eraTrap ? { score: savantScore, eraTrap: true } : savantScore;
+    const eraTrap = (s?.era > 4.50 && finalSavantScore >= 6) || (luckGap >= 0.035 && finalSavantScore >= 4);
+    return eraTrap ? { score: finalSavantScore, eraTrap: true } : finalSavantScore;
   }
 
   // 2. Debut / no MLB data — use game log if available, else flat penalty
@@ -14468,7 +14581,15 @@ function runTeamScan(onProgress, filterPk = null) {
       homePitcherName: gd.homePitcher?.name || gd.homePitcher?.fullName || null,
       awayPitcherEra:  gd.awayPitcher?.seasonStats?.era  ?? null,
       homePitcherEra:  gd.homePitcher?.seasonStats?.era  ?? null,
+      awayPitcherWhip: gd.awayPitcher?.seasonStats?.whip ?? null,
+      homePitcherWhip: gd.homePitcher?.seasonStats?.whip ?? null,
+      awayPitcherK9:   (() => { const ip = gd.awayPitcher?.seasonStats?.inningsPitched ?? 0; const k = gd.awayPitcher?.seasonStats?.strikeOuts ?? 0; return ip > 0 ? Math.round((k / ip * 9) * 10) / 10 : null; })(),
+      homePitcherK9:   (() => { const ip = gd.homePitcher?.seasonStats?.inningsPitched ?? 0; const k = gd.homePitcher?.seasonStats?.strikeOuts ?? 0; return ip > 0 ? Math.round((k / ip * 9) * 10) / 10 : null; })(),
       awayEraTrap, homeEraTrap,
+      awayBullpenEra: gd.awayBullpenEra ?? null,
+      homeBullpenEra: gd.homeBullpenEra ?? null,
+      awayBullpenH9:  gd.awayBullpenH9  ?? null,
+      homeBullpenH9:  gd.homeBullpenH9  ?? null,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
       awayComponents: { lineup: awayLineup + awayStack, form: awayForm + awayStreak, starter: awayStarter, rest: awayRestAdj, bullpen: awayBullpen, context: context + awayConf + awayPyth + awayRecord, arsenal: awayArsenalEdge, platoon: awayPlatoon, kMatchup: awayKMatchup, bbMatchup: awayBBMatchup, parkPower: awayParkPower },
@@ -14519,6 +14640,8 @@ function _teamScanCardHTML(r) {
     parkFactor, isDome, venueName, weather,
     awayStandings, homeStandings, homeAdv, hasArsenal,
     awayPitcherName, homePitcherName, awayPitcherEra, homePitcherEra,
+    awayPitcherWhip, homePitcherWhip, awayPitcherK9, homePitcherK9,
+    awayBullpenEra, homeBullpenEra, awayBullpenH9, homeBullpenH9,
     isFinal, actualAwayScore, actualHomeScore, actualWinner,
     awayEraTrap, homeEraTrap,
   } = r;
@@ -14607,18 +14730,48 @@ function _teamScanCardHTML(r) {
     return `<div class="twp-edge-center"></div><div class="twp-edge-fill" ${fill}></div>`;
   };
 
-  // SP sub-label (pitcher names + ERA + rest days)
-  const _fmtSp = (name, era, days) => {
+  // SP sub-label (pitcher names + ERA + WHIP + K/9 + rest days)
+  const _fmtSp = (name, era, whip, k9, days) => {
     if (!name) return '';
     let s = escHtml(name);
-    if (era != null) s += ` <span style="color:var(--text-muted)">(${parseFloat(era).toFixed(2)} ERA)</span>`;
+    const stats = [];
+    if (era  != null) stats.push(`${parseFloat(era).toFixed(2)} ERA`);
+    if (whip != null) stats.push(`${parseFloat(whip).toFixed(2)} WHIP`);
+    if (k9   != null) stats.push(`${parseFloat(k9).toFixed(1)} K/9`);
+    if (stats.length) s += ` <span style="color:var(--text-muted)">(${stats.join(' · ')})</span>`;
     if (days != null && days <= 3) s += ` <span style="color:#f59e0b;font-size:10px;font-weight:600">&#9888; ${days}d rest</span>`;
     return s;
   };
-  const awaySpStr = _fmtSp(awayPitcherName, awayPitcherEra, awayStarterDays);
-  const homeSpStr = _fmtSp(homePitcherName, homePitcherEra, homeStarterDays);
+  const awaySpStr = _fmtSp(awayPitcherName, awayPitcherEra, awayPitcherWhip, awayPitcherK9, awayStarterDays);
+  const homeSpStr = _fmtSp(homePitcherName, homePitcherEra, homePitcherWhip, homePitcherK9, homeStarterDays);
   const spSubLabel = (awaySpStr || homeSpStr)
     ? `<div class="twp-sp-sub">${awaySpStr}${awaySpStr && homeSpStr ? ' <span style="color:#334155">vs</span> ' : ''}${homeSpStr}</div>` : '';
+
+  // K/BB matchup note — surfaces when K-rate or walk-rate matchup is meaningful
+  const kBbNote = (() => {
+    const awayKB  = (awayComponents?.kMatchup ?? 0) + (awayComponents?.bbMatchup ?? 0);
+    const homeKB  = (homeComponents?.kMatchup  ?? 0) + (homeComponents?.bbMatchup  ?? 0);
+    const awayK   = awayComponents?.kMatchup ?? 0;
+    const homeK   = homeComponents?.kMatchup  ?? 0;
+    const notes   = [];
+    if (awayK <= -2) notes.push(`${escHtml(awayAbbr||'Away')}: lineup K-rate vulnerable vs high-strikeout SP`);
+    if (homeK <= -2) notes.push(`${escHtml(homeAbbr||'Home')}: lineup K-rate vulnerable vs high-strikeout SP`);
+    if (homeKB >= 2 && homeK >= 0) notes.push(`${escHtml(homeAbbr||'Home')}: patient lineup can exploit SP's walk rate`);
+    else if (awayKB >= 2 && awayK >= 0) notes.push(`${escHtml(awayAbbr||'Away')}: patient lineup can exploit SP's walk rate`);
+    return notes.length ? `<div class="twp-matchup-note">${notes.join(' · ')}</div>` : '';
+  })();
+
+  // Bullpen sub-label — ERA + H/9 for both pens
+  const _fmtBp = (abbr, era, h9) => {
+    if (!era || era <= 0) return '';
+    const stats = [`${parseFloat(era).toFixed(2)} ERA`];
+    if (h9 != null && h9 > 0) stats.push(`${parseFloat(h9).toFixed(1)} H/9`);
+    return `${escHtml(abbr||'')}: ${stats.join(' · ')}`;
+  };
+  const awayBpStr = _fmtBp(awayAbbr, awayBullpenEra, awayBullpenH9);
+  const homeBpStr = _fmtBp(homeAbbr, homeBullpenEra, homeBullpenH9);
+  const bpSubLabel = (awayBpStr || homeBpStr)
+    ? `<div class="twp-sp-sub">${[awayBpStr, homeBpStr].filter(Boolean).join(' <span style="color:#334155">vs</span> ')} <span style="color:var(--text-muted);font-size:10px">(season avg · rest unknown)</span></div>` : '';
 
   // Player rows
   const _sc   = s => s >= 70 ? '#22c55e' : s >= 55 ? '#f59e0b' : '#ef4444';
@@ -14671,7 +14824,7 @@ function _teamScanCardHTML(r) {
         <div class="twp-prob-lbl">Win Prob</div>
         ${awayBadge}
         ${awayProjRuns != null ? `<div class="twp-proj-runs">~${awayProjRuns.toFixed(1)} R proj</div>` : ''}
-        ${awayStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-road-chip">Road ${awayStandings.awayWins}-${awayStandings.awayLosses}${_recPct(awayStandings.awayWins, awayStandings.awayLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${awayStandings.wins}-${awayStandings.losses}</span></div>` : ''}
+        ${awayStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-road-chip">Road ${awayStandings.awayWins}-${awayStandings.awayLosses}${_recPct(awayStandings.awayWins, awayStandings.awayLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${awayStandings.wins}-${awayStandings.losses}</span>${awayStandings.streak ? `<span class="twp-streak-chip ${awayStandings.streak.startsWith('W') ? 'twp-streak-w' : 'twp-streak-l'}">${escHtml(awayStandings.streak)}</span>` : ''}</div>` : ''}
         ${awayFormBadge}
       </div>
       <div class="twp-center">
@@ -14686,7 +14839,7 @@ function _teamScanCardHTML(r) {
         <div class="twp-prob-lbl">Win Prob</div>
         ${homeBadge}
         ${homeProjRuns != null ? `<div class="twp-proj-runs">~${homeProjRuns.toFixed(1)} R proj</div>` : ''}
-        ${homeStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-home-chip">Home ${homeStandings.homeWins}-${homeStandings.homeLosses}${_recPct(homeStandings.homeWins, homeStandings.homeLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${homeStandings.wins}-${homeStandings.losses}</span></div>` : ''}
+        ${homeStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-home-chip">Home ${homeStandings.homeWins}-${homeStandings.homeLosses}${_recPct(homeStandings.homeWins, homeStandings.homeLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${homeStandings.wins}-${homeStandings.losses}</span>${homeStandings.streak ? `<span class="twp-streak-chip ${homeStandings.streak.startsWith('W') ? 'twp-streak-w' : 'twp-streak-l'}">${escHtml(homeStandings.streak)}</span>` : ''}</div>` : ''}
         ${homeFormBadge}
       </div>
     </div>
@@ -14729,11 +14882,13 @@ function _teamScanCardHTML(r) {
         <div class="twp-edge-val">${_edgeVal(spDelta)}</div>
       </div>
       ${spSubLabel}
+      ${kBbNote}
       <div class="twp-edge-row">
         <div class="twp-edge-label">Bullpen</div>
         <div class="twp-edge-track">${_edgeBar(bpDelta)}</div>
         <div class="twp-edge-val">${_edgeVal(bpDelta)}</div>
       </div>
+      ${bpSubLabel}
       <div class="twp-edge-row">
         <div class="twp-edge-label">Situation</div>
         <div class="twp-edge-track">${_edgeBar(ctxDelta)}</div>
@@ -14890,7 +15045,7 @@ function _teamScanCardHTML(r) {
 
         if (wrongEdges.some(d => d.label === 'Starting Pitcher')) {
           const eraNote = predSpEra != null ? ` (${parseFloat(predSpEra).toFixed(2)} ERA)` : '';
-          tips.push(`The model overweighted ${predSpName ? escHtml(predSpName) + eraNote : 'the starter'} as a run-prevention edge. Next time, pair ERA with K% and last-3-start ERA — a starter with a high ERA but elite K% is an ERA trap, not a run target.`);
+          tips.push(`The model overweighted ${predSpName ? escHtml(predSpName) + eraNote : 'the starter'} as a run-prevention edge. K% is factored in, but high ERA often signals run-prevention breaking down even with good stuff — check last-3-start ERA trend and H/BF% to see if the suppression is actually holding.`);
         }
         if (wrongEdges.some(d => d.label === 'Offense & Form')) {
           const projNote = predProjRuns != null ? ` (projected ~${predProjRuns.toFixed(1)} R)` : '';
