@@ -3914,7 +3914,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.24.2';
+const APP_VERSION = '2026.06.25.1';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -13587,9 +13587,6 @@ async function handleTeamScan() {
     cards.innerHTML = _tsBar + _innerHtml;
     // Cache results for instant single-game lookup from the main schedule
     state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
-    const _finalForCalib = results.filter(r => r.isFinal && r.actualWinner);
-    state.sigmoidSlope = _calibrateSigmoidSlope(_finalForCalib);
-    try { if (state.sigmoidSlope !== 0.023) localStorage.setItem('twpSigmoidSlope', state.sigmoidSlope.toFixed(4)); } catch {}
     _labShow('labScreenTeamScan');
   } catch(e) {
     _scanRestoreLoading();
@@ -13740,12 +13737,16 @@ function _recentEra(gameLog, seasonEra) {
   const startEra = g => { const gip = parseFloat(g.inningsPitched) || 0; return gip > 0 ? (parseFloat(g.earnedRuns) || 0) / gip * 9 : 99; };
   const bothBad  = lastTwo.length === 2 && lastTwo.every(g => startEra(g) >= 6.0);
   const bothGood = lastTwo.length === 2 && lastTwo.every(g => startEra(g) <= 2.50);
-  const rw = bothBad ? 0.65 : bothGood ? 0.55 : 0.40;
+  const rw = bothBad ? 0.70 : bothGood ? 0.55 : 0.40;
   return rw * recentEra + (1 - rw) * seasonEra;
 }
 
-function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0, tempF = 70, isDome = false) {
-  const batting     = 4.5 + ((lineupComposite - 50) / 30) * 2.0;
+function _projRuns(lineupComposite, oppSpBonus = 0, oppBullpenBonus = 0, pfVal = 1.0, tempF = 70, isDome = false, teamRPG = null) {
+  const modelBatting = 4.5 + ((lineupComposite - 50) / 30) * 2.0;
+  // Blend 45% season R/G when team has ≥20 games — anchors O/U to actual team offense level
+  const batting = (teamRPG != null && Number.isFinite(teamRPG) && teamRPG >= 2.0)
+    ? 0.55 * modelBatting + 0.45 * teamRPG
+    : modelBatting;
   const suppression = (oppSpBonus + oppBullpenBonus) / 33;
   // Extra amplifier for extreme hitter environments (Coors-tier)
   const extremeParkAmp = pfVal >= 1.22 ? 1.35 : pfVal >= 1.12 ? 1.12 : 1.0;
@@ -14144,9 +14145,11 @@ function _pythagoreanAdj(standings) {
   const expectedWinPct = (rs * rs) / (rs * rs + ra * ra);
   const actualWinPct   = standings.wins / n;
   const diff = actualWinPct - expectedWinPct; // positive = over-performing
-  if      (diff >=  0.060) return -2; // very lucky — expect regression
+  if      (diff >=  0.090) return -3; // extreme over-performer — strong regression signal
+  else if (diff >=  0.060) return -2;
   else if (diff >=  0.030) return -1;
-  else if (diff <= -0.060) return  2; // genuinely better than record shows
+  else if (diff <= -0.090) return  3; // extreme under-performer — genuinely better than record
+  else if (diff <= -0.060) return  2;
   else if (diff <= -0.030) return  1;
   return 0;
 }
@@ -14170,8 +14173,10 @@ function _teamRecordAdj(standings) {
   const n = standings.wins + standings.losses;
   if (n < 15) return 0;
   const pct = standings.wins / n;
+  if (pct >= 0.650) return  3;
   if (pct >= 0.620) return  2;
   if (pct >= 0.560) return  1;
+  if (pct <= 0.350) return -3;
   if (pct <= 0.380) return -2;
   if (pct <= 0.440) return -1;
   return 0;
@@ -14302,7 +14307,7 @@ function _calibrateSigmoidSlope(finalResults) {
 }
 
 function _winProbability(scoreDiff, homeProjRuns, awayProjRuns) {
-  const k = state.sigmoidSlope ?? 0.023;
+  const k = 0.023; // fixed analytical slope — dynamic recalibration on same-day samples caused prediction instability
   const scoreProb = 100 / (1 + Math.exp(-k * scoreDiff));
   if (homeProjRuns == null || awayProjRuns == null || !Number.isFinite(homeProjRuns) || !Number.isFinite(awayProjRuns)) {
     return Math.round(scoreProb);
@@ -14497,6 +14502,14 @@ function runTeamScan(onProgress, filterPk = null) {
     const awayParkPower     = _parkPowerBonus(awayPlayers, pf);
     const awayStandings    = state.teamStandings?.get(String(gd.awayTeamId)) ?? null;
     const homeStandings    = state.teamStandings?.get(String(gd.homeTeamId)) ?? null;
+    // Season R/G — used to anchor projected runs and baseline unposted lineups
+    const _awayGP  = (awayStandings?.wins ?? 0) + (awayStandings?.losses ?? 0);
+    const _homeGP  = (homeStandings?.wins ?? 0) + (homeStandings?.losses ?? 0);
+    const _awayRPG = _awayGP >= 20 ? (awayStandings.runsScored ?? 0) / _awayGP : null;
+    const _homeRPG = _homeGP >= 20 ? (homeStandings.runsScored ?? 0) / _homeGP : null;
+    // When lineup not posted and no players loaded, anchor lineup score to team R/G pace
+    const _awayLineupBase  = (awayRes.length === 0 && _awayRPG != null)
+      ? clamp(50 + (_awayRPG - 4.5) * 5, 40, 68) : awayLineup;
     const homeAdv          = _homeFieldAdj(homeStandings, awayStandings);
     const awayPyth         = _pythagoreanAdj(awayStandings);
     const homePyth         = _pythagoreanAdj(homeStandings);
@@ -14504,7 +14517,7 @@ function runTeamScan(onProgress, filterPk = null) {
     const homeStreak       = _streakAdj(homeStandings);
     const awayRecord       = _teamRecordAdj(awayStandings);
     const homeRecord       = _teamRecordAdj(homeStandings);
-    const awayScore        = awayLineup + awayStack + awayForm + context + awayPyth + awayStreak + awayRecord + awayStarter + awayRestAdj + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon + awayKMatchup + awayBBMatchup + awayParkPower;
+    const awayScore        = _awayLineupBase + awayStack + awayForm + context + awayPyth + awayStreak + awayRecord + awayStarter + awayRestAdj + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon + awayKMatchup + awayBBMatchup + awayParkPower;
 
     const homeLineup       = _lineupScore(homeRes);
     const homeStack        = _lineupStackBonus(homeRes);
@@ -14522,17 +14535,19 @@ function runTeamScan(onProgress, filterPk = null) {
     const homeKMatchup      = _starterKMatchup(gd.awayPitcher, homePlayers);
     const homeBBMatchup     = _starterBBMatchup(gd.awayPitcher, homePlayers);
     const homeParkPower     = _parkPowerBonus(homePlayers, pf);
-    const homeScore        = homeLineup + homeStack + homeForm + context + homeAdv + homePyth + homeStreak + homeRecord + homeStarter + homeRestAdj + homeBullpen + homeConf + homeArsenalEdge + homePlatoon + homeKMatchup + homeBBMatchup + homeParkPower;
+    const _homeLineupBase  = (homeRes.length === 0 && _homeRPG != null)
+      ? clamp(50 + (_homeRPG - 4.5) * 5, 40, 68) : homeLineup;
+    const homeScore        = _homeLineupBase + homeStack + homeForm + context + homeAdv + homePyth + homeStreak + homeRecord + homeStarter + homeRestAdj + homeBullpen + homeConf + homeArsenalEdge + homePlatoon + homeKMatchup + homeBBMatchup + homeParkPower;
 
     const hasArsenal   = awayArsenalEdge !== 0 || homeArsenalEdge !== 0;
     const margin       = Math.abs(awayScore - homeScore);
     const winner       = awayScore > homeScore ? 'away' : awayScore < homeScore ? 'home' : 'tie';
 
-    // Projected runs computed early so win probability can blend run-differential signal
+    // Projected runs — blends 45% team season R/G into batting baseline when standings available
     const _projTemp     = weather?.temp ?? 70;
     const _projIsDome   = pf?.isDome ?? false;
-    const _awayProjRuns = _projRuns(awayLineup + awayBBMatchup + awayKMatchup + awayParkPower, homeStarter, homeBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
-    const _homeProjRuns = _projRuns(homeLineup + homeBBMatchup + homeKMatchup + homeParkPower, awayStarter, awayBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome);
+    const _awayProjRuns = _projRuns(_awayLineupBase + awayBBMatchup + awayKMatchup + awayParkPower, homeStarter, homeBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome, _awayRPG);
+    const _homeProjRuns = _projRuns(_homeLineupBase + homeBBMatchup + homeKMatchup + homeParkPower, awayStarter, awayBullpen, pf?.overall ?? 1.0, _projTemp, _projIsDome, _homeRPG);
 
     const homeWinProb  = _winProbability(homeScore - awayScore, _homeProjRuns, _awayProjRuns);
     const awayWinProb  = 100 - homeWinProb;
@@ -14592,8 +14607,8 @@ function runTeamScan(onProgress, filterPk = null) {
       homeBullpenH9:  gd.homeBullpenH9  ?? null,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
-      awayComponents: { lineup: awayLineup + awayStack, form: awayForm + awayStreak, starter: awayStarter, rest: awayRestAdj, bullpen: awayBullpen, context: context + awayConf + awayPyth + awayRecord, arsenal: awayArsenalEdge, platoon: awayPlatoon, kMatchup: awayKMatchup, bbMatchup: awayBBMatchup, parkPower: awayParkPower },
-      homeComponents: { lineup: homeLineup + homeStack, form: homeForm + homeStreak, starter: homeStarter, rest: homeRestAdj, bullpen: homeBullpen, context: context + homeAdv + homeConf + homePyth + homeRecord, arsenal: homeArsenalEdge, platoon: homePlatoon, kMatchup: homeKMatchup, bbMatchup: homeBBMatchup, parkPower: homeParkPower },
+      awayComponents: { lineup: _awayLineupBase + awayStack, form: awayForm + awayStreak, starter: awayStarter, rest: awayRestAdj, bullpen: awayBullpen, context: context + awayConf + awayPyth + awayRecord, arsenal: awayArsenalEdge, platoon: awayPlatoon, kMatchup: awayKMatchup, bbMatchup: awayBBMatchup, parkPower: awayParkPower },
+      homeComponents: { lineup: _homeLineupBase + homeStack, form: homeForm + homeStreak, starter: homeStarter, rest: homeRestAdj, bullpen: homeBullpen, context: context + homeAdv + homeConf + homePyth + homeRecord, arsenal: homeArsenalEdge, platoon: homePlatoon, kMatchup: homeKMatchup, bbMatchup: homeBBMatchup, parkPower: homeParkPower },
       awayArsenalEdge, homeArsenalEdge,
       awayArsenalCallout: awayArsenalResult.callout,
       homeArsenalCallout: homeArsenalResult.callout,
