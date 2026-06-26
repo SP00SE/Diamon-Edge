@@ -3676,8 +3676,8 @@ main { padding: 28px 0 60px; }
         </div>
         <div class="formula-col">
           <h3 class="section-title orange">HR SCORE</h3>
-          <div class="formula-row"><span class="fr-sign">Base</span><span class="fr-text">40 pts · Clamped 5–95 · Power(−14/+16) + Form(−5/+8) + Opp(±8) + Starter(±16) + Bullpen(±6) + Park/Wx(±10)</span></div>
-          <div class="formula-divider">Power Skill <span class="formula-divider-sub">SLG + ISO + HR/PA profile — capped −14/+16</span></div>
+          <div class="formula-row"><span class="fr-sign">Base</span><span class="fr-text">40 pts · Clamped 5–95 · Power(−14/+16) + SavantPower(−4/+6) + Form(−5/+8) + Opp(±8) + Starter(±16) + SavantMatchup(−6/+8) + Bullpen(±6) + Park/Wx(±10)</span></div>
+          <div class="formula-divider">Power Skill <span class="formula-divider-sub">SLG + ISO — capped −14/+16</span></div>
           <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">SLG ≥ .550 — elite slugger</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">SLG ≥ .480 — above avg power</span></div>
           <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">SLG ≥ .400 — average</span></div>
@@ -3691,6 +3691,17 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">HR/PA ≥ 6.5% — elite HR profile (≥ 30 PA)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">HR/PA ≥ 4.5% — solid HR profile</span></div>
           <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">HR/PA &lt; 1.5% — contact/GB profile</span></div>
+          <div class="formula-divider">Savant Power Profile <span class="formula-divider-sub">exit velo (hard hit %) + xwOBA from Baseball Savant — capped −4/+6</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Hard hit% ≥ 50% — elite exit velocity (Judge/Stanton tier)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Hard hit% ≥ 45% — above-avg power</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Hard hit% ≥ 40% — average hard contact</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">Hard hit% ≤ 32% — below-avg contact quality</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−3</span><span class="fr-text">Hard hit% ≤ 27% — soft contact profile</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">xwOBA ≥ .420 — elite expected output (Savant)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">xwOBA ≥ .380 — above-avg</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">xwOBA ≥ .350 — solid</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−1</span><span class="fr-text">xwOBA ≤ .310 — below-avg</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">xwOBA ≤ .285 — poor expected output</span></div>
           <div class="formula-divider">Recent Power Form <span class="formula-divider-sub">last 10 games HR + last 7 XBH + HR streak — capped −5/+8</span></div>
           <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">4+ HR last 10 games 🔥</span></div>
           <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">2+ HR last 10 games</span></div>
@@ -3727,12 +3738,25 @@ main { padding: 28px 0 60px; }
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">P K% 22–26% — average</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">P K% &lt; 31% — high strikeout rate</span></div>
           <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">P K% ≥ 31% — elite strikeout pitcher</span></div>
-          <div class="formula-row"><span class="fr-sign pos/neg">±6</span><span class="fr-text">P BABIP/BACON contact quality allowed (combined)</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">SP hard hit% allowed ≥ 45% — HR-prone contact (Savant); or BABIP/BACON fallback</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">SP hard hit% allowed ≥ 40% — above-avg hard contact</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">SP hard hit% allowed ≤ 33% — suppresses hard contact</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">SP hard hit% allowed ≤ 28% — elite contact suppressor</span></div>
           <div class="formula-row"><span class="fr-sign pos">+4</span><span class="fr-text">ISO vs pitcher hand ≥ .250 — elite power split (20+ AB)</span></div>
           <div class="formula-row"><span class="fr-sign pos">+2</span><span class="fr-text">ISO vs pitcher hand ≥ .200 — solid power split</span></div>
           <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">ISO vs pitcher hand ≥ .150 — neutral</span></div>
           <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">ISO vs pitcher hand ≥ .100 — limited power</span></div>
           <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">ISO vs pitcher hand &lt; .100 — no power vs hand</span></div>
+          <div class="formula-divider">Savant Pitch Mix Matchup <span class="formula-divider-sub">batter blended wOBA vs ALL SP pitch types ≥10% usage — capped −6/+8</span></div>
+          <div class="formula-row"><span class="fr-sign" style="color:var(--text-muted);font-size:10px">Note</span><span class="fr-text">Covers fastball, slider, cutter, curve, change — weighted by SP usage; uses 0.6×wOBA + 0.4×xwOBA to strip luck</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+8</span><span class="fr-text">Batter pitch-mix wOBA ≥ .500 — elite vs this SP's arsenal</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+5</span><span class="fr-text">Batter pitch-mix wOBA ≥ .450</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+3</span><span class="fr-text">Batter pitch-mix wOBA ≥ .410</span></div>
+          <div class="formula-row"><span class="fr-sign pos">+1</span><span class="fr-text">Batter pitch-mix wOBA ≥ .370</span></div>
+          <div class="formula-row"><span class="fr-sign">0</span><span class="fr-text">Batter pitch-mix wOBA .320–.369 — neutral</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−2</span><span class="fr-text">Batter pitch-mix wOBA ≤ .319</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Batter pitch-mix wOBA ≤ .269</span></div>
+          <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">Batter pitch-mix wOBA ≤ .229 — vulnerable vs this SP</span></div>
           <div class="formula-divider">Bullpen HR Matchup <span class="formula-divider-sub">opponent bullpen ERA — capped ±6</span></div>
           <div class="formula-row"><span class="fr-sign neg">−6</span><span class="fr-text">Pen ERA ≤ 3.00 — elite, HR suppressor</span></div>
           <div class="formula-row"><span class="fr-sign neg">−4</span><span class="fr-text">Pen ERA ≤ 3.50 — strong pen</span></div>
@@ -3914,7 +3938,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.25.1';
+const APP_VERSION = '2026.06.25.2';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -4278,22 +4302,39 @@ function _hrStarterMatchupScore(batter, pitcher, factors) {
     else if (pKpct < 0.31) { s -= 2; factors.push({ label:`P K% ${pKp}% (high strikeout rate)`,     type:'neg', pts:-2 }); }
     else                   { s -= 4; factors.push({ label:`P K% ${pKp}% (elite strikeout pitcher)`,  type:'neg', pts:-4 }); }
 
-    // BABIP/BACON as proxy for barrel/hard-contact quality allowed
-    const pBabip = pitcher?.seasonStats?.babip || 0;
-    const pBacon = pitcher?.seasonStats?.bacon || 0;
+    // Contact quality allowed — prefer Savant hard-hit % (direct), fall back to BABIP/BACON
     let contactScore = 0;
-    if      (pBabip >= .330) contactScore += 3;
-    else if (pBabip >= .310) contactScore += 1;
-    else if (pBabip <= .260) contactScore -= 3;
-    else if (pBabip <= .280) contactScore -= 1;
-    if      (pBacon >= .310) contactScore += 3;
-    else if (pBacon >= .290) contactScore += 1;
-    else if (pBacon <= .250) contactScore -= 3;
-    else if (pBacon <= .270) contactScore -= 1;
-    if (contactScore !== 0) {
-      s += contactScore;
-      factors.push({ label:`P contact quality (BABIP ${safe(pBabip)} / BACON ${safe(pBacon)})`, type: contactScore > 0 ? 'pos' : 'neg', pts: contactScore });
+    const _pSavRows = state.savantPitcher?.get(String(pitcher?.id));
+    if (_pSavRows?.length) {
+      let _pUsage = 0, _pHHSum = 0;
+      for (const r of _pSavRows) {
+        const u = parseFloat(r.pitch_usage) || 0;
+        const h = parseFloat(r.hard_hit_percent) || 0;
+        _pUsage += u; if (h > 0) _pHHSum += u * h;
+      }
+      const _pHH = _pUsage > 0 ? _pHHSum / _pUsage : null;
+      if (_pHH != null) {
+        if      (_pHH >= 45) { contactScore  =  4; factors.push({ label:`SP hard hit% allowed ${Math.round(_pHH)}% (HR-prone contact)`,      type:'pos', pts: 4 }); }
+        else if (_pHH >= 40) { contactScore  =  2; factors.push({ label:`SP hard hit% allowed ${Math.round(_pHH)}% (above-avg hard contact)`, type:'pos', pts: 2 }); }
+        else if (_pHH <= 28) { contactScore  = -4; factors.push({ label:`SP hard hit% allowed ${Math.round(_pHH)}% (elite contact suppressor)`,type:'neg', pts:-4 }); }
+        else if (_pHH <= 33) { contactScore  = -2; factors.push({ label:`SP hard hit% allowed ${Math.round(_pHH)}% (suppresses hard contact)`, type:'neg', pts:-2 }); }
+      }
+    } else {
+      // Fallback: BABIP/BACON when Savant not loaded
+      const pBabip = pitcher?.seasonStats?.babip || 0;
+      const pBacon = pitcher?.seasonStats?.bacon || 0;
+      if      (pBabip >= .330) contactScore += 3;
+      else if (pBabip >= .310) contactScore += 1;
+      else if (pBabip <= .260) contactScore -= 3;
+      else if (pBabip <= .280) contactScore -= 1;
+      if      (pBacon >= .310) contactScore += 3;
+      else if (pBacon >= .290) contactScore += 1;
+      else if (pBacon <= .250) contactScore -= 3;
+      else if (pBacon <= .270) contactScore -= 1;
+      if (contactScore !== 0)
+        factors.push({ label:`P contact quality (BABIP ${safe(pBabip)} / BACON ${safe(pBacon)})`, type: contactScore > 0 ? 'pos' : 'neg', pts: contactScore });
     }
+    s += contactScore;
   }
 
   // ISO split vs pitcher hand (absolute ISO vs that hand)
@@ -4311,23 +4352,98 @@ function _hrStarterMatchupScore(batter, pitcher, factors) {
   return clamp(s, -16, 16);
 }
 
-// 5. Pitch-Type Matchup — fastball wOBA from Baseball Savant (loaded lazily)
-function _hrPitchTypeMatchupScore(batter, pitcher, _factors) {
+// 5a. Batter Savant Power — hard hit % + xwOBA across ALL pitch types (usage-weighted)
+//     This surfaces batter exit-velocity quality independent of park/pitcher matchup.
+function _hrBatterSavantPowerScore(batter, factors) {
+  const batterRows = state.savantBatter?.get(String(batter?.id));
+  if (!batterRows?.length) return 0;
+
+  let totalUsage = 0, hardHitSum = 0, xWobaSum = 0, xWobaUsage = 0;
+  for (const row of batterRows) {
+    const usage = parseFloat(row.pitch_usage) || 0;
+    const hh    = parseFloat(row.hard_hit_percent) || 0;
+    const xw    = parseFloat(row.est_woba) || 0;
+    totalUsage += usage;
+    if (hh > 0) { hardHitSum += usage * hh; }
+    if (xw > 0) { xWobaSum += usage * xw; xWobaUsage += usage; }
+  }
+  if (totalUsage < 10) return 0; // insufficient Savant coverage
+
+  let s = 0;
+
+  // Hard hit % — most direct proxy for HR-quality contact
+  const hardHitPct = totalUsage > 0 ? hardHitSum / totalUsage : null;
+  if (hardHitPct != null) {
+    if      (hardHitPct >= 50) { s += 5; factors.push({ label:`Hard hit% ${Math.round(hardHitPct)}% (elite exit velo 🔥)`,   type:'pos', pts: 5 }); }
+    else if (hardHitPct >= 45) { s += 3; factors.push({ label:`Hard hit% ${Math.round(hardHitPct)}% (above-avg power)`,      type:'pos', pts: 3 }); }
+    else if (hardHitPct >= 40) { s += 1; factors.push({ label:`Hard hit% ${Math.round(hardHitPct)}% (avg hard contact)`,     type:'pos', pts: 1 }); }
+    else if (hardHitPct <= 27) { s -= 3; factors.push({ label:`Hard hit% ${Math.round(hardHitPct)}% (soft contact)`,         type:'neg', pts:-3 }); }
+    else if (hardHitPct <= 32) { s -= 1; }
+  }
+
+  // xwOBA — expected wOBA strips BABIP luck, reflects true quality of contact
+  const xWoba = xWobaUsage > 0 ? xWobaSum / xWobaUsage : null;
+  if (xWoba != null) {
+    if      (xWoba >= 0.420) { s += 3; factors.push({ label:`xwOBA ${xWoba.toFixed(3)} (elite power output)`, type:'pos', pts: 3 }); }
+    else if (xWoba >= 0.380) { s += 2; factors.push({ label:`xwOBA ${xWoba.toFixed(3)} (above-avg)`,         type:'pos', pts: 2 }); }
+    else if (xWoba >= 0.350) { s += 1; }
+    else if (xWoba <= 0.285) { s -= 2; factors.push({ label:`xwOBA ${xWoba.toFixed(3)} (below-avg)`,         type:'neg', pts:-2 }); }
+    else if (xWoba <= 0.310) { s -= 1; }
+  }
+
+  return clamp(s, -4, 6);
+}
+
+// 5b. Savant Pitch Mix Matchup — batter blended wOBA vs ALL pitch types SP throws ≥10%
+//     Replaces old fastball-only check; captures slider, cutter, curve, change vulnerabilities.
+function _hrSavantMatchupScore(batter, pitcher, factors) {
   const pitcherRows = state.savantPitcher?.get(String(pitcher?.id));
   if (!pitcherRows?.length) return 0;
-  const fbRow = pitcherRows.find(r => r.pitch_type === 'FF' || r.pitch_type === 'SI');
-  if (!fbRow) return 0;
-  const fbUsage = parseFloat(fbRow.pitch_usage) / 100;
-  if (fbUsage < 0.30) return 0;
   const batterRows = state.savantBatter?.get(String(batter?.id));
-  const bFB = batterRows?.find(r => r.pitch_type === 'FF' || r.pitch_type === 'SI');
-  if (!bFB) return 0;
-  const bWoba = parseFloat(bFB.woba) || 0;
-  if (bWoba >= 0.500) return 5;
-  if (bWoba >= 0.420) return 3;
-  if (bWoba >= 0.370) return 1;
-  if (bWoba <= 0.220) return -3;
-  return 0;
+  if (!batterRows?.length) return 0;
+
+  const bMap = new Map(batterRows.map(r => [r.pitch_type, r]));
+  let wWoba = 0, wTotal = 0, topPitch = null, topImpact = 0;
+
+  for (const p of pitcherRows) {
+    const usage = parseFloat(p.pitch_usage) / 100;
+    if (usage < 0.10) continue;
+    const b = bMap.get(p.pitch_type);
+    if (!b) continue;
+    const bW  = parseFloat(b.woba)     || 0;
+    const bEW = parseFloat(b.est_woba) || 0;
+    const blended = (bW > 0 && bEW > 0) ? 0.6 * bW + 0.4 * bEW : (bW || bEW);
+    if (!blended) continue;
+    wWoba  += blended * usage;
+    wTotal += usage;
+    const impact = Math.abs(blended - 0.360) * usage;
+    if (impact > topImpact) { topImpact = impact; topPitch = { type: p.pitch_type, usage: Math.round(usage * 100), blended }; }
+  }
+
+  if (wTotal < 0.20) return 0; // < 20% pitch-type coverage — not enough signal
+  const avgWoba = wWoba / wTotal;
+
+  let wobaScore = 0;
+  if      (avgWoba >= 0.500) wobaScore =  8;
+  else if (avgWoba >= 0.450) wobaScore =  5;
+  else if (avgWoba >= 0.410) wobaScore =  3;
+  else if (avgWoba >= 0.370) wobaScore =  1;
+  else if (avgWoba >= 0.320) wobaScore =  0;
+  else if (avgWoba >= 0.270) wobaScore = -2;
+  else if (avgWoba >= 0.230) wobaScore = -4;
+  else                        wobaScore = -6;
+
+  if (wobaScore !== 0) {
+    const pitchNote = topPitch
+      ? ` (${topPitch.type} ${topPitch.usage}%)`
+      : '';
+    factors.push({
+      label: `Pitch mix wOBA ${avgWoba.toFixed(3)}${pitchNote} vs SP arsenal`,
+      type: wobaScore > 0 ? 'pos' : 'neg',
+      pts:  wobaScore,
+    });
+  }
+  return clamp(wobaScore, -6, 8);
 }
 
 // 6. Bullpen HR Matchup — cap −6 to +6
@@ -4383,15 +4499,16 @@ function _hrParkWeatherScore(batter, weather, parkFactor, factors) {
 
 // ─── HR SCORE ORCHESTRATOR ────────────────────────────────────────────────────
 function _playerComputeHRScore(batter, pitcher, orderPos, weather, parkFactor, bullpenEra = 0, bullpenH9 = 0) {
-  const factors   = [];
-  const power     = _hrPowerSkillScore(batter, factors);
-  const form      = _hrRecentPowerFormScore(batter, factors);
-  const opp       = _hrOpportunityScore(batter, orderPos, factors);
-  const starter   = _hrStarterMatchupScore(batter, pitcher, factors);
-  const pitchType = _hrPitchTypeMatchupScore(batter, pitcher, factors);
-  const bullpen   = _hrBullpenMatchupScore(bullpenEra, factors, bullpenH9);
-  const parkWx    = _hrParkWeatherScore(batter, weather, parkFactor, factors);
-  const raw = 40 + power + form + opp + starter + pitchType + bullpen + parkWx;
+  const factors    = [];
+  const power      = _hrPowerSkillScore(batter, factors);
+  const savantPow  = _hrBatterSavantPowerScore(batter, factors);
+  const form       = _hrRecentPowerFormScore(batter, factors);
+  const opp        = _hrOpportunityScore(batter, orderPos, factors);
+  const starter    = _hrStarterMatchupScore(batter, pitcher, factors);
+  const savant     = _hrSavantMatchupScore(batter, pitcher, factors);
+  const bullpen    = _hrBullpenMatchupScore(bullpenEra, factors, bullpenH9);
+  const parkWx     = _hrParkWeatherScore(batter, weather, parkFactor, factors);
+  const raw = 40 + power + savantPow + form + opp + starter + savant + bullpen + parkWx;
   return { score: clamp(Math.round(raw), 5, 95), factors };
 }
 
