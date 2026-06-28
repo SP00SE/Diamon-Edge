@@ -1725,6 +1725,11 @@ main { padding: 28px 0 60px; }
 .pred-card.hr::before { background: linear-gradient(90deg, transparent, var(--accent-orange), transparent); }
 .pred-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .pred-card:hover::before { opacity: 1; }
+#topHitsSection .pred-card,
+#topHRsSection .pred-card {
+  background: linear-gradient(135deg, #34d39910, #fb923c10);
+  border-color: var(--border-accent);
+}
 
 .card-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
 .score-ring-wrap { flex-shrink: 0; }
@@ -3938,7 +3943,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.25.2';
+const APP_VERSION = '2026.06.25.4';
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -3996,6 +4001,7 @@ let state = {
   twpResultsByPk:   null, // Map<gamePk, result> — cached after full TWP scan
   twpCachedHtml:    null, // full rendered HTML of TWP results — prevents re-run on button click
   twpScanTime:      null, // HH:MM AM/PM timestamp of last TWP scan
+  simResults:       new Map(), // Map<gamePk, simResult> — 100× simulator outputs; cleared on date change
 };
 
 // pa        : player's season plate appearances
@@ -5751,6 +5757,35 @@ function buildPickCard(player, mode, glId, selGame, lineupPosted) {
     ? `<div style="font-size:10px;color:var(--accent-orange);font-weight:600;letter-spacing:0.4px;margin-bottom:2px">⏳ PROJECTED — updates when lineup is confirmed</div>`
     : '';
 
+  // ── Context pills (Hit Rate + K% for all modes; Park HR + ISO for hr/combined) ─
+  const _pa   = ss.plateAppearances || 0;
+  const _ghp  = player.hitGames7 != null ? (player.hitGames7 / 7) : null;
+  const _ghpStr = _ghp != null ? `${Math.round(_ghp*100)}%` : null;
+  const _ghpCls = _ghp != null ? (_ghp >= 0.70 ? 'pos' : _ghp < 0.45 ? 'neg' : 'neu') : 'neu';
+  const _kpct = _pa > 0 && ss.strikeOuts != null ? (ss.strikeOuts / _pa) : null;
+  const _kStr = _kpct != null ? `${Math.round(_kpct*100)}% K` : null;
+  const _kCls = _kpct != null ? (_kpct <= 0.14 ? 'pos' : _kpct >= 0.28 ? 'neg' : 'neu') : 'neu';
+  const _activeFactors = mode === 'hr' ? (player.hrFactors || []) : (player.hitFactors || []);
+  const _hasPlatoon = _activeFactors.some(f => f.label && f.label.toLowerCase().includes('platoon'));
+  const _ctxPills = [];
+  if (_ghpStr) _ctxPills.push(`<span class="stat-pill pc2-pill pc2-pill-${_ghpCls}"><span>Hit Rate</span><strong>${_ghpStr}</strong></span>`);
+  if (_kStr)   _ctxPills.push(`<span class="stat-pill pc2-pill pc2-pill-${_kCls}"><span>K%</span><strong>${_kStr}</strong></span>`);
+  if (mode === 'hr' || mode === 'combined') {
+    const _gd = state.predictions?.[player.gamePk];
+    const _pf = _gd?.parkFactor || getParkFactor(_gd?.venueName);
+    const _hrPark = _pf?.hrR ?? _pf?.hrL ?? null;
+    const _iso    = ss.slg && ss.avg ? (ss.slg - ss.avg) : null;
+    if (_hrPark != null) {
+      const _pkCls = _hrPark >= 1.10 ? 'pos' : _hrPark <= 0.90 ? 'neg' : 'neu';
+      _ctxPills.push(`<span class="stat-pill pc2-pill pc2-pill-${_pkCls}"><span>Park HR</span><strong>${_hrPark.toFixed(2)}×</strong></span>`);
+    }
+    if (_iso != null && _iso >= 0.175) {
+      _ctxPills.push(`<span class="stat-pill pc2-pill pc2-pill-pos"><span>ISO</span><strong>${_iso.toFixed(3).replace(/^0/,'')}</strong></span>`);
+    }
+  }
+  if (_hasPlatoon) _ctxPills.push(`<span class="stat-pill pc2-pill pc2-pill-pos"><span>Platoon</span><strong>Edge</strong></span>`);
+  const ctxPillsHTML = _ctxPills.length ? `<div class="stats-row" style="margin:6px 0 2px">${_ctxPills.join('')}</div>` : '';
+
   return `
     <div onclick="openPlayerModal(${player.id})" style="cursor:pointer;display:flex;flex-direction:column;gap:10px">
       ${projWarn}
@@ -5776,6 +5811,7 @@ function buildPickCard(player, mode, glId, selGame, lineupPosted) {
       <div class="best-bet-reason">${player.team} · ${player.position || ''} · ${player.matchup}</div>
       <div class="best-bet-reason" style="margin-top:3px;font-style:italic">"${reason}"</div>
       ${streakNote ? `<div class="best-bet-reason" style="margin-top:5px;color:var(--accent-orange);font-weight:600">${streakNote}</div>` : ''}
+      ${ctxPillsHTML}
       <div class="best-bet-stats-panel">
         <div class="best-bet-stats-label">
           Season Stats
@@ -8618,6 +8654,7 @@ function onDateChange() {
   state.twpCachedHtml   = null;
   state.twpScanTime     = null;
   state.twpResultsByPk  = null;
+  state.simResults      = new Map();
   leaderboardLoaded = false;
   cache.clear();
   gameLogCache.clear();
