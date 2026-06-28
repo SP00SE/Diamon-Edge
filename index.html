@@ -2823,6 +2823,16 @@ main { padding: 28px 0 60px; }
             </div>
           </div>
 
+          <div class="ahf-filter-section-lbl" style="margin-top:8px">REGULARITY</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">L7 At-Bats (volume)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minL7Abs" data-val="0"  onclick="setAhfFilter(this)">Any (24+ min)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="25" onclick="setAhfFilter(this)">25+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="28" onclick="setAhfFilter(this)">28+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="30" onclick="setAhfFilter(this)">30+ ABs</button>
+            </div>
+          </div>
           <button class="ahf-filter-reset" onclick="resetAhfFilters()">↺ Reset all filters</button>
         </div>
 
@@ -2932,6 +2942,16 @@ main { padding: 28px 0 60px; }
               <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="1"   onclick="setGlobalFilter(this)">Favorable+ (55+)</button>
               <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="4"   onclick="setGlobalFilter(this)">Strong (65+)</button>
               <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="6"   onclick="setGlobalFilter(this)">Elite only (75+)</button>
+            </div>
+          </div>
+          <div class="ahf-filter-section-lbl" style="margin-top:8px">REGULARITY</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">L7 At-Bats (volume)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minL7Abs" data-val="0"  onclick="setGlobalFilter(this)">Any (24+ min)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="25" onclick="setGlobalFilter(this)">25+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="28" onclick="setGlobalFilter(this)">28+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="30" onclick="setGlobalFilter(this)">30+ ABs</button>
             </div>
           </div>
           <button class="ahf-filter-reset" onclick="resetGlobalFilters()">↺ Reset all filters</button>
@@ -3045,6 +3065,16 @@ main { padding: 28px 0 60px; }
               <button class="ahf-filter-btn"                            data-ahf="minedge" data-val="6"   onclick="setLeaderFilter(this)">Elite only (75+)</button>
             </div>
           </div>
+          <div class="ahf-filter-section-lbl" style="margin-top:8px">REGULARITY</div>
+          <div class="ahf-filter-group">
+            <span class="ahf-filter-lbl">L7 At-Bats (volume)</span>
+            <div class="ahf-filter-btns">
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minL7Abs" data-val="0"  onclick="setLeaderFilter(this)">Any (24+ min)</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="25" onclick="setLeaderFilter(this)">25+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="28" onclick="setLeaderFilter(this)">28+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="30" onclick="setLeaderFilter(this)">30+ ABs</button>
+            </div>
+          </div>
           <button class="ahf-filter-reset" onclick="resetLeaderFilters()">↺ Reset all filters</button>
         </div>
 
@@ -3057,7 +3087,7 @@ main { padding: 28px 0 60px; }
           <span class="lab-back-crumb">All Models — Overall Top Picks</span>
         </div>
         <div class="lab-global-elite-header">🎯 Multi-Model Top Picks · Overall Best Plays</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Composite of BTS, Lab Matchup, and Arsenal scoring across all models. Only everyday regulars vs weak pitching — players where every signal aligns. Filters apply instantly to loaded results.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Lab Matchup Score leads (45%), with BTS (30%) and Arsenal (25%) as supporting signals. Minimum 24 L7 ABs — everyday regulars only. Players where every model aligns rank highest. Filters apply instantly.</div>
         <div class="bts2-sort-bar">
           <span class="bts2-sort-lbl">Sort:</span>
           <button id="bts2SortBtn" class="bts2-sort-btn active" onclick="toggleBts2Sort()">▼ Highest Score</button>
@@ -3167,10 +3197,10 @@ main { padding: 28px 0 60px; }
           <div class="ahf-filter-group">
             <span class="ahf-filter-lbl">L7 At-Bats (volume)</span>
             <div class="ahf-filter-btns">
-              <button class="ahf-filter-btn active" data-active="true" data-ahf="minL7Abs" data-val="0"  onclick="setBts2Filter(this)">Any</button>
-              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="15" onclick="setBts2Filter(this)">15+ ABs</button>
-              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="20" onclick="setBts2Filter(this)">20+ ABs</button>
+              <button class="ahf-filter-btn active" data-active="true" data-ahf="minL7Abs" data-val="0"  onclick="setBts2Filter(this)">Any (24+ min)</button>
               <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="25" onclick="setBts2Filter(this)">25+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="28" onclick="setBts2Filter(this)">28+ ABs</button>
+              <button class="ahf-filter-btn"                            data-ahf="minL7Abs" data-val="30" onclick="setBts2Filter(this)">30+ ABs</button>
             </div>
           </div>
           <button class="ahf-filter-reset" onclick="resetBts2Filters()">↺ Reset all filters</button>
@@ -10764,6 +10794,7 @@ async function runArsenalScan() {
   const results  = [];
   for (const gd of allGames) {
     for (const player of (gd.players||[]).filter(p => p.id)) {
+      if ((player.last7Stats?.atBats || 0) < 24) continue;
       const r = computeArsenalHitEdge(player, gd);
       if (!r.hasData) continue;
       results.push({
@@ -11044,7 +11075,7 @@ function _arsenalHitCardHTML(r, rank) {
 // ── Shared lab filter factory ─────────────────────────────────────────────
 function _makeFilterState() {
   return { lineupspot:'any', minavg:0, maxkpct:100, platoon:'any', lineup:'any', homeaway:'any',
-           minh9:0, maxk9:99, maxbb9:99, minedge:-99 };
+           minh9:0, maxk9:99, maxbb9:99, minedge:-99, minL7Abs:0 };
 }
 let _ahfResults        = [];
 let _globalScanResults = [];
@@ -11475,8 +11506,8 @@ function _computeBts2Composite(player, gd, eliteData, btsResult, arsenalResult) 
   const ahfScore = ahfRaw !== null ? Math.round(50 + (ahfRaw / 15) * 45) : null;
 
   const composite = ahfScore !== null
-    ? labScore * 0.30 + btsScore * 0.45 + ahfScore * 0.25
-    : labScore * 0.45 + btsScore * 0.55;
+    ? labScore * 0.45 + btsScore * 0.30 + ahfScore * 0.25
+    : labScore * 0.60 + btsScore * 0.40;
 
   const regAdj = _computeRegularity(player);
 
@@ -11512,7 +11543,7 @@ function _isBts2Eligible(player) {
   const l7  = player.last7Stats  || {};
   const pos = player.orderPos    || 0;
   return (ss.avg || 0) >= 0.235 && pos >= 1 && pos <= 8 &&
-         (l7.atBats || 0) >= 8 && (player.recentStarts || 0) >= 2;
+         (l7.atBats || 0) >= 24 && (player.recentStarts || 0) >= 2;
 }
 
 function _buildBts2Reasons(player, gd, eliteData, btsResult, arsenalResult, composite) {
@@ -13405,6 +13436,7 @@ async function runGlobalEliteScan(onProgress) {
     try {
       const data = await fetchElitePlayerData(player, gd);
       onProgress?.();
+      if ((player.last7Stats?.atBats || 0) < 24) return;
       results.push({
         player, score: data.score,
         pitcher: data.pitcher,
@@ -13576,6 +13608,7 @@ async function runLeaderboardScan(entries, onProgress) {
     try {
       const data = await fetchElitePlayerData(player, gd);
       onProgress?.();
+      if ((player.last7Stats?.atBats || 0) < 24) return;
       const rank = seasonLeaderRanks.hits.get(player.id);
       const rankLabel = rank ? `#${rank} Hits · ` : '';
       results.push({
