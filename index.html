@@ -15414,6 +15414,40 @@ function toggleTeamPredExpand(bkId, btnId) {
   btn.innerHTML     = open ? '&#9660; Player Breakdown' : '&#9650; Player Breakdown';
 }
 
+function runGameSimulator(gamePk) {
+  const panel = document.getElementById(`twp-sim-panel-${gamePk}`);
+  if (!panel) return;
+
+  // Find and disable the trigger button (could be the Run button or the Run-again button inside the panel)
+  const simWrap = document.getElementById(`twp-sim-wrap-${gamePk}`);
+  const mainBtn = simWrap ? simWrap.querySelector('.twp-sim-btn') : null;
+  if (mainBtn) { mainBtn.disabled = true; mainBtn.textContent = '⚙ Simulating…'; }
+
+  // Yield to browser paint before running (keeps UI responsive)
+  setTimeout(() => {
+    try {
+      const r = state.twpResultsByPk?.get(Number(gamePk));
+      if (!r) {
+        panel.innerHTML = '<div style="font-size:11px;color:#ef4444;padding:8px 14px">No prediction data — run Team Win Predictor first.</div>';
+        panel.style.display = 'block';
+        if (mainBtn) { mainBtn.disabled = false; mainBtn.textContent = '⚙ Run 100\xd7 Simulator'; }
+        return;
+      }
+      const sim = _simulate100(r);
+      if (!state.simResults) state.simResults = new Map();
+      state.simResults.set(Number(gamePk), sim);
+      panel.innerHTML     = _simPanelHTML(r, sim);
+      panel.style.display = 'block';
+    } catch (e) {
+      console.error('[Simulator] error for gamePk', gamePk, e);
+      panel.innerHTML = '<div style="font-size:11px;color:#ef4444;padding:8px 14px">Simulation error — see console.</div>';
+      panel.style.display = 'block';
+    } finally {
+      if (mainBtn) { mainBtn.disabled = false; mainBtn.textContent = '⚙ Run 100\xd7 Simulator'; }
+    }
+  }, 80);
+}
+
 // ─── THE LAB — LAB ELITE SCAN (single-game roster) ───────────────────────
 async function runLabEliteScan(onProgress) {
   const gamePk = _labState.gamePk;
