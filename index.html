@@ -14687,6 +14687,46 @@ function _simulate100(r) {
   return { awayWins, homeWins, avgAwayRuns, avgHomeRuns, avgTotal, simWinner, simEdge, keyDrivers };
 }
 
+function _simPanelHTML(r, sim) {
+  const { awayAbbr, homeAbbr, gamePk } = r;
+  const { awayWins, homeWins, avgAwayRuns, avgHomeRuns, avgTotal, simWinner, simEdge, keyDrivers } = sim;
+
+  const winnerAbbr = simWinner === 'away' ? awayAbbr : simWinner === 'home' ? homeAbbr : null;
+  const edgeCls    = simEdge === 'Strong Edge' ? 'strong' : simEdge === 'Moderate Edge' ? 'moderate' : simEdge === 'Slight Edge' ? 'slight' : 'tossup';
+
+  const driversHTML = keyDrivers.length > 0
+    ? `<div class="twp-sim-drivers">
+        <div class="twp-sim-drivers-label">Key drivers${winnerAbbr ? ` — ${escHtml(winnerAbbr)}` : ''}:</div>
+        ${keyDrivers.map(d => `<div class="twp-sim-driver-row"><span class="twp-sim-driver-name">${escHtml(d.label)}</span><span class="twp-sim-driver-val">+${Math.round(d.delta)} pts</span></div>`).join('')}
+      </div>`
+    : '';
+
+  return `<div class="twp-sim-result">
+    <div class="twp-sim-result-header">
+      <span class="twp-sim-title">&#9881; 100\xd7 Simulation</span>
+      <button class="twp-sim-rerun" onclick="runGameSimulator(${gamePk})">&#8635; Run again</button>
+    </div>
+    <div class="twp-sim-bar-wrap">
+      <div class="twp-sim-team-label twp-sim-away">${escHtml(awayAbbr||'Away')}</div>
+      <div class="twp-sim-bar">
+        <div class="twp-sim-bar-away" style="flex:${awayWins}"></div>
+        <div class="twp-sim-bar-home" style="flex:${homeWins}"></div>
+      </div>
+      <div class="twp-sim-team-label twp-sim-home">${escHtml(homeAbbr||'Home')}</div>
+    </div>
+    <div class="twp-sim-counts">
+      <span class="twp-sim-count${simWinner==='away'?' twp-sim-count-win':''}">${awayWins} wins &middot; ${awayWins}%</span>
+      <span class="twp-sim-count${simWinner==='home'?' twp-sim-count-win':''}">${homeWins} wins &middot; ${homeWins}%</span>
+    </div>
+    <div class="twp-sim-stats">
+      <div class="twp-sim-stat-row"><span class="twp-sim-stat-lbl">Avg score</span><span class="twp-sim-stat-val">${escHtml(awayAbbr||'Away')} ${avgAwayRuns.toFixed(1)} – ${avgHomeRuns.toFixed(1)} ${escHtml(homeAbbr||'Home')}</span></div>
+      <div class="twp-sim-stat-row"><span class="twp-sim-stat-lbl">Sim O/U</span><span class="twp-sim-stat-val">${avgTotal.toFixed(1)} runs</span></div>
+      <div class="twp-sim-stat-row"><span class="twp-sim-stat-lbl">Sim Edge</span><span class="twp-sim-stat-val twp-sim-edge-${edgeCls}">${escHtml(simEdge)}</span></div>
+    </div>
+    ${driversHTML}
+  </div>`;
+}
+
 function runTeamScan(onProgress, filterPk = null) {
   const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const results  = [];
