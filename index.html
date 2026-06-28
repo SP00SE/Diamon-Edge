@@ -634,7 +634,7 @@ main { padding: 28px 0 60px; }
 .twp-reasoning { padding:6px 14px 8px; font-size:11px; color:var(--text-muted); line-height:1.45; border-top:1px solid var(--border); }
 .twp-expand-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
 /* ── TWP 100× Simulator ─────────────────────────────────────────────────── */
-.twp-sim-wrap { }
+.twp-sim-wrap { margin-top:2px; }
 .twp-sim-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#60a5fa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; letter-spacing:.3px; transition:background .15s; }
 .twp-sim-btn:hover   { background:rgba(96,165,250,.07); }
 .twp-sim-btn:disabled { opacity:.5; cursor:default; }
@@ -14664,8 +14664,7 @@ function _simulate100(r) {
 
   for (let i = 0; i < N; i++) {
     const simAwayScore =
-      (ac.lineup    ?? 50) + gauss(5) +
-      (ac.form      ??  0)            +
+      (ac.lineup    ?? 50) + (ac.form ?? 0) + gauss(5) +
       (ac.starter   ??  0) + gauss(8) +
       (ac.bullpen   ??  0) + gauss(6) +
       (ac.context   ??  0) + gauss(1) +
@@ -14676,8 +14675,7 @@ function _simulate100(r) {
       (ac.parkPower ??  0) + gauss(1);
 
     const simHomeScore =
-      (hc.lineup    ?? 50) + gauss(5) +
-      (hc.form      ??  0)            +
+      (hc.lineup    ?? 50) + (hc.form ?? 0) + gauss(5) +
       (hc.starter   ??  0) + gauss(8) +
       (hc.bullpen   ??  0) + gauss(6) +
       (hc.context   ??  0) + gauss(1) +
@@ -14761,6 +14759,7 @@ function _simPanelHTML(r, sim) {
 }
 
 function runTeamScan(onProgress, filterPk = null) {
+  state.simResults = new Map();
   const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const results  = [];
 
