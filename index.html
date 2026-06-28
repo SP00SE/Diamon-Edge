@@ -15423,6 +15423,10 @@ function _teamScanCardHTML(r) {
       </div>${correctNote}${postmortem}`;
     })() : ''}
 
+    <div class="twp-sim-wrap" id="twp-sim-wrap-${gamePk}">
+      <button class="twp-sim-btn" onclick="runGameSimulator(${gamePk})">&#9881; Run 100&times; Simulator</button>
+      <div id="twp-sim-panel-${gamePk}" style="display:none"></div>
+    </div>
     <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
     <div class="twp-breakdown" id="${bkId}" style="display:none">
       <div class="twp-breakdown-col">
