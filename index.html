@@ -633,6 +633,39 @@ main { padding: 28px 0 60px; }
 .twp-winner-conf { font-size:10px; color:var(--text-muted); }
 .twp-reasoning { padding:6px 14px 8px; font-size:11px; color:var(--text-muted); line-height:1.45; border-top:1px solid var(--border); }
 .twp-expand-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
+/* ── TWP 100× Simulator ─────────────────────────────────────────────────── */
+.twp-sim-wrap { }
+.twp-sim-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#60a5fa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; letter-spacing:.3px; transition:background .15s; }
+.twp-sim-btn:hover   { background:rgba(96,165,250,.07); }
+.twp-sim-btn:disabled { opacity:.5; cursor:default; }
+.twp-sim-result { background:linear-gradient(135deg,#0d1b2a,#0a1525); border-bottom:1px solid var(--border); padding:12px 14px; }
+.twp-sim-result-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.twp-sim-title { font-size:11px; font-weight:700; color:#60a5fa; letter-spacing:.5px; text-transform:uppercase; }
+.twp-sim-rerun { background:none; border:1px solid #1e3a5f; border-radius:4px; padding:2px 8px; font-size:10px; color:#60a5fa; cursor:pointer; }
+.twp-sim-rerun:hover { background:rgba(96,165,250,.1); }
+.twp-sim-bar-wrap { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.twp-sim-team-label { font-size:11px; font-weight:700; color:var(--text-muted); width:28px; flex-shrink:0; }
+.twp-sim-away { text-align:right; }
+.twp-sim-home { text-align:left; }
+.twp-sim-bar { flex:1; display:flex; height:8px; border-radius:4px; overflow:hidden; background:#1e293b; }
+.twp-sim-bar-away { background:#f59e0b; min-width:2px; transition:flex .3s; }
+.twp-sim-bar-home { background:#22c55e; min-width:2px; transition:flex .3s; }
+.twp-sim-counts { display:flex; justify-content:space-between; margin-bottom:10px; padding:0 36px; }
+.twp-sim-count { font-size:11px; color:var(--text-muted); }
+.twp-sim-count-win { color:#e2e8f0; font-weight:700; }
+.twp-sim-stats { display:flex; flex-direction:column; gap:4px; margin-bottom:8px; }
+.twp-sim-stat-row { display:flex; justify-content:space-between; font-size:11px; }
+.twp-sim-stat-lbl { color:var(--text-muted); }
+.twp-sim-stat-val { color:#e2e8f0; font-weight:600; }
+.twp-sim-edge-strong   { color:#22c55e; }
+.twp-sim-edge-moderate { color:#60a5fa; }
+.twp-sim-edge-slight   { color:#f59e0b; }
+.twp-sim-edge-tossup   { color:#94a3b8; }
+.twp-sim-drivers { border-top:1px solid #1e293b; padding-top:8px; }
+.twp-sim-drivers-label { font-size:10px; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+.twp-sim-driver-row { display:flex; justify-content:space-between; font-size:11px; margin-bottom:2px; }
+.twp-sim-driver-name { color:#94a3b8; }
+.twp-sim-driver-val  { color:#60a5fa; font-weight:600; }
 .twp-breakdown { padding:10px 14px; display:flex; gap:12px; border-top:1px solid var(--border); }
 .twp-breakdown-col { flex:1; min-width:0; }
 .twp-breakdown-col-hdr { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; padding-bottom:4px; border-bottom:1px solid var(--border); }
