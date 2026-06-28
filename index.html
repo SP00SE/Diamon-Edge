@@ -14618,6 +14618,75 @@ function _teamPlatoonEdge(batters, pitcherHand, isHome, isNight) {
   return { score: finalScore, topBatters };
 }
 
+// ── TWP 100× Monte Carlo Simulator ──────────────────────────────────────────
+function _simulate100(r) {
+  const N = 100;
+  // Sum-of-4-uniforms approximation of Gaussian noise (CLT): variance = 4*(1/12)=1/3
+  // Scale by sqrt(3)*sigma to achieve desired std dev
+  const gauss = (sigma) => (Math.random() + Math.random() + Math.random() + Math.random() - 2) * sigma * Math.sqrt(3);
+
+  const ac = r.awayComponents || {};
+  const hc = r.homeComponents || {};
+  let awayWins = 0, homeWins = 0, totalAwayRuns = 0, totalHomeRuns = 0;
+
+  for (let i = 0; i < N; i++) {
+    const simAwayScore =
+      (ac.lineup    ?? 50) + gauss(5) +
+      (ac.form      ??  0)            +
+      (ac.starter   ??  0) + gauss(8) +
+      (ac.bullpen   ??  0) + gauss(6) +
+      (ac.context   ??  0) + gauss(1) +
+      (ac.arsenal   ??  0) + gauss(3) +
+      (ac.platoon   ??  0) + gauss(2) +
+      (ac.kMatchup  ??  0) + (ac.bbMatchup ?? 0) + gauss(2) +
+      (ac.rest      ??  0)            +
+      (ac.parkPower ??  0) + gauss(1);
+
+    const simHomeScore =
+      (hc.lineup    ?? 50) + gauss(5) +
+      (hc.form      ??  0)            +
+      (hc.starter   ??  0) + gauss(8) +
+      (hc.bullpen   ??  0) + gauss(6) +
+      (hc.context   ??  0) + gauss(1) +
+      (hc.arsenal   ??  0) + gauss(3) +
+      (hc.platoon   ??  0) + gauss(2) +
+      (hc.kMatchup  ??  0) + (hc.bbMatchup ?? 0) + gauss(2) +
+      (hc.rest      ??  0)            +
+      (hc.parkPower ??  0) + gauss(1);
+
+    // Run totals: independent ±20% noise per team per trial
+    const simAwayRuns = (r.awayProjRuns ?? 4.2) * (0.80 + Math.random() * 0.40);
+    const simHomeRuns = (r.homeProjRuns ?? 4.2) * (0.80 + Math.random() * 0.40);
+
+    // Recompute win prob with simulated scores; assign winner stochastically
+    const simWinProb = _winProbability(simHomeScore - simAwayScore, simHomeRuns, simAwayRuns);
+    if (Math.random() * 100 < simWinProb) { homeWins++; } else { awayWins++; }
+    totalAwayRuns += simAwayRuns;
+    totalHomeRuns += simHomeRuns;
+  }
+
+  const avgAwayRuns = totalAwayRuns / N;
+  const avgHomeRuns = totalHomeRuns / N;
+  const avgTotal    = avgAwayRuns + avgHomeRuns;
+  const simWinner   = awayWins > homeWins ? 'away' : homeWins > awayWins ? 'home' : 'tie';
+  const maxWins     = Math.max(awayWins, homeWins);
+  const simEdge     = maxWins >= 70 ? 'Strong Edge' : maxWins >= 62 ? 'Moderate Edge' : maxWins >= 55 ? 'Slight Edge' : 'Toss-Up';
+
+  const winC = simWinner === 'away' ? ac : hc;
+  const losC = simWinner === 'away' ? hc : ac;
+  const keyDrivers = [
+    { label: 'Lineup & Form',    delta: ((winC.lineup ?? 50) + (winC.form ?? 0)) - ((losC.lineup ?? 50) + (losC.form ?? 0)) },
+    { label: 'Starting Pitcher', delta: (winC.starter  ?? 0) - (losC.starter  ?? 0) },
+    { label: 'Bullpen',          delta: (winC.bullpen  ?? 0) - (losC.bullpen  ?? 0) },
+    { label: 'Arsenal Matchup',  delta: (winC.arsenal  ?? 0) - (losC.arsenal  ?? 0) },
+    { label: 'Platoon Edge',     delta: (winC.platoon  ?? 0) - (losC.platoon  ?? 0) },
+    { label: 'K/BB Matchup',     delta: ((winC.kMatchup ?? 0) + (winC.bbMatchup ?? 0)) - ((losC.kMatchup ?? 0) + (losC.bbMatchup ?? 0)) },
+    { label: 'Park Power',       delta: (winC.parkPower ?? 0) - (losC.parkPower ?? 0) },
+  ].filter(d => d.delta > 1).sort((a, b) => b.delta - a.delta).slice(0, 3);
+
+  return { awayWins, homeWins, avgAwayRuns, avgHomeRuns, avgTotal, simWinner, simEdge, keyDrivers };
+}
+
 function runTeamScan(onProgress, filterPk = null) {
   const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const results  = [];
