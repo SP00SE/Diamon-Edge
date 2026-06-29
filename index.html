@@ -609,7 +609,7 @@ main { padding: 28px 0 60px; }
 .twp-form-hot  { background:#22c55e18; color:#22c55e; border:1px solid #22c55e44; }
 .twp-form-cold { background:#3b82f618; color:#60a5fa; border:1px solid #3b82f633; }
 .twp-key-factor { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:#7c3aed18; color:#a78bfa; border:1px solid #7c3aed33; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; }
-.twp-reasoning-banner { padding:6px 14px 7px; font-size:10px; color:#64748b; line-height:1.45; border-top:1px solid var(--border); background:#0a0f1a; }
+.twp-reasoning-banner { padding:7px 14px 8px; font-size:11px; color:#94a3b8; line-height:1.5; border-top:1px solid var(--border); background:#0a0f1a; }
 .twp-center { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 8px; flex-shrink:0; border-bottom:2px solid transparent; }
 .twp-vs { font-size:11px; font-weight:800; color:var(--text-muted); letter-spacing:1px; }
 .twp-ou { font-size:9px; color:var(--text-muted); text-align:center; margin-top:6px; line-height:1.5; }
@@ -620,22 +620,24 @@ main { padding: 28px 0 60px; }
 .twp-edges { padding:10px 14px 8px; border-top:1px solid var(--border); }
 .twp-edges-hdr { font-size:9px; text-transform:uppercase; letter-spacing:.7px; color:var(--text-muted); font-weight:700; margin-bottom:8px; }
 .twp-edge-row { display:flex; align-items:center; gap:8px; margin:5px 0; }
-.twp-edge-label { font-size:10px; color:var(--text-muted); width:62px; flex-shrink:0; }
+.twp-edge-label { font-size:10px; color:var(--text-muted); width:70px; flex-shrink:0; }
 .twp-edge-track { flex:1; height:4px; background:var(--bg-hover); border-radius:2px; position:relative; overflow:hidden; }
 .twp-edge-center { position:absolute; left:50%; top:0; width:1px; height:100%; background:#334155; z-index:1; transform:translateX(-50%); }
 .twp-edge-fill { position:absolute; height:100%; top:0; border-radius:2px; }
-.twp-matchup-note { font-size:11px; color:var(--text-muted); padding:2px 0 5px 70px; line-height:1.4; }
+.twp-matchup-note { font-size:11px; color:var(--text-muted); padding:2px 0 5px 78px; line-height:1.4; }
 .twp-edge-val { font-size:10px; font-weight:700; width:64px; text-align:right; flex-shrink:0; white-space:nowrap; }
-.twp-sp-sub { font-size:9px; color:var(--text-muted); padding:0 0 4px 70px; line-height:1.3; }
+.twp-sp-sub { font-size:9px; color:var(--text-muted); padding:0 0 4px 78px; line-height:1.3; }
 .twp-winner-strip { padding:9px 14px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); background:linear-gradient(to right,#052e1630,transparent); }
 .twp-winner-name { font-size:13px; font-weight:800; color:#22c55e; }
 .twp-winner-tie { font-size:13px; font-weight:800; color:var(--text-muted); }
 .twp-winner-conf { font-size:10px; color:var(--text-muted); }
 .twp-reasoning { padding:6px 14px 8px; font-size:11px; color:var(--text-muted); line-height:1.45; border-top:1px solid var(--border); }
-.twp-expand-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
+.twp-expand-btn { flex:1; width:100%; background:none; border:none; padding:8px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
 /* ── TWP 100× Simulator ─────────────────────────────────────────────────── */
-.twp-sim-wrap { margin-top:2px; }
-.twp-sim-btn { width:100%; background:none; border:none; border-top:1px solid var(--border); padding:8px; color:#60a5fa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; letter-spacing:.3px; transition:background .15s; }
+.twp-action-row { display:flex; border-top:1px solid var(--border); }
+.twp-action-row .twp-sim-wrap { flex:1; border-right:1px solid var(--border); }
+.twp-sim-wrap { margin-top:0; }
+.twp-sim-btn { width:100%; background:none; border:none; padding:8px; color:#60a5fa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; letter-spacing:.3px; transition:background .15s; }
 .twp-sim-btn:hover   { background:rgba(96,165,250,.07); }
 .twp-sim-btn:disabled { opacity:.5; cursor:default; }
 .twp-sim-result { background:linear-gradient(135deg,#0d1b2a,#0a1525); border-bottom:1px solid var(--border); padding:12px 14px; }
@@ -683,7 +685,9 @@ main { padding: 28px 0 60px; }
 @media (max-width:600px) {
   .twp-body { flex-direction:column; }
   .twp-team { width:100%; flex:unset; padding:10px 12px 8px; flex-direction:row; justify-content:space-between; align-items:center; gap:8px; }
-  .twp-center { display:none; }
+  .twp-center { display:flex; flex-direction:row; width:100%; gap:14px; padding:6px 12px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); justify-content:center; align-items:center; }
+  .twp-center .twp-vs { display:none; }
+  .twp-center .twp-proj-score, .twp-center .twp-ou { margin:0; }
   .twp-edge-row { gap:4px; flex-wrap:wrap; }
   .twp-matchup-note { padding-left:8px !important; }
   .twp-player-name { max-width:160px; }
@@ -15455,11 +15459,13 @@ function _teamScanCardHTML(r) {
       </div>${correctNote}${postmortem}`;
     })() : ''}
 
-    <div class="twp-sim-wrap" id="twp-sim-wrap-${gamePk}">
-      <button class="twp-sim-btn" onclick="runGameSimulator(${gamePk})">&#9881; Run 100&times; Simulator</button>
-      <div id="twp-sim-panel-${gamePk}" style="display:none"></div>
+    <div class="twp-action-row">
+      <div class="twp-sim-wrap" id="twp-sim-wrap-${gamePk}">
+        <button class="twp-sim-btn" onclick="runGameSimulator(${gamePk})">&#9881; Run 100&times; Simulator</button>
+      </div>
+      <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
     </div>
-    <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
+    <div id="twp-sim-panel-${gamePk}" style="display:none"></div>
     <div class="twp-breakdown" id="${bkId}" style="display:none">
       <div class="twp-breakdown-col">
         <div class="twp-breakdown-col-hdr">${escHtml(awayAbbr||'Away')}</div>
