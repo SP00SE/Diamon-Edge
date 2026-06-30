@@ -572,6 +572,21 @@ main { padding: 28px 0 60px; }
 .lab-pitch-name { font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .lab-pitch-meta { color:var(--text-muted); font-size:10px; flex-shrink:0; margin-left:6px; }
 
+/* ── Batter vs SP History (h2h-*) ────────────────────── */
+.h2h-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:10px; }
+.h2h-card-header { padding:10px 14px 8px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); }
+.h2h-rank { font-size:12px; font-weight:800; color:#334155; width:20px; flex-shrink:0; text-align:right; }
+.h2h-player-meta { flex:1; min-width:0; }
+.h2h-player-name { font-size:13px; font-weight:800; color:#e2e8f0; }
+.h2h-player-sub { font-size:10px; color:var(--text-muted); margin-top:2px; }
+.h2h-avg-big { font-size:24px; font-weight:900; line-height:1; flex-shrink:0; letter-spacing:-1px; }
+.h2h-stats-row { display:flex; }
+.h2h-stat { flex:1; text-align:center; padding:8px 4px; }
+.h2h-stat:not(:last-child) { border-right:1px solid var(--border); }
+.h2h-stat-val { font-size:14px; font-weight:700; color:#e2e8f0; }
+.h2h-stat-lbl { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+.h2h-footer { padding:5px 14px 7px; display:flex; justify-content:space-between; border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); background:var(--bg-hover); }
+
 /* ── Team Win Predictor redesign (twp-*) ──────────────── */
 .twp-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
 .twp-header { display:flex; justify-content:space-between; align-items:center; padding:9px 14px 8px; border-bottom:1px solid var(--border); }
@@ -2710,6 +2725,7 @@ main { padding: 28px 0 60px; }
         <button id="labLeaderScanBtn" class="lab-global-scan-btn" onclick="handleLeaderboardScan()" style="margin-top:8px">🏆 Scan Hit Leaderboard</button>
         <button id="labArsenalBtn" class="lab-global-scan-btn" onclick="handleArsenalHitFinder()" style="margin-top:8px">⚾ Arsenal Hit Finder</button>
         <button id="labBts2Btn" class="lab-global-scan-btn" onclick="handleBts2Scan()" style="margin-top:8px">🎯 Multi-Model Top Picks</button>
+        <button id="labH2HBtn" class="lab-global-scan-btn" onclick="handleH2HScan()" style="margin-top:8px">⚔️ H2H vs SP History</button>
         <div class="lab-game-grid" id="labGameGrid"></div>
       </div>
       <!-- Screen Arsenal Hit Finder -->
@@ -3229,6 +3245,18 @@ main { padding: 28px 0 60px; }
         </div>
         <div class="lab-global-elite-header">🏟️ Team Win Predictor · Sorted by Game Time</div>
         <div id="labTeamScanCards"></div>
+      </div>
+      <!-- Screen 1g: H2H vs SP History -->
+      <div id="labScreenH2H" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
+          <span class="lab-back-crumb">H2H vs SP History — All Games</span>
+        </div>
+        <div class="lab-global-elite-header">⚔️ Batter vs SP History · Career H2H · Top 20</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
+          Career head-to-head stats for today's lineup batters vs their opposing starting pitcher. Minimum 5 AB. Sorted by best performance vs that pitcher.
+        </div>
+        <div id="labH2HCards"></div>
       </div>
       <!-- Screen 2: Player Picker (both rosters) -->
       <div id="labScreenPlayer" class="lab-screen" style="display:none;">
@@ -12117,7 +12145,7 @@ async function handleArsenalHitFinder() {
 
 // ─── THE LAB — NAVIGATION & SHELL ────────────────────────────────────────
 function _labShow(screenId) {
-  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenBts2Pick','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare']
+  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenBts2Pick','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare','labScreenH2H']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
   window.scrollTo(0, 0);
 }
@@ -13636,6 +13664,98 @@ async function runLeaderboardScan(entries, onProgress) {
 }
 
 // ─── THE LAB — SCAN HANDLERS (BTS Elite 2 / Team Win Predictor) ──────────
+// ── H2H vs SP History ────────────────────────────────────────────────────────
+
+async function handleH2HScan() {
+  const btn = document.getElementById('labH2HBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Loading H2H…'; }
+  _labShow('labScreenH2H');
+  const container = document.getElementById('labH2HCards');
+  container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">⏳ Fetching career H2H stats for today\'s batters…</div>';
+  try {
+    const results = await runH2HScan();
+    if (!results.length) {
+      container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">No H2H data found with 5+ AB. Make sure today\'s lineups and probable pitchers are loaded.</div>';
+      return;
+    }
+    container.innerHTML = results.map((r, i) => _h2hCardHTML(r, i + 1)).join('');
+  } catch (e) {
+    container.innerHTML = `<div style="padding:16px;color:#ef4444;font-size:12px">Error: ${escHtml(String(e))}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⚔️ H2H vs SP History'; }
+  }
+}
+
+async function runH2HScan() {
+  const MIN_AB = 5;
+  const allGames = Object.values(state.predictions || {}).filter(gd => (gd.players || []).some(p => p.id));
+  const results = [];
+  await Promise.allSettled(
+    allGames.flatMap(gd =>
+      (gd.players || []).filter(p => p.id).map(async player => {
+        try {
+          const pitcher = player.isAway ? gd.homePitcher : gd.awayPitcher;
+          if (!pitcher?.id) return;
+          const d = await cachedFetch(
+            `https://statsapi.mlb.com/api/v1/people/${player.id}/stats?stats=vsPlayerTotal&group=hitting&opposingPlayerId=${pitcher.id}&gameType=R`
+          );
+          const spl = d?.stats?.[0]?.splits?.[0]?.stat || null;
+          const ab  = parseInt(spl?.atBats    || 0);
+          if (!spl || ab < MIN_AB) return;
+          const h   = parseInt(spl.hits        || 0);
+          const hr  = parseInt(spl.homeRuns    || 0);
+          const rbi = parseInt(spl.rbi         || 0);
+          const avg = parseFloat(spl.avg)      || 0;
+          const obp = parseFloat(spl.obp)      || 0;
+          const slg = parseFloat(spl.slg)      || 0;
+          const ops = obp + slg;
+          const k   = parseInt(spl.strikeOuts  || 0);
+          const bb  = parseInt(spl.baseOnBalls || 0);
+          // Score: AVG dominates (primary), OPS adds production, HR/AB rewards power hitters, sample size matters
+          const score = avg * 50 + ops * 15 + (ab > 0 ? hr / ab : 0) * 100 * 12 + Math.min(ab, 20) / 20 * 8;
+          results.push({ player, gd, pitcher, h2h: { ab, h, hr, rbi, avg, obp, slg, ops, k, bb }, score,
+            gameLabel: `${gd.awayAbbr || '?'} @ ${gd.homeAbbr || '?'}` });
+        } catch {}
+      })
+    )
+  );
+  return results.sort((a, b) => b.score - a.score).slice(0, 20);
+}
+
+function _h2hCardHTML(r, rank) {
+  const { player, pitcher, h2h, gameLabel } = r;
+  const avgStr  = h2h.avg > 0  ? h2h.avg.toFixed(3).replace('0.',  '.') : '.000';
+  const opsStr  = h2h.ops > 0  ? h2h.ops.toFixed(3).replace('0.',  '.') : '.000';
+  const avgClr  = h2h.avg >= 0.300 ? '#22c55e' : h2h.avg >= 0.250 ? '#f59e0b' : '#ef4444';
+  const opsClr  = h2h.ops >= 0.900 ? '#22c55e' : h2h.ops >= 0.750 ? '#e2e8f0' : '#94a3b8';
+  const hrClr   = h2h.hr >= 2 ? '#22c55e' : 'inherit';
+  const orderBadge = player.orderPos ? `<span style="font-size:9px;color:#475569;font-weight:600;margin-left:4px">#${player.orderPos}</span>` : '';
+  const handBadge  = pitcher.pitchHand ? `<span style="font-size:9px;font-weight:700;color:#a78bfa;background:#7c3aed15;border:1px solid #7c3aed30;border-radius:3px;padding:1px 5px;margin-left:4px">${escHtml(pitcher.pitchHand)}HP</span>` : '';
+  return `<div class="h2h-card">
+    <div class="h2h-card-header">
+      <span class="h2h-rank">${rank}</span>
+      <div class="h2h-player-meta">
+        <div class="h2h-player-name">${escHtml(player.name)}${orderBadge} <span style="color:#60a5fa;font-size:10px;font-weight:700">${escHtml(player.teamAbbr || '')}</span></div>
+        <div class="h2h-player-sub">vs ${escHtml(pitcher.fullName || pitcher.name || '?')}${handBadge} &nbsp;·&nbsp; ${escHtml(gameLabel)}</div>
+      </div>
+      <div class="h2h-avg-big" style="color:${avgClr}">${avgStr}</div>
+    </div>
+    <div class="h2h-stats-row">
+      <div class="h2h-stat"><div class="h2h-stat-val" style="color:${opsClr}">${opsStr}</div><div class="h2h-stat-lbl">OPS</div></div>
+      <div class="h2h-stat"><div class="h2h-stat-val">${h2h.ab}</div><div class="h2h-stat-lbl">AB</div></div>
+      <div class="h2h-stat"><div class="h2h-stat-val">${h2h.h}</div><div class="h2h-stat-lbl">H</div></div>
+      <div class="h2h-stat"><div class="h2h-stat-val" style="color:${hrClr}">${h2h.hr}</div><div class="h2h-stat-lbl">HR</div></div>
+      <div class="h2h-stat"><div class="h2h-stat-val">${h2h.rbi}</div><div class="h2h-stat-lbl">RBI</div></div>
+    </div>
+    <div class="h2h-footer">
+      <span>${h2h.k} K · ${h2h.bb} BB</span>
+      <span>${h2h.h} for ${h2h.ab} career</span>
+    </div>
+  </div>`;
+}
+
+// ── BTS Elite 2 ───────────────────────────────────────────────────────────────
+
 async function handleBts2Scan() {
   const btn = document.getElementById('labBts2Btn');
   if (!btn) return;
