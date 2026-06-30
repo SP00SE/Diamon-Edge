@@ -13724,6 +13724,9 @@ async function runH2HScan() {
 
 function _h2hCardHTML(r, rank) {
   const { player, pitcher, h2h, gameLabel } = r;
+  const ss  = player.seasonStats || {};
+  const l7  = player.last7Stats  || {};
+
   const avgStr  = h2h.avg > 0  ? h2h.avg.toFixed(3).replace('0.',  '.') : '.000';
   const opsStr  = h2h.ops > 0  ? h2h.ops.toFixed(3).replace('0.',  '.') : '.000';
   const avgClr  = h2h.avg >= 0.300 ? '#22c55e' : h2h.avg >= 0.250 ? '#f59e0b' : '#ef4444';
@@ -13731,6 +13734,25 @@ function _h2hCardHTML(r, rank) {
   const hrClr   = h2h.hr >= 2 ? '#22c55e' : 'inherit';
   const orderBadge = player.orderPos ? `<span style="font-size:9px;color:#475569;font-weight:600;margin-left:4px">#${player.orderPos}</span>` : '';
   const handBadge  = pitcher.pitchHand ? `<span style="font-size:9px;font-weight:700;color:#a78bfa;background:#7c3aed15;border:1px solid #7c3aed30;border-radius:3px;padding:1px 5px;margin-left:4px">${escHtml(pitcher.pitchHand)}HP</span>` : '';
+
+  const _fa   = v => { const n = parseFloat(v); return n > 0 ? '.' + Math.round(n*1000).toString().padStart(3,'0') : null; };
+  const _pill = (lbl, val, cls='') => val != null
+    ? `<div class="ahf-pill"><div class="ahf-pill-lbl">${lbl}</div><div class="ahf-pill-val${cls?' '+cls:''}">${val}</div></div>`
+    : '';
+  const _pa   = ss.plateAppearances || 0;
+  const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
+  const statPills = [
+    _pill('AVG', _fa(ss.avg), (ss.avg||0)>=0.285?' pos':(ss.avg>0&&ss.avg<0.230)?' neg':''),
+    _pill('H',   ss.hits>0 ? ss.hits : null),
+    _pill('OBP', _fa(ss.obp), (ss.obp||0)>=0.340?' pos':(ss.obp>0&&ss.obp<0.290)?' neg':''),
+    _pill('K%',  _kpct!=null ? _kpct+'%' : null, _kpct!=null&&_kpct<=15?' pos':_kpct!=null&&_kpct>=28?' neg':''),
+    _pill('L7',  _fa(l7.avg), (l7.avg||0)>=0.300?' pos':(l7.avg>0&&l7.avg<0.210)?' neg':''),
+    _pill('L7 H', l7.hits>0 ? l7.hits : null),
+    _pill('L7 AB', l7.atBats>0 ? l7.atBats : null),
+  ].filter(Boolean).join('');
+
+  const glId = `h2h-gl-${player.id}-${rank}`;
+
   return `<div class="h2h-card">
     <div class="h2h-card-header">
       <span class="h2h-rank">${rank}</span>
@@ -13751,6 +13773,13 @@ function _h2hCardHTML(r, rank) {
       <span>${h2h.k} K · ${h2h.bb} BB</span>
       <span>${h2h.h} for ${h2h.ab} career</span>
     </div>
+    ${statPills ? `<div class="ahf-pills-row">${statPills}</div>` : ''}
+    <div class="ahf-actions">
+      <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
+        Last 7 Games <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="streak-gamelog" id="${glId}"></div>
   </div>`;
 }
 
