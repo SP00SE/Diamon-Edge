@@ -4086,6 +4086,7 @@ let state = {
   savantBatterVsL:  null,  // Map<playerId, row[]> — batter stats vs LHP
   savantBatterVsR:  null,  // Map<playerId, row[]> — batter stats vs RHP
   savantPitchRanks: null,  // Map<pitch_type, Map<player_id, rank>> — rank vs all pitchers of same type
+  ilPlayerIds:      new Set(), // player IDs on any IL / inactive list today — populated during processGame
   savantLoading:    false,
   savantHandSplitLoading: false,
   savantFailed:     false, // true after a session-level fetch failure — prevents retry storm
@@ -4968,6 +4969,13 @@ async function processGame(game) {
     homeLineup = homeRoster.map((p,i) => ({ ...p, orderPos: i+1, team: homeTeam, teamAbbr: homeAbbr, teamId: game.teams?.home?.team?.id, isAway: false }));
   }
 
+  // Build IL exclusion set for both teams (non-blocking — failures are silently ignored)
+  const [awayIL, homeIL] = await Promise.all([
+    fetchILPlayerIds(awayTeamId).catch(() => []),
+    fetchILPlayerIds(homeTeamId).catch(() => []),
+  ]);
+  for (const id of [...awayIL, ...homeIL]) state.ilPlayerIds.add(id);
+
   const allBatters = [...awayLineup, ...homeLineup];
 
   // Fetch stats for all batters in parallel (batched)
@@ -5279,13 +5287,18 @@ function mapPitcherStats(raw) {
 
 async function fetchRosterProjected(teamId) {
   if (!teamId) return [];
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster?rosterType=active&season=2026`;
+  // date= pins the response to today's 26-man active roster, excluding any players on IL/DL
+  const today = new Date().toISOString().slice(0, 10);
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster?rosterType=active&season=2026&date=${today}`;
   try {
     const data = await cachedFetch(url);
     const roster = (data.roster || [])
       .filter(p => {
         const pos = p.position?.type || '';
-        return pos !== 'Pitcher';
+        if (pos === 'Pitcher') return false;
+        // Exclude any non-active status (D10/D60 = IL, BRV = bereavement, MIN = minors, etc.)
+        const sc = p.status?.code;
+        return !sc || sc === 'A';
       })
       .map(p => ({
         id: p.person?.id,
@@ -5296,6 +5309,33 @@ async function fetchRosterProjected(teamId) {
       }));
     return roster;
   } catch { return []; }
+}
+
+// Fetch player IDs currently on any IL / inactive list for a team.
+// Uses the 40-man roster (which includes IL members) filtered to non-Active status codes.
+async function fetchILPlayerIds(teamId) {
+  if (!teamId) return [];
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const data = await cachedFetch(
+      `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster?rosterType=40Man&date=${today}`
+    );
+    return (data.roster || [])
+      .filter(p => {
+        const sc = p.status?.code || '';
+        // A = Active; everything else (D10, D60, BRV, PAT, RST, SUS, MIN, DES…) is excluded
+        return sc && sc !== 'A';
+      })
+      .map(p => p.person?.id)
+      .filter(Boolean);
+  } catch { return []; }
+}
+
+// Central eligibility gate — returns false if the player is known to be on IL / inactive.
+// Players confirmed in the official batting order are always trusted; others are checked.
+function isPlayerEligible(player) {
+  if (!player?.id) return false;
+  return !state.ilPlayerIds.has(player.id);
 }
 
 // ─── WEATHER BAR RENDER ───────────────────────────────────────────────────
@@ -5587,8 +5627,8 @@ function _gapRenderPicks(pk, awayAbbr, homeAbbr) {
     </div>`;
   };
 
-  const awayPlayers = gd.players.filter(p => p.id && p.isAway);
-  const homePlayers = gd.players.filter(p => p.id && !p.isAway);
+  const awayPlayers = gd.players.filter(p => p.id && p.isAway && isPlayerEligible(p));
+  const homePlayers = gd.players.filter(p => p.id && !p.isAway && isPlayerEligible(p));
 
   // SP matchup bar
   const awayPitcher = gd.awayPitcher;
@@ -5944,8 +5984,9 @@ function renderTopPlays() {
   }
 
   // Top 3 hit picks and top 3 HR picks (always ranked by score, naturally unique)
-  const hitPicks = [...allPlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
-  const hrPicks  = [...allPlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
+  const eligiblePlayers = allPlayers.filter(isPlayerEligible);
+  const hitPicks = [...eligiblePlayers].sort((a,b) => b.hitScore - a.hitScore).slice(0,3);
+  const hrPicks  = [...eligiblePlayers].sort((a,b) => b.hrScore  - a.hrScore).slice(0,3);
   const hitPickIdSet = new Set(hitPicks.map(p => String(p.id)));
   const hrPickIdSet  = new Set(hrPicks.map(p => String(p.id)));
 
@@ -6096,7 +6137,7 @@ async function renderOverallTopPlays() {
   // Include all players — projected or confirmed (lineupPosted flag used for warnings only)
   let allPlayers = [];
   for (const gd of Object.values(state.predictions)) {
-    allPlayers.push(...(gd.players || []));
+    allPlayers.push(...(gd.players || []).filter(isPlayerEligible));
   }
 
   // Best overall + top 3 hit picks + top 3 HR picks
@@ -6260,7 +6301,7 @@ function calcConsecutiveStreak(gamelog, type) {
 async function renderHotStreaks() {
   let allPlayers = [];
   for (const gd of Object.values(state.predictions)) {
-    allPlayers.push(...(gd.players || []));
+    allPlayers.push(...(gd.players || []).filter(isPlayerEligible));
   }
 
   const fmt    = v => v ? v.toFixed(3).replace(/^0/, '') : '---';
@@ -7030,7 +7071,12 @@ async function openPlayerModal(playerId) {
       <div class="modal-season-stat"><div class="sv">${safe(s7.slg)}</div><div class="sl">SLG</div></div>
     </div>` : ''}` : '';
 
+  const _ilWarning = !isPlayerEligible(p)
+    ? `<div style="background:#3d1515;border:1px solid #c0392b;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#e74c3c;font-weight:600">⚠️ Unavailable / Injured / Not active — do not use as a pick</div>`
+    : '';
+
   document.getElementById('playerModalBody').innerHTML = `
+    ${_ilWarning}
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
       <div>
         <div class="modal-player-name">${p.name}</div>
@@ -7862,6 +7908,7 @@ function renderBeatTheStreak() {
     }
 
     for (const player of gd.players) {
+      if (!isPlayerEligible(player)) continue;
       const avg = player.seasonStats?.avg || 0;
       const pitcher = player.teamId === gd.homeTeamId ? gd.awayPitcher : gd.homePitcher;
       const era = pitcher?.seasonStats?.era ?? null;
@@ -10825,7 +10872,7 @@ async function runArsenalScan() {
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const results  = [];
   for (const gd of allGames) {
-    for (const player of (gd.players||[]).filter(p => p.id)) {
+    for (const player of (gd.players||[]).filter(p => p.id && isPlayerEligible(p))) {
       if ((player.last7Stats?.atBats || 0) < 24) continue;
       const r = computeArsenalHitEdge(player, gd);
       if (!r.hasData) continue;
@@ -12041,7 +12088,7 @@ function _buildBts2DeepCard(r, pickNum) {
 async function runBts2Scan(onProgress) {
   const allGames = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const allEntries = allGames.flatMap(gd =>
-    (gd.players||[]).filter(p => p.id).map(p => ({ player: p, gd }))
+    (gd.players||[]).filter(p => p.id && isPlayerEligible(p)).map(p => ({ player: p, gd }))
   );
   const results = [];
   await Promise.allSettled(allEntries.map(async ({ player, gd }) => {
@@ -12328,8 +12375,8 @@ function labSelectGame(gamePk) {
       <span class="lab-col-badge">${label}</span>
     </div>`;
 
-  const awayPlayers = (gd.players||[]).filter(p=> p.isAway).sort((a,b)=>(a.orderPos||99)-(b.orderPos||99));
-  const homePlayers = (gd.players||[]).filter(p=>!p.isAway).sort((a,b)=>(a.orderPos||99)-(b.orderPos||99));
+  const awayPlayers = (gd.players||[]).filter(p=> p.isAway && isPlayerEligible(p)).sort((a,b)=>(a.orderPos||99)-(b.orderPos||99));
+  const homePlayers = (gd.players||[]).filter(p=>!p.isAway && isPlayerEligible(p)).sort((a,b)=>(a.orderPos||99)-(b.orderPos||99));
 
   document.getElementById('labPlayerColumns').innerHTML = `
     <div class="lab-roster-col">
@@ -13461,7 +13508,7 @@ function _scanRestoreLoading() {
 // ─── THE LAB — GLOBAL ELITE SCAN ─────────────────────────────────────────
 async function runGlobalEliteScan(onProgress) {
   const allGames   = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
-  const allEntries = allGames.flatMap(gd => (gd.players||[]).filter(p => p.id).map(p => ({ player: p, gd })));
+  const allEntries = allGames.flatMap(gd => (gd.players||[]).filter(p => p.id && isPlayerEligible(p)).map(p => ({ player: p, gd })));
   const results    = [];
 
   await Promise.allSettled(allEntries.map(async ({ player, gd }) => {
@@ -13579,7 +13626,7 @@ async function handleLeaderboardScan() {
   // Find today's players that appear in the hit leaderboard
   const allGames   = Object.values(state.predictions).filter(gd => (gd.players||[]).some(p => p.id));
   const allEntries = allGames.flatMap(gd =>
-    (gd.players||[]).filter(p => p.id && leaderIds.has(p.id)).map(p => ({ player: p, gd }))
+    (gd.players||[]).filter(p => p.id && leaderIds.has(p.id) && isPlayerEligible(p)).map(p => ({ player: p, gd }))
   );
   const total = allEntries.length;
 
@@ -13692,7 +13739,7 @@ async function runH2HScan() {
   const results = [];
   await Promise.allSettled(
     allGames.flatMap(gd =>
-      (gd.players || []).filter(p => p.id).map(async player => {
+      (gd.players || []).filter(p => p.id && isPlayerEligible(p)).map(async player => {
         try {
           const pitcher = player.isAway ? gd.homePitcher : gd.awayPitcher;
           if (!pitcher?.id) return;
@@ -14951,8 +14998,8 @@ function runTeamScan(onProgress, filterPk = null) {
 
   for (const gd of allGames) {
     if (filterPk != null && gd.gamePk !== Number(filterPk)) { onProgress?.(); continue; }
-    const awayPlayers = (gd.players||[]).filter(p => p.id && p.isAway);
-    const homePlayers = (gd.players||[]).filter(p => p.id && !p.isAway);
+    const awayPlayers = (gd.players||[]).filter(p => p.id && p.isAway && isPlayerEligible(p));
+    const homePlayers = (gd.players||[]).filter(p => p.id && !p.isAway && isPlayerEligible(p));
 
     const awayRes = awayPlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
     const homeRes = homePlayers.map(p => ({ player: p, name: p.name, score: p.hitScore || 50 }));
