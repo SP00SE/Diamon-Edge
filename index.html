@@ -4087,6 +4087,8 @@ let state = {
   savantBatterVsR:  null,  // Map<playerId, row[]> — batter stats vs RHP
   savantPitchRanks: null,  // Map<pitch_type, Map<player_id, rank>> — rank vs all pitchers of same type
   ilPlayerIds:      new Set(), // player IDs on any IL / inactive list today — populated during processGame
+  warMap:           new Map(), // MLB player ID (number) → { bat: number|null, pitch: number|null }
+  warDataLoaded:    false,     // true after fetchWarData() succeeds
   savantLoading:    false,
   savantHandSplitLoading: false,
   savantFailed:     false, // true after a session-level fetch failure — prevents retry storm
@@ -5336,6 +5338,58 @@ async function fetchILPlayerIds(teamId) {
 function isPlayerEligible(player) {
   if (!player?.id) return false;
   return !state.ilPlayerIds.has(player.id);
+}
+
+// ─── WAR DATA (FanGraphs) ─────────────────────────────────────────────────
+// Fetches season WAR for all MLB players from FanGraphs leaderboard API.
+// Populates state.warMap: MLB player ID → { bat: number|null, pitch: number|null }.
+// Non-blocking — if the fetch fails (CORS, network) state.warDataLoaded stays false
+// and all WAR rows gracefully show "unavailable".
+async function fetchWarData() {
+  if (state.warDataLoaded) return;
+  try {
+    const season = new Date().getFullYear();
+    const base   = `https://cdn.fangraphs.com/api/leaders/major-league/data?lg=all&qual=0&type=8&season=${season}&season1=${season}&ind=0&team=0&rost=0&age=0&filter=&players=0&month=0`;
+    const [batR, pitR] = await Promise.all([
+      fetch(`${base}&pos=all&stats=bat`).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(`${base}&pos=all&stats=pit`).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    for (const p of (batR?.data || [])) {
+      const id = Number(p.xMLBAMID);
+      if (!id) continue;
+      const cur = state.warMap.get(id) || {};
+      state.warMap.set(id, { ...cur, bat: parseFloat(p.WAR) || 0 });
+    }
+    for (const p of (pitR?.data || [])) {
+      const id = Number(p.xMLBAMID);
+      if (!id) continue;
+      const cur = state.warMap.get(id) || {};
+      state.warMap.set(id, { ...cur, pitch: parseFloat(p.WAR) || 0 });
+    }
+    if (state.warMap.size > 0) state.warDataLoaded = true;
+  } catch { /* WAR data unavailable — degrade gracefully */ }
+}
+
+// Compute WAR context for one team's eligible lineup + starting pitcher.
+// players: already filtered by isPlayerEligible (IL excluded).
+// pitcher: team's own SP object (used for SP WAR lookup).
+// Returns { lineupWar, spWar, hasData, playerCount, warScore }.
+function _teamWarContext(players, pitcher) {
+  if (!state.warMap.size) return { lineupWar: null, spWar: null, hasData: false, playerCount: 0, warScore: 0 };
+  let lineupWar = 0, count = 0;
+  for (const p of players) {
+    const entry = state.warMap.get(Number(p.id));
+    if (entry?.bat != null) { lineupWar += entry.bat; count++; }
+  }
+  const spEntry = pitcher?.id ? state.warMap.get(Number(pitcher.id)) : null;
+  const spWar   = spEntry?.pitch ?? null;
+  const hasData = count >= 3 || spWar != null;
+  if (!hasData) return { lineupWar: null, spWar: null, hasData: false, playerCount: 0, warScore: 0 };
+  // Scoring: lineup WAR × 0.35 (max 7 pts), SP WAR × 0.7 (max 3 pts).
+  // Cap keeps WAR as context, not the deciding factor.
+  const lineupScore = count >= 3 ? clamp(Math.round(lineupWar * 0.35), 0, 7) : 0;
+  const spScore     = spWar != null ? clamp(Math.round(spWar * 0.7), 0, 3) : 0;
+  return { lineupWar: count >= 3 ? lineupWar : null, spWar, hasData, playerCount: count, warScore: lineupScore + spScore };
 }
 
 // ─── WEATHER BAR RENDER ───────────────────────────────────────────────────
@@ -8797,6 +8851,8 @@ function onDateChange() {
   state.twpScanTime     = null;
   state.twpResultsByPk  = null;
   state.simResults      = new Map();
+  state.warMap          = new Map();
+  state.warDataLoaded   = false;
   leaderboardLoaded = false;
   cache.clear();
   gameLogCache.clear();
@@ -13923,8 +13979,12 @@ async function handleTeamScan() {
        <div class="lab-loading-step pending" id="scan_s3"><span class="ls-icon">○</span>Building predictions…</div>`;
     _labShow('labScreenLoading');
 
-    await ensureSavantData(_twpYear);
-    await ensureTeamStandings(_twpYear);
+    // Fetch Savant, standings, and WAR data in parallel
+    await Promise.all([
+      ensureSavantData(_twpYear),
+      ensureTeamStandings(_twpYear),
+      fetchWarData(),
+    ]);
 
     // Refresh boxscores for any game still missing lineup data so the scorer
     // works with the latest posted lineups rather than whatever was cached at
@@ -14905,7 +14965,8 @@ function _simulate100(r) {
       (ac.platoon   ??  0) + gauss(2) +
       (ac.kMatchup  ??  0) + (ac.bbMatchup ?? 0) + gauss(2) +
       (ac.rest      ??  0)            +
-      (ac.parkPower ??  0) + gauss(1);
+      (ac.parkPower ??  0) + gauss(1) +
+      (ac.war       ??  0) + gauss(1.5);
 
     const simHomeScore =
       (hc.lineup    ?? 50) + (hc.form ?? 0) + gauss(5) +
@@ -14916,7 +14977,8 @@ function _simulate100(r) {
       (hc.platoon   ??  0) + gauss(2) +
       (hc.kMatchup  ??  0) + (hc.bbMatchup ?? 0) + gauss(2) +
       (hc.rest      ??  0)            +
-      (hc.parkPower ??  0) + gauss(1);
+      (hc.parkPower ??  0) + gauss(1) +
+      (hc.war       ??  0) + gauss(1.5);
 
     // Run totals: independent ±20% noise per team per trial
     const simAwayRuns = (r.awayProjRuns ?? 4.2) * (0.80 + Math.random() * 0.40);
@@ -14946,6 +15008,7 @@ function _simulate100(r) {
     { label: 'Platoon Edge',     delta: (winC.platoon  ?? 0) - (losC.platoon  ?? 0) },
     { label: 'K/BB Matchup',     delta: ((winC.kMatchup ?? 0) + (winC.bbMatchup ?? 0)) - ((losC.kMatchup ?? 0) + (losC.bbMatchup ?? 0)) },
     { label: 'Park Power',       delta: (winC.parkPower ?? 0) - (losC.parkPower ?? 0) },
+    { label: 'WAR Context',      delta: (winC.war       ?? 0) - (losC.war       ?? 0) },
   ].filter(d => d.delta > 1).sort((a, b) => b.delta - a.delta).slice(0, 3);
 
   return { awayWins, homeWins, avgAwayRuns, avgHomeRuns, avgTotal, simWinner, simEdge, keyDrivers };
@@ -15028,6 +15091,7 @@ function runTeamScan(onProgress, filterPk = null) {
     const awayKMatchup      = _starterKMatchup(gd.homePitcher, awayPlayers);
     const awayBBMatchup     = _starterBBMatchup(gd.homePitcher, awayPlayers);
     const awayParkPower     = _parkPowerBonus(awayPlayers, pf);
+    const awayWarCtx        = _teamWarContext(awayPlayers, gd.awayPitcher);
     const awayStandings    = state.teamStandings?.get(String(gd.awayTeamId)) ?? null;
     const homeStandings    = state.teamStandings?.get(String(gd.homeTeamId)) ?? null;
     // Season R/G — used to anchor projected runs and baseline unposted lineups
@@ -15045,7 +15109,7 @@ function runTeamScan(onProgress, filterPk = null) {
     const homeStreak       = _streakAdj(homeStandings);
     const awayRecord       = _teamRecordAdj(awayStandings);
     const homeRecord       = _teamRecordAdj(homeStandings);
-    const awayScore        = _awayLineupBase + awayStack + awayForm + context + awayPyth + awayStreak + awayRecord + awayStarter + awayRestAdj + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon + awayKMatchup + awayBBMatchup + awayParkPower;
+    const awayScore        = _awayLineupBase + awayStack + awayForm + context + awayPyth + awayStreak + awayRecord + awayStarter + awayRestAdj + awayBullpen + awayConf + awayArsenalEdge + awayPlatoon + awayKMatchup + awayBBMatchup + awayParkPower + awayWarCtx.warScore;
 
     const homeLineup       = _lineupScore(homeRes);
     const homeStack        = _lineupStackBonus(homeRes);
@@ -15063,9 +15127,10 @@ function runTeamScan(onProgress, filterPk = null) {
     const homeKMatchup      = _starterKMatchup(gd.awayPitcher, homePlayers);
     const homeBBMatchup     = _starterBBMatchup(gd.awayPitcher, homePlayers);
     const homeParkPower     = _parkPowerBonus(homePlayers, pf);
+    const homeWarCtx        = _teamWarContext(homePlayers, gd.homePitcher);
     const _homeLineupBase  = (homeRes.length === 0 && _homeRPG != null)
       ? clamp(50 + (_homeRPG - 4.5) * 5, 40, 68) : homeLineup;
-    const homeScore        = _homeLineupBase + homeStack + homeForm + context + homeAdv + homePyth + homeStreak + homeRecord + homeStarter + homeRestAdj + homeBullpen + homeConf + homeArsenalEdge + homePlatoon + homeKMatchup + homeBBMatchup + homeParkPower;
+    const homeScore        = _homeLineupBase + homeStack + homeForm + context + homeAdv + homePyth + homeStreak + homeRecord + homeStarter + homeRestAdj + homeBullpen + homeConf + homeArsenalEdge + homePlatoon + homeKMatchup + homeBBMatchup + homeParkPower + homeWarCtx.warScore;
 
     const hasArsenal   = awayArsenalEdge !== 0 || homeArsenalEdge !== 0;
     const margin       = Math.abs(awayScore - homeScore);
@@ -15135,8 +15200,8 @@ function runTeamScan(onProgress, filterPk = null) {
       homeBullpenH9:  gd.homeBullpenH9  ?? null,
       awayPlayers: [...awayRes].sort((a, b) => b.score - a.score),
       homePlayers: [...homeRes].sort((a, b) => b.score - a.score),
-      awayComponents: { lineup: _awayLineupBase + awayStack, form: awayForm + awayStreak, starter: awayStarter, rest: awayRestAdj, bullpen: awayBullpen, context: context + awayConf + awayPyth + awayRecord, arsenal: awayArsenalEdge, platoon: awayPlatoon, kMatchup: awayKMatchup, bbMatchup: awayBBMatchup, parkPower: awayParkPower },
-      homeComponents: { lineup: _homeLineupBase + homeStack, form: homeForm + homeStreak, starter: homeStarter, rest: homeRestAdj, bullpen: homeBullpen, context: context + homeAdv + homeConf + homePyth + homeRecord, arsenal: homeArsenalEdge, platoon: homePlatoon, kMatchup: homeKMatchup, bbMatchup: homeBBMatchup, parkPower: homeParkPower },
+      awayComponents: { lineup: _awayLineupBase + awayStack, form: awayForm + awayStreak, starter: awayStarter, rest: awayRestAdj, bullpen: awayBullpen, context: context + awayConf + awayPyth + awayRecord, arsenal: awayArsenalEdge, platoon: awayPlatoon, kMatchup: awayKMatchup, bbMatchup: awayBBMatchup, parkPower: awayParkPower, war: awayWarCtx.warScore },
+      homeComponents: { lineup: _homeLineupBase + homeStack, form: homeForm + homeStreak, starter: homeStarter, rest: homeRestAdj, bullpen: homeBullpen, context: context + homeAdv + homeConf + homePyth + homeRecord, arsenal: homeArsenalEdge, platoon: homePlatoon, kMatchup: homeKMatchup, bbMatchup: homeBBMatchup, parkPower: homeParkPower, war: homeWarCtx.warScore },
       awayArsenalEdge, homeArsenalEdge,
       awayArsenalCallout: awayArsenalResult.callout,
       homeArsenalCallout: homeArsenalResult.callout,
@@ -15145,6 +15210,8 @@ function runTeamScan(onProgress, filterPk = null) {
       homePlatoonData: homePlatoonResult,
       awayRestAdj, homeRestAdj,
       awayStarterDays, homeStarterDays,
+      awayWarData: awayWarCtx,
+      homeWarData: homeWarCtx,
       parkFactor: pf?.overall ?? 1.0,
       isDome: pf?.isDome ?? false,
       venueName: gd.venueName || null,
@@ -15187,6 +15254,7 @@ function _teamScanCardHTML(r) {
     awayBullpenEra, homeBullpenEra, awayBullpenH9, homeBullpenH9,
     isFinal, actualAwayScore, actualHomeScore, actualWinner,
     awayEraTrap, homeEraTrap,
+    awayWarData, homeWarData,
   } = r;
 
   const isTossup = winEdge === 'Toss-Up';
@@ -15230,6 +15298,7 @@ function _teamScanCardHTML(r) {
   const arsenalDelta = (homeArsenalEdge ?? 0)         - (awayArsenalEdge ?? 0);
   const platoonDelta = (homePlatoon ?? 0)             - (awayPlatoon ?? 0);
   const restDelta    = (homeRestAdj  ?? 0)            - (awayRestAdj  ?? 0);
+  const warDelta     = (homeWarData?.warScore ?? 0)   - (awayWarData?.warScore ?? 0);
 
   // Situation sub-label: park factor + weather context
   const _ctxNotes = (() => {
@@ -15341,6 +15410,7 @@ function _teamScanCardHTML(r) {
       { label: 'Arsenal',   delta: arsenalDelta },
       { label: 'Platoon',   delta: platoonDelta },
       { label: 'SP Rest',   delta: restDelta   },
+      { label: 'WAR Edge',  delta: warDelta     },
     ].filter(e => Math.abs(e.delta) >= 4);
     if (!edges.length) return null;
     return edges.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0];
@@ -15467,6 +15537,30 @@ function _teamScanCardHTML(r) {
         <div class="twp-edge-track">${Math.abs(restDelta) <= 1 ? '<div class="twp-edge-center"></div>' : _edgeBar(restDelta)}</div>
         <div class="twp-edge-val">${Math.abs(restDelta) <= 1 ? '<span style="color:var(--text-muted)">EVEN</span>' : _edgeVal(restDelta)}</div>
       </div>` : ''}
+      ${(() => {
+        const hasAny = awayWarData?.hasData || homeWarData?.hasData;
+        if (!hasAny) {
+          return `<div class="twp-matchup-note" style="color:var(--text-muted);font-style:italic;font-size:10px">WAR data unavailable — not used in this prediction</div>`;
+        }
+        const awLW  = awayWarData?.lineupWar;
+        const hmLW  = homeWarData?.lineupWar;
+        const awSP  = awayWarData?.spWar;
+        const hmSP  = homeWarData?.spWar;
+        const lwNote = (awLW != null || hmLW != null)
+          ? `Lineup WAR: ${awLW != null ? escHtml(awayAbbr||'Away')+' '+awLW.toFixed(1) : '—'} · ${hmLW != null ? escHtml(homeAbbr||'Home')+' '+hmLW.toFixed(1) : '—'}`
+          : '';
+        const spNote = (awSP != null || hmSP != null)
+          ? `SP WAR: ${awSP != null ? escHtml(awayAbbr||'Away')+' '+awSP.toFixed(1) : '—'} · ${hmSP != null ? escHtml(homeAbbr||'Home')+' '+hmSP.toFixed(1) : '—'}`
+          : '';
+        const warAdvAbbr = warDelta > 1 ? (homeAbbr||'Home') : warDelta < -1 ? (awayAbbr||'Away') : null;
+        return `
+      <div class="twp-edge-row">
+        <div class="twp-edge-label">WAR Edge</div>
+        <div class="twp-edge-track">${Math.abs(warDelta) <= 1 ? '<div class="twp-edge-center"></div>' : _edgeBar(warDelta)}</div>
+        <div class="twp-edge-val">${Math.abs(warDelta) <= 1 ? '<span style="color:var(--text-muted)">EVEN</span>' : _edgeVal(warDelta)}</div>
+      </div>
+      ${[lwNote, spNote].filter(Boolean).length ? `<div class="twp-matchup-note">${[lwNote, spNote].filter(Boolean).join(' · ')}${warAdvAbbr && Math.abs(warDelta) > 1 ? ` — <strong>${escHtml(warAdvAbbr)}</strong> WAR advantage` : ''}</div>` : ''}`;
+      })()}
     </div>
 
     <div class="twp-winner-strip" style="background:${isTossup ? 'rgba(245,158,11,0.05)' : winner==='home' ? 'linear-gradient(to right,#052e1650,#052e1615)' : winner==='away' ? 'linear-gradient(to right,#42200640,#42200618)' : 'none'}">
@@ -15527,6 +15621,7 @@ function _teamScanCardHTML(r) {
           { label: 'K-Rate Matchup',   delta: (predComps.kMatchup||0)   - (actualComps.kMatchup||0)   },
           { label: 'Walk Matchup',      delta: (predComps.bbMatchup||0)  - (actualComps.bbMatchup||0)  },
           { label: 'Park Power',        delta: (predComps.parkPower||0)  - (actualComps.parkPower||0)  },
+          { label: 'WAR Context',       delta: (predComps.war||0)        - (actualComps.war||0)        },
         ];
         const meaningful = components.filter(d => Math.abs(d.delta) >= 2);
         const wrongEdges  = meaningful.filter(d => d.delta > 0).sort((a, b) => b.delta - a.delta);
