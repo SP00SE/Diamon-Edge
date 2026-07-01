@@ -586,6 +586,14 @@ main { padding: 28px 0 60px; }
 .h2h-stat-val { font-size:14px; font-weight:700; color:#e2e8f0; }
 .h2h-stat-lbl { font-size:9px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
 .h2h-footer { padding:5px 14px 7px; display:flex; justify-content:space-between; border-top:1px solid var(--border); font-size:10px; color:var(--text-muted); background:var(--bg-hover); }
+.h2h-photo { width:48px; height:48px; border-radius:50%; object-fit:cover; border:2px solid var(--border); flex-shrink:0; }
+.h2h-filter-btn { padding:5px 11px; border:1px solid var(--border); background:var(--bg-card); color:var(--text-muted); border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.h2h-filter-btn:hover { border-color:#60a5fa; color:#60a5fa; }
+.h2h-filter-active { background:#1e40af22; border-color:#3b82f6 !important; color:#60a5fa !important; }
+.h2h-live-badge  { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:#ef4444; background:#ef444415; border:1px solid #ef444433; border-radius:4px; padding:2px 7px; animation:pulse 1.2s ease infinite; }
+.h2h-final-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:#22c55e; background:#22c55e15; border:1px solid #22c55e33; border-radius:4px; padding:2px 7px; }
+.h2h-pregame-badge { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; color:#60a5fa; background:#60a5fa10; border:1px solid #60a5fa25; border-radius:4px; padding:2px 7px; }
+.h2h-detail-line { padding:5px 14px 6px; font-size:10px; color:var(--text-muted); border-top:1px solid var(--border); background:var(--bg-hover); letter-spacing:.2px; }
 
 /* ── Team Win Predictor redesign (twp-*) ──────────────── */
 .twp-card { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
@@ -3254,7 +3262,17 @@ main { padding: 28px 0 60px; }
         </div>
         <div class="lab-global-elite-header">⚔️ Batter vs SP History · Career H2H · Top 20</div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
-          Career head-to-head stats for today's lineup batters vs their opposing starting pitcher. Minimum 5 AB. Sorted by best performance vs that pitcher.
+          Career head-to-head stats for today's lineup batters vs their opposing starting pitcher. Minimum 5 AB.
+        </div>
+        <div id="h2h-filter-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
+          <button class="h2h-filter-btn h2h-filter-active" data-sort="score" onclick="_renderH2H('score',this)">⭐ Best H2H</button>
+          <button class="h2h-filter-btn" data-sort="avg" onclick="_renderH2H('avg',this)">H2H AVG</button>
+          <button class="h2h-filter-btn" data-sort="ops" onclick="_renderH2H('ops',this)">H2H OPS</button>
+          <button class="h2h-filter-btn" data-sort="hr" onclick="_renderH2H('hr',this)">Most HR</button>
+          <button class="h2h-filter-btn" data-sort="hits" onclick="_renderH2H('hits',this)">Most H</button>
+          <button class="h2h-filter-btn" data-sort="ab" onclick="_renderH2H('ab',this)">Most AB</button>
+          <button class="h2h-filter-btn" data-sort="ssavg" onclick="_renderH2H('ssavg',this)">Season AVG</button>
+          <button class="h2h-filter-btn" data-sort="l7avg" onclick="_renderH2H('l7avg',this)">L7 AVG</button>
         </div>
         <div id="labH2HCards"></div>
       </div>
@@ -5370,9 +5388,9 @@ async function fetchWarData() {
   } catch { /* WAR data unavailable — degrade gracefully */ }
 }
 
-// Compute WAR context for one team's eligible lineup + starting pitcher.
-// players: already filtered by isPlayerEligible (IL excluded).
-// pitcher: team's own SP object (used for SP WAR lookup).
+// Compute WAR context for one team's eligible (IL-excluded) lineup + starting pitcher.
+// Uses relative WAR: bonus only for lineups above the league-average baseline (~0.7 WAR/spot).
+// Depleted lineups (key players on IL) get 0 bonus rather than credit for their remaining players.
 // Returns { lineupWar, spWar, hasData, playerCount, warScore }.
 function _teamWarContext(players, pitcher) {
   if (!state.warMap.size) return { lineupWar: null, spWar: null, hasData: false, playerCount: 0, warScore: 0 };
@@ -5385,10 +5403,13 @@ function _teamWarContext(players, pitcher) {
   const spWar   = spEntry?.pitch ?? null;
   const hasData = count >= 3 || spWar != null;
   if (!hasData) return { lineupWar: null, spWar: null, hasData: false, playerCount: 0, warScore: 0 };
-  // Scoring: lineup WAR × 0.35 (max 7 pts), SP WAR × 0.7 (max 3 pts).
-  // Cap keeps WAR as context, not the deciding factor.
-  const lineupScore = count >= 3 ? clamp(Math.round(lineupWar * 0.35), 0, 7) : 0;
-  const spScore     = spWar != null ? clamp(Math.round(spWar * 0.7), 0, 3) : 0;
+  // Relative scoring: compare lineup WAR against expected baseline (0.7 × max(count, 7) slots).
+  // Elite lineups (all starters healthy) score +5–7; missing key players → 0 bonus.
+  // SP WAR × 0.7 unchanged (max 3 pts). Total cap stays at 10.
+  const expectedWar  = Math.max(count, 7) * 0.7;
+  const warAboveAvg  = count >= 3 ? lineupWar - expectedWar : 0;
+  const lineupScore  = clamp(Math.round(warAboveAvg * 0.5), 0, 7);
+  const spScore      = spWar != null ? clamp(Math.round(spWar * 0.7), 0, 3) : 0;
   return { lineupWar: count >= 3 ? lineupWar : null, spWar, hasData, playerCount: count, warScore: lineupScore + spScore };
 }
 
@@ -13769,6 +13790,8 @@ async function runLeaderboardScan(entries, onProgress) {
 // ─── THE LAB — SCAN HANDLERS (BTS Elite 2 / Team Win Predictor) ──────────
 // ── H2H vs SP History ────────────────────────────────────────────────────────
 
+let _h2hAllResults = [];
+
 async function handleH2HScan() {
   const btn = document.getElementById('labH2HBtn');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Loading H2H…'; }
@@ -13776,17 +13799,40 @@ async function handleH2HScan() {
   const container = document.getElementById('labH2HCards');
   container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">⏳ Fetching career H2H stats for today\'s batters…</div>';
   try {
-    const results = await runH2HScan();
-    if (!results.length) {
+    _h2hAllResults = await runH2HScan();
+    if (!_h2hAllResults.length) {
       container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">No H2H data found with 5+ AB. Make sure today\'s lineups and probable pitchers are loaded.</div>';
       return;
     }
-    container.innerHTML = results.map((r, i) => _h2hCardHTML(r, i + 1)).join('');
+    document.querySelectorAll('.h2h-filter-btn').forEach(b => b.classList.remove('h2h-filter-active'));
+    const defaultBtn = document.querySelector('.h2h-filter-btn[data-sort="score"]');
+    if (defaultBtn) defaultBtn.classList.add('h2h-filter-active');
+    _renderH2H('score');
   } catch (e) {
     container.innerHTML = `<div style="padding:16px;color:#ef4444;font-size:12px">Error: ${escHtml(String(e))}</div>`;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '⚔️ H2H vs SP History'; }
   }
+}
+
+function _renderH2H(sortKey, clickedBtn) {
+  if (clickedBtn) {
+    document.querySelectorAll('.h2h-filter-btn').forEach(b => b.classList.remove('h2h-filter-active'));
+    clickedBtn.classList.add('h2h-filter-active');
+  }
+  const SORTS = {
+    score: r => r.score,
+    avg:   r => r.h2h.avg,
+    ops:   r => r.h2h.ops,
+    hr:    r => r.h2h.hr,
+    hits:  r => r.h2h.h,
+    ab:    r => r.h2h.ab,
+    ssavg: r => parseFloat(r.player.seasonStats?.avg || 0),
+    l7avg: r => parseFloat(r.player.last7Stats?.avg  || 0),
+  };
+  const fn     = SORTS[sortKey] || SORTS.score;
+  const sorted = [..._h2hAllResults].sort((a, b) => fn(b) - fn(a)).slice(0, 20);
+  document.getElementById('labH2HCards').innerHTML = sorted.map((r, i) => _h2hCardHTML(r, i + 1)).join('');
 }
 
 async function runH2HScan() {
@@ -13812,32 +13858,84 @@ async function runH2HScan() {
           const obp = parseFloat(spl.obp)      || 0;
           const slg = parseFloat(spl.slg)      || 0;
           const ops = obp + slg;
-          const k   = parseInt(spl.strikeOuts  || 0);
-          const bb  = parseInt(spl.baseOnBalls || 0);
+          const k       = parseInt(spl.strikeOuts  || 0);
+          const bb      = parseInt(spl.baseOnBalls || 0);
+          const doubles = parseInt(spl.doubles || 0);
+          const triples = parseInt(spl.triples || 0);
           // Score: AVG dominates (primary), OPS adds production, HR/AB rewards power hitters, sample size matters
           const score = avg * 50 + ops * 15 + (ab > 0 ? hr / ab : 0) * 100 * 12 + Math.min(ab, 20) / 20 * 8;
-          results.push({ player, gd, pitcher, h2h: { ab, h, hr, rbi, avg, obp, slg, ops, k, bb }, score,
+          results.push({ player, gd, pitcher, h2h: { ab, h, hr, rbi, avg, obp, slg, ops, k, bb, doubles, triples }, score,
             gameLabel: `${gd.awayAbbr || '?'} @ ${gd.homeAbbr || '?'}` });
         } catch {}
       })
     )
   );
-  return results.sort((a, b) => b.score - a.score).slice(0, 20);
+  return results.sort((a, b) => b.score - a.score).slice(0, 40);
 }
 
 function _h2hCardHTML(r, rank) {
-  const { player, pitcher, h2h, gameLabel } = r;
+  const { player, gd, pitcher, h2h, gameLabel } = r;
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
 
-  const avgStr  = h2h.avg > 0  ? h2h.avg.toFixed(3).replace('0.',  '.') : '.000';
-  const opsStr  = h2h.ops > 0  ? h2h.ops.toFixed(3).replace('0.',  '.') : '.000';
+  // ── Live game data ──────────────────────────────────────────────────────
+  const _ld      = (state.allGamesLiveData || {})[gd?.gamePk];
+  const _bs      = _ld?.statsMap?.[player.id];
+  const _ab      = _bs?.atBats ?? 0;
+  const rawGame  = (state.games || []).find(g => String(g.gamePk) === String(gd?.gamePk));
+  const abstract = rawGame?.status?.abstractGameState || 'Preview';
+  const detailed = rawGame?.status?.detailedState || '';
+  const liveInn  = rawGame?.linescore?.currentInningOrdinal || '';
+  const liveHalf = rawGame?.linescore?.inningHalf === 'Top' ? '▲'
+                 : rawGame?.linescore?.inningHalf === 'Bottom' ? '▼' : '';
+  const awScore  = rawGame?.teams?.away?.score;
+  const hmScore  = rawGame?.teams?.home?.score;
+  const scoreStr = (awScore != null && hmScore != null) ? `${awScore}–${hmScore}` : '';
+
+  // Game status badge
+  let gameBadge = '';
+  if (abstract === 'Live') {
+    gameBadge = `<span class="h2h-live-badge">● LIVE${liveInn ? ' ' + liveHalf + liveInn : ''}${scoreStr ? ' · ' + scoreStr : ''}</span>`;
+  } else if (abstract === 'Final') {
+    gameBadge = `<span class="h2h-final-badge">✓ FINAL${scoreStr ? ' · ' + scoreStr : ''}</span>`;
+  } else if (detailed.includes('Pre-Game') || detailed.includes('Warmup')) {
+    gameBadge = `<span class="h2h-pregame-badge">⚾ PRE-GAME</span>`;
+  }
+
+  // Today's performance (live / final games)
+  let todayStatsHTML = '';
+  if (_bs && (_ab > 0 || (_bs.hits || 0) > 0)) {
+    const _pip    = buildLivePip(_ld.isLive);
+    const _hitBdg = buildHitBadge(_bs.hits || 0, _ab);
+    const _hrBdg  = (_bs.homeRuns || 0) > 0 ? buildHRBadge(_bs.homeRuns, _ab) : '';
+    todayStatsHTML = `<div class="bb-achieve-row" style="padding:7px 14px 4px">${_pip}${_hitBdg}${_hrBdg}</div>`;
+  }
+
+  // ── Display values ──────────────────────────────────────────────────────
+  const avgStr  = h2h.avg > 0 ? h2h.avg.toFixed(3).replace('0.', '.') : '.000';
+  const opsStr  = h2h.ops > 0 ? h2h.ops.toFixed(3).replace('0.', '.') : '.000';
+  const obpStr  = h2h.obp > 0 ? h2h.obp.toFixed(3).replace('0.', '.') : '.000';
+  const slgStr  = h2h.slg > 0 ? h2h.slg.toFixed(3).replace('0.', '.') : '.000';
   const avgClr  = h2h.avg >= 0.300 ? '#22c55e' : h2h.avg >= 0.250 ? '#f59e0b' : '#ef4444';
   const opsClr  = h2h.ops >= 0.900 ? '#22c55e' : h2h.ops >= 0.750 ? '#e2e8f0' : '#94a3b8';
   const hrClr   = h2h.hr >= 2 ? '#22c55e' : 'inherit';
-  const orderBadge = player.orderPos ? `<span style="font-size:9px;color:#475569;font-weight:600;margin-left:4px">#${player.orderPos}</span>` : '';
-  const handBadge  = pitcher.pitchHand ? `<span style="font-size:9px;font-weight:700;color:#a78bfa;background:#7c3aed15;border:1px solid #7c3aed30;border-radius:3px;padding:1px 5px;margin-left:4px">${escHtml(pitcher.pitchHand)}HP</span>` : '';
 
+  const orderBadge = player.orderPos
+    ? `<span style="font-size:9px;color:#475569;font-weight:600;margin-left:4px">#${player.orderPos}</span>` : '';
+  const handBadge = pitcher.pitchHand
+    ? `<span style="font-size:9px;font-weight:700;color:#a78bfa;background:#7c3aed15;border:1px solid #7c3aed30;border-radius:3px;padding:1px 5px;margin-left:4px">${escHtml(pitcher.pitchHand)}HP</span>` : '';
+
+  // H2H detail line (OBP, SLG, extra bases, walks, Ks)
+  const detailParts = [
+    `OBP ${obpStr}`,
+    `SLG ${slgStr}`,
+    (h2h.doubles || 0) > 0 ? `${h2h.doubles} 2B` : null,
+    (h2h.triples || 0) > 0 ? `${h2h.triples} 3B` : null,
+    `${h2h.bb} BB`,
+    `${h2h.k} K`,
+  ].filter(Boolean);
+
+  // ── Season stat pills ───────────────────────────────────────────────────
   const _fa   = v => { const n = parseFloat(v); return n > 0 ? '.' + Math.round(n*1000).toString().padStart(3,'0') : null; };
   const _pill = (lbl, val, cls='') => val != null
     ? `<div class="ahf-pill"><div class="ahf-pill-lbl">${lbl}</div><div class="ahf-pill-val${cls?' '+cls:''}">${val}</div></div>`
@@ -13845,13 +13943,14 @@ function _h2hCardHTML(r, rank) {
   const _pa   = ss.plateAppearances || 0;
   const _kpct = _pa > 0 && ss.strikeOuts != null ? Math.round((ss.strikeOuts / _pa) * 100) : null;
   const statPills = [
-    _pill('AVG', _fa(ss.avg), (ss.avg||0)>=0.285?' pos':(ss.avg>0&&ss.avg<0.230)?' neg':''),
-    _pill('H',   ss.hits>0 ? ss.hits : null),
-    _pill('OBP', _fa(ss.obp), (ss.obp||0)>=0.340?' pos':(ss.obp>0&&ss.obp<0.290)?' neg':''),
-    _pill('K%',  _kpct!=null ? _kpct+'%' : null, _kpct!=null&&_kpct<=15?' pos':_kpct!=null&&_kpct>=28?' neg':''),
-    _pill('L7',  _fa(l7.avg), (l7.avg||0)>=0.300?' pos':(l7.avg>0&&l7.avg<0.210)?' neg':''),
+    _pill('AVG',  _fa(ss.avg),  (ss.avg||0)>=0.285?' pos':(ss.avg>0&&ss.avg<0.230)?' neg':''),
+    _pill('HR',   (ss.homeRuns||0)>0 ? ss.homeRuns : null),
+    _pill('H',    ss.hits>0 ? ss.hits : null),
+    _pill('OBP',  _fa(ss.obp),  (ss.obp||0)>=0.340?' pos':(ss.obp>0&&ss.obp<0.290)?' neg':''),
+    _pill('SLG',  _fa(ss.slg),  (ss.slg||0)>=0.450?' pos':(ss.slg>0&&ss.slg<0.350)?' neg':''),
+    _pill('K%',   _kpct!=null ? _kpct+'%' : null, _kpct!=null&&_kpct<=15?' pos':_kpct!=null&&_kpct>=28?' neg':''),
+    _pill('L7',   _fa(l7.avg),  (l7.avg||0)>=0.300?' pos':(l7.avg>0&&l7.avg<0.210)?' neg':''),
     _pill('L7 H', l7.hits>0 ? l7.hits : null),
-    _pill('L7 AB', l7.atBats>0 ? l7.atBats : null),
   ].filter(Boolean).join('');
 
   const glId = `h2h-gl-${player.id}-${rank}`;
@@ -13859,12 +13958,15 @@ function _h2hCardHTML(r, rank) {
   return `<div class="h2h-card">
     <div class="h2h-card-header">
       <span class="h2h-rank">${rank}</span>
+      <img class="h2h-photo" src="${headshotUrl(player.id)}" alt="${escHtml(player.name)}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'">
       <div class="h2h-player-meta">
         <div class="h2h-player-name">${escHtml(player.name)}${orderBadge} <span style="color:#60a5fa;font-size:10px;font-weight:700">${escHtml(player.teamAbbr || '')}</span></div>
         <div class="h2h-player-sub">vs ${escHtml(pitcher.fullName || pitcher.name || '?')}${handBadge} &nbsp;·&nbsp; ${escHtml(gameLabel)}</div>
+        ${gameBadge ? `<div style="margin-top:4px">${gameBadge}</div>` : ''}
       </div>
       <div class="h2h-avg-big" style="color:${avgClr}">${avgStr}</div>
     </div>
+    ${todayStatsHTML}
     <div class="h2h-stats-row">
       <div class="h2h-stat"><div class="h2h-stat-val" style="color:${opsClr}">${opsStr}</div><div class="h2h-stat-lbl">OPS</div></div>
       <div class="h2h-stat"><div class="h2h-stat-val">${h2h.ab}</div><div class="h2h-stat-lbl">AB</div></div>
@@ -13872,15 +13974,13 @@ function _h2hCardHTML(r, rank) {
       <div class="h2h-stat"><div class="h2h-stat-val" style="color:${hrClr}">${h2h.hr}</div><div class="h2h-stat-lbl">HR</div></div>
       <div class="h2h-stat"><div class="h2h-stat-val">${h2h.rbi}</div><div class="h2h-stat-lbl">RBI</div></div>
     </div>
-    <div class="h2h-footer">
-      <span>${h2h.k} K · ${h2h.bb} BB</span>
-      <span>${h2h.h} for ${h2h.ab} career</span>
-    </div>
+    <div class="h2h-detail-line">${detailParts.join(' · ')} &nbsp;·&nbsp; <span style="color:var(--text-primary);font-weight:700">${h2h.h} for ${h2h.ab} career</span></div>
     ${statPills ? `<div class="ahf-pills-row">${statPills}</div>` : ''}
     <div class="ahf-actions">
       <div class="streak-expand-btn" onclick="event.stopPropagation();toggleStreakGameLog(${player.id},this,'${glId}',false,7)">
         Last 7 Games <span class="chevron">▼</span>
       </div>
+      <button class="lab-quick-btn" onclick="event.stopPropagation();openLabFor(${player.id},'arsenal')">🔬 Lab Analysis</button>
     </div>
     <div class="streak-gamelog" id="${glId}"></div>
   </div>`;
@@ -15546,8 +15646,13 @@ function _teamScanCardHTML(r) {
         const hmLW  = homeWarData?.lineupWar;
         const awSP  = awayWarData?.spWar;
         const hmSP  = homeWarData?.spWar;
+        const awPC  = awayWarData?.playerCount ?? 0;
+        const hmPC  = homeWarData?.playerCount ?? 0;
+        const _lwFmt = (abbr, lw, pc) => lw != null
+          ? `${escHtml(abbr||'?')} ${lw.toFixed(1)}${pc < 6 ? ` <span style="color:#f59e0b">(${pc} active⚠)</span>` : ` (${pc})`}`
+          : '—';
         const lwNote = (awLW != null || hmLW != null)
-          ? `Lineup WAR: ${awLW != null ? escHtml(awayAbbr||'Away')+' '+awLW.toFixed(1) : '—'} · ${hmLW != null ? escHtml(homeAbbr||'Home')+' '+hmLW.toFixed(1) : '—'}`
+          ? `Lineup WAR: ${_lwFmt(awayAbbr, awLW, awPC)} · ${_lwFmt(homeAbbr, hmLW, hmPC)}`
           : '';
         const spNote = (awSP != null || hmSP != null)
           ? `SP WAR: ${awSP != null ? escHtml(awayAbbr||'Away')+' '+awSP.toFixed(1) : '—'} · ${hmSP != null ? escHtml(homeAbbr||'Home')+' '+hmSP.toFixed(1) : '—'}`

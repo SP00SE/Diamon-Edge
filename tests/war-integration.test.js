@@ -34,7 +34,9 @@ function _teamWarContext(players, pitcher) {
   var spWar   = (spEntry && spEntry.pitch != null) ? spEntry.pitch : null;
   var hasData = count >= 3 || spWar != null;
   if (!hasData) return { lineupWar: null, spWar: null, hasData: false, playerCount: 0, warScore: 0 };
-  var lineupScore = count >= 3 ? clamp(Math.round(lineupWar * 0.35), 0, 7) : 0;
+  var expectedWar = Math.max(count, 7) * 0.7;
+  var warAboveAvg = count >= 3 ? lineupWar - expectedWar : 0;
+  var lineupScore = clamp(Math.round(warAboveAvg * 0.5), 0, 7);
   var spScore     = spWar != null ? clamp(Math.round(spWar * 0.7), 0, 3) : 0;
   return { lineupWar: count >= 3 ? lineupWar : null, spWar: spWar, hasData: true, playerCount: count, warScore: lineupScore + spScore };
 }
@@ -175,13 +177,14 @@ console.log('\n_teamWarContext: scoring and caps');
 
 test('lineup WAR score capped at 7', function () {
   resetState();
-  // 20 WAR × 0.35 = 7 (exactly at cap)
+  // 9 × 2.5 = 22.5 WAR; expected = 9 × 0.7 = 6.3; above = 16.2; score = round(8.1) = 8 → capped at 7
   for (var i = 1; i <= 9; i++) setWar(i, 2.5, null); // 9 × 2.5 = 22.5 → capped at 7
   var players = Array.from({ length: 9 }, function (_, i) { return { id: i + 1 }; });
   var result  = _teamWarContext(players, null);
   assert.ok(result.warScore <= 10, 'warScore should not exceed 10 (lineup cap 7 + SP cap 3)');
   assert.ok(result.lineupWar > 20, 'lineupWar should be > 20 for 9 × 2.5 players');
-  var lineupScore = clamp(Math.round(result.lineupWar * 0.35), 0, 7);
+  var expectedWar = Math.max(result.playerCount, 7) * 0.7;
+  var lineupScore = clamp(Math.round((result.lineupWar - expectedWar) * 0.5), 0, 7);
   assert.strictEqual(lineupScore, 7, 'lineup score should be capped at 7');
 });
 
@@ -208,7 +211,8 @@ test('negative WAR clamped to 0 (below-replacement players do not hurt team)', f
   resetState();
   setWar(1, -1.5, null); setWar(2, -0.8, null); setWar(3, -1.0, null);
   var result      = _teamWarContext([{ id: 1 }, { id: 2 }, { id: 3 }], null);
-  var lineupScore = clamp(Math.round(result.lineupWar * 0.35), 0, 7);
+  var expectedWar = Math.max(result.playerCount, 7) * 0.7;
+  var lineupScore = clamp(Math.round((result.lineupWar - expectedWar) * 0.5), 0, 7);
   assert.strictEqual(lineupScore, 0, 'negative lineup WAR score clamped to 0');
 });
 
