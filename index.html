@@ -705,6 +705,20 @@ main { padding: 28px 0 60px; }
 .twp-postmortem { padding:7px 14px 9px; font-size:11px; color:#94a3b8; line-height:1.5; border-top:1px solid #1e293b; background:#0f172a; }
 .twp-pred-label { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); font-weight:700; margin-right:6px; }
 .twp-result-neutral { background:#94a3b822; color:#94a3b8; border:1px solid #94a3b844; }
+/* ── TWP Accuracy Banner ── */
+.twp-accuracy-bar { display:flex; align-items:center; gap:10px; padding:8px 14px; margin-bottom:10px; background:linear-gradient(135deg,#0d1b2a,#0a1525); border:1px solid var(--border); border-radius:8px; flex-wrap:wrap; }
+.twp-accuracy-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-muted); flex-shrink:0; }
+.twp-accuracy-frac { font-size:16px; font-weight:800; letter-spacing:-.3px; color:#e2e8f0; }
+.twp-accuracy-pct  { font-size:12px; font-weight:700; padding:2px 8px; border-radius:12px; flex-shrink:0; }
+.twp-acc-great  { background:#22c55e18; color:#22c55e; border:1px solid #22c55e33; }
+.twp-acc-ok     { background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b33; }
+.twp-acc-poor   { background:#ef444418; color:#ef4444; border:1px solid #ef444433; }
+.twp-accuracy-note { font-size:10px; color:var(--text-muted); margin-left:auto; }
+.twp-acc-progress-wrap { display:flex; gap:2px; flex:1; min-width:80px; }
+.twp-acc-pip { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+.twp-acc-pip-correct { background:#22c55e; }
+.twp-acc-pip-wrong   { background:#ef4444; }
+.twp-acc-pip-tossup  { background:#334155; }
 @media (max-width:600px) {
   .twp-body { flex-direction:column; }
   .twp-team { width:100%; flex:unset; padding:10px 12px 8px; flex-direction:row; justify-content:space-between; align-items:center; gap:8px; }
@@ -14274,6 +14288,34 @@ async function handleTeamScan() {
     const _timeStr = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const _tsBar   = `<div style="font-size:10px;color:var(--text-muted);padding:2px 0 8px">&#128336; Predictions as of ${_timeStr}</div>`;
 
+    // ── Accuracy banner: computed from final games only ──
+    const _accBanner = (() => {
+      const finalGames   = results.filter(r => r.isFinal && r.actualWinner);
+      if (!finalGames.length) return '';
+      const calledGames  = finalGames.filter(r => r.winner !== 'tie' && r.winEdge !== 'Toss-Up');
+      const correctGames = calledGames.filter(r => r.winner === r.actualWinner);
+      const tossups      = finalGames.length - calledGames.length;
+      const pct          = calledGames.length ? Math.round(correctGames.length / calledGames.length * 100) : 0;
+      const pctClass     = pct >= 60 ? 'twp-acc-great' : pct >= 45 ? 'twp-acc-ok' : 'twp-acc-poor';
+
+      // Per-game pip row (one small square per final game: green=correct, red=wrong, grey=tossup)
+      const pips = finalGames.map(r => {
+        const isTossup = r.winner === 'tie' || r.winEdge === 'Toss-Up';
+        if (isTossup) return `<div class="twp-acc-pip twp-acc-pip-tossup" title="Toss-Up"></div>`;
+        const ok = r.winner === r.actualWinner;
+        return `<div class="twp-acc-pip ${ok ? 'twp-acc-pip-correct' : 'twp-acc-pip-wrong'}" title="${ok ? 'Correct' : 'Missed'}"></div>`;
+      }).join('');
+
+      const noteStr = tossups > 0 ? `${tossups} toss-up${tossups > 1 ? 's' : ''} excluded` : '';
+      return `<div class="twp-accuracy-bar">
+        <div class="twp-accuracy-label">Today's Record</div>
+        <div class="twp-accuracy-frac">${correctGames.length}/${calledGames.length}</div>
+        <div class="twp-accuracy-pct ${pctClass}">${pct}%</div>
+        <div class="twp-acc-progress-wrap">${pips}</div>
+        ${noteStr ? `<div class="twp-accuracy-note">${noteStr}</div>` : ''}
+      </div>`;
+    })();
+
     let _innerHtml = '';
     if (results.length === 0) {
       _innerHtml = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No complete game data available — check back once lineups are posted.</div>';
@@ -14288,7 +14330,7 @@ async function handleTeamScan() {
           `</div>` : '';
       _innerHtml = diagHtml + results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
     }
-    cards.innerHTML = _tsBar + _innerHtml;
+    cards.innerHTML = _tsBar + _accBanner + _innerHtml;
     // Cache results for instant single-game lookup from the main schedule
     state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
     _labShow('labScreenTeamScan');
