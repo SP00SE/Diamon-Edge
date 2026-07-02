@@ -1923,6 +1923,20 @@ main { padding: 28px 0 60px; }
 .loading-bar-fill { height: 100%; width: 0%; background: var(--accent-green); border-radius: 99px; transition: width .35s ease; }
 .loading-bar-pct { font-size: 11px; color: var(--accent-green); font-family: 'JetBrains Mono', monospace; margin-top: 8px; letter-spacing: 1px; }
 
+/* ===== BACKGROUND REFRESH BADGE ===== */
+.bg-refresh-badge {
+  position: fixed; bottom: 20px; right: 16px; z-index: 9000;
+  display: none; align-items: center; gap: 6px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 7px 13px;
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35); pointer-events: none;
+  animation: fadeInUp .25s ease;
+}
+.bg-refresh-badge.visible { display: flex; }
+.bg-refresh-badge.error { border-color: #ef444433; color: #fca5a5; background: #1c0a0a; }
+.bg-refresh-spin { display: inline-block; animation: spin 1s linear infinite; }
+
 /* ===== ERROR STATE ===== */
 .error-card {
   background: var(--bg-card); border: 1px solid #f8717140;
@@ -2300,6 +2314,12 @@ main { padding: 28px 0 60px; }
     </div>
     <div class="loading-bar-pct" id="loadingBarPct">0%</div>
   </div>
+</div>
+
+<!-- BACKGROUND REFRESH BADGE — non-blocking, shown during silent background updates -->
+<div id="bgRefreshBadge" class="bg-refresh-badge">
+  <span class="bg-refresh-spin">⟳</span>
+  <span id="bgRefreshText">Updating...</span>
 </div>
 
 <!-- HEADER -->
@@ -7225,12 +7245,13 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Refresh stale data when the user returns to this tab after being away
+// Silently refresh stale data when the user returns to this tab/app after being away.
+// Uses backgroundRefresh() so existing UI stays visible — no loading screen on return.
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) return;                              // tab going to background — nothing to do
-  if (state.loading) return;                               // already fetching
+  if (document.hidden) return;                                    // going to background — nothing to do
+  if (state.loading) return;                                      // already fetching
   const staleMs = Date.now() - (state.lastFetched || 0);
-  if (staleMs > 10 * 60 * 1000) startFetch();             // data older than 10 min — refresh
+  if (staleMs > 10 * 60 * 1000) backgroundRefresh();             // data older than 10 min — refresh quietly
 });
 
 // ─── LEADERBOARD ──────────────────────────────────────────────────────────
@@ -8849,6 +8870,23 @@ function showLoading(msg='Loading...') {
 function hideLoading() {
   document.getElementById('loadingOverlay').style.display='none';
 }
+function showBgRefresh(msg = 'Updating...') {
+  const el = document.getElementById('bgRefreshBadge');
+  if (!el) return;
+  el.className = 'bg-refresh-badge visible';
+  document.getElementById('bgRefreshText').textContent = msg;
+}
+function hideBgRefresh() {
+  const el = document.getElementById('bgRefreshBadge');
+  if (el) el.className = 'bg-refresh-badge';
+}
+function showBgRefreshError() {
+  const el = document.getElementById('bgRefreshBadge');
+  if (!el) return;
+  el.className = 'bg-refresh-badge visible error';
+  document.getElementById('bgRefreshText').textContent = 'Refresh failed — using cached data';
+  setTimeout(hideBgRefresh, 4000);
+}
 function showError(msg) {
   hideLoading();
   const el = document.getElementById('errorState');
@@ -8895,6 +8933,88 @@ async function prefetchLeaderRanks() {
       (group.leaders || []).forEach(l => { if (l.person?.id) rankMap.set(Number(l.person.id), l.rank); });
     }
   } catch { /* silent — ranks just won't show */ }
+}
+
+// Non-disruptive background refresh — keeps existing UI visible while fetching new data.
+// Used by visibilitychange, auto-refresh timer, and init() when a snapshot already exists.
+async function backgroundRefresh() {
+  if (state.loading) return;
+  state.loading = true;
+  _hfScoredCache = null;
+  clearError();
+  showBgRefresh();
+  prefetchLeaderRanks();
+  document.getElementById('refreshBtn').disabled = true;
+
+  try {
+    const games = await fetchSchedule(state.date);
+    state.games = games;
+
+    if (!games.length) {
+      hideBgRefresh();
+      state.loading = false;
+      document.getElementById('refreshBtn').disabled = false;
+      return;
+    }
+
+    renderGameChips(games);
+
+    const GAME_WAVE = 3;
+    for (let _wi = 0; _wi < games.length; _wi += GAME_WAVE) {
+      await Promise.allSettled(games.slice(_wi, _wi + GAME_WAVE).map(async (game) => {
+        try {
+          const existing = state.predictions[game.gamePk];
+          if (existing?.lineupPosted) {
+            updateChipLineupStatus(game.gamePk, true);
+          } else {
+            const gameData = await processGame(game);
+            state.predictions[game.gamePk] = gameData;
+            updateChipLineupStatus(game.gamePk, gameData.lineupPosted);
+          }
+        } catch (err) {
+          console.warn('Background game error:', game.gamePk, err);
+          if (!state.predictions[game.gamePk]) {
+            const aw = game.teams?.away?.team;
+            const hw = game.teams?.home?.team;
+            state.predictions[game.gamePk] = {
+              gamePk: game.gamePk, gameDate: game.gameDate || state.date,
+              awayAbbr: aw?.abbreviation||'?', homeAbbr: hw?.abbreviation||'?',
+              awayTeamId: aw?.id, homeTeamId: hw?.id,
+              awayPitcher: null, homePitcher: null,
+              players: [], lineupPosted: false,
+              _loadError: err?.message || 'load failed',
+            };
+          }
+        }
+      }));
+    }
+
+    if (state.selectedGamePk && !state.predictions[state.selectedGamePk]) {
+      state.selectedGamePk = null;
+    }
+
+    state.loading = false;
+    hideBgRefresh();
+    if (state.selectedGamePk) renderSelectedGame();
+    renderTopPlays();
+    renderHotStreaks();
+    await renderOverallTopPlays();
+    renderCurrentTab();
+
+    document.getElementById('formulaSection').style.display = 'block';
+    document.getElementById('legendSection').style.display = 'block';
+    document.getElementById('statsSection').style.display = 'block';
+    document.getElementById('lastUpdated').innerHTML = `Updated: <span>${new Date().toLocaleTimeString()}</span>`;
+    state.lastFetched = Date.now();
+    saveSnapshot();
+
+  } catch (err) {
+    state.loading = false;
+    console.warn('Background refresh failed:', err);
+    showBgRefreshError();
+  } finally {
+    document.getElementById('refreshBtn').disabled = false;
+  }
 }
 
 async function startFetch() {
@@ -10090,13 +10210,13 @@ function scheduleRefresh() {
   try {
     state.refreshWorker = new Worker('worker-refresh.js');
     state.refreshWorker.onmessage = (e) => {
-      if (e.data?.type === 'tick' && !state.loading) startFetch();
+      if (e.data?.type === 'tick' && !state.loading) backgroundRefresh();
     };
     state.refreshWorker.postMessage({ type: 'start', intervalMs: 30 * 60 * 1000 });
   } catch (err) {
     // Worker unsupported/blocked (e.g. file:// origin) — fall back to a main-thread timer
     state.refreshTimer = setInterval(() => {
-      if (!state.loading) startFetch();
+      if (!state.loading) backgroundRefresh();
     }, 30 * 60 * 1000);
   }
 }
@@ -10361,8 +10481,12 @@ async function init() {
   const dateInput = document.getElementById('dateInput');
   dateInput.value = state.date;
   scheduleRefresh();
-  tryLoadSnapshot(); // show cached predictions instantly if available (< 30 min old)
-  startFetch();      // always fetch fresh data in background
+  const _hasSnapshot = await tryLoadSnapshot(); // show cached predictions instantly if available (< 30 min old)
+  if (_hasSnapshot) {
+    backgroundRefresh(); // snapshot loaded — refresh data without hiding the existing UI
+  } else {
+    startFetch();        // no snapshot — show full loading screen for first load
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);
