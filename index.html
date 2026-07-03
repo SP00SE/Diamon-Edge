@@ -13939,7 +13939,15 @@ async function handleH2HScan() {
   try {
     _h2hAllResults = await runH2HScan();
     if (!_h2hAllResults.length) {
-      container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px">No H2H data found with 5+ AB. Make sure today\'s lineups and probable pitchers are loaded.</div>';
+      // Diagnose why — give an actionable message instead of a generic one
+      const preds = Object.values(state.predictions || {});
+      const hasPitchers = preds.some(gd => gd.awayPitcher?.id || gd.homePitcher?.id);
+      const hasPlayers  = preds.some(gd => (gd.players || []).some(p => p.id));
+      let _msg;
+      if (!hasPlayers)  _msg = 'Game data is still loading — try again in a moment or tap Refresh.';
+      else if (!hasPitchers) _msg = "Starting pitchers haven't been announced yet. H2H requires known starters — check back once probable pitchers are posted (usually 2–3 hours before first pitch).";
+      else _msg = 'No H2H data found with .250+ AVG in 5+ AB vs today\'s pitchers. Try again after lineups are confirmed.';
+      container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.6">${_msg}</div>`;
       return;
     }
     document.querySelectorAll('.h2h-filter-btn').forEach(b => b.classList.remove('h2h-filter-active'));
@@ -13988,11 +13996,12 @@ async function runH2HScan() {
           );
           const spl = d?.stats?.[0]?.splits?.[0]?.stat || null;
           const ab  = parseInt(spl?.atBats    || 0);
-          if (!spl || ab < MIN_AB) return;
+          const avgRaw = parseFloat(spl?.avg) || 0;
+          if (!spl || ab < MIN_AB || avgRaw < 0.250) return;
           const h   = parseInt(spl.hits        || 0);
           const hr  = parseInt(spl.homeRuns    || 0);
           const rbi = parseInt(spl.rbi         || 0);
-          const avg = parseFloat(spl.avg)      || 0;
+          const avg = avgRaw;
           const obp = parseFloat(spl.obp)      || 0;
           const slg = parseFloat(spl.slg)      || 0;
           const ops = obp + slg;
