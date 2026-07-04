@@ -11727,7 +11727,9 @@ function _richScanCardHTML(r, rank, opts) {
 
 // ── Filtered render functions for each section ────────────────────────────
 function _renderGlobalFiltered() {
-  const filtered = _globalScanResults.filter(r => _passesFilters(r, _globalScanState, 'elite'));
+  const filtered = _globalScanResults
+    .filter(r => _passesFilters(r, _globalScanState, 'elite'))
+    .sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
   const cards = document.getElementById('labGlobalEliteCards');
   if (!cards) return;
   cards.innerHTML = filtered.length
@@ -11736,7 +11738,9 @@ function _renderGlobalFiltered() {
 }
 
 function _renderLeaderFiltered() {
-  const filtered = _leaderResults.filter(r => _passesFilters(r, _leaderScanState, 'elite'));
+  const filtered = _leaderResults
+    .filter(r => _passesFilters(r, _leaderScanState, 'elite'))
+    .sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
   const cards = document.getElementById('labLeaderScanCards');
   if (!cards) return;
   cards.innerHTML = filtered.length
