@@ -11935,41 +11935,104 @@ function _renderBts2Filtered() {
 }
 
 function _computePickWeight(r) {
-  const player  = r.player;
-  const pitcher = r.pitcher;
-  const gd      = r.gd;
+  const player    = r.player;
+  const pitcher   = r.pitcher;
+  const gd        = r.gd;
+  const ss        = player.seasonStats || {};
+  const seasonAvg = parseFloat(ss.avg) || 0;
   let bonus = 0;
 
-  // 1. Platoon advantage: use the split matching the actual pitcher hand
+  // ── 1. K RATE — single strongest contact signal ────────────────────────
+  // Low K = hard to strike out → almost always makes contact → foundational pick quality
+  const pa   = parseInt(ss.plateAppearances || 0) || parseInt(ss.atBats || 0);
+  const ks   = parseInt(ss.strikeOuts || 0);
+  const kBB  = parseInt(ss.baseOnBalls || 0);
+  const kPct = pa > 0 ? ks / pa : (ks + kBB > 0 ? ks / (ks + kBB) : 0.22);
+  if (pa >= 50) {
+    if      (kPct < 0.10) bonus += 20;   // elite contact (Arraez-tier — extreme outlier)
+    else if (kPct < 0.15) bonus += 14;   // excellent contact
+    else if (kPct < 0.19) bonus += 8;    // good contact
+    else if (kPct < 0.25) bonus +=  0;   // league average
+    else if (kPct < 0.30) bonus -= 7;    // elevated K risk
+    else if (kPct < 0.35) bonus -= 12;   // high K risk
+    else                  bonus -= 18;   // free swinger — deprioritize strongly
+  }
+
+  // ── 2–4. THREE-DIMENSION PLATOON STACK ────────────────────────────────
+  // Each dimension is scored independently; having all 3 positive is a
+  // rare convergence that earns a large stack bonus on top.
   const bat  = player.batSide    || 'R';
   const hand = pitcher?.pitchHand || null;
-  const hasPlatAdv = hand && ((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R') || bat === 'S');
+  let platoonDims = 0;
+
+  // Dim A — handedness vs pitcher hand
   const vsHandSplit = hand === 'L' ? (player.vsLHP || {}) : hand === 'R' ? (player.vsRHP || {}) : {};
-  const vsHandAvg   = vsHandSplit.avg    || 0;
-  const vsHandAB    = vsHandSplit.atBats || 0;
+  const vsHandAvg   = parseFloat(vsHandSplit.avg)  || 0;
+  const vsHandAB    = parseInt(vsHandSplit.atBats)  || 0;
+  const hasPlatAdv  = hand && ((bat === 'R' && hand === 'L') || (bat === 'L' && hand === 'R') || bat === 'S');
   if (vsHandAB >= 20) {
-    if      (vsHandAvg >= 0.320) bonus += hasPlatAdv ? 20 : 12;
-    else if (vsHandAvg >= 0.300) bonus += hasPlatAdv ? 14 : 8;
-    else if (vsHandAvg >= 0.270) bonus += hasPlatAdv ? 6  : 3;
+    if      (vsHandAvg >= 0.320) bonus += hasPlatAdv ? 22 : 13;
+    else if (vsHandAvg >= 0.300) bonus += hasPlatAdv ? 15 : 8;
+    else if (vsHandAvg >= 0.270) bonus += hasPlatAdv ? 8  : 3;
     else if (vsHandAvg <  0.220) bonus -= 10;
+    if (vsHandAvg >= 0.265) platoonDims++;
+  } else if (hasPlatAdv) {
+    platoonDims++;  // count structural advantage without large sample
   }
 
-  // 2. Home/Away context
+  // Dim B — home / away location split
   const isHome   = player.teamId === gd?.homeTeamId;
   const locSplit = isHome ? (player.homeStats || {}) : (player.awayStats || {});
-  const locAvg   = locSplit.avg    || 0;
-  const locAB    = locSplit.atBats || 0;
+  const locAvg   = parseFloat(locSplit.avg)   || 0;
+  const locAB    = parseInt(locSplit.atBats)  || 0;
   if (locAB >= 20) {
-    if      (locAvg >= 0.310) bonus += 8;
-    else if (locAvg >= 0.280) bonus += 4;
+    if      (locAvg >= 0.310) bonus += 10;
+    else if (locAvg >= 0.280) bonus +=  5;
     else if (locAvg <  0.230) bonus -= 5;
+    if (locAvg - seasonAvg >= 0.018) platoonDims++;
   }
 
-  // 3. Arsenal pitch-type matchup quality
-  const strongMatches = (r.matches || []).filter(m => m.ba >= 0.280).length;
-  bonus += strongMatches >= 3 ? 12 : strongMatches >= 2 ? 7 : strongMatches >= 1 ? 3 : 0;
+  // Dim C — day / night time split
+  const rawGame   = (state.games || []).find(g => String(g.gamePk) === String(gd?.gamePk));
+  const isNight   = rawGame?.dayNight === 'night';
+  const timeSplit = isNight ? (player.nightStats || null) : (player.dayStats || null);
+  const timeAB    = parseInt(timeSplit?.atBats || 0);
+  const timeAvg   = parseFloat(timeSplit?.avg  || 0);
+  if (timeAB >= 15) {
+    if      (timeAvg >= 0.320) bonus += 8;
+    else if (timeAvg >= 0.285) bonus += 4;
+    else if (timeAvg <  0.220) bonus -= 5;
+    if (timeAvg - seasonAvg >= 0.018) platoonDims++;
+  }
 
-  // 4. SP vulnerability (H/9)
+  // Stack bonus — all three aligned is very rare and very meaningful
+  if      (platoonDims >= 3) bonus += 28;
+  else if (platoonDims >= 2) bonus += 13;
+
+  // ── 5. ARSENAL — batter handles multiple pitch types well ───────────────
+  const strongMatches = (r.matches || []).filter(m => m.ba >= 0.280).length;
+  bonus += strongMatches >= 3 ? 15 : strongMatches >= 2 ? 9 : strongMatches >= 1 ? 3 : 0;
+
+  // ── 6. H2H HISTORY — proven track record vs this specific pitcher ───────
+  const h2h    = r.h2h || {};
+  const h2hAB  = parseInt(h2h.ab  || 0);
+  const h2hAvg = parseFloat(h2h.avg || 0);
+  if (h2hAB >= 5) {
+    if      (h2hAvg >= 0.360) bonus += 18;
+    else if (h2hAvg >= 0.300) bonus += 11;
+    else if (h2hAvg >= 0.250) bonus +=  5;
+    else if (h2hAvg <  0.175) bonus -= 16;
+    else if (h2hAvg <  0.210) bonus -= 8;
+  }
+
+  // ── 7. PARK FACTOR ────────────────────────────────────────────────────
+  const pf = parseFloat(r.pf?.overall ?? gd?.parkFactor ?? 1.0);
+  if      (pf >= 1.15) bonus += 8;
+  else if (pf >= 1.08) bonus += 4;
+  else if (pf <= 0.88) bonus -= 6;
+  else if (pf <= 0.93) bonus -= 3;
+
+  // ── 8. SP VULNERABILITY (H/9) ─────────────────────────────────────────
   const ps  = pitcher?.seasonStats || {};
   const pIP = parseFloat(ps.inningsPitched) || 0;
   const pW  = parseFloat(ps.whip)           || 0;
@@ -12077,6 +12140,11 @@ function _buildBts2DeepCard(r, pickNum) {
   const { lab, bts, ahf } = r.subScores || {};
   const pHand = pitcher?.pitchHand || null;
   const bat   = player.batSide    || 'R';
+
+  // K rate — computed once, used in Regularity section and verdict
+  const pa    = parseInt(ss.plateAppearances || 0) || parseInt(ss.atBats || 0);
+  const skPct = pa >= 30 ? (parseInt(ss.strikeOuts || 0) / pa) : null;
+  const skClr = skPct === null ? '#94a3b8' : skPct < 0.10 ? '#22c55e' : skPct < 0.15 ? '#86efac' : skPct < 0.20 ? '#fbbf24' : skPct < 0.28 ? 'inherit' : '#f87171';
 
   const confidence = r.score >= 85 ? 'Elite Confidence' : r.score >= 75 ? 'High Confidence' : r.score >= 65 ? 'Good Confidence' : 'Moderate Confidence';
   const confClr    = r.score >= 85 ? '#22c55e' : r.score >= 75 ? '#86efac' : r.score >= 65 ? '#fbbf24' : '#94a3b8';
@@ -12203,25 +12271,51 @@ function _buildBts2DeepCard(r, pickNum) {
       <div class="bpick-stat-cell"><div class="bpick-stat-val">${l7.atBats||0}</div><div class="bpick-stat-lbl">L7 ABs</div></div>
       <div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(ss.avg||0)>=0.285?'#22c55e':(ss.avg>0&&ss.avg<0.235)?'#f87171':'inherit'}">${fmtAvg(ss.avg)||'---'}</div><div class="bpick-stat-lbl">Season AVG</div></div>
       <div class="bpick-stat-cell"><div class="bpick-stat-val">#${player.orderPos||'?'}</div><div class="bpick-stat-lbl">Lineup Spot</div></div>
+      ${skPct !== null ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${skClr}">${(skPct*100).toFixed(1)}%</div><div class="bpick-stat-lbl">K%</div></div>` : ''}
     </div>
+    ${skPct !== null && skPct < 0.10 ? `<div class="bpick-verdict-line" style="color:#22c55e">⚡ Elite contact — one of the lowest K rates in baseball. Almost always makes contact.</div>` : skPct !== null && skPct < 0.15 ? `<div class="bpick-verdict-line" style="color:#86efac">✅ Excellent contact ability — low K rate means he consistently puts the ball in play.</div>` : skPct !== null && skPct > 0.30 ? `<div class="bpick-verdict-line" style="color:#f87171">⚠ High strikeout rate (${(skPct*100).toFixed(1)}%) — elevated risk he never makes contact today.</div>` : ''}
     <div class="bpick-verdict-line" style="color:${regClr}">${rs>=6?`✅ Everyday player — ${rs}/7 recent starts. He will be in the lineup and getting ABs.`:rs>=4?`→ Regular starter (${rs}/7 recent). Occasionally rested but generally plays daily.`:`⚠ Part-time role — only ${rs}/7 recent starts. Day-off risk is real.`}</div>
   </div>`;
 
   // ── Splits ─────────────────────────────────────────────────────────────────
-  const relSplit = pHand === 'L' ? player.vsLHP : pHand === 'R' ? player.vsRHP : null;
-  const relLabel = pHand === 'L' ? 'vs LHP' : 'vs RHP';
-  const locSplit = player.isAway ? player.awayStats : player.homeStats;
-  const locLabel = player.isAway ? 'Away' : 'Home';
+  const relSplit   = pHand === 'L' ? player.vsLHP : pHand === 'R' ? player.vsRHP : null;
+  const relLabel   = pHand === 'L' ? 'vs LHP' : 'vs RHP';
+  const locSplit   = player.isAway ? player.awayStats : player.homeStats;
+  const locLabel   = player.isAway ? 'Away' : 'Home';
   const platoonAdv = pHand && ((bat === 'R' && pHand === 'L') || (bat === 'L' && pHand === 'R'));
-  const splitsHTML = (relSplit?.atBats >= 10 || locSplit?.atBats >= 10) ? `<div class="bpick-section">
+
+  // Day/night split
+  const rawGame2  = (state.games || []).find(g => String(g.gamePk) === String(r.gd?.gamePk));
+  const isNight2  = rawGame2?.dayNight === 'night';
+  const timeSplit = isNight2 ? (player.nightStats || null) : (player.dayStats || null);
+  const timeLabel = isNight2 ? 'Night' : 'Day';
+
+  // Count positive platoon dimensions for stack badge
+  const _seasonAvg  = parseFloat(ss.avg) || 0;
+  let platoonDims = 0;
+  const _relAvg  = parseFloat(relSplit?.avg) || 0;
+  if ((relSplit?.atBats || 0) >= 20) { if (_relAvg >= 0.265) platoonDims++; } else if (platoonAdv) platoonDims++;
+  if ((locSplit?.atBats || 0) >= 20 && (parseFloat(locSplit?.avg) || 0) - _seasonAvg >= 0.018) platoonDims++;
+  if ((timeSplit?.atBats || 0) >= 15 && (parseFloat(timeSplit?.avg) || 0) - _seasonAvg >= 0.018) platoonDims++;
+
+  const _stackBadge = platoonDims >= 3
+    ? `<div class="bpick-verdict-line" style="color:#22c55e;font-weight:700;margin-top:4px">🔥 Full Platoon Stack — hand edge + location split + ${timeLabel.toLowerCase()} split all positive. Elite convergence.</div>`
+    : platoonDims >= 2
+    ? `<div class="bpick-verdict-line" style="color:#86efac;margin-top:4px">✅ Double Platoon Edge — 2 of 3 situational dimensions favor him today.</div>`
+    : '';
+
+  const splitsHTML = (relSplit?.atBats >= 10 || locSplit?.atBats >= 10 || (timeSplit?.atBats || 0) >= 10) ? `<div class="bpick-section">
     <div class="bpick-sect-hdr">📊 Situational Splits</div>
     <div class="bpick-stat-grid">
       ${relSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(relSplit.avg||0)>=0.280?'#22c55e':(relSplit.avg>0&&relSplit.avg<0.230)?'#f87171':'inherit'}">${fmtAvg(relSplit.avg)||'---'}</div><div class="bpick-stat-lbl">${relLabel} AVG</div></div>` : ''}
       ${relSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${relSplit.atBats||0}</div><div class="bpick-stat-lbl">${relLabel} ABs</div></div>` : ''}
       ${locSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(locSplit.avg||0)>=0.280?'#22c55e':(locSplit.avg>0&&locSplit.avg<0.230)?'#f87171':'inherit'}">${fmtAvg(locSplit.avg)||'---'}</div><div class="bpick-stat-lbl">${locLabel} AVG</div></div>` : ''}
       ${locSplit?.atBats>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${locSplit.atBats||0}</div><div class="bpick-stat-lbl">${locLabel} ABs</div></div>` : ''}
+      ${(timeSplit?.atBats||0)>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${(timeSplit.avg||0)>=0.280?'#22c55e':(timeSplit.avg>0&&timeSplit.avg<0.230)?'#f87171':'inherit'}">${fmtAvg(timeSplit.avg)||'---'}</div><div class="bpick-stat-lbl">${timeLabel} AVG</div></div>` : ''}
+      ${(timeSplit?.atBats||0)>=10 ? `<div class="bpick-stat-cell"><div class="bpick-stat-val">${timeSplit.atBats||0}</div><div class="bpick-stat-lbl">${timeLabel} ABs</div></div>` : ''}
     </div>
     <div class="bpick-verdict-line" style="color:${platoonAdv?'#22c55e':bat==='S'?'#fbbf24':'#94a3b8'}">${!pHand?'? Pitcher TBD — platoon data unavailable until SP is confirmed.':bat==='S'?'⚡ Switch hitter — adapts to any pitching hand, no platoon weakness.':platoonAdv?`✅ Platoon edge — ${bat==='R'?'right-handed batter vs left-handed pitcher':'left-handed batter vs right-handed pitcher'} — historically one of the biggest advantages in baseball.`:`→ Same-side matchup (${bat}HB vs ${pHand}HP). No platoon advantage but not a disadvantage either.`}</div>
+    ${_stackBadge}
   </div>` : '';
 
   // ── Bullpen ────────────────────────────────────────────────────────────────
@@ -12255,10 +12349,14 @@ function _buildBts2DeepCard(r, pickNum) {
   if (rs >= 6)               parts.push(`an everyday player (${rs}/7 recent starts)`);
   if ((ps.era||0) >= 5.00)   parts.push(`facing a vulnerable ${spLast} (${(+ps.era).toFixed(2)} ERA)`);
   else if ((ps.era||0) >= 4.00) parts.push(`going against a hittable ${spLast} (${(+ps.era).toFixed(2)} ERA)`);
+  if (skPct !== null && skPct < 0.10) parts.push(`one of the lowest K rates in baseball (${(skPct*100).toFixed(1)}% — elite contact)`);
+  else if (skPct !== null && skPct < 0.15) parts.push(`excellent contact ability (${(skPct*100).toFixed(1)}% K rate)`);
   if (r.h2h?.ab >= 5 && r.h2h.avg >= 0.280) parts.push(`with a proven track record against ${spLast} (${fmtAvg(r.h2h.avg)} career)`);
   if (r.parkStats?.ab >= 10 && r.parkStats.avg >= 0.290) parts.push(`at a park he hits well (${fmtAvg(r.parkStats.avg)} career there)`);
   if (r.arsenalCoverageBonus > 0) parts.push(`crushing ${(r.matches||[]).filter(m=>m.ba>=0.280).length} of the SP's primary pitch types`);
-  if (platoonAdv) parts.push(`with the platoon edge`);
+  if (platoonDims >= 3) parts.push(`a full platoon stack — hand, location, and ${timeLabel.toLowerCase()} split all aligned`);
+  else if (platoonDims >= 2) parts.push(`a double platoon edge (2 of 3 situational dimensions positive)`);
+  else if (platoonAdv) parts.push(`with the platoon edge`);
   const verdictText = pLast + ' is ' + (parts.slice(0, 5).join(', ') || 'a solid pick for today') + '. '
     + ((!r.risks || !r.risks.length) ? 'No red flags — this is as clean a BTS pick as you will find today.' : 'The risk factors above are worth noting, but the overall edge is firmly in the batter\'s favor.');
 
