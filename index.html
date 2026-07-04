@@ -8978,6 +8978,16 @@ async function backgroundRefresh() {
           const existing = state.predictions[game.gamePk];
           if (existing?.lineupPosted) {
             updateChipLineupStatus(game.gamePk, true);
+            // Re-check IL even for confirmed lineups — players can be scratched after confirmation
+            const awayId = existing.awayTeamId;
+            const homeId = existing.homeTeamId;
+            if (awayId || homeId) {
+              const [awayIL, homeIL] = await Promise.all([
+                awayId ? fetchILPlayerIds(awayId).catch(() => []) : Promise.resolve([]),
+                homeId ? fetchILPlayerIds(homeId).catch(() => []) : Promise.resolve([]),
+              ]);
+              for (const id of [...awayIL, ...homeIL]) state.ilPlayerIds.add(id);
+            }
           } else {
             const gameData = await processGame(game);
             state.predictions[game.gamePk] = gameData;
