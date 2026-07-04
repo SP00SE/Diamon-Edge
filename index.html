@@ -12137,7 +12137,8 @@ function _buildBts2DeepCard(r, pickNum) {
   const h9  = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
   const k9  = pIP > 0 ? (pK    / pIP * 9).toFixed(1) : null;
   const bb9 = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
-  const { lab, bts, ahf } = r.subScores || {};
+  const { lab: _labRaw, bts, ahf } = r.subScores || {};
+  const lab = _labRaw ?? r.score;  // leaderboard picks: r.score IS the Lab score
   const pHand = pitcher?.pitchHand || null;
   const bat   = player.batSide    || 'R';
 
@@ -12383,7 +12384,7 @@ function _buildBts2DeepCard(r, pickNum) {
       </div>
     </div>
     <div class="bpick-scores">
-      <div class="bpick-score-row"><span class="bpick-score-lbl">BTS</span>${_meter(bts)}<span class="bpick-score-val" style="color:${(bts||0)>=75?'#22c55e':(bts||0)>=55?'#86efac':'#f87171'}">${bts||'—'}</span></div>
+      ${bts!=null?`<div class="bpick-score-row"><span class="bpick-score-lbl">BTS</span>${_meter(bts)}<span class="bpick-score-val" style="color:${bts>=75?'#22c55e':bts>=55?'#86efac':'#f87171'}">${bts}</span></div>`:''}
       <div class="bpick-score-row"><span class="bpick-score-lbl">Lab</span>${_meter(lab)}<span class="bpick-score-val" style="color:${(lab||0)>=75?'#22c55e':(lab||0)>=55?'#86efac':'#f87171'}">${lab||'—'}</span></div>
       ${ahf!=null?`<div class="bpick-score-row"><span class="bpick-score-lbl">AHF</span>${_meter(ahf)}<span class="bpick-score-val" style="color:${ahf>=75?'#22c55e':ahf>=55?'#86efac':'#f87171'}">${ahf}</span></div>`:''}
     </div>
