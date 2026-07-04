@@ -11124,6 +11124,18 @@ async function runArsenalScan() {
   return { results: sorted, summary: { strongCount, projectedOnly, topPitchType, bestMatchup } };
 }
 
+// Shared helper: compute pitcher H/9 from season stats object.
+// Returns { h9r: number, h9: string|null } — h9r for comparisons, h9 for display.
+function _pitcherH9(ps) {
+  const pIP = parseFloat((ps||{}).inningsPitched) || 0;
+  const pW  = parseFloat((ps||{}).whip)           || 0;
+  const pBB = parseFloat((ps||{}).baseOnBalls)    || 0;
+  if (pIP <= 0) return { h9r: 0, h9: null };
+  const hits = Math.max(0, pW * pIP - pBB);
+  const h9r  = hits / pIP * 9;
+  return { h9r, h9: h9r.toFixed(1) };
+}
+
 function _arsenalHitCardHTML(r, rank) {
   const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, sampleWarning, matches, gameLabel } = r;
   const _avg = v => fmtAvg(v, null);
@@ -11151,9 +11163,8 @@ function _arsenalHitCardHTML(r, rank) {
   const pK   = parseFloat(ps.strikeOuts)     || 0;
   const pBB  = parseFloat(ps.baseOnBalls)    || 0;
   const pW   = parseFloat(ps.whip)           || 0;
-  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const { h9 } = _pitcherH9(ps);
   const k9   = pIP > 0 ? (pK     / pIP * 9).toFixed(1) : null;
-  const h9   = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
   const bb9  = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
   const pBF  = pIP > 0 ? pIP * (3 + pW) : 0;
   const bbBfP = pBF > 0 ? (pBB / pBF * 100).toFixed(1) + '%' : null;
@@ -11476,8 +11487,7 @@ function _passesFilters(r, f, scale) {
   const pW   = parseFloat(ps.whip)           || 0;
   const pBB  = parseFloat(ps.baseOnBalls)    || 0;
   const pK   = parseFloat(ps.strikeOuts)     || 0;
-  const pH2  = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
-  const h9r  = pIP > 0 ? pH2 / pIP * 9 : 0;
+  const { h9r } = _pitcherH9(ps);
   const k9r  = pIP > 0 ? pK  / pIP * 9 : 0;
   const bb9r = pIP > 0 ? pBB / pIP * 9 : 0;
   if (f.minh9  > 0  && h9r  < f.minh9)  return false;
@@ -11557,9 +11567,8 @@ function _richScanCardHTML(r, rank, opts) {
   const pK   = parseFloat(ps.strikeOuts)     || 0;
   const pBB  = parseFloat(ps.baseOnBalls)    || 0;
   const pW   = parseFloat(ps.whip)           || 0;
-  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
+  const { h9 } = _pitcherH9(ps);
   const k9   = pIP > 0 ? (pK     / pIP * 9).toFixed(1) : null;
-  const h9   = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
   const bb9  = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
 
   // Live / Final badge + achievement tracking
@@ -11860,8 +11869,7 @@ function _buildBts2Reasons(player, gd, eliteData, btsResult, arsenalResult, comp
   const pIP = parseFloat(ps.inningsPitched) || 0;
   const pW  = parseFloat(ps.whip)           || 0;
   const pBB = parseFloat(ps.baseOnBalls)    || 0;
-  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
-  const pH9 = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
+  const { h9: pH9 } = _pitcherH9(ps);
 
   if ((player.recentStarts || 0) >= 6)
     reasons.push(`Everyday starter — ${player.recentStarts}/7 recent games started`);
@@ -12046,11 +12054,7 @@ function _computePickWeight(r) {
 
   // ── 8. SP VULNERABILITY (H/9) ─────────────────────────────────────────
   const ps  = pitcher?.seasonStats || {};
-  const pIP = parseFloat(ps.inningsPitched) || 0;
-  const pW  = parseFloat(ps.whip)           || 0;
-  const pBB = parseFloat(ps.baseOnBalls)    || 0;
-  const pH2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
-  const h9r = pIP > 0 ? pH2 / pIP * 9 : 0;
+  const { h9r } = _pitcherH9(ps);
   if      (h9r >= 10.0) bonus += 8;
   else if (h9r >=  9.0) bonus += 5;
   else if (h9r <=  6.5) bonus -= 4;
@@ -12144,8 +12148,7 @@ function _buildBts2DeepCard(r, pickNum) {
   const pBB = parseFloat(ps.baseOnBalls)    || 0;
   const pW  = parseFloat(ps.whip)           || 0;
   const pK  = parseFloat(ps.strikeOuts)     || 0;
-  const pHits2 = pIP > 0 ? Math.max(0, pW * pIP - pBB) : 0;
-  const h9  = pIP > 0 ? (pHits2 / pIP * 9).toFixed(1) : null;
+  const { h9 } = _pitcherH9(ps);
   const k9  = pIP > 0 ? (pK    / pIP * 9).toFixed(1) : null;
   const bb9 = pIP > 0 ? (pBB   / pIP * 9).toFixed(1) : null;
   const { lab: _labRaw, bts, ahf } = r.subScores || {};
