@@ -3297,6 +3297,9 @@ main { padding: 28px 0 60px; }
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5">
           Career head-to-head stats for today's lineup batters vs their opposing starting pitcher. Minimum 5 AB.
         </div>
+        <div class="bts2-sort-bar" id="h2hPickBar" style="display:none">
+          <button id="h2hPickBtn" class="bts2-pick-btn" onclick="handleH2HPickMe2()">🎯 Pick Me 2</button>
+        </div>
         <div id="h2h-filter-bar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
           <button class="h2h-filter-btn h2h-filter-active" data-sort="score" onclick="_renderH2H('score',this)">⭐ Best H2H</button>
           <button class="h2h-filter-btn" data-sort="avg" onclick="_renderH2H('avg',this)">H2H AVG</button>
@@ -12062,6 +12065,77 @@ function _computePickWeight(r) {
   return r.score + bonus;
 }
 
+// H2H-specific pick weight: AB volume first, then avg quality, then platoon stack.
+// Used exclusively by handleH2HPickMe2 — not by the BTS/Leaderboard/Global flow.
+function _computeH2HPickWeight(r) {
+  const { h2h, player, pitcher } = r;
+  const ss = player.seasonStats || {};
+  const seasonAvg = parseFloat(ss.avg) || 0;
+  let w = 0;
+
+  // 1. H2H AVERAGE — primary quality gate
+  const avg = h2h.avg || 0;
+  w += avg >= 0.400 ? 60 : avg >= 0.350 ? 48 : avg >= 0.300 ? 32 : avg >= 0.270 ? 16 : 0;
+
+  // 2. SAMPLE SIZE — more AB = more confidence (user's explicit priority)
+  const ab = h2h.ab || 0;
+  w += ab >= 30 ? 35 : ab >= 20 ? 24 : ab >= 15 ? 14 : ab >= 10 ? 7 : 0;
+
+  // 3. H2H OPS — power + on-base production bonus
+  const ops = h2h.ops || 0;
+  w += ops >= 1.000 ? 12 : ops >= 0.900 ? 7 : ops >= 0.800 ? 3 : 0;
+
+  // 4. PLATOON ADVANTAGE — 3 independent dimensions, same logic as _computePickWeight
+  const pHand = pitcher?.pitchHand || null;
+  const bat   = player.batSide || 'R';
+  let platoonDims = 0;
+
+  // Dim A — handedness
+  const vsHandSplit = pHand === 'L' ? (player.vsLHP || {}) : pHand === 'R' ? (player.vsRHP || {}) : {};
+  const vsHandAB    = parseInt(vsHandSplit.atBats) || 0;
+  const hasPlatAdv  = pHand && ((bat === 'R' && pHand === 'L') || (bat === 'L' && pHand === 'R') || bat === 'S');
+  if (vsHandAB >= 20 && (parseFloat(vsHandSplit.avg) || 0) >= 0.265) platoonDims++;
+  else if (vsHandAB < 20 && hasPlatAdv) platoonDims++;
+
+  // Dim B — location (home/away)
+  const locSplit = player.isAway ? (player.awayStats || {}) : (player.homeStats || {});
+  if ((parseInt(locSplit.atBats) || 0) >= 20 && (parseFloat(locSplit.avg) || 0) - seasonAvg >= 0.018) platoonDims++;
+
+  // Dim C — day/night
+  const rawGame  = (state.games || []).find(g => String(g.gamePk) === String(r.gd?.gamePk));
+  const isNight  = rawGame?.dayNight === 'night';
+  const timeSplit = isNight ? (player.nightStats || {}) : (player.dayStats || {});
+  if ((parseInt(timeSplit.atBats) || 0) >= 15 && (parseFloat(timeSplit.avg) || 0) - seasonAvg >= 0.018) platoonDims++;
+
+  w += platoonDims >= 3 ? 28 : platoonDims >= 2 ? 13 : platoonDims >= 1 ? 4 : 0;
+
+  return w;
+}
+
+function handleH2HPickMe2() {
+  if (!_h2hAllResults.length) return;
+  const sorted = [..._h2hAllResults].sort((a, b) => _computeH2HPickWeight(b) - _computeH2HPickWeight(a));
+  const pick1  = sorted[0];
+  let pick2    = null;
+  for (const r of sorted.slice(1)) {
+    if (r.gd?.gamePk !== pick1.gd?.gamePk) { pick2 = r; break; }
+  }
+  if (!pick2 && sorted.length > 1) pick2 = sorted[1];
+  const picks = [pick1, pick2].filter(Boolean);
+  // Map H2H quality to 0-100 so confidence badge is meaningful instead of always "Elite"
+  const enriched = picks.map(r => {
+    const avg = r.h2h?.avg || 0;
+    const ab  = r.h2h?.ab  || 0;
+    const labScore = clamp(Math.round(avg * 200 + Math.min(ab, 30) / 30 * 20), 0, 100);
+    return { ...r, subScores: { lab: labScore } };
+  });
+  const content = document.getElementById('labBts2PickContent');
+  if (content) content.innerHTML = enriched.map((r, i) => _buildBts2DeepCard(r, i + 1)).join('');
+  const backBtn = document.querySelector('#labScreenBts2Pick .lab-back-btn');
+  if (backBtn) { backBtn.onclick = () => _labShow('labScreenH2H'); backBtn.textContent = '← H2H History'; }
+  _labShow('labScreenBts2Pick');
+}
+
 function handleBts2PickMe2() {
   if (!_bts2Results.length) return;
   // Ignore active filters — pick from the full pool
@@ -14067,6 +14141,8 @@ async function handleH2HScan() {
     const defaultBtn = document.querySelector('.h2h-filter-btn[data-sort="score"]');
     if (defaultBtn) defaultBtn.classList.add('h2h-filter-active');
     _renderH2H('score');
+    const h2hPickBar = document.getElementById('h2hPickBar');
+    if (h2hPickBar) h2hPickBar.style.display = '';
   } catch (e) {
     container.innerHTML = `<div style="padding:16px;color:#ef4444;font-size:12px">Error: ${escHtml(String(e))}</div>`;
   } finally {
