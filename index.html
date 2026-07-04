@@ -695,7 +695,7 @@ main { padding: 28px 0 60px; }
 .twp-breakdown-col { flex:1; min-width:0; }
 .twp-breakdown-col-hdr { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:5px; padding-bottom:4px; border-bottom:1px solid var(--border); }
 .twp-player-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:11px; }
-.twp-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100px; }
+.twp-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
 .twp-player-score { font-weight:700; flex-shrink:0; margin-left:4px; }
 .twp-result-strip { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-top:1px solid var(--border); background:#0f172a; }
 .twp-result-score { font-size:12px; font-weight:700; color:#e2e8f0; letter-spacing:.3px; }
@@ -727,7 +727,6 @@ main { padding: 28px 0 60px; }
   .twp-center .twp-proj-score, .twp-center .twp-ou { margin:0; }
   .twp-edge-row { gap:4px; flex-wrap:wrap; }
   .twp-matchup-note { padding-left:8px !important; }
-  .twp-player-name { max-width:160px; }
   .twp-winner-strip { flex-direction:column; align-items:flex-start; gap:4px; padding:8px 12px; }
   .twp-edge-label { min-width:52px; font-size:9px; }
   .twp-header { flex-wrap:wrap; gap:4px; }
@@ -11840,7 +11839,7 @@ function _isBts2Eligible(player) {
   const ss  = player.seasonStats || {};
   const l7  = player.last7Stats  || {};
   const pos = player.orderPos    || 0;
-  return (ss.avg || 0) >= 0.235 && pos >= 1 && pos <= 8 &&
+  return (ss.avg || 0) >= 0.235 && pos >= 1 && pos <= 9 &&
          (l7.atBats || 0) >= 24 && (player.recentStarts || 0) >= 2;
 }
 
@@ -12411,9 +12410,9 @@ async function runBts2Scan(onProgress) {
   const results = [];
   await Promise.allSettled(allEntries.map(async ({ player, gd }) => {
     try {
+      if (!_isBts2Eligible(player)) return;
       const eliteData     = await fetchElitePlayerData(player, gd);
       onProgress?.();
-      if (!_isBts2Eligible(player)) return;
       const btsResult     = computeBtsScore(player, gd);
       const arsenalResult = computeArsenalHitEdge(player, gd);
       const composite     = _computeBts2Composite(player, gd, eliteData, btsResult, arsenalResult);
@@ -13375,12 +13374,10 @@ async function ensureTeamStandings(year) {
       `https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=${year}&standingsTypes=regularSeason`
     );
     const map = new Map();
-    let _debugLogged = false;
     for (const div of (data?.records || [])) {
       for (const tr of (div.teamRecords || [])) {
         const id   = String(tr.team?.id);
         if (!id) continue;
-        if (!_debugLogged) { console.log('[TWP standings debug] first teamRecord:', JSON.stringify({ wins: tr.wins, losses: tr.losses, splitRecords: tr.splitRecords, recordsKeys: tr.records ? Object.keys(tr.records) : null, firstSplit: tr.records?.splitRecords?.[0] || null })); _debugLogged = true; }
         const splits = tr.records?.splitRecords || tr.splitRecords || [];
         const home = splits.find(r => r.type?.toLowerCase() === 'home') || {};
         const away = splits.find(r => r.type?.toLowerCase() === 'away') || {};
@@ -16202,7 +16199,7 @@ async function runLabEliteScan(onProgress) {
   const gamePk = _labState.gamePk;
   const gd = state.predictions[gamePk];
   if (!gd) return [];
-  const allPlayers = (gd.players||[]).filter(p => p.id);
+  const allPlayers = (gd.players||[]).filter(p => p.id && isPlayerEligible(p));
   if (!allPlayers.length) return [];
 
   const results = [];
