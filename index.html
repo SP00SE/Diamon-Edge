@@ -5800,7 +5800,6 @@ async function openPickProfile(playerId, pk) {
   const score = p?.hitScore ?? '--';
   const scoreColor = score >= 72 ? '#22c55e' : score >= 58 ? '#f59e0b' : '#ef4444';
 
-  const fmtAvg = v => { const n = parseFloat(v); return n > 0 ? '.' + Math.round(n * 1000).toString().padStart(3,'0') : '.---'; };
   const fmtOps = v => { const n = parseFloat(v); return n > 0 ? n.toFixed(3) : '.---'; };
 
   const opsDelta = (parseFloat(l7.ops || 0) - parseFloat(ss.ops || 0));
@@ -12109,8 +12108,7 @@ function handleLeaderPickMe2() {
 
 function handleArsenalPickMe2() {
   if (!_ahfResults.length) return;
-  const eligible = _ahfResults.filter(r => !r.h2hDisqualified);
-  const pool     = eligible.length ? eligible : [..._ahfResults];
+  const pool = [..._ahfResults];
   const sorted   = [...pool].sort((a, b) => _computePickWeight(b) - _computePickWeight(a));
   const pick1    = sorted[0];
   let pick2      = null;
@@ -12150,8 +12148,10 @@ function _buildBts2DeepCard(r, pickNum) {
   const skPct = pa >= 30 ? (parseInt(ss.strikeOuts || 0) / pa) : null;
   const skClr = skPct === null ? '#94a3b8' : skPct < 0.10 ? '#22c55e' : skPct < 0.15 ? '#86efac' : skPct < 0.20 ? '#fbbf24' : skPct < 0.28 ? 'inherit' : '#f87171';
 
-  const confidence = r.score >= 85 ? 'Elite Confidence' : r.score >= 75 ? 'High Confidence' : r.score >= 65 ? 'Good Confidence' : 'Moderate Confidence';
-  const confClr    = r.score >= 85 ? '#22c55e' : r.score >= 75 ? '#86efac' : r.score >= 65 ? '#fbbf24' : '#94a3b8';
+  // For non-BTS scans (Arsenal, Leaderboard), r.subScores is absent — scale to 0-100 for display
+  const _displayScore = r.subScores ? r.score : Math.round(50 + Math.min(Math.max(r.score || 0, -15), 15) / 15 * 40);
+  const confidence = _displayScore >= 85 ? 'Elite Confidence' : _displayScore >= 75 ? 'High Confidence' : _displayScore >= 65 ? 'Good Confidence' : 'Moderate Confidence';
+  const confClr    = _displayScore >= 85 ? '#22c55e' : _displayScore >= 75 ? '#86efac' : _displayScore >= 65 ? '#fbbf24' : '#94a3b8';
   const pickBadgeClr = pickNum === 1 ? '#fbbf24' : '#94a3b8';
   const pickLabel    = pickNum === 1 ? '1st Pick' : '2nd Pick';
 
@@ -12377,7 +12377,7 @@ function _buildBts2DeepCard(r, pickNum) {
 
   return `<div class="bpick-card">
     <div class="bpick-pick-badge" style="background:${pickBadgeClr}20;border:1px solid ${pickBadgeClr}40;color:${pickBadgeClr}">${pickLabel}</div>
-    <div class="bpick-confidence-row"><span class="bpick-confidence" style="color:${confClr}">● ${confidence}</span><span class="bpick-composite-score" style="color:${confClr}">Score ${r.score}</span></div>
+    <div class="bpick-confidence-row"><span class="bpick-confidence" style="color:${confClr}">● ${confidence}</span><span class="bpick-composite-score" style="color:${confClr}">Score ${_displayScore}</span></div>
     <div class="bpick-player-row">
       <img class="bpick-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
       <div class="bpick-photo-fb" style="display:none">${initial}</div>
@@ -15915,7 +15915,9 @@ function _teamScanCardHTML(r) {
       ${(() => {
         const hasAny = awayWarData?.hasData || homeWarData?.hasData;
         if (!hasAny) {
-          return `<div class="twp-matchup-note" style="color:var(--text-muted);font-style:italic;font-size:10px">WAR data unavailable — not used in this prediction</div>`;
+          return !state.warDataLoaded
+            ? `<div class="twp-matchup-note" style="color:#f59e0b">⚠ WAR data still loading — WAR component may be 0</div>`
+            : `<div class="twp-matchup-note" style="color:var(--text-muted);font-style:italic;font-size:10px">WAR data unavailable — not used in this prediction</div>`;
         }
         const awLW  = awayWarData?.lineupWar;
         const hmLW  = homeWarData?.lineupWar;
@@ -16811,19 +16813,19 @@ async function runLabAnalysis() {
     const lbl = profile.eraTier.label;
     let pitDesc;
     if (lbl.includes('ERA Trap') || lbl.includes('Mixed Profile')) {
-      pitDesc = `${pitcher.fullName}'s ${era.toFixed(2)} ERA creates surface-level vulnerability, but a ${Math.round(_labKpct*100)}% K rate makes this a mixed matchup — not a clean contact spot.`;
+      pitDesc = `${escHtml(pitcher.fullName)}'s ${era.toFixed(2)} ERA creates surface-level vulnerability, but a ${Math.round(_labKpct*100)}% K rate makes this a mixed matchup — not a clean contact spot.`;
     } else if (lbl === 'Hit-Friendly Profile') {
-      pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) shows a hit-friendly contact profile — favorable H/9 and contact-allowed metrics despite the elevated ERA.`;
+      pitDesc = `${escHtml(pitcher.fullName)} (${pitcherHand}HP, ERA ${era.toFixed(2)}) shows a hit-friendly contact profile — favorable H/9 and contact-allowed metrics despite the elevated ERA.`;
     } else if (lbl === 'Elevated ERA') {
-      pitDesc = `${pitcher.fullName} (${pitcherHand}HP, ERA ${era.toFixed(2)}) — elevated ERA, but contact opportunity depends on K rate (${Math.round(_labKpct*100)}%) and H/9 (${profile.h9 > 0 ? profile.h9.toFixed(1) : '—'}).`;
+      pitDesc = `${escHtml(pitcher.fullName)} (${pitcherHand}HP, ERA ${era.toFixed(2)}) — elevated ERA, but contact opportunity depends on K rate (${Math.round(_labKpct*100)}%) and H/9 (${profile.h9 > 0 ? profile.h9.toFixed(1) : '—'}).`;
     } else {
-      pitDesc = `${player.name} faces ${pitcher.fullName} (${pitcherHand}HP, ERA ${era != null ? era.toFixed(2) : '—'}) — ${lbl.toLowerCase()} arm.`;
+      pitDesc = `${escHtml(player.name)} faces ${escHtml(pitcher.fullName)} (${pitcherHand}HP, ERA ${era != null ? era.toFixed(2) : '—'}) — ${lbl.toLowerCase()} arm.`;
     }
     narrative.push(pitDesc);
   }
   if (h2h?.ab>=5) narrative.push(`Career head-to-head: ${fmt3(h2h.avg)} over ${h2h.ab} at-bats (${h2h.h} H, ${h2h.hr} HR, ${h2h.k} K).`);
-  else if (pitcher?.fullName) narrative.push(`No prior head-to-head data vs ${pitcher.fullName} — BvP history treated as neutral.`);
-  if (splitAB>=20&&Math.abs(splitDiff)>0.015) narrative.push(`${player.name} hits ${splitDiff>0?'notably better':'notably worse'} vs ${pitcherHand}HP (${fmt3(splitAvg)} vs ${fmt3(seasAvg)} season avg).`);
+  else if (pitcher?.fullName) narrative.push(`No prior head-to-head data vs ${escHtml(pitcher.fullName)} — BvP history treated as neutral.`);
+  if (splitAB>=20&&Math.abs(splitDiff)>0.015) narrative.push(`${escHtml(player.name)} hits ${splitDiff>0?'notably better':'notably worse'} vs ${pitcherHand}HP (${fmt3(splitAvg)} vs ${fmt3(seasAvg)} season avg).`);
   if (parkStats?.ab>=5) narrative.push(`In ${parkStats.games} games at ${venue} this season: ${fmtX(parkStats.avg,3)} AVG, ${parkStats.hr} HR.`);
   if (bullpenEra>4.50) narrative.push(`The opposing bullpen (ERA ${bullpenEra.toFixed(2)}) is exploitable late.`);
   else if (bullpenEra>0&&bullpenEra<3.50) narrative.push(`A strong bullpen (ERA ${bullpenEra.toFixed(2)}) limits late-inning upside.`);
@@ -16831,7 +16833,7 @@ async function runLabAnalysis() {
   // Counter-points: risk factors that prevent a higher score
   const _labCounterPts = [];
   if (_labKpct >= 0.22)
-    _labCounterPts.push(`${pitcher?.fullName||'the pitcher'} carries a ${Math.round(_labKpct*100)}% K rate — strikeout risk remains regardless of ERA`);
+    _labCounterPts.push(`${escHtml(pitcher?.fullName||'the pitcher')} carries a ${Math.round(_labKpct*100)}% K rate — strikeout risk remains regardless of ERA`);
   if (era != null && era <= 3.50)
     _labCounterPts.push(`contact-limiting arm (ERA ${era.toFixed(2)}, ${Math.round(_labKpct*100)}% K rate)`);
   else if (profile.h9 > 0 && profile.h9 <= 7.0 && era > 3.50)
