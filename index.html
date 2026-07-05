@@ -656,6 +656,10 @@ main { padding: 28px 0 60px; }
 .twp-winner-conf { font-size:10px; color:var(--text-muted); }
 .twp-reasoning { padding:6px 14px 8px; font-size:11px; color:var(--text-muted); line-height:1.45; border-top:1px solid var(--border); }
 .twp-expand-btn { flex:1; width:100%; background:none; border:none; padding:8px; color:#a78bfa; font-size:11px; cursor:pointer; font-weight:600; text-align:center; }
+.twp-final-tag { font-size:9px; font-weight:800; padding:2px 6px; border-radius:3px; background:#94a3b81a; color:#94a3b8; border:1px solid #94a3b844; letter-spacing:.5px; text-transform:uppercase; }
+.twp-risk-chip { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:#f59e0b18; color:#f59e0b; border:1px solid #f59e0b44; white-space:nowrap; }
+.twp-team-ctx { display:flex; gap:12px; padding:10px 14px 4px; border-top:1px solid var(--border); }
+.twp-team-ctx-col { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:2px; }
 /* ── TWP 100× Simulator ─────────────────────────────────────────────────── */
 .twp-action-row { display:flex; border-top:1px solid var(--border); }
 .twp-action-row .twp-sim-wrap { flex:1; border-right:1px solid var(--border); }
@@ -16249,6 +16253,15 @@ function toggleTeamPredExpand(bkId, btnId) {
   const open = bk.style.display !== 'none';
   bk.style.display  = open ? 'none' : 'flex';
   btn.innerHTML     = open ? '&#9660; Player Breakdown' : '&#9650; Player Breakdown';
+}
+
+function toggleTwpDetails(gamePk) {
+  const det = document.getElementById(`twp_det_${gamePk}`);
+  const btn = document.getElementById(`twp_detbtn_${gamePk}`);
+  if (!det || !btn) return;
+  const open = det.style.display !== 'none';
+  det.style.display = open ? 'none' : 'block';
+  btn.innerHTML     = open ? '&#9660; Details' : '&#9650; Hide Details';
 }
 
 function runGameSimulator(gamePk) {
