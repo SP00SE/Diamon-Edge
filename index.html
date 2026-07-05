@@ -5403,7 +5403,7 @@ async function fetchWarData() {
   if (state.warDataLoaded) return;
   try {
     const season = new Date().getFullYear();
-    const base   = `https://cdn.fangraphs.com/api/leaders/major-league/data?lg=all&qual=0&type=8&season=${season}&season1=${season}&ind=0&team=0&rost=0&age=0&filter=&players=0&month=0`;
+    const base   = `https://www.fangraphs.com/api/leaders/major-league/data?lg=all&qual=0&type=8&season=${season}&season1=${season}&ind=0&team=0&rost=0&age=0&filter=&players=0&month=0&pageitems=5000&pagenum=1`;
     const [batR, pitR] = await Promise.all([
       fetch(`${base}&pos=all&stats=bat`).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch(`${base}&pos=all&stats=pit`).then(r => r.ok ? r.json() : null).catch(() => null),
