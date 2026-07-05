@@ -15746,7 +15746,10 @@ function _teamScanCardHTML(r) {
   // Date label
   let dateLbl = '';
   if (gameDate) {
-    try { dateLbl = new Date(gameDate + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'numeric', day:'numeric' }); } catch {}
+    try {
+      const _d = new Date(gameDate.includes('T') ? gameDate : gameDate + 'T12:00:00');
+      if (!isNaN(_d)) dateLbl = _d.toLocaleDateString('en-US', { weekday:'short', month:'numeric', day:'numeric' });
+    } catch {}
   }
 
   // Lineup status badges
