@@ -15886,6 +15886,26 @@ function _teamScanCardHTML(r) {
 
   const bkId  = `tp_bk_${gamePk}`;
   const btnId = `tp_btn_${gamePk}`;
+  const detId    = `twp_det_${gamePk}`;
+  const detBtnId = `twp_detbtn_${gamePk}`;
+
+  // Risk chip — trap warnings (+ ERA trap when it applies to the predicted side)
+  const _eraTrapName = winner === 'away' ? (awayEraTrap && awayPitcherName) : (homeEraTrap && homePitcherName);
+  const _riskCount   = (trapWarnings || []).slice(0, 3).length + (_eraTrapName ? 1 : 0);
+  const riskChip     = _riskCount > 0 ? `<span class="twp-risk-chip">&#9888; ${_riskCount} risk${_riskCount > 1 ? 's' : ''}</span>` : '';
+
+  // Team context (records / streak / form / proj runs) — shown inside Details
+  const _teamCtxCol = (abbr, standings, isAwaySide, projRuns, formBadge) => {
+    const rec = standings ? `<div class="twp-team-record">${isAwaySide
+      ? `<span class="twp-rec-chip twp-rec-road-chip">Road ${standings.awayWins}-${standings.awayLosses}${_recPct(standings.awayWins, standings.awayLosses)}</span>`
+      : `<span class="twp-rec-chip twp-rec-home-chip">Home ${standings.homeWins}-${standings.homeLosses}${_recPct(standings.homeWins, standings.homeLosses)}</span>`
+    }<span class="twp-rec-chip twp-rec-ovr-chip">${standings.wins}-${standings.losses}</span>${standings.streak ? `<span class="twp-streak-chip ${standings.streak.startsWith('W') ? 'twp-streak-w' : 'twp-streak-l'}">${escHtml(standings.streak)}</span>` : ''}</div>` : '';
+    const pr = projRuns != null ? `<div class="twp-proj-runs">~${projRuns.toFixed(1)} R proj</div>` : '';
+    return `<div class="twp-team-ctx-col"><div class="twp-breakdown-col-hdr">${escHtml(abbr||'')}</div>${rec}${formBadge}${pr}</div>`;
+  };
+  const teamCtxHtml = (awayStandings || homeStandings || awayFormBadge || homeFormBadge || awayProjRuns != null || homeProjRuns != null)
+    ? `<div class="twp-team-ctx">${_teamCtxCol(awayAbbr, awayStandings, true, awayProjRuns, awayFormBadge)}${_teamCtxCol(homeAbbr, homeStandings, false, homeProjRuns, homeFormBadge)}</div>`
+    : '';
 
   return `<div class="twp-card">
 
@@ -15893,6 +15913,7 @@ function _teamScanCardHTML(r) {
       <div class="twp-game-info">
         <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>
         ${dateLbl ? `<span class="twp-game-date">${escHtml(dateLbl)}</span>` : ''}
+        ${isFinal ? `<span class="twp-final-tag">Final</span>` : ''}
       </div>
       ${confBadge}
     </div>
@@ -15904,9 +15925,6 @@ function _teamScanCardHTML(r) {
         <div class="twp-prob-num${winner==='away' && !isTossup ? ' twp-win' : ''}">${awayWinProb != null ? awayWinProb : '--'}%</div>
         <div class="twp-prob-lbl">Win Prob</div>
         ${awayBadge}
-        ${awayProjRuns != null ? `<div class="twp-proj-runs">~${awayProjRuns.toFixed(1)} R proj</div>` : ''}
-        ${awayStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-road-chip">Road ${awayStandings.awayWins}-${awayStandings.awayLosses}${_recPct(awayStandings.awayWins, awayStandings.awayLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${awayStandings.wins}-${awayStandings.losses}</span>${awayStandings.streak ? `<span class="twp-streak-chip ${awayStandings.streak.startsWith('W') ? 'twp-streak-w' : 'twp-streak-l'}">${escHtml(awayStandings.streak)}</span>` : ''}</div>` : ''}
-        ${awayFormBadge}
       </div>
       <div class="twp-center">
         <div class="twp-vs">VS</div>
@@ -15919,9 +15937,6 @@ function _teamScanCardHTML(r) {
         <div class="twp-prob-num${winner==='home' && !isTossup ? ' twp-win' : ''}">${homeWinProb != null ? homeWinProb : '--'}%</div>
         <div class="twp-prob-lbl">Win Prob</div>
         ${homeBadge}
-        ${homeProjRuns != null ? `<div class="twp-proj-runs">~${homeProjRuns.toFixed(1)} R proj</div>` : ''}
-        ${homeStandings ? `<div class="twp-team-record"><span class="twp-rec-chip twp-rec-home-chip">Home ${homeStandings.homeWins}-${homeStandings.homeLosses}${_recPct(homeStandings.homeWins, homeStandings.homeLosses)}</span><span class="twp-rec-chip twp-rec-ovr-chip">${homeStandings.wins}-${homeStandings.losses}</span>${homeStandings.streak ? `<span class="twp-streak-chip ${homeStandings.streak.startsWith('W') ? 'twp-streak-w' : 'twp-streak-l'}">${escHtml(homeStandings.streak)}</span>` : ''}</div>` : ''}
-        ${homeFormBadge}
       </div>
     </div>
 
@@ -15934,6 +15949,33 @@ function _teamScanCardHTML(r) {
       <span style="color:#22c55e">${escHtml(homeAbbr||'Home')} ${homeWinProb ?? '--'}%</span>
     </div>
 
+    <div class="twp-winner-strip" style="background:${isTossup ? 'rgba(245,158,11,0.05)' : winner==='home' ? 'linear-gradient(to right,#052e1650,#052e1615)' : winner==='away' ? 'linear-gradient(to right,#42200640,#42200618)' : 'none'}">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0">
+        <span class="twp-pred-label">Prediction</span>
+        ${isTossup || winner === 'tie'
+          ? `<span class="twp-winner-tie" style="${isTossup ? 'color:#f59e0b' : ''}">&#9878; Toss-Up</span>${isTossup && winnerName ? `<span style="color:#64748b;font-size:10px">· lean ${escHtml(winnerName)}</span>` : ''}`
+          : `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span>`}
+        ${!isTossup && winner !== 'tie' ? `<span class="twp-win-edge">${escHtml(winEdge||'')}</span>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        ${riskChip}
+        ${_keyEdge ? `<span class="twp-key-factor">${escHtml(_keyEdge.label)}</span>` : ''}
+        <span class="twp-winner-conf">${winnerProb}%</span>
+      </div>
+    </div>
+
+    ${(mainReason || summaryText) ? `<div class="twp-reasoning-banner">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b80"> · Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
+
+    <div class="twp-action-row">
+      <div class="twp-sim-wrap" id="twp-sim-wrap-${gamePk}">
+        <button class="twp-sim-btn" onclick="runGameSimulator(${gamePk})">&#9881; Run 100&times; Simulator</button>
+      </div>
+      <button class="twp-expand-btn" id="${detBtnId}" onclick="toggleTwpDetails(${gamePk})">&#9660; Details</button>
+    </div>
+    <div id="twp-sim-panel-${gamePk}" style="display:none"></div>
+
+    <div class="twp-details" id="${detId}" style="display:none">
+      ${teamCtxHtml}
     <div class="twp-edges">
       <div class="twp-edges-hdr" style="display:flex;justify-content:space-between;align-items:center">
         <span>Edge Breakdown</span>
@@ -16038,29 +16080,12 @@ function _teamScanCardHTML(r) {
       })()}
     </div>
 
-    <div class="twp-winner-strip" style="background:${isTossup ? 'rgba(245,158,11,0.05)' : winner==='home' ? 'linear-gradient(to right,#052e1650,#052e1615)' : winner==='away' ? 'linear-gradient(to right,#42200640,#42200618)' : 'none'}">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0">
-        <span class="twp-pred-label">Prediction</span>
-        ${isTossup || winner === 'tie'
-          ? `<span class="twp-winner-tie" style="${isTossup ? 'color:#f59e0b' : ''}">&#9878; Toss-Up</span>${isTossup && winnerName ? `<span style="color:#64748b;font-size:10px">· lean ${escHtml(winnerName)}</span>` : ''}`
-          : `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span>`}
-        ${!isTossup && winner !== 'tie' ? `<span class="twp-win-edge">${escHtml(winEdge||'')}</span>` : ''}
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        ${_keyEdge ? `<span class="twp-key-factor">${escHtml(_keyEdge.label)}</span>` : ''}
-        <span class="twp-winner-conf">${winnerProb}%</span>
-      </div>
-    </div>
-
-    ${(mainReason || summaryText) ? `<div class="twp-reasoning-banner">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b80"> · Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
-
     ${(trapWarnings || []).slice(0, 3).map(w => `<div class="twp-trap-warning">&#9888; ${escHtml(w)}</div>`).join('')}
     ${(() => {
-      const eraTrapName = winner === 'away' ? (awayEraTrap && awayPitcherName) : (homeEraTrap && homePitcherName);
-      const eraTrapEra  = winner === 'away' ? awayPitcherEra : homePitcherEra;
-      if (!eraTrapName) return '';
+      if (!_eraTrapName) return '';
+      const eraTrapEra = winner === 'away' ? awayPitcherEra : homePitcherEra;
       const eraStr = eraTrapEra != null ? ` (${parseFloat(eraTrapEra).toFixed(2)} ERA)` : '';
-      return `<div class="twp-trap-warning" style="border-top:none;padding-top:2px">&#9888; ERA Trap: ${escHtml(eraTrapName)}${eraStr} — model used K%/pitch-mix. High ERA may still allow traffic. Verify H/9 and H/BF%.</div>`;
+      return `<div class="twp-trap-warning" style="border-top:none;padding-top:2px">&#9888; ERA Trap: ${escHtml(_eraTrapName)}${eraStr} — model used K%/pitch-mix. High ERA may still allow traffic. Verify H/9 and H/BF%.</div>`;
     })()}
 
     ${isFinal && actualWinner ? (() => {
@@ -16225,14 +16250,8 @@ function _teamScanCardHTML(r) {
       </div>${correctNote}${postmortem}`;
     })() : ''}
 
-    <div class="twp-action-row">
-      <div class="twp-sim-wrap" id="twp-sim-wrap-${gamePk}">
-        <button class="twp-sim-btn" onclick="runGameSimulator(${gamePk})">&#9881; Run 100&times; Simulator</button>
-      </div>
       <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
-    </div>
-    <div id="twp-sim-panel-${gamePk}" style="display:none"></div>
-    <div class="twp-breakdown" id="${bkId}" style="display:none">
+      <div class="twp-breakdown" id="${bkId}" style="display:none">
       <div class="twp-breakdown-col">
         <div class="twp-breakdown-col-hdr">${escHtml(awayAbbr||'Away')}</div>
         ${_rows(awayPlayers)}
@@ -16240,6 +16259,7 @@ function _teamScanCardHTML(r) {
       <div class="twp-breakdown-col">
         <div class="twp-breakdown-col-hdr">${escHtml(homeAbbr||'Home')}</div>
         ${_rows(homePlayers)}
+      </div>
       </div>
     </div>
 
