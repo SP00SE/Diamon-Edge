@@ -5282,8 +5282,9 @@ async function batchFetchBatterStats(batters) {
         nightStats: splits.nightStats || null,
       };
     }));
-    // Pause between chunks to let the MLB API breathe — longer delay reduces ECONNRESET
-    if (i + CHUNK < batters.length) await new Promise(r => setTimeout(r, 1000));
+    // No inter-chunk sleep: the global throttle in lib/data/cache.js already
+    // paces all requests (2 concurrent + 100ms gap) and cachedFetch retries
+    // transient ECONNRESETs, so sleeping here only added dead time.
   }
   return result;
 }
@@ -6728,7 +6729,9 @@ async function fetchLiveFeed(gamePk) {
     if (now - ts < LIVE_CACHE_TTL) return data;
   }
   const url = `https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`;
-  const res = await fetch(url);
+  // Share the global 2-concurrent throttle — a raw fetch here let every
+  // Overall-tab visit burst 15 simultaneous connections past the limiter.
+  const res = await _throttledFetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   liveCache.set(gamePk, { ts: now, data });
