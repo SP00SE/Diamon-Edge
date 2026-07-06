@@ -4714,7 +4714,7 @@ function predCardHTML(player, type, delay=0, prefix='c') {
   const teamInfo    = TEAM_INFO[player.teamId] || null;
   const logoSlug    = teamInfo?.espn || (player.teamAbbr||'').toLowerCase();
   const teamLogoHTML = logoSlug
-    ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${logoSlug}.png" alt="${player.teamAbbr||''}" onerror="this.style.display='none'">`
+    ? `<img loading="lazy" decoding="async" class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${logoSlug}.png" alt="${player.teamAbbr||''}" onerror="this.style.display='none'">`
     : '';
 
   // ── Hot/cold streak (same logic as buildPickCard) ─────────────────────────
@@ -4792,7 +4792,7 @@ function predCardHTML(player, type, delay=0, prefix='c') {
       ${achieveBadgeHTML}
       <div class="best-bet-left" onclick="openPlayerModal(${player.id})" style="cursor:pointer;margin-bottom:10px">
         <div class="best-bet-headshot-wrap">
-          <img class="best-bet-headshot" src="${photoUrl}" alt="${player.name}"
+          <img loading="lazy" decoding="async" class="best-bet-headshot" src="${photoUrl}" alt="${player.name}"
             onerror="this.closest('.best-bet-headshot-wrap').style.display='none';this.closest('.best-bet-headshot-wrap').nextElementSibling.style.display='flex'">
         </div>
         <div class="best-bet-headshot-fallback" style="display:none">${(player.name||'?')[0]}</div>
@@ -5947,7 +5947,7 @@ function buildPickCard(player, mode, glId, selGame, lineupPosted) {
   const bbLogoSlug  = bbTeamInfo?.espn || player.teamAbbr?.toLowerCase() || '';
   const bbPhotoUrl  = headshotUrl(player.id);
   const teamLogoHTML = bbLogoSlug
-    ? `<img class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${bbLogoSlug}.png" alt="${player.teamAbbr}" onerror="this.style.display='none'">`
+    ? `<img loading="lazy" decoding="async" class="best-bet-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${bbLogoSlug}.png" alt="${player.teamAbbr}" onerror="this.style.display='none'">`
     : '';
 
   const reason = mode === 'hr'
@@ -6042,7 +6042,7 @@ function buildPickCard(player, mode, glId, selGame, lineupPosted) {
       ${achieveHTML}
       <div class="best-bet-left">
         <div class="best-bet-headshot-wrap">
-          <img class="best-bet-headshot" src="${bbPhotoUrl}" alt="${player.name}"
+          <img loading="lazy" decoding="async" class="best-bet-headshot" src="${bbPhotoUrl}" alt="${player.name}"
             onerror="this.closest('.best-bet-headshot-wrap').style.display='none';this.closest('.best-bet-headshot-wrap').nextElementSibling.style.display='flex'">
         </div>
         <div class="best-bet-headshot-fallback" style="display:none">${(player.name||'?')[0]}</div>
@@ -6438,7 +6438,7 @@ async function renderHotStreaks() {
     const ti  = TEAM_INFO[p.teamId] || {};
     const slug = ti.espn || (p.teamAbbr || '').toLowerCase();
     const logoHTML = slug
-      ? `<img class="streak-card-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">`
+      ? `<img loading="lazy" decoding="async" class="streak-card-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">`
       : '';
     const photoUrl = headshotUrl(p.id);
 
@@ -6474,7 +6474,7 @@ async function renderHotStreaks() {
       return `
         <div class="streak-card streak-card-hit" onclick="openPlayerModal(${p.id})">
           <div class="streak-card-top">
-            <img class="streak-card-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="${p.name}">
+            <img loading="lazy" decoding="async" class="streak-card-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="${p.name}">
             <div style="flex:1;min-width:0">
               <div class="streak-card-name">${p.name}</div>
               <div class="streak-card-meta">${logoHTML} ${p.team} · ${p.position || ''} · Bats ${p.orderPos || '?'}</div>
@@ -6502,7 +6502,7 @@ async function renderHotStreaks() {
       return `
         <div class="streak-card streak-card-hr" onclick="openPlayerModal(${p.id})">
           <div class="streak-card-top">
-            <img class="streak-card-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="${p.name}">
+            <img loading="lazy" decoding="async" class="streak-card-photo" src="${photoUrl}" onerror="this.style.display='none'" alt="${p.name}">
             <div style="flex:1;min-width:0">
               <div class="streak-card-name">${p.name}</div>
               <div class="streak-card-meta">${logoHTML} ${p.team} · ${p.position || ''} · Bats ${p.orderPos || '?'}</div>
@@ -7039,8 +7039,8 @@ function renderBreakdownTable() {
 
   const awayLogoSlug = (TEAM_INFO[gameData.awayId]?.espn || gameData.awayAbbr?.toLowerCase() || '');
   const homeLogoSlug = (TEAM_INFO[gameData.homeId]?.espn || gameData.homeAbbr?.toLowerCase() || '');
-  const awayLogo = awayLogoSlug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
-  const homeLogo = homeLogoSlug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
+  const awayLogo = awayLogoSlug ? `<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
+  const homeLogo = homeLogoSlug ? `<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeLogoSlug}.png" style="height:16px;vertical-align:middle;margin-right:5px" onerror="this.style.display='none'" alt="">` : '';
   const awayStatusBadge = gameData.lineupPosted && !gameData.awayLineupPosted
     ? `<span style="font-size:10px;color:#f59e0b;margin-left:5px;font-weight:600;">📋 Projected</span>` : '';
   const homeStatusBadge = gameData.lineupPosted && !gameData.homeLineupPosted
@@ -7350,7 +7350,7 @@ async function renderLeaderboard() {
         const teamName = ti ? `${ti.city} ${ti.nick}` : (l.team?.name || '—');
         const slug     = ti?.espn || '';
         const logoHTML = slug
-          ? `<img class="leaders-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">`
+          ? `<img loading="lazy" decoding="async" class="leaders-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">`
           : '<div style="width:26px"></div>';
         const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
         const rankStr   = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank;
@@ -8209,13 +8209,13 @@ function renderBeatTheStreak() {
       <div class="bts-card">
         <div class="bts-card-rank">${rankLabel}</div>
         <div class="bts-card-header">
-          <img class="bts-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${player.name}">
+          <img loading="lazy" decoding="async" class="bts-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${player.name}">
           <div>
             <div class="bts-card-name td-player-link" onclick="openPlayerModal(${player.id})" style="cursor:pointer">${player.name}</div>
             <div style="margin-top:3px">${lineupBadge}</div>
             ${isException ? `<div class="bts-exception-tag" title="This hitter is below the normal .250 AVG floor but qualifies through strong recent form, split advantage, opportunity, or matchup signals.">Sub-.250 Exception</div>` : ''}
             <div class="bts-card-meta">
-              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
+              ${slug ? `<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || player.teamAbbr || ''} · ${player.position || ''} · #${player.orderPos || '—'}
             </div>
           </div>
@@ -8357,11 +8357,11 @@ async function renderDailyDominators() {
       <div class="dom-card">
         <div class="dom-card-rank">${rankLabel}</div>
         <div class="dom-card-header">
-          <img class="dom-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
+          <img loading="lazy" decoding="async" class="dom-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
           <div>
             <div class="dom-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="dom-card-meta">
-              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
+              ${slug ? `<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:13px;vertical-align:middle;margin-right:4px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position}
             </div>
             <div class="dom-card-game">${p.gameLabel} · Final ${p.scoreLine}</div>
@@ -8518,11 +8518,11 @@ async function renderRisingStars() {
       <div class="rising-card">
         <div class="rising-card-rank">${rankLabel}</div>
         <div class="rising-card-header">
-          <img class="rising-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
+          <img loading="lazy" decoding="async" class="rising-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
           <div style="min-width:0">
             <div class="rising-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="rising-card-meta">
-              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
+              ${slug ? `<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position || ''} · Bats ${p.orderPos || '?'}
             </div>
             <div class="rising-card-meta" style="margin-top:3px">vs ${escHtml(oppAbbr)}${pitcherName ? ` · SP: ${escHtml(pitcherName)}` : ''}</div>
@@ -8679,11 +8679,11 @@ async function renderDueForHit() {
       <div class="dfh-card">
         <div class="dfh-card-rank">${rankLabel}</div>
         <div class="dfh-card-header">
-          <img class="dfh-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
+          <img loading="lazy" decoding="async" class="dfh-card-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="${escHtml(p.name)}">
           <div style="min-width:0">
             <div class="dfh-card-name td-player-link" onclick="openPlayerModal(${p.id})" style="cursor:pointer">${escHtml(p.name)}</div>
             <div class="dfh-card-meta">
-              ${slug ? `<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
+              ${slug ? `<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:12px;vertical-align:middle;margin-right:3px" onerror="this.style.display='none'" alt="">` : ''}
               ${ti.city || ''} ${ti.nick || p.teamAbbr || ''} · ${p.position || ''} · Bats ${p.orderPos || '?'}
             </div>
             <div class="dfh-card-meta" style="margin-top:3px">vs ${escHtml(oppAbbr)}${pitcherName ? ` · SP: ${escHtml(pitcherName)}` : ''}</div>
@@ -9040,7 +9040,8 @@ async function backgroundRefresh() {
     renderTopPlays();
     renderHotStreaks();
     await renderOverallTopPlays();
-    renderCurrentTab();
+    // Overall was just rendered — only re-render if the user is on another tab
+    if (state.activeTab !== 'overall') renderCurrentTab();
 
     document.getElementById('formulaSection').style.display = 'block';
     document.getElementById('legendSection').style.display = 'block';
@@ -9165,7 +9166,8 @@ async function startFetch() {
     // Await live data before renderCurrentTab so BTS shows live/final badges
     // on first load without requiring a tab switch.
     await renderOverallTopPlays();
-    renderCurrentTab();
+    // Overall was just rendered — only re-render if the user is on another tab
+    if (state.activeTab !== 'overall') renderCurrentTab();
 
     document.getElementById('formulaSection').style.display='block';
     document.getElementById('legendSection').style.display='block';
@@ -9535,7 +9537,7 @@ async function renderHitForge() {
     const photoUrl = headshotUrl(p.id);
     const ti      = TEAM_INFO[p.teamId]||{};
     const slug    = ti.espn||(p.teamAbbr||'').toLowerCase();
-    const logo    = slug ? `<img class="hf-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const logo    = slug ? `<img loading="lazy" decoding="async" class="hf-team-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
     const pName   = p._pitcher?.fullName||p._pitcher?.name||'TBD';
     const pEra    = p._pitcher?.seasonStats?.era != null ? Number(p._pitcher.seasonStats.era) : null;
     const eraStr  = pEra != null ? ` (${pEra.toFixed(2)})` : '';
@@ -9565,7 +9567,7 @@ async function renderHitForge() {
     return `<div class="hf-compact-card${i===0?' hf-compact-card-top':''}">
       <div class="hf-compact-header">
         <div class="hf-compact-photo-wrap">
-          <img class="hf-compact-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="">
+          <img loading="lazy" decoding="async" class="hf-compact-photo" src="${photoUrl}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'" alt="">
           <span class="hf-compact-rank">${i+1}</span>
         </div>
         <div class="hf-compact-info">
@@ -9785,7 +9787,7 @@ function renderSafestParlay(isReroll = false) {
   const picks = result.map((c, i) => {
     const ti   = TEAM_INFO[c.p.teamId] || {};
     const slug = ti.espn || (c.p.teamAbbr || '').toLowerCase();
-    const logo = slug ? `<img style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff1;padding:1px;flex-shrink:0" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const logo = slug ? `<img loading="lazy" decoding="async" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff1;padding:1px;flex-shrink:0" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
     const recStr = c.oppWins + c.oppLosses > 0 ? `vs ${c.oppAbbr} (${c.oppWins}-${c.oppLosses})` : `vs ${c.oppAbbr}`;
     return `
       <div class="soa-pick">
@@ -9873,7 +9875,7 @@ function renderParlayTab(type) {
     const tier  = getHFTier(score);
     const ti    = TEAM_INFO[p.teamId] || {};
     const slug  = ti.espn || (p.teamAbbr||'').toLowerCase();
-    const logo  = slug ? `<img style="width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff1;padding:2px" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const logo  = slug ? `<img loading="lazy" decoding="async" style="width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff1;padding:2px" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
     const safe  = (p.name||'').replace(/'/g,"\\'");
     return `<div class="hf-parlay-pick">
       <span class="hf-parlay-num">${i+1}</span>${logo}
@@ -10207,7 +10209,7 @@ function buildCustomParlay(isReroll = false) {
     const tier = getHFTier(s.score);
     const ti   = TEAM_INFO[s.p.teamId] || {};
     const slug = ti.espn || (s.p.teamAbbr||'').toLowerCase();
-    const logo = slug ? `<img style="width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff1;padding:2px" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
+    const logo = slug ? `<img loading="lazy" decoding="async" style="width:22px;height:22px;border-radius:50%;object-fit:contain;background:#fff1;padding:2px" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'" alt="">` : '';
     const safeName = (s.p.name||'').replace(/'/g,"\\'");
     const tag = s._isSneaky
       ? `<span style="font-size:9px;color:#f59e0b;font-weight:700;padding:1px 5px;border:1px solid #f59e0b60;border-radius:6px;white-space:nowrap;">🎯 SNEAKY</span>`
@@ -10471,7 +10473,8 @@ async function tryLoadSnapshot() {
     renderTopPlays();
     // Await live data before renderCurrentTab so BTS badges are populated.
     await renderOverallTopPlays();
-    renderCurrentTab();
+    // Overall was just rendered — only re-render if the user is on another tab
+    if (state.activeTab !== 'overall') renderCurrentTab();
     return true;
   } catch { return false; }
 }
@@ -11347,7 +11350,7 @@ function _arsenalHitCardHTML(r, rank) {
     <div class="ahf-id">
       <div class="ahf-id-top">
         <span class="ahf-id-rank">#${rank}</span>
-        <img class="ahf-id-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+        <img loading="lazy" decoding="async" class="ahf-id-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
         <div class="ahf-id-fallback" style="display:none">${initial}</div>
         <div class="ahf-id-info">
           <div class="ahf-id-name">${escHtml(player.name||'Unknown')}</div>
@@ -11375,7 +11378,7 @@ function _arsenalHitCardHTML(r, rank) {
     <!-- ── Row 3: Facing SP (always visible) ───────────────────── -->
     <div class="ahf-sp-row">
       ${pPhotoUrl
-        ? `<img class="ahf-sp-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-sp-fallback" style="display:none">${pInitial}</div>`
+        ? `<img loading="lazy" decoding="async" class="ahf-sp-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-sp-fallback" style="display:none">${pInitial}</div>`
         : `<div class="ahf-sp-fallback">${pInitial}</div>`}
       <div class="ahf-sp-info">
         <div class="ahf-sp-name">${escHtml(pName||'Unknown SP')} <span style="color:#2a3a52">(${pitcher?.pitchHand||'?'}HP)</span></div>
@@ -11717,7 +11720,7 @@ function _richScanCardHTML(r, rank, opts) {
     <div class="ahf-id">
       <div class="ahf-id-top">
         <span class="ahf-id-rank">#${rank}</span>
-        <img class="ahf-id-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+        <img loading="lazy" decoding="async" class="ahf-id-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
         <div class="ahf-id-fallback" style="display:none">${initial}</div>
         <div class="ahf-id-info">
           <div class="ahf-id-name">${escHtml(player.name||'Unknown')}</div>
@@ -11738,7 +11741,7 @@ function _richScanCardHTML(r, rank, opts) {
     ${achieveHTML}
     <div class="ahf-sp-row">
       ${pPhotoUrl
-        ? `<img class="ahf-sp-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-sp-fallback" style="display:none">${pInitial}</div>`
+        ? `<img loading="lazy" decoding="async" class="ahf-sp-photo" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="ahf-sp-fallback" style="display:none">${pInitial}</div>`
         : `<div class="ahf-sp-fallback">${pInitial}</div>`}
       <div class="ahf-sp-info">
         <div class="ahf-sp-name">${escHtml(pName||'Unknown SP')} <span style="color:#2a3a52">(${pitcher?.pitchHand||'?'}HP)</span></div>
@@ -12335,7 +12338,7 @@ function _buildBts2DeepCard(r, pickNum) {
   const spHTML = `<div class="bpick-section">
     <div class="bpick-sect-hdr">⚔️ Opposing SP — ${escHtml(pitcher?.fullName||pitcher?.name||'Unknown')}</div>
     <div class="bpick-sp-mini-row">
-      ${pPhotoUrl ? `<img class="bpick-sp-face" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="bpick-sp-face-fb" style="display:none">${pInitial}</div>` : `<div class="bpick-sp-face-fb">${pInitial}</div>`}
+      ${pPhotoUrl ? `<img loading="lazy" decoding="async" class="bpick-sp-face" src="${pPhotoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt=""><div class="bpick-sp-face-fb" style="display:none">${pInitial}</div>` : `<div class="bpick-sp-face-fb">${pInitial}</div>`}
       <div class="bpick-stat-grid" style="flex:1">
         ${ps.era  != null ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${eraClr}">${(+ps.era).toFixed(2)}</div><div class="bpick-stat-lbl">ERA</div></div>` : ''}
         ${h9           ? `<div class="bpick-stat-cell"><div class="bpick-stat-val" style="color:${h9Clr}">${h9}</div><div class="bpick-stat-lbl">H/9</div></div>` : ''}
@@ -12484,7 +12487,7 @@ function _buildBts2DeepCard(r, pickNum) {
     <div class="bpick-pick-badge" style="background:${pickBadgeClr}20;border:1px solid ${pickBadgeClr}40;color:${pickBadgeClr}">${pickLabel}</div>
     <div class="bpick-confidence-row"><span class="bpick-confidence" style="color:${confClr}">● ${confidence}</span><span class="bpick-composite-score" style="color:${confClr}">Score ${_displayScore}</span></div>
     <div class="bpick-player-row">
-      <img class="bpick-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
+      <img loading="lazy" decoding="async" class="bpick-photo" src="${photoUrl}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="">
       <div class="bpick-photo-fb" style="display:none">${initial}</div>
       <div class="bpick-player-info">
         <div class="bpick-player-name">${escHtml(player.name||'Unknown')}</div>
@@ -12730,13 +12733,13 @@ function labInit() {
     return `<div class="lab-game-card" onclick="labSelectGame('${gd.gamePk}')">
       <div class="lab-game-matchup">
         <div class="lab-game-team">
-          <img class="lab-game-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awSlug}.png" onerror="this.style.display='none'">
+          <img loading="lazy" decoding="async" class="lab-game-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awSlug}.png" onerror="this.style.display='none'">
           <span class="lab-game-abbr">${escHtml(gd.awayAbbr||'')}</span>
           ${awRecStr?`<span class="lab-game-rec">(${awRecStr})</span>`:''}
         </div>
         <span class="lab-game-at">@</span>
         <div class="lab-game-team">
-          <img class="lab-game-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${hmSlug}.png" onerror="this.style.display='none'">
+          <img loading="lazy" decoding="async" class="lab-game-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${hmSlug}.png" onerror="this.style.display='none'">
           <span class="lab-game-abbr">${escHtml(gd.homeAbbr||'')}</span>
           ${hmRecStr?`<span class="lab-game-rec">(${hmRecStr})</span>`:''}
         </div>
@@ -12774,7 +12777,7 @@ function labSelectGame(gamePk) {
       <label class="lab-player-check-wrap" onclick="event.stopPropagation()">
         <input type="checkbox" class="lab-player-check" id="chk_${p.id}" value="${p.id}" onchange="toggleComparePlayer(${p.id},this.checked)">
       </label>
-      <img class="lab-player-photo" src="${photo}" onerror="this.style.display='none'" onclick="labSelectPlayer(${p.id})">
+      <img loading="lazy" decoding="async" class="lab-player-photo" src="${photo}" onerror="this.style.display='none'" onclick="labSelectPlayer(${p.id})">
       <div class="lab-player-info" onclick="labSelectPlayer(${p.id})">
         <div class="lab-player-name">${escHtml(p.name)}</div>
         <div class="lab-player-meta">${p.position||''} · ${p.orderPos?'#'+p.orderPos:'TBD'}</div>
@@ -12792,7 +12795,7 @@ function labSelectGame(gamePk) {
 
   const colHeader = (ti, slug, label) => `
     <div class="lab-col-header">
-      <img style="width:24px;height:24px;object-fit:contain" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'">
+      <img loading="lazy" decoding="async" style="width:24px;height:24px;object-fit:contain" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" onerror="this.style.display='none'">
       <span class="lab-col-name">${escHtml((ti.city||'')+' '+(ti.nick||''))}</span>
       <span class="lab-col-badge">${label}</span>
     </div>`;
@@ -13303,9 +13306,9 @@ function buildCompareHTML(dataA, dataB) {
     <table class="lab-compare-table">
       <colgroup><col style="width:40%"><col style="width:20%"><col style="width:40%"></colgroup>
       <tr>
-        <th><img class="lct-photo" src="${photoA}" onerror="this.style.display='none'"><button class="lct-name-btn" onclick="labCompareViewPlayer(${pA.id},${pA.gamePk})">${escHtml(pA.name)}</button></th>
+        <th><img loading="lazy" decoding="async" class="lct-photo" src="${photoA}" onerror="this.style.display='none'"><button class="lct-name-btn" onclick="labCompareViewPlayer(${pA.id},${pA.gamePk})">${escHtml(pA.name)}</button></th>
         <th>Stat</th>
-        <th><button class="lct-name-btn" onclick="labCompareViewPlayer(${pB.id},${pB.gamePk})">${escHtml(pB.name)}</button><img class="lct-photo" src="${photoB}" onerror="this.style.display='none'"></th>
+        <th><button class="lct-name-btn" onclick="labCompareViewPlayer(${pB.id},${pB.gamePk})">${escHtml(pB.name)}</button><img loading="lazy" decoding="async" class="lct-photo" src="${photoB}" onerror="this.style.display='none'"></th>
       </tr>
       ${rowHTML}
       <tr class="lct-score-row">
@@ -13893,7 +13896,7 @@ function _eliteScanCardHTML(player, score, reasons, gameLabel, gamePk, isGlobal,
     </label>
     <div class="bts-card-rank" style="color:#a78bfa">${score}</div>
     <div class="bts-card-header" style="padding-left:22px;padding-right:48px">
-      <img class="bts-card-photo" src="${photoUrl}" alt="${escHtml(player.name)}">
+      <img loading="lazy" decoding="async" class="bts-card-photo" src="${photoUrl}" alt="${escHtml(player.name)}">
       <div>
         <div class="bts-card-name">${escHtml(player.name)}</div>
         <div class="bts-card-meta">${escHtml(player.teamAbbr||'')}${gameBadge}</div>
@@ -14312,7 +14315,7 @@ function _h2hCardHTML(r, rank) {
   return `<div class="h2h-card">
     <div class="h2h-card-header">
       <span class="h2h-rank">${rank}</span>
-      <img class="h2h-photo" src="${headshotUrl(player.id)}" alt="${escHtml(player.name)}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'">
+      <img loading="lazy" decoding="async" class="h2h-photo" src="${headshotUrl(player.id)}" alt="${escHtml(player.name)}" onerror="this.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/v1/people/generic/headshot/67/current'">
       <div class="h2h-player-meta">
         <div class="h2h-player-name">${escHtml(player.name)}${orderBadge} <span style="color:#60a5fa;font-size:10px;font-weight:700">${escHtml(player.teamAbbr || '')}</span></div>
         <div class="h2h-player-sub">vs ${escHtml(pitcher.fullName || pitcher.name || '?')}${handBadge} &nbsp;·&nbsp; ${escHtml(gameLabel)}</div>
@@ -15743,10 +15746,10 @@ function _teamScanCardHTML(r) {
   const awayTi   = TEAM_INFO[awayTeamId] || {};
   const homeTi   = TEAM_INFO[homeTeamId] || {};
   const awayLogo = awayTi.espn
-    ? `<img class="twp-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayTi.espn}.png" onerror="this.style.display='none'" alt="">`
+    ? `<img loading="lazy" decoding="async" class="twp-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${awayTi.espn}.png" onerror="this.style.display='none'" alt="">`
     : '<div style="width:44px;height:44px"></div>';
   const homeLogo = homeTi.espn
-    ? `<img class="twp-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeTi.espn}.png" onerror="this.style.display='none'" alt="">`
+    ? `<img loading="lazy" decoding="async" class="twp-logo" src="https://a.espncdn.com/i/teamlogos/mlb/500/${homeTi.espn}.png" onerror="this.style.display='none'" alt="">`
     : '<div style="width:44px;height:44px"></div>';
   const awayName   = awayTi.city ? `${awayTi.city} ${awayTi.nick}` : (awayAbbr || '?');
   const homeName   = homeTi.city ? `${homeTi.city} ${homeTi.nick}` : (homeAbbr || '?');
@@ -17079,14 +17082,14 @@ async function runLabAnalysis() {
     </div>
     <div class="lab-deep-body">
       <div class="lab-hero-row">
-        <img class="lab-hero-photo-lg" style="border-color:${barColor}55;box-shadow:0 0 16px ${barColor}22" src="${photoUrl}" onerror="this.style.display='none'" alt="">
+        <img loading="lazy" decoding="async" class="lab-hero-photo-lg" style="border-color:${barColor}55;box-shadow:0 0 16px ${barColor}22" src="${photoUrl}" onerror="this.style.display='none'" alt="">
         <div style="flex:1">
           <div class="lab-hero-name" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${escHtml(player.name)}
             ${_labOrderLabel ? `<span style="font-family:'Bebas Neue',cursive;font-size:18px;color:#7c3aed;line-height:1;background:#7c3aed18;border:1px solid #7c3aed33;border-radius:5px;padding:0 6px" title="Batting order">${_labOrderLabel}</span>` : ''}
           </div>
           <div class="lab-hero-meta">
-            ${slug?`<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:14px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`:''}
+            ${slug?`<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${slug}.png" style="height:14px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`:''}
             ${escHtml((ti.city||'')+(ti.nick?' '+ti.nick:''))} · ${escHtml(player.position||'')} · Bats ${escHtml(player.batSide||'?')}
           </div>
         </div>
@@ -17188,11 +17191,11 @@ async function runLabAnalysis() {
     </div>
     <div class="lab-deep-body">
       <div class="lab-hero-row">
-        ${pitcherPhoto?`<img class="lab-hero-photo-lg" src="${pitcherPhoto}" onerror="this.style.display='none'" alt="">`:''}
+        ${pitcherPhoto?`<img loading="lazy" decoding="async" class="lab-hero-photo-lg" src="${pitcherPhoto}" onerror="this.style.display='none'" alt="">`:''}
         <div style="flex:1">
           <div class="lab-hero-name">${pitcher?.fullName?escHtml(pitcher.fullName):'Pitcher TBD'}</div>
           <div class="lab-hero-meta">
-            ${oppSlug?`<img src="https://a.espncdn.com/i/teamlogos/mlb/500/${oppSlug}.png" style="height:14px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`:''}
+            ${oppSlug?`<img loading="lazy" decoding="async" src="https://a.espncdn.com/i/teamlogos/mlb/500/${oppSlug}.png" style="height:14px;object-fit:contain;vertical-align:middle" onerror="this.style.display='none'">`:''}
             ${escHtml((oppTi.city||'')+(oppTi.nick?' '+oppTi.nick:''))} · ${pitcherHand}HP · SP
           </div>
         </div>
