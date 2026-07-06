@@ -6207,9 +6207,15 @@ function renderTopPlays() {
   // Apply mode filter after grids are rendered
   applyBbModeFilter(state.bbViewMode || 'combined');
 
-  document.getElementById('mainTabs').style.display = 'flex';
+  _showMainTabs();
+}
 
-  // Default to Beat the Streak on very first load only
+// Unhide the main tab bar; land on Beat the Streak on very first load only.
+// Called early from startFetch (as soon as game chips render) so the app is
+// interactive while games stream in, and again from renderOverallTopPlays
+// for the snapshot-restore path.
+function _showMainTabs() {
+  document.getElementById('mainTabs').style.display = 'flex';
   if (!state._tabInitialized) {
     state._tabInitialized = true;
     const btsBtn = document.querySelector('.main-tab[data-tab="bts"]');
@@ -8000,8 +8006,11 @@ function renderBeatTheStreak() {
   grid.innerHTML = '';
   empty.style.display = 'none';
 
-  // Show spinner while initial data fetch is still in progress
-  if (state.loading) {
+  // Show spinner while the initial fetch is in progress and nothing has
+  // landed yet; once any game has players, render partial picks and let the
+  // per-wave re-render in startFetch fill in the rest.
+  const _anyPlayers = Object.values(state.predictions).some(gd => gd?.players?.length);
+  if (state.loading && !_anyPlayers) {
     grid.innerHTML = '<div style="text-align:center;padding:40px 16px;color:var(--text-muted);font-size:13px">⏳ Loading today\'s lineups and picks…</div>';
     return;
   }
@@ -9087,15 +9096,12 @@ async function startFetch() {
 
     renderGameChips(games);
 
-    // Show progress bar now that we know the game count
-    const _barWrap = document.getElementById('loadingBarWrap');
-    const _barFill = document.getElementById('loadingBarFill');
-    const _barPct  = document.getElementById('loadingBarPct');
-    if (_barWrap) _barWrap.style.display = 'block';
-    const _setBar  = pct => {
-      if (_barFill) _barFill.style.width = `${pct}%`;
-      if (_barPct)  _barPct.textContent  = `${Math.round(pct)}%`;
-    };
+    // Schedule is known — dismiss the blocking overlay so the app is usable
+    // immediately. Per-game data streams in behind the non-blocking badge,
+    // and tab loading guards cover anything not yet rendered.
+    hideLoading();
+    _showMainTabs();
+    const _setBar = pct => showBgRefresh(`⏳ Loading games… ${Math.round(pct)}%`);
     _setBar(0);
 
     // Process games in concurrent waves of 3 — ~3× faster than sequential
@@ -9134,8 +9140,12 @@ async function startFetch() {
 
     for (let _wi = 0; _wi < games.length; _wi += GAME_WAVE) {
       await Promise.allSettled(games.slice(_wi, _wi + GAME_WAVE).map(_processOneGame));
+      // Progressive render: BTS and Streaks read only state.predictions, so
+      // refresh them as each wave lands rather than after the final wave.
+      // (Overall is excluded — it triggers live-feed fetches per render.)
+      if (state.activeTab === 'bts' || state.activeTab === 'streaks') renderCurrentTab();
     }
-    _setBar(100);
+    hideBgRefresh();
 
     // No game auto-selected — user must click a game chip
     if (state.selectedGamePk && !state.predictions[state.selectedGamePk]) {
@@ -9163,6 +9173,7 @@ async function startFetch() {
 
   } catch (err) {
     state.loading = false;
+    hideBgRefresh();
     console.error('Fetch error:', err);
     const _em = (err?.message || '').toLowerCase();
     let _errDetail;
