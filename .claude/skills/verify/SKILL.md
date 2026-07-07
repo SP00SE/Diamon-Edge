@@ -16,8 +16,10 @@ const pw = require('C:/Users/Arish/AppData/Local/npm-cache/_npx/e41f203b7505f1fb
 const browser = await pw.chromium.launch({ headless: false }); // headed REQUIRED, see gotchas
 ```
 
-Startup: the tab bar `#mainTabs` is `display:none` until the initial schedule/lineup fetch finishes (1–3 min). Wait for
-`page.waitForSelector('.main-tab[data-tab="lab"]', { state: 'visible', timeout: 300000 })`.
+Startup: the tab bar `#mainTabs` appears within seconds of the schedule fetch; per-game data then streams in behind the
+`#bgRefreshBadge` progress badge (badge loses its `visible` class when the pipeline finishes). Wait for
+`page.waitForSelector('.main-tab[data-tab="lab"]', { state: 'visible', timeout: 120000 })` — if this takes more than
+~30s the early-interactive load path (startFetch → hideLoading/_showMainTabs) has regressed.
 
 Team Win Predictor flow: click `.main-tab[data-tab="lab"]` → `#labTeamScanBtn` → wait `#labTeamScanCards .twp-card` (scan takes 1–3 min). Per-card: `▼ Details` button id `twp_detbtn_<gamePk>`, container `twp_det_<gamePk>`, simulator panel `twp-sim-panel-<gamePk>`.
 
@@ -25,7 +27,7 @@ Team Win Predictor flow: click `.main-tab[data-tab="lab"]` → `#labTeamScanBtn`
 - **FanGraphs (WAR data) hard-blocks headless Chromium** — `net::ERR_FAILED`, no response, UA override does not help. Headless runs show "⚠ WAR data still loading" on every card even when the code is correct. Always verify WAR-dependent features with `headless: false`.
 - `state` is a top-level `let`, not a window property: probe with `typeof state !== 'undefined'`, never `window.state`.
 - A "Cache Data Locally?" consent dialog overlays the lower viewport on fresh profiles; dismiss or ignore it in screenshots.
-- Pre-existing console noise: `TypeError: _requestQueue.shift(...) is not a function` from `lib/data/cache.js` (throttle race) fires during fetch bursts — not caused by UI changes.
+- `TypeError: _requestQueue.shift(...) is not a function` was a throttle race in `lib/data/cache.js`, fixed with a guarded dequeue (see tests/cache-throttle.test.js). Any sighting of it now is a regression, not pre-existing noise.
 
 ## Static checks (pre-commit guards, not verification)
 - `node tests/lab-scorer.test.js` → must end `0 failed`.
