@@ -101,3 +101,11 @@ Present four facts:
 - Commit message: `type(scope): description` (e.g. `fix(lab): ...`, `feat(twp): ...`, `chore: ...`).
 - Always add `Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>` trailer.
 - Push immediately after each commit — GitHub Pages is the live site.
+
+### API error / interruption recovery
+If a session is interrupted (e.g. `API Error: Unable to connect to API (ECONNRESET)`, network drop, disconnected session), on resume:
+- Do NOT restart the task from scratch and do NOT duplicate changes.
+- First run `git status` + `git diff` and review the todo list to identify completed vs unfinished work.
+- Repair any partial/half-applied edits, then continue from the last safe point.
+- If tests, builds, or verification were interrupted, rerun them.
+- Briefly state what was already done, what was repaired, and what remains before continuing.
