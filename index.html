@@ -8944,6 +8944,13 @@ function onDateChange() {
   state.warMap          = new Map();
   state.warDataLoaded   = false;
   leaderboardLoaded = false;
+  // TWP results belong to the old date — clear the rendered cards and, if the
+  // user is looking at them right now, re-run the scan once the new date's
+  // data finishes loading (startFetch checks this flag at the end).
+  const _twpScreen = document.getElementById('labScreenTeamScan');
+  state._twpAutoRerun = state.activeTab === 'lab' && _twpScreen && _twpScreen.style.display === 'block';
+  const _twpCards = document.getElementById('labTeamScanCards');
+  if (_twpCards) _twpCards.innerHTML = '';
   cache.clear();
   gameLogCache.clear();
   hfCache.clear();
@@ -9175,6 +9182,14 @@ async function startFetch() {
     document.getElementById('lastUpdated').innerHTML = `Updated: <span>${new Date().toLocaleTimeString()}</span>`;
     state.lastFetched = Date.now();
     saveSnapshot(); // persist processed predictions for same-day instant reload
+
+    // Date was switched while the TWP results screen was open — re-run the
+    // scan for the new date so the user gets that day's predictions/record
+    // without clicking the button again.
+    if (state._twpAutoRerun) {
+      state._twpAutoRerun = false;
+      if (state.activeTab === 'lab') handleTeamScan();
+    }
 
   } catch (err) {
     state.loading = false;
@@ -14508,24 +14523,27 @@ async function handleTeamScan() {
     const _tsBar   = `<div style="font-size:10px;color:var(--text-muted);padding:2px 0 8px">&#128336; Predictions as of ${_timeStr}</div>`;
 
     // ── Accuracy banner: computed from final games only ──
+    // Toss-up leans count toward the record — the card still names a side
+    // ("lean X") and the per-card badge already scores it Correct/Missed.
+    // Only exact ties (winner === 'tie', no lean shown) are excluded.
     const _accBanner = (() => {
       const finalGames   = results.filter(r => r.isFinal && r.actualWinner);
       if (!finalGames.length) return '';
-      const calledGames  = finalGames.filter(r => r.winner !== 'tie' && r.winEdge !== 'Toss-Up');
+      const calledGames  = finalGames.filter(r => r.winner !== 'tie');
       const correctGames = calledGames.filter(r => r.winner === r.actualWinner);
-      const tossups      = finalGames.length - calledGames.length;
+      const noCalls      = finalGames.length - calledGames.length;
       const pct          = calledGames.length ? Math.round(correctGames.length / calledGames.length * 100) : 0;
       const pctClass     = pct >= 60 ? 'twp-acc-great' : pct >= 45 ? 'twp-acc-ok' : 'twp-acc-poor';
 
-      // Per-game pip row (one small square per final game: green=correct, red=wrong, grey=tossup)
+      // Per-game pip row (one small square per final game: green=correct, red=wrong, grey=no call)
       const pips = finalGames.map(r => {
-        const isTossup = r.winner === 'tie' || r.winEdge === 'Toss-Up';
-        if (isTossup) return `<div class="twp-acc-pip twp-acc-pip-tossup" title="Toss-Up"></div>`;
+        if (r.winner === 'tie') return `<div class="twp-acc-pip twp-acc-pip-tossup" title="No Call"></div>`;
         const ok = r.winner === r.actualWinner;
-        return `<div class="twp-acc-pip ${ok ? 'twp-acc-pip-correct' : 'twp-acc-pip-wrong'}" title="${ok ? 'Correct' : 'Missed'}"></div>`;
+        const lean = r.winEdge === 'Toss-Up' ? 'Toss-Up lean — ' : '';
+        return `<div class="twp-acc-pip ${ok ? 'twp-acc-pip-correct' : 'twp-acc-pip-wrong'}" title="${lean}${ok ? 'Correct' : 'Missed'}"></div>`;
       }).join('');
 
-      const noteStr = tossups > 0 ? `${tossups} toss-up${tossups > 1 ? 's' : ''} excluded` : '';
+      const noteStr = noCalls > 0 ? `${noCalls} no-call tie${noCalls > 1 ? 's' : ''} excluded` : '';
       return `<div class="twp-accuracy-bar">
         <div class="twp-accuracy-label">Today's Record</div>
         <div class="twp-accuracy-frac">${correctGames.length}/${calledGames.length}</div>
