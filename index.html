@@ -14428,6 +14428,19 @@ async function handleTeamScan() {
   btn.disabled = true;
   btn.textContent = '⏳ Scanning…';
 
+  // If the initial data pipeline is still running, wait for it to finish —
+  // scanning a partially-loaded predictions map silently dropped every game
+  // that hadn't been processed yet (late-slate games were the casualties).
+  if (state.loading) {
+    const _wTitle = document.getElementById('labLoadingTitle');
+    if (_wTitle) _wTitle.textContent = '🏟️ Team Win Predictor';
+    const _wSteps = document.getElementById('labLoadingSteps');
+    if (_wSteps) _wSteps.innerHTML =
+      '<div class="lab-loading-step active"><span class="ls-icon">⏳</span>Waiting for today\'s game data to finish loading…</div>';
+    _labShow('labScreenLoading');
+    while (state.loading) await new Promise(r => setTimeout(r, 400));
+  }
+
   const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const total    = allGames.length;
   if (!total) {
@@ -15778,12 +15791,17 @@ function _teamScanCardHTML(r) {
   const confKey  = (confidence || 'low').toLowerCase();
   const confBadge = `<span class="twp-conf twp-conf-${confKey}">${escHtml(confidence || 'Low')}</span>`;
 
-  // Date label
+  // Date + game-time label ("Wed 7/8 · 7:40 PM") — time only when gameDate
+  // carries a real timestamp (bare dates come from the error-fallback path).
   let dateLbl = '';
   if (gameDate) {
     try {
-      const _d = new Date(gameDate.includes('T') ? gameDate : gameDate + 'T12:00:00');
-      if (!isNaN(_d)) dateLbl = _d.toLocaleDateString('en-US', { weekday:'short', month:'numeric', day:'numeric' });
+      const _hasTime = gameDate.includes('T');
+      const _d = new Date(_hasTime ? gameDate : gameDate + 'T12:00:00');
+      if (!isNaN(_d)) {
+        dateLbl = _d.toLocaleDateString('en-US', { weekday:'short', month:'numeric', day:'numeric' });
+        if (_hasTime) dateLbl += ` · ${_d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })}`;
+      }
     } catch {}
   }
 
