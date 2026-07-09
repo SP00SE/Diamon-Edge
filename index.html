@@ -15302,7 +15302,7 @@ function _starterBBMatchup(pitcher, opposingPlayers) {
 }
 
 function _calibrateSigmoidSlope(finalResults) {
-  if (finalResults.length < 5) return 0.023;
+  if (finalResults.length < 5) return 0.030; // match _winProbability's fixed slope
   let lo = 0.005, hi = 0.5;
   for (let i = 0; i < 50; i++) {
     const mid = (lo + hi) / 2;
@@ -15319,7 +15319,11 @@ function _calibrateSigmoidSlope(finalResults) {
 }
 
 function _winProbability(scoreDiff, homeProjRuns, awayProjRuns) {
-  const k = 0.023; // fixed analytical slope — dynamic recalibration on same-day samples caused prediction instability
+  // Fixed analytical slope — dynamic same-day recalibration caused instability.
+  // 0.030 set from logistic MLE refit on the Jul 1-7 2026 backtest (90 finals,
+  // refit k=0.0307): logloss 0.6470→0.6424, Brier 0.2272→0.2249, and the
+  // 55-61% bucket's actual win rate moved from 68% to 58% (matching its label).
+  const k = 0.030;
   const scoreProb = 100 / (1 + Math.exp(-k * scoreDiff));
   if (homeProjRuns == null || awayProjRuns == null || !Number.isFinite(homeProjRuns) || !Number.isFinite(awayProjRuns)) {
     return Math.round(scoreProb);
