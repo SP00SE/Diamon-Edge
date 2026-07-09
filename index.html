@@ -8940,6 +8940,11 @@ function clearError() { document.getElementById('errorState').style.display='non
 
 // ─── DATE CHANGE ──────────────────────────────────────────────────────────
 function onDateChange() {
+  // A date change while the pipeline is mid-flight would be swallowed by
+  // startFetch's re-entry guard — and in-flight games would repopulate the
+  // cleared predictions map with the old date's data. Defer until it ends
+  // (startFetch's finally re-invokes with the latest input value).
+  if (state.loading) { state._pendingDateChange = true; return; }
   state.date = document.getElementById('dateInput').value;
   state.predictions     = {};
   state.playerMap       = {};
@@ -9214,6 +9219,11 @@ async function startFetch() {
   } finally {
     state.loading = false;
     document.getElementById('refreshBtn').disabled = false;
+    // Date was switched while this load ran — apply it now that the guard is open
+    if (state._pendingDateChange) {
+      state._pendingDateChange = false;
+      setTimeout(onDateChange, 0);
+    }
   }
 }
 
