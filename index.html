@@ -715,6 +715,57 @@ main { padding: 28px 0 60px; }
 .twp-postmortem { padding:7px 14px 9px; font-size:11px; color:#94a3b8; line-height:1.5; border-top:1px solid #1e293b; background:#0f172a; }
 .twp-pred-label { font-size:9px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); font-weight:700; margin-right:6px; }
 .twp-result-neutral { background:#94a3b822; color:#94a3b8; border:1px solid #94a3b844; }
+/* ── TWP result-at-a-glance (collapsed cards) ───────────────────────────── */
+.twp-result-strip { gap:10px; flex-wrap:wrap; }
+.twp-rs-win  { background:linear-gradient(to right,#052e1660,#0f172a); }
+.twp-rs-loss { background:linear-gradient(to right,#45091460,#0f172a); }
+.twp-result-score { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:#e2e8f0; }
+.twp-result-meta { font-size:10px; color:var(--text-muted); margin-left:auto; }
+.twp-card-win  { border-left:3px solid #22c55e55; }
+.twp-card-loss { border-left:3px solid #ef444466; }
+.twp-live-tag { font-size:9px; font-weight:800; color:#ef4444; letter-spacing:.5px; animation:twpLivePulse 1.6s ease-in-out infinite; }
+@keyframes twpLivePulse { 0%,100% { opacity:1 } 50% { opacity:.45 } }
+@media (prefers-reduced-motion: reduce) { .twp-live-tag { animation:none } }
+/* ── TWP group headers + filter chips ───────────────────────────────────── */
+.twp-group-hdr { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); margin:16px 2px 8px; display:flex; align-items:center; gap:6px; }
+.twp-group-hdr:first-child { margin-top:4px; }
+.twp-group-count { font-family:'JetBrains Mono',monospace; font-size:9px; color:#64748b; background:#1e293b; border-radius:8px; padding:1px 7px; }
+.twp-filter-bar { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px; }
+.twp-fchip { font-size:10px; font-weight:700; padding:4px 10px; border-radius:12px; border:1px solid var(--border); background:none; color:var(--text-muted); cursor:pointer; transition:all .15s; }
+.twp-fchip:hover { border-color:#334155; color:#e2e8f0; }
+.twp-fchip.active { background:#22c55e14; border-color:#22c55e55; color:#34d399; }
+.twp-empty-note { color:var(--text-muted); font-size:12px; padding:14px 4px; }
+/* ── TWP last-10-days tracker panel ─────────────────────────────────────── */
+.twp-trk-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:14px; }
+.twp-trk-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.twp-trk-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); }
+.twp-trk-pct { font-family:'Bebas Neue',cursive; font-size:34px; line-height:1; letter-spacing:1px; }
+.twp-trk-good { color:#22c55e; } .twp-trk-ok { color:#f59e0b; } .twp-trk-poor { color:#ef4444; }
+.twp-trk-stats { display:flex; gap:14px; flex-wrap:wrap; font-family:'JetBrains Mono',monospace; font-size:11px; color:#cbd5e1; }
+.twp-trk-stats b { color:#e2e8f0; }
+.twp-trk-streak { color:#f59e0b; font-weight:700; }
+.twp-trk-days { margin-top:10px; display:flex; flex-direction:column; gap:3px; }
+.twp-trk-day { display:flex; align-items:center; gap:8px; }
+.twp-trk-day-date { width:44px; font-size:10px; color:var(--text-muted); font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+.twp-trk-day-frac { width:34px; font-size:10px; font-weight:700; color:#cbd5e1; font-family:'JetBrains Mono',monospace; text-align:right; flex-shrink:0; }
+.twp-trk-day-bar { flex:1; height:6px; background:#111827; border-radius:3px; position:relative; overflow:hidden; }
+.twp-trk-day-fill { height:100%; border-radius:3px; }
+.twp-trk-fill-good { background:linear-gradient(to right,#16a34a,#22c55e); }
+.twp-trk-fill-poor { background:linear-gradient(to right,#b91c1c,#ef4444); }
+.twp-trk-day-notch { position:absolute; left:50%; top:-1px; bottom:-1px; width:2px; background:#06080c; }
+.twp-trk-day-pct { width:36px; text-align:right; font-size:10px; font-weight:700; color:#94a3b8; font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+.twp-trk-note { margin-top:8px; font-size:10px; color:var(--text-muted); font-style:italic; }
+.twp-trk-warn { margin-top:8px; font-size:10px; color:#f59e0b; }
+.twp-trk-adv-btn { margin-top:10px; background:none; border:none; padding:0; color:#a78bfa; font-size:10px; font-weight:700; cursor:pointer; letter-spacing:.3px; }
+.twp-trk-adv { margin-top:8px; border-top:1px solid var(--border); padding-top:8px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+.twp-trk-adv-col-hdr { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:4px; }
+.twp-trk-adv-row { display:flex; justify-content:space-between; font-size:10px; font-family:'JetBrains Mono',monospace; color:#cbd5e1; padding:1px 0; }
+.twp-trk-adv-row b { color:#e2e8f0; }
+@media (max-width:640px) {
+  .twp-trk-pct { font-size:28px; }
+  .twp-trk-stats { gap:10px; font-size:10px; }
+  .twp-result-meta { margin-left:0; width:100%; }
+}
 /* ── TWP Accuracy Banner ── */
 .twp-accuracy-bar { display:flex; align-items:center; gap:10px; padding:8px 14px; margin-bottom:10px; background:linear-gradient(135deg,#0d1b2a,#0a1525); border:1px solid var(--border); border-radius:8px; flex-wrap:wrap; }
 .twp-accuracy-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-muted); flex-shrink:0; }
@@ -3295,6 +3346,8 @@ main { padding: 28px 0 60px; }
           <span class="lab-back-crumb">Team Win Predictor — All Games</span>
         </div>
         <div class="lab-global-elite-header">🏟️ Team Win Predictor · Sorted by Game Time</div>
+        <div id="twpTrackerPanel"></div>
+        <div id="twpFilterBar"></div>
         <div id="labTeamScanCards"></div>
       </div>
       <!-- Screen 1g: H2H vs SP History -->
@@ -4091,6 +4144,7 @@ main { padding: 28px 0 60px; }
 <script src="lib/formatters.js"></script>
 <script src="lib/data/cache.js"></script>
 <script src="lib/lab-scorer.js"></script>
+<script src="lib/twp-tracker.js"></script>
 <script>
 /* =====================================================================
    DIAMOND EDGE — MLB Hit & HR Prediction Engine
@@ -4102,7 +4156,7 @@ main { padding: 28px 0 60px; }
 // Bump this string whenever a breaking change is deployed (scoring model,
 // data shape, localStorage schema). Any cached snapshot from a prior version
 // is automatically cleared so returning users get fresh data.
-const APP_VERSION = '2026.06.28.1';
+const APP_VERSION = '2026.07.10.1'; // twp tracker + grouped predictor UI (twpPredLog is NOT wiped on version change)
 (function _cacheBust() {
   try {
     const stored = localStorage.getItem('de_app_version');
@@ -14582,6 +14636,11 @@ async function handleTeamScan() {
       </div>`;
     })();
 
+    // Cache results for instant single-game lookup from the main schedule
+    state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
+    // Save pre-game prediction snapshots + grade today's finals
+    _twpTrackerRecord(results);
+
     let _innerHtml = '';
     if (results.length === 0) {
       _innerHtml = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No complete game data available — check back once lineups are posted.</div>';
@@ -14594,11 +14653,13 @@ async function handleTeamScan() {
           `&#9888; ${scheduleCount} games on schedule · ${predCount} loaded · ${results.length} scored` +
           (missingCount > 0 ? ` · ${missingCount} failed to load (see console)` : '') +
           `</div>` : '';
-      _innerHtml = diagHtml + results.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('');
+      // data-twp-static survives filter re-renders (see setTwpFilter)
+      _innerHtml = `<div data-twp-static>${_tsBar}${_accBanner}${diagHtml}</div>` + _renderTwpGroups(results);
     }
-    cards.innerHTML = _tsBar + _accBanner + _innerHtml;
-    // Cache results for instant single-game lookup from the main schedule
-    state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
+    cards.innerHTML = results.length === 0 ? _tsBar + _accBanner + _innerHtml : _innerHtml;
+    _renderTwpFilterBar();
+    renderTwpTracker();
+    _twpBackgroundGrade(); // quiet — only the tracker panel re-renders when done
     _labShow('labScreenTeamScan');
   } catch(e) {
     _scanRestoreLoading();
@@ -15998,13 +16059,22 @@ function _teamScanCardHTML(r) {
     ? `<div class="twp-team-ctx">${_teamCtxCol(awayAbbr, awayStandings, true, awayProjRuns, awayFormBadge)}${_teamCtxCol(homeAbbr, homeStandings, false, homeProjRuns, homeFormBadge)}</div>`
     : '';
 
-  return `<div class="twp-card">
+  // Final-result summary — shared by the always-visible result strip and the
+  // postmortem inside Details. WIN/LOSS must be readable without expanding.
+  const _resKnown  = !!(isFinal && actualWinner);
+  const _predTie   = winner === 'tie';
+  const _resWin    = _resKnown && !_predTie && winner === actualWinner;
+  const _scoreLine = _resKnown ? `${escHtml(awayAbbr||'Away')} ${actualAwayScore} – ${actualHomeScore} ${escHtml(homeAbbr||'Home')}` : '';
+  const _liveNow   = !isFinal && (state.games || []).find(g => g.gamePk === gamePk)?.status?.abstractGameState === 'Live';
+
+  return `<div class="twp-card${_resKnown && !_predTie ? (_resWin ? ' twp-card-win' : ' twp-card-loss') : ''}">
 
     <div class="twp-header">
       <div class="twp-game-info">
         <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>
         ${dateLbl ? `<span class="twp-game-date">${escHtml(dateLbl)}</span>` : ''}
         ${isFinal ? `<span class="twp-final-tag">Final</span>` : ''}
+        ${_liveNow ? `<span class="twp-live-tag">&#9679; Live</span>` : ''}
       </div>
       ${confBadge}
     </div>
@@ -16055,6 +16125,13 @@ function _teamScanCardHTML(r) {
         <span class="twp-winner-conf">${winnerProb}%</span>
       </div>
     </div>
+
+    ${_resKnown ? `
+    <div class="twp-result-strip ${_predTie ? '' : _resWin ? 'twp-rs-win' : 'twp-rs-loss'}">
+      <span class="twp-result-badge ${_predTie ? 'twp-result-neutral' : _resWin ? 'twp-result-correct' : 'twp-result-wrong'}">${_predTie ? '— No Call' : _resWin ? '&#9989; WIN' : '&#10060; LOSS'}</span>
+      <span class="twp-result-score">Final: ${_scoreLine}</span>
+      <span class="twp-result-meta">Predicted ${_predTie ? 'Toss-Up' : escHtml((winner === 'away' ? awayAbbr : homeAbbr) || '')}${!_predTie && winnerProb != null ? ` · ${winnerProb}%` : ''}</span>
+    </div>` : ''}
 
     ${(mainReason || summaryText) ? `<div class="twp-reasoning-banner">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b80"> · Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
 
@@ -16182,15 +16259,10 @@ function _teamScanCardHTML(r) {
 
     ${isFinal && actualWinner ? (() => {
       // Bug 2: tie is a no-call, not a correct prediction
-      const predTie     = winner === 'tie';
-      const predCorrect = !predTie && winner === actualWinner;
+      const predTie     = _predTie;
+      const predCorrect = _resWin;
       const actualName  = actualWinner === 'away' ? escHtml(awayAbbr||'Away') : escHtml(homeAbbr||'Home');
-      const scoreLine   = `${escHtml(awayAbbr||'Away')} ${actualAwayScore} – ${actualHomeScore} ${escHtml(homeAbbr||'Home')}`;
-      const resultBadge = predTie
-        ? `<span class="twp-result-badge twp-result-neutral">— No Call</span>`
-        : predCorrect
-          ? `<span class="twp-result-badge twp-result-correct">&#10003; Correct</span>`
-          : `<span class="twp-result-badge twp-result-wrong">&#10007; Missed</span>`;
+      const scoreLine   = _scoreLine;
 
       // Bug 5: explicit three-way — when winner==='tie', predComps is null, no postmortem
       const predComps   = winner === 'away' ? awayComponents : winner === 'home' ? homeComponents : null;
@@ -16336,10 +16408,9 @@ function _teamScanCardHTML(r) {
         correctNote = `<div style="padding:6px 14px 7px;font-size:11px;color:#34d399;background:rgba(34,197,94,.04);border-top:1px solid rgba(34,197,94,.15)">${noteStr}</div>`;
       }
 
-      return `<div class="twp-result-strip">
-        <span class="twp-result-score">${scoreLine}</span>
-        ${resultBadge}
-      </div>${correctNote}${postmortem}`;
+      // Result strip lives in the collapsed card now — Details keeps only
+      // the postgame analysis (what held up / why the model missed).
+      return `${correctNote}${postmortem}`;
     })() : ''}
 
       <button class="twp-expand-btn" id="${btnId}" onclick="toggleTeamPredExpand('${bkId}','${btnId}')">&#9660; Player Breakdown</button>
@@ -16376,6 +16447,220 @@ function toggleTwpDetails(gamePk) {
   btn.innerHTML     = open ? '&#9660; Details' : '&#9650; Hide Details';
 }
 
+// ─── TWP PREDICTION TRACKER (localStorage wrapper + UI) ──────────────────
+// Core rules live in lib/twp-tracker.js. The 'twpPredLog' key is deliberately
+// NOT in the APP_VERSION wipe list — prediction history survives deploys.
+function _twpLogLoad() {
+  try { return TwpTracker.normalizeLog(JSON.parse(localStorage.getItem('twpPredLog') || 'null')); }
+  catch { return TwpTracker.emptyLog(); }
+}
+function _twpLogSave(log) {
+  try { localStorage.setItem('twpPredLog', JSON.stringify(log)); }
+  catch { /* storage full or blocked — tracker degrades gracefully */ }
+}
+
+// Save pre-game snapshots + grade today's finals from a completed scan.
+function _twpTrackerRecord(results) {
+  try {
+    const log = _twpLogLoad();
+    const nowIso = new Date().toISOString();
+    let changed = false;
+    for (const r of results) {
+      const rawGame = (state.games || []).find(g => g.gamePk === r.gamePk);
+      if (rawGame) {
+        const entry = TwpTracker.makeSnapshot(r, rawGame, { predictedAt: nowIso, appVersion: APP_VERSION });
+        if (entry && TwpTracker.addSnapshot(log, entry)) changed = true;
+      }
+      if (r.isFinal && r.actualWinner && Number.isFinite(r.actualAwayScore) && Number.isFinite(r.actualHomeScore)) {
+        if (TwpTracker.gradeGame(log, r.gamePk, {
+          abstractState: 'Final', detailedState: 'Final',
+          awayScore: r.actualAwayScore, homeScore: r.actualHomeScore,
+        }, nowIso)) changed = true;
+      }
+    }
+    if (changed) _twpLogSave(log);
+  } catch (e) { console.warn('[tracker] record failed:', e); }
+}
+
+// Quietly grade pending window games from the raw schedule (includes
+// postponed/suspended statuses that fetchSchedule filters out). Only the
+// tracker panel re-renders — cards, scroll, and open sections are untouched.
+let _twpGradeBusy = false;
+async function _twpBackgroundGrade() {
+  if (_twpGradeBusy) return;
+  const log = _twpLogLoad();
+  const today = getTodayStr();
+  const win = new Set(TwpTracker.windowDates(today, 10));
+  const dates = [...new Set(Object.values(log.games)
+    .filter(e => (e.status === 'pending' || e.status === 'suspended') && win.has(e.officialDate))
+    .map(e => e.officialDate))];
+  if (!dates.length) { renderTwpTracker(); return; }
+  _twpGradeBusy = true;
+  showBgRefresh('Updating final scores…');
+  let failed = false;
+  try {
+    for (const d of dates) {
+      try {
+        const data  = await cachedFetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${d}&hydrate=linescore`);
+        const games = data.dates?.[0]?.games || [];
+        const fresh = _twpLogLoad();
+        let changed = false;
+        for (const g of games) {
+          if (TwpTracker.gradeGame(fresh, g.gamePk, {
+            abstractState: g.status?.abstractGameState,
+            detailedState: g.status?.detailedState,
+            awayScore: g.teams?.away?.score, homeScore: g.teams?.home?.score,
+          }, new Date().toISOString())) changed = true;
+        }
+        if (changed) _twpLogSave(fresh);
+      } catch { failed = true; }
+    }
+  } finally {
+    _twpGradeBusy = false;
+    hideBgRefresh();
+    renderTwpTracker(failed);
+  }
+}
+
+function renderTwpTracker(loadFailed = false) {
+  const panel = document.getElementById('twpTrackerPanel');
+  if (!panel) return;
+  const log = _twpLogLoad();
+  const s = TwpTracker.computeStats(log, getTodayStr(), 10);
+  if (!Object.keys(log.games).length) {
+    panel.innerHTML = `<div class="twp-trk-panel">
+      <div class="twp-trk-title">Last 10 Days</div>
+      <div class="twp-empty-note">No graded predictions are available yet. Run the Team Win Predictor before games start — each pre-game prediction is saved and graded automatically once the game goes final.</div>
+    </div>`;
+    return;
+  }
+  const pctCls  = s.pct == null ? '' : s.pct >= 60 ? 'twp-trk-good' : s.pct >= 50 ? 'twp-trk-ok' : 'twp-trk-poor';
+  const fmtDay  = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const dailyRows = s.daily.map(d => `
+    <div class="twp-trk-day">
+      <span class="twp-trk-day-date">${fmtDay(d.date)}</span>
+      <span class="twp-trk-day-frac">${d.wins}/${d.graded}</span>
+      <div class="twp-trk-day-bar">
+        <div class="twp-trk-day-fill ${d.pct != null && d.pct >= 50 ? 'twp-trk-fill-good' : 'twp-trk-fill-poor'}" style="width:${d.pct ?? 0}%"></div>
+        <div class="twp-trk-day-notch"></div>
+      </div>
+      <span class="twp-trk-day-pct">${d.pct != null ? Math.round(d.pct) + '%' : d.pending ? '&#8987;' : '—'}</span>
+    </div>`).join('');
+  const bucketCol = (title, map, order) => {
+    const rows = order.filter(k => map[k]).map(k =>
+      `<div class="twp-trk-adv-row"><span>${escHtml(k)}</span><b>${map[k].wins}-${map[k].losses}${map[k].pct != null ? ` · ${Math.round(map[k].pct)}%` : ''}</b></div>`).join('');
+    return rows ? `<div><div class="twp-trk-adv-col-hdr">${title}</div>${rows}</div>` : '';
+  };
+  const simMap = {};
+  if (s.bySim.favorite.wins + s.bySim.favorite.losses) simMap['Sim favorite']   = s.bySim.favorite;
+  if (s.bySim.agree.wins    + s.bySim.agree.losses)    simMap['Model+Sim agree']    = s.bySim.agree;
+  if (s.bySim.disagree.wins + s.bySim.disagree.losses) simMap['Model+Sim disagree'] = s.bySim.disagree;
+  const advCols = [
+    bucketCol('By confidence', s.byConfidence, ['High', 'Medium', 'Low', 'Preliminary']),
+    bucketCol('By win edge',   s.byEdge,       ['Strong Edge', 'Moderate Edge', 'Slight Edge', 'Toss-Up']),
+    bucketCol('By lineups',    s.byLineup,     ['Confirmed lineups', 'Projected lineups']),
+    bucketCol('100× simulator', simMap,        ['Sim favorite', 'Model+Sim agree', 'Model+Sim disagree']),
+  ].filter(Boolean).join('');
+  const ungradedBits = [
+    s.pending   ? `${s.pending} pending` : '',
+    s.postponed ? `${s.postponed} postponed` : '',
+    s.suspended ? `${s.suspended} suspended` : '',
+    s.nocalls   ? `${s.nocalls} no-call` : '',
+  ].filter(Boolean).join(' · ');
+  panel.innerHTML = `<div class="twp-trk-panel">
+    <div class="twp-trk-head">
+      <span class="twp-trk-title">Last 10 Days</span>
+      <span class="twp-trk-pct ${pctCls}">${s.pct != null ? s.pct.toFixed(1) + '%' : '—'}</span>
+      <div class="twp-trk-stats">
+        <span><b>${s.wins}</b>W – <b>${s.losses}</b>L</span>
+        <span><b>${s.graded}</b> graded</span>
+        ${s.streak >= 2 ? `<span class="twp-trk-streak">&#128293; ${s.streak} straight</span>` : ''}
+        ${s.bestDay ? `<span title="Best day">&#9650; ${fmtDay(s.bestDay.date)} ${Math.round(s.bestDay.pct)}%</span>` : ''}
+        ${s.worstDay && s.worstDay.date !== s.bestDay?.date ? `<span title="Worst day">&#9660; ${fmtDay(s.worstDay.date)} ${Math.round(s.worstDay.pct)}%</span>` : ''}
+      </div>
+    </div>
+    ${dailyRows ? `<div class="twp-trk-days">${dailyRows}</div>` : `<div class="twp-empty-note">No graded predictions in the last 10 days yet.</div>`}
+    ${ungradedBits ? `<div class="twp-trk-note">Not counted: ${ungradedBits}</div>` : ''}
+    ${s.daysWithData < 10 ? `<div class="twp-trk-note">Tracker history is still building — ${s.daysWithData} of 10 days logged.</div>` : ''}
+    ${loadFailed ? `<div class="twp-trk-warn">&#9888; Final scores could not be refreshed. Previously saved results are still shown.</div>` : ''}
+    ${advCols ? `<button class="twp-trk-adv-btn" onclick="toggleTwpTrackerAdv()">${state._twpAdvOpen ? '&#9650; Hide breakdowns' : '&#9660; Accuracy breakdowns'}</button>
+    <div class="twp-trk-adv" style="display:${state._twpAdvOpen ? 'grid' : 'none'}">${advCols}</div>` : ''}
+  </div>`;
+}
+function toggleTwpTrackerAdv() {
+  state._twpAdvOpen = !state._twpAdvOpen;
+  renderTwpTracker();
+}
+
+// ─── TWP CARD GROUPS + FILTERS ────────────────────────────────────────────
+function _twpGameState(r) {
+  if (r.isFinal) return 'final';
+  const g = (state.games || []).find(x => x.gamePk === r.gamePk);
+  return g?.status?.abstractGameState === 'Live' ? 'live' : 'upcoming';
+}
+function _twpCardMatchesFilter(r, f) {
+  const st = _twpGameState(r);
+  const called  = r.isFinal && r.actualWinner && r.winner !== 'tie';
+  const correct = called && r.winner === r.actualWinner;
+  switch (f) {
+    case 'wins':     return correct;
+    case 'losses':   return called && !correct;
+    case 'pending':  return st !== 'final';
+    case 'highconf': return r.confidence === 'High';
+    case 'simfav': {
+      const sim = state.simResults?.get(Number(r.gamePk));
+      return !!sim && sim.simWinner !== 'tie' && sim.simWinner === r.winner;
+    }
+    default: return true;
+  }
+}
+function _renderTwpGroups(results) {
+  const f = state.twpFilter || 'all';
+  const filtered = results.filter(r => _twpCardMatchesFilter(r, f));
+  if (!filtered.length) return `<div class="twp-empty-note">No games match this filter.</div>`;
+  const groups = [
+    { label: '&#128308; Live',              items: [] },
+    { label: '&#9203; Upcoming',            items: [] },
+    { label: '&#9989; Final — Correct',     items: [] },
+    { label: '&#10060; Final — Incorrect',  items: [] },
+    { label: '&#9878; Final — No Call',     items: [] },
+  ];
+  for (const r of filtered) {
+    const st = _twpGameState(r);
+    if (st === 'live')          groups[0].items.push(r);
+    else if (st === 'upcoming') groups[1].items.push(r);
+    else if (r.actualWinner && r.winner !== 'tie' && r.winner === r.actualWinner) groups[2].items.push(r);
+    else if (r.actualWinner && r.winner !== 'tie') groups[3].items.push(r);
+    else groups[4].items.push(r);
+  }
+  return groups.filter(g => g.items.length).map(g =>
+    `<div class="twp-group-hdr">${g.label} <span class="twp-group-count">${g.items.length}</span></div>` +
+    g.items.map(r => { try { return _teamScanCardHTML(r); } catch { return ''; } }).join('')
+  ).join('');
+}
+const TWP_FILTERS = [
+  ['all', 'All'], ['wins', '&#9989; Wins'], ['losses', '&#10060; Losses'],
+  ['pending', '&#8987; Pending'], ['highconf', 'High Confidence'], ['simfav', '&#9881; Sim Favorites'],
+];
+function _renderTwpFilterBar() {
+  const bar = document.getElementById('twpFilterBar');
+  if (!bar) return;
+  const f = state.twpFilter || 'all';
+  const hasResults = state.twpResultsByPk && state.twpResultsByPk.size > 0;
+  bar.innerHTML = hasResults ? `<div class="twp-filter-bar">${TWP_FILTERS.map(([k, lbl]) =>
+    `<button class="twp-fchip${f === k ? ' active' : ''}" onclick="setTwpFilter('${k}')">${lbl}</button>`).join('')}</div>` : '';
+}
+function setTwpFilter(f) {
+  state.twpFilter = f;
+  _renderTwpFilterBar();
+  const cards = document.getElementById('labTeamScanCards');
+  if (cards && state.twpResultsByPk) {
+    const results = [...state.twpResultsByPk.values()];
+    const keep = cards.querySelector('[data-twp-static]');
+    cards.innerHTML = (keep ? keep.outerHTML : '') + _renderTwpGroups(results);
+  }
+}
+
 function runGameSimulator(gamePk) {
   const panel = document.getElementById(`twp-sim-panel-${gamePk}`);
   if (!panel) return;
@@ -16398,6 +16683,10 @@ function runGameSimulator(gamePk) {
       const sim = _simulate100(r);
       if (!state.simResults) state.simResults = new Map();
       state.simResults.set(Number(gamePk), sim);
+      // Attach sim result to the prediction snapshot (pre-game only)
+      const _simRaw = (state.games || []).find(g => g.gamePk === Number(gamePk));
+      const _simLog = _twpLogLoad();
+      if (TwpTracker.attachSim(_simLog, Number(gamePk), sim, _simRaw?.status?.abstractGameState)) _twpLogSave(_simLog);
       panel.innerHTML     = _simPanelHTML(r, sim);
       panel.style.display = 'block';
     } catch (e) {
