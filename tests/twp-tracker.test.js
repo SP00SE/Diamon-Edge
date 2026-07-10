@@ -280,6 +280,54 @@ test('empty log produces empty-but-valid stats', function () {
   assert.strictEqual(s.bestDay, null);
 });
 
+// ── Miss memory (lessons) ──────────────────────────────────────────────────
+console.log('\nmiss memory');
+
+test('classifyMiss identifies ERA Trap, Bullpen Collapse, and winner-side misses', function () {
+  var base = { lineup: 50, form: 0, starter: 0, bullpen: 0, arsenal: 0, platoon: 0 };
+  assert.strictEqual(T.classifyMiss(Object.assign({}, base, { starter: 9 }), base), 'ERA Trap');
+  assert.strictEqual(T.classifyMiss(Object.assign({}, base, { bullpen: 7 }), base), 'Bullpen Collapse');
+  assert.strictEqual(T.classifyMiss(Object.assign({}, base, { lineup: 56 }), Object.assign({}, base, { starter: 5 })), 'Pitcher Dominance');
+  assert.strictEqual(T.classifyMiss(base, Object.assign({}, base, { starter: 4 })), 'SP Outperformance');
+  assert.strictEqual(T.classifyMiss(base, Object.assign({}, base, { lineup: 55 })), 'Lineup Underrated');
+  assert.strictEqual(T.classifyMiss(base, base, { bothProjected: true }), 'Lineup Uncertainty');
+  assert.strictEqual(T.classifyMiss(base, base), 'Marginal Miss');
+  assert.strictEqual(T.classifyMiss(null, base), 'Unclassified');
+});
+
+test('setMissCategory is write-once and losses-only', function () {
+  var log = T.emptyLog();
+  snap(log);
+  assert.strictEqual(T.setMissCategory(log, 777001, 'ERA Trap'), false, 'pending entry refused');
+  T.gradeGame(log, 777001, FINAL_HOME); // loss
+  assert.strictEqual(T.setMissCategory(log, 777001, 'ERA Trap'), true);
+  assert.strictEqual(T.setMissCategory(log, 777001, 'Bullpen Collapse'), false, 'second write refused');
+  assert.strictEqual(log.games['777001'].missCategory, 'ERA Trap');
+  var log2 = T.emptyLog();
+  snap(log2);
+  T.gradeGame(log2, 777001, FINAL_AWAY); // win
+  assert.strictEqual(T.setMissCategory(log2, 777001, 'ERA Trap'), false, 'wins never get a miss category');
+});
+
+test('missPatterns counts recent loss categories, including today', function () {
+  var log = T.emptyLog();
+  var mk = function (pk, date, cat) {
+    snap(log, { gamePk: pk }, { gamePk: pk, officialDate: date });
+    T.gradeGame(log, pk, FINAL_HOME); // loss
+    if (cat) T.setMissCategory(log, pk, cat);
+  };
+  mk(1, '2026-07-10', 'ERA Trap');        // today
+  mk(2, '2026-07-09', 'ERA Trap');
+  mk(3, '2026-07-08', 'Bullpen Collapse');
+  mk(4, '2026-06-25', 'ERA Trap');        // outside window — excluded
+  mk(5, '2026-07-07', null);              // no category — excluded
+  var pats = T.missPatterns(log, '2026-07-10', 10);
+  assert.strictEqual(pats[0].category, 'ERA Trap');
+  assert.strictEqual(pats[0].count, 2);
+  assert.strictEqual(pats[1].category, 'Bullpen Collapse');
+  assert.strictEqual(pats[1].count, 1);
+});
+
 test('normalizeLog recovers from corrupt storage', function () {
   assert.strictEqual(T.normalizeLog(null).version, T.SCHEMA_VERSION);
   assert.strictEqual(Object.keys(T.normalizeLog({ junk: 1 }).games).length, 0);

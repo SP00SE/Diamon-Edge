@@ -655,7 +655,7 @@ main { padding: 28px 0 60px; }
 .twp-matchup-note { font-size:11px; color:var(--text-muted); padding:2px 0 5px 78px; line-height:1.4; }
 .twp-edge-val { font-size:10px; font-weight:700; width:64px; text-align:right; flex-shrink:0; white-space:nowrap; }
 .twp-sp-sub { font-size:9px; color:var(--text-muted); padding:0 0 4px 78px; line-height:1.3; }
-.twp-winner-strip { padding:9px 14px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); background:linear-gradient(to right,#052e1630,transparent); }
+.twp-winner-strip { padding:9px 14px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px 14px; text-align:center; border-top:1px solid var(--border); background:linear-gradient(to right,#052e1630,transparent); }
 .twp-winner-name { font-size:13px; font-weight:800; color:#22c55e; }
 .twp-winner-tie { font-size:13px; font-weight:800; color:var(--text-muted); }
 .twp-winner-conf { font-size:10px; color:var(--text-muted); }
@@ -707,7 +707,7 @@ main { padding: 28px 0 60px; }
 .twp-player-row { display:flex; justify-content:space-between; align-items:center; padding:3px 0; font-size:11px; }
 .twp-player-name { color:#cbd5e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:160px; }
 .twp-player-score { font-weight:700; flex-shrink:0; margin-left:4px; }
-.twp-result-strip { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; border-top:1px solid var(--border); background:#0f172a; }
+.twp-result-strip { display:flex; align-items:center; justify-content:center; text-align:center; padding:8px 14px; border-top:1px solid var(--border); background:#0f172a; }
 .twp-result-score { font-size:12px; font-weight:700; color:#e2e8f0; letter-spacing:.3px; }
 .twp-result-badge { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:3px 9px; border-radius:4px; flex-shrink:0; }
 .twp-result-correct { background:#22c55e22; color:#22c55e; border:1px solid #22c55e44; }
@@ -720,7 +720,8 @@ main { padding: 28px 0 60px; }
 .twp-rs-win  { background:linear-gradient(to right,#052e1660,#0f172a); }
 .twp-rs-loss { background:linear-gradient(to right,#45091460,#0f172a); }
 .twp-result-score { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700; color:#e2e8f0; }
-.twp-result-meta { font-size:10px; color:var(--text-muted); margin-left:auto; }
+.twp-result-meta { font-size:10px; color:var(--text-muted); }
+.twp-lesson-note { padding:6px 14px 7px; font-size:10px; color:#c4b5fd; background:rgba(139,92,246,.07); border-top:1px solid rgba(139,92,246,.22); line-height:1.45; }
 .twp-card-win  { border-left:3px solid #22c55e55; }
 .twp-card-loss { border-left:3px solid #ef444466; }
 .twp-live-tag { font-size:9px; font-weight:800; color:#ef4444; letter-spacing:.5px; animation:twpLivePulse 1.6s ease-in-out infinite; }
@@ -764,7 +765,7 @@ main { padding: 28px 0 60px; }
 @media (max-width:640px) {
   .twp-trk-pct { font-size:28px; }
   .twp-trk-stats { gap:10px; font-size:10px; }
-  .twp-result-meta { margin-left:0; width:100%; }
+  .twp-result-meta { width:100%; text-align:center; }
 }
 /* ── TWP Accuracy Banner ── */
 .twp-accuracy-bar { display:flex; align-items:center; gap:10px; padding:8px 14px; margin-bottom:10px; background:linear-gradient(135deg,#0d1b2a,#0a1525); border:1px solid var(--border); border-radius:8px; flex-wrap:wrap; }
@@ -788,7 +789,7 @@ main { padding: 28px 0 60px; }
   .twp-center .twp-proj-score, .twp-center .twp-ou { margin:0; }
   .twp-edge-row { gap:4px; flex-wrap:wrap; }
   .twp-matchup-note { padding-left:8px !important; }
-  .twp-winner-strip { flex-direction:column; align-items:flex-start; gap:4px; padding:8px 12px; }
+  .twp-winner-strip { flex-direction:column; align-items:center; gap:4px; padding:8px 12px; }
   .twp-edge-label { min-width:52px; font-size:9px; }
   .twp-header { flex-wrap:wrap; gap:4px; }
 }
@@ -14640,6 +14641,9 @@ async function handleTeamScan() {
     state.twpResultsByPk = new Map(results.map(r => [r.gamePk, r]));
     // Save pre-game prediction snapshots + grade today's finals
     _twpTrackerRecord(results);
+    // Recurring miss patterns → 🧠 lesson warnings on matching upcoming picks
+    try { state._twpMissPatterns = TwpTracker.missPatterns(_twpLogLoad(), getTodayStr(), 10); }
+    catch { state._twpMissPatterns = []; }
 
     let _innerHtml = '';
     if (results.length === 0) {
@@ -16046,6 +16050,25 @@ function _teamScanCardHTML(r) {
     return `<span class="twp-underdog-chip" title="${escHtml(`${wAb} (${ws.wins}-${ws.losses}) picked over ${oAb} (${os.wins}-${os.losses}) despite the worse record`)}">&#128062; Underdog</span>`;
   })();
 
+  // 🧠 Lessons — recurring recent miss patterns this pick fits. Memory of WHY
+  // the model lost (from twpPredLog); warns instead of silently reweighting.
+  const lessonNote = (() => {
+    if (isFinal || (winner !== 'away' && winner !== 'home')) return '';
+    const pats = state._twpMissPatterns || [];
+    if (!pats.length) return '';
+    const predC = winner === 'away' ? awayComponents : homeComponents;
+    const oppC  = winner === 'away' ? homeComponents : awayComponents;
+    const fits = {
+      'ERA Trap':           () => !!(winner === 'away' ? awayEraTrap : homeEraTrap),
+      'Bullpen Collapse':   () => ((predC?.bullpen || 0) - (oppC?.bullpen || 0)) >= 6,
+      'Pitcher Dominance':  () => (((predC?.lineup || 0) + (predC?.form || 0)) - ((oppC?.lineup || 0) + (oppC?.form || 0))) >= 6 && ((predC?.starter || 0) - (oppC?.starter || 0)) <= -3,
+      'Lineup Uncertainty': () => !awayPosted && !homePosted,
+    };
+    const hits = pats.filter(p => p.count >= 2 && fits[p.category]?.());
+    if (!hits.length) return '';
+    return `<div class="twp-lesson-note">&#129504; Lesson from recent misses: ${hits.map(h => `${h.count}&times; ${escHtml(h.category)}`).join(' · ')} — this pick fits the same pattern. Extra caution.</div>`;
+  })();
+
   // Team context (records / streak / form / proj runs) — shown inside Details
   const _teamCtxCol = (abbr, standings, isAwaySide, projRuns, formBadge) => {
     const rec = standings ? `<div class="twp-team-record">${isAwaySide
@@ -16080,10 +16103,10 @@ function _teamScanCardHTML(r) {
     </div>
 
     <div class="twp-body">
-      <div class="twp-team${winner==='away' && !isTossup ? ' twp-winner' : ''}">
+      <div class="twp-team${winner==='away' ? ' twp-winner' : ''}">
         ${awayLogo}
         <div class="twp-team-name">${escHtml(awayName)}</div>
-        <div class="twp-prob-num${winner==='away' && !isTossup ? ' twp-win' : ''}">${awayWinProb != null ? awayWinProb : '--'}%</div>
+        <div class="twp-prob-num${winner==='away' ? ' twp-win' : ''}">${awayWinProb != null ? awayWinProb : '--'}%</div>
         <div class="twp-prob-lbl">Win Prob</div>
         ${awayBadge}
       </div>
@@ -16092,10 +16115,10 @@ function _teamScanCardHTML(r) {
         ${awayProjRuns != null && homeProjRuns != null ? `<div class="twp-proj-score">${escHtml(awayAbbr||'?')} ${Math.round(awayProjRuns)} – ${Math.round(homeProjRuns)} ${escHtml(homeAbbr||'?')}</div>` : ''}
         ${predTotal != null ? `<div class="twp-ou">O/U: <strong style="color:#cbd5e1">${predTotal.toFixed(1)}</strong></div>` : ''}
       </div>
-      <div class="twp-team${winner==='home' && !isTossup ? ' twp-winner' : ''}">
+      <div class="twp-team${winner==='home' ? ' twp-winner' : ''}">
         ${homeLogo}
         <div class="twp-team-name">${escHtml(homeName)}</div>
-        <div class="twp-prob-num${winner==='home' && !isTossup ? ' twp-win' : ''}">${homeWinProb != null ? homeWinProb : '--'}%</div>
+        <div class="twp-prob-num${winner==='home' ? ' twp-win' : ''}">${homeWinProb != null ? homeWinProb : '--'}%</div>
         <div class="twp-prob-lbl">Win Prob</div>
         ${homeBadge}
       </div>
@@ -16114,7 +16137,7 @@ function _teamScanCardHTML(r) {
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0">
         <span class="twp-pred-label">Prediction</span>
         ${isTossup || winner === 'tie'
-          ? `<span class="twp-winner-tie" style="${isTossup ? 'color:#f59e0b' : ''}">&#9878; Toss-Up</span>${isTossup && winnerName ? `<span style="color:#64748b;font-size:10px">· lean ${escHtml(winnerName)}</span>` : ''}`
+          ? `<span class="twp-winner-tie" style="${isTossup ? 'color:#f59e0b' : ''}">&#9878; Toss-Up</span>${isTossup && winnerName ? `<span style="color:#64748b;font-size:10px">lean</span> <span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span>` : ''}`
           : `<span class="twp-winner-name">&#127942; ${escHtml(winnerName)}</span>`}
         ${!isTossup && winner !== 'tie' ? `<span class="twp-win-edge">${escHtml(winEdge||'')}</span>` : ''}
         ${udogChip}
@@ -16132,6 +16155,7 @@ function _teamScanCardHTML(r) {
       <span class="twp-result-score">Final: ${_scoreLine}</span>
       <span class="twp-result-meta">Predicted ${_predTie ? 'Toss-Up' : escHtml((winner === 'away' ? awayAbbr : homeAbbr) || '')}${!_predTie && winnerProb != null ? ` · ${winnerProb}%` : ''}</span>
     </div>` : ''}
+    ${lessonNote}
 
     ${(mainReason || summaryText) ? `<div class="twp-reasoning-banner">${escHtml(mainReason || summaryText)}${mainRisk ? ` <span style="color:#f59e0b80"> · Risk: ${escHtml(mainRisk)}</span>` : ''}</div>` : ''}
 
@@ -16476,6 +16500,14 @@ function _twpTrackerRecord(results) {
           abstractState: 'Final', detailedState: 'Final',
           awayScore: r.actualAwayScore, homeScore: r.actualHomeScore,
         }, nowIso)) changed = true;
+        // Remember WHY a loss happened — feeds the 🧠 lesson warnings
+        const entry = log.games[String(r.gamePk)];
+        if (entry?.status === 'loss' && !entry.missCategory) {
+          const predC = entry.predWinner === 'away' ? r.awayComponents : r.homeComponents;
+          const actC  = entry.actualWinner === 'away' ? r.awayComponents : r.homeComponents;
+          const cat = TwpTracker.classifyMiss(predC, actC, { bothProjected: !entry.awayPosted && !entry.homePosted });
+          if (TwpTracker.setMissCategory(log, r.gamePk, cat)) changed = true;
+        }
       }
     }
     if (changed) _twpLogSave(log);
@@ -16555,11 +16587,19 @@ function renderTwpTracker(loadFailed = false) {
   if (s.bySim.favorite.wins + s.bySim.favorite.losses) simMap['Sim favorite']   = s.bySim.favorite;
   if (s.bySim.agree.wins    + s.bySim.agree.losses)    simMap['Model+Sim agree']    = s.bySim.agree;
   if (s.bySim.disagree.wins + s.bySim.disagree.losses) simMap['Model+Sim disagree'] = s.bySim.disagree;
+  const missPats = (() => {
+    try { return TwpTracker.missPatterns(log, getTodayStr(), 10); } catch { return []; }
+  })();
+  const missCol = missPats.length
+    ? `<div><div class="twp-trk-adv-col-hdr">Recent miss patterns</div>${missPats.slice(0, 5).map(p =>
+        `<div class="twp-trk-adv-row"><span>${escHtml(p.category)}</span><b>${p.count}&times;</b></div>`).join('')}</div>`
+    : '';
   const advCols = [
     bucketCol('By confidence', s.byConfidence, ['High', 'Medium', 'Low', 'Preliminary']),
     bucketCol('By win edge',   s.byEdge,       ['Strong Edge', 'Moderate Edge', 'Slight Edge', 'Toss-Up']),
     bucketCol('By lineups',    s.byLineup,     ['Confirmed lineups', 'Projected lineups']),
     bucketCol('100× simulator', simMap,        ['Sim favorite', 'Model+Sim agree', 'Model+Sim disagree']),
+    missCol,
   ].filter(Boolean).join('');
   const ungradedBits = [
     s.pending   ? `${s.pending} pending` : '',
