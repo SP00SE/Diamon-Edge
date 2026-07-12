@@ -2841,6 +2841,7 @@ main { padding: 28px 0 60px; }
         <button id="labArsenalBtn" class="lab-global-scan-btn" onclick="handleArsenalHitFinder()" style="margin-top:8px">⚾ Arsenal Hit Finder</button>
         <button id="labBts2Btn" class="lab-global-scan-btn" onclick="handleBts2Scan()" style="margin-top:8px">🎯 Multi-Model Top Picks</button>
         <button id="labH2HBtn" class="lab-global-scan-btn" onclick="handleH2HScan()" style="margin-top:8px">⚔️ H2H vs SP History</button>
+        <button id="labHrPredBtn" class="lab-global-scan-btn" onclick="handleHrPredictor()" style="margin-top:8px">💣 HR Predictor</button>
         <div class="lab-game-grid" id="labGameGrid"></div>
       </div>
       <!-- Screen Arsenal Hit Finder -->
@@ -3352,6 +3353,19 @@ main { padding: 28px 0 60px; }
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.45">These are the picks where every signal aligns across all models — regularity, pitcher vulnerability, arsenal matchup, park history, and recent form all point the same direction.</div>
         <div id="labBts2PickContent"></div>
       </div>
+      <!-- Screen: HR Predictor -->
+      <div id="labScreenHrPred" class="lab-screen" style="display:none;">
+        <div class="lab-back-bar">
+          <button class="lab-back-btn" onclick="_labShow('labScreenGame')">← Games</button>
+          <span class="lab-back-crumb">HR Predictor — All Games</span>
+        </div>
+        <div class="lab-global-elite-header">💣 HR Predictor · Highest HR Chance Today</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.45">Hitters ranked by HR Score — power profile vs tonight's pitcher, park, and conditions. Base rate is the hitter's own season HR frequency, shown for context.</div>
+        <div id="labHrPredSummary" style="display:none"></div>
+        <div class="lab-elite-filter-bar" id="labHrPredFilterBar" style="display:none"></div>
+        <div id="labHrPredCards"></div>
+      </div>
+
       <!-- Screen 1d: Team Win Predictor Results -->
       <div id="labScreenTeamScan" class="lab-screen" style="display:none;">
         <div class="lab-back-bar">
@@ -11272,6 +11286,121 @@ function _pitcherH9(ps) {
   return { h9r, h9: h9r.toFixed(1) };
 }
 
+// ─── HR PREDICTOR ──────────────────────────────────────────────────────────
+// Ranks hitters by the existing HR Score (LabScorer.computeHRScore — already
+// computed per player in the load pipeline). This section only ranks,
+// filters, and explains; it adds no scoring of its own.
+let _hrPredResults = null;
+let _hrPredFilters = { min: 0, confirmed: false };
+
+function handleHrPredictor() {
+  const rows = [];
+  for (const gd of Object.values(state.predictions)) {
+    for (const p of (gd.players || []).filter(x => x.id && isPlayerEligible(x))) {
+      if (!(p.hrScore > 0)) continue;
+      rows.push({ player: p, gd, gamePk: gd.gamePk });
+    }
+  }
+  rows.sort((a, b) => b.player.hrScore - a.player.hrScore);
+  _hrPredResults = rows.slice(0, 25);
+  _hrPredFilters = { min: 0, confirmed: false };
+
+  const summary = document.getElementById('labHrPredSummary');
+  if (summary) {
+    if (rows.length) {
+      const hot = [..._hrPredResults].sort((a, b) => (b.player.last10Stats?.homeRuns || 0) - (a.player.last10Stats?.homeRuns || 0))[0];
+      const hotHr = hot?.player.last10Stats?.homeRuns || 0;
+      summary.style.display = '';
+      summary.innerHTML = `<div style="font-size:10px;color:var(--text-muted);padding:2px 0 8px;font-family:monospace">${rows.length} sluggers scored · top 25 shown${hotHr >= 2 ? ` · &#128293; hottest: ${escHtml(hot.player.name)} (${hotHr} HR last 10)` : ''}</div>`;
+    } else summary.style.display = 'none';
+  }
+  _renderHrPredCards();
+  _labShow('labScreenHrPred');
+}
+
+function _renderHrPredCards() {
+  const cards = document.getElementById('labHrPredCards');
+  const bar   = document.getElementById('labHrPredFilterBar');
+  if (!cards) return;
+  if (!_hrPredResults || !_hrPredResults.length) {
+    cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No scored hitters yet — wait for today\'s games to finish loading, then try again.</div>';
+    if (bar) bar.style.display = 'none';
+    return;
+  }
+  const f = _hrPredFilters;
+  const shown = _hrPredResults.filter(r => {
+    if (r.player.hrScore < f.min) return false;
+    if (f.confirmed && !r.gd.lineupPosted) return false;
+    return true;
+  });
+  cards.innerHTML = shown.length
+    ? shown.map((r, i) => _hrPredCardHTML(r, i + 1)).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitters match these filters.</div>';
+  if (bar) {
+    const btn = (grp, val, lbl, act) =>
+      `<button class="ahf-filter-btn${act ? ' active' : ''}" onclick="setHrPredFilter('${grp}','${val}')">${lbl}</button>`;
+    bar.style.display = '';
+    bar.innerHTML = `
+      <div class="ahf-filter-group"><span class="ahf-filter-lbl">HR Score</span><div class="ahf-filter-btns">
+        ${btn('min', '0', 'Any', f.min === 0)}${btn('min', '65', '65+', f.min === 65)}${btn('min', '75', '75+', f.min === 75)}</div></div>
+      <div class="ahf-filter-group"><span class="ahf-filter-lbl">Lineups</span><div class="ahf-filter-btns">
+        ${btn('confirmed', 'all', 'All', !f.confirmed)}${btn('confirmed', 'yes', 'Confirmed only', f.confirmed)}</div></div>`;
+  }
+}
+
+function setHrPredFilter(grp, val) {
+  if (grp === 'min') _hrPredFilters.min = Number(val) || 0;
+  else if (grp === 'confirmed') _hrPredFilters.confirmed = val === 'yes';
+  _renderHrPredCards();
+}
+
+function _hrPredCardHTML(r, rank) {
+  const { player: p, gd, gamePk } = r;
+  const ss    = p.seasonStats || {};
+  const photo = headshotUrl(p.id);
+  const gameLabel = `${gd.awayAbbr || '?'} @ ${gd.homeAbbr || '?'}`;
+  const pitcher   = p.isAway ? gd.homePitcher : gd.awayPitcher;
+  const pName     = pitcher?.fullName || pitcher?.name || null;
+  const pIP  = parseFloat(pitcher?.seasonStats?.inningsPitched) || 0;
+  const pHR9 = pIP > 0 ? ((pitcher?.seasonStats?.homeRuns || 0) * 9 / pIP) : null;
+
+  // Season base HR rate: P(≥1 HR tonight) from the hitter's own HR/PA over
+  // ~4.1 PA — pure season-stats math, shown as context, not a model claim.
+  const pa  = ss.plateAppearances || 0;
+  const hr  = ss.homeRuns || 0;
+  const basePct = pa >= 50 ? Math.round((1 - Math.pow(1 - hr / pa, 4.1)) * 100) : null;
+  const iso = (ss.slg > 0 && ss.avg > 0) ? (ss.slg - ss.avg) : null;
+  const l10hr = p.last10Stats?.homeRuns || 0;
+
+  const pf  = getParkFactor(gd.venueName || '');
+  const hrF = p.batSide === 'L' ? (pf.hrL ?? pf.overall ?? 1) : (pf.hrR ?? pf.overall ?? 1);
+  const parkChip = Math.abs(hrF - 1) >= 0.05
+    ? `<span class="bts-score-pill bts-pill-park">Park ${hrF > 1 ? '+' : ''}${Math.round((hrF - 1) * 100)}% HR</span>` : '';
+
+  const bits = [];
+  bits.push(`<b>${hr}</b> HR`);
+  if (iso != null) bits.push(`ISO ${iso.toFixed(3).replace(/^0/, '')}`);
+  if (basePct != null) bits.push(`~${basePct}% base rate`);
+  if (l10hr >= 1) bits.push(`&#128293; ${l10hr} HR last 10`);
+  if (pHR9 != null && pHR9 >= 1.2) bits.push(`<span style="color:#4ade80">SP allows ${pHR9.toFixed(1)} HR/9</span>`);
+
+  const reason = escHtml(buildReason(p.hrFactors || [], 'hr'));
+  const scoreClr = p.hrScore >= 75 ? '#f59e0b' : p.hrScore >= 65 ? '#fbbf24' : '#94a3b8';
+
+  return `<div class="bts-card" style="cursor:pointer" onclick="labGlobalSelectPlayer(${p.id},${gamePk})">
+    <div class="bts-card-rank" style="color:${scoreClr}">${p.hrScore}</div>
+    <div class="bts-card-header" style="padding-right:48px">
+      <img loading="lazy" decoding="async" class="bts-card-photo" src="${photo}" alt="${escHtml(p.name)}" onerror="this.style.display='none'">
+      <div>
+        <div class="bts-card-name">#${rank} ${escHtml(p.name)}</div>
+        <div class="bts-card-meta">${escHtml(p.teamAbbr || '')} <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>${pName ? ` vs ${escHtml(pName)}` : ''}${!gd.lineupPosted ? ' · <span style="color:#f59e0b">projected</span>' : ''}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-muted);padding:6px 2px 2px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center">${bits.join(' <span style="opacity:.4">·</span> ')} ${parkChip}</div>
+    <div style="font-size:11px;color:var(--text-muted);padding:4px 2px 0;line-height:1.4">${reason}</div>
+  </div>`;
+}
+
 function _arsenalHitCardHTML(r, rank) {
   const { player, pitcher, score, edgeLabel, edgeCls, reasons, risks, sampleWarning, matches, gameLabel } = r;
   const _avg = v => fmtAvg(v, null);
@@ -12729,7 +12858,7 @@ async function handleArsenalHitFinder() {
 
 // ─── THE LAB — NAVIGATION & SHELL ────────────────────────────────────────
 function _labShow(screenId) {
-  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenBts2Pick','labScreenTeamScan','labScreenArsenal','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare','labScreenH2H']
+  ['labScreenGame','labScreenGlobalScan','labScreenLeaderScan','labScreenBts2','labScreenBts2Pick','labScreenTeamScan','labScreenArsenal','labScreenHrPred','labScreenPlayer','labScreenLoading','labScreenAnalysis','labScreenCompare','labScreenH2H']
     .forEach(id => document.getElementById(id).style.display = id === screenId ? 'block' : 'none');
   window.scrollTo(0, 0);
 }
