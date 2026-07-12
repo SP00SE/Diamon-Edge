@@ -748,6 +748,9 @@ main { padding: 28px 0 60px; }
 /* ── TWP last-10-days tracker panel ─────────────────────────────────────── */
 .twp-trk-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:14px; }
 .twp-trk-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+.twp-trk-season { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; font-size:11px; color:var(--text-muted); padding:3px 0 7px; border-bottom:1px solid var(--border); margin-bottom:7px; }
+.twp-trk-season b { color:var(--text); font-size:12px; }
+.twp-trk-season .twp-trk-season-pct { font-weight:800; font-size:13px; }
 .twp-trk-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); }
 .twp-trk-pct { font-family:'Bebas Neue',cursive; font-size:34px; line-height:1; letter-spacing:1px; }
 .twp-trk-good { color:#22c55e; } .twp-trk-ok { color:#f59e0b; } .twp-trk-poor { color:#ef4444; }
@@ -16642,6 +16645,17 @@ function renderTwpTracker(loadFailed = false) {
         ${s.worstDay && s.worstDay.date !== s.bestDay?.date ? `<span title="Worst day">&#9660; ${fmtDay(s.worstDay.date)} ${Math.round(s.worstDay.pct)}%</span>` : ''}
       </div>
     </div>
+    ${(() => {
+      const a = TwpTracker.computeAllTime(log);
+      if (!a.graded) return '';
+      const aCls = a.pct >= 60 ? 'twp-trk-good' : a.pct >= 50 ? 'twp-trk-ok' : 'twp-trk-poor';
+      return `<div class="twp-trk-season" title="Every saved pre-game prediction since tracking began — grows into the full-season record. Earlier games can't be back-scored honestly: the MLB API only serves current season stats, so a retroactive model would know the future.">
+        <span>Season to date</span>
+        <span class="twp-trk-season-pct ${aCls}">${a.pct.toFixed(1)}%</span>
+        <span><b>${a.wins}</b>W – <b>${a.losses}</b>L · <b>${a.graded}</b> graded</span>
+        ${a.since ? `<span>tracking since ${fmtDay(a.since)}</span>` : ''}
+      </div>`;
+    })()}
     ${dailyRows ? `<div class="twp-trk-days">${dailyRows}</div>` : `<div class="twp-empty-note">No graded predictions in the last 10 days yet.</div>`}
     ${ungradedBits ? `<div class="twp-trk-note">Not counted: ${ungradedBits}</div>` : ''}
     ${s.daysWithData < 10 ? `<div class="twp-trk-note">Tracker history is still building — ${s.daysWithData} of 10 days logged.</div>` : ''}

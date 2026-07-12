@@ -280,6 +280,37 @@ test('empty log produces empty-but-valid stats', function () {
   assert.strictEqual(s.bestDay, null);
 });
 
+// ── All-time (season-to-date) record ───────────────────────────────────────
+console.log('\ncomputeAllTime');
+
+test('all-time record spans the whole log, ignoring the 10-day window', function () {
+  var log = T.emptyLog();
+  var mk = function (pk, date, final) {
+    snap(log, { gamePk: pk }, { gamePk: pk, officialDate: date });
+    if (final) T.gradeGame(log, pk, final);
+  };
+  mk(1, '2026-05-01', FINAL_AWAY);  // win, far outside any 10-day window
+  mk(2, '2026-06-15', FINAL_HOME);  // loss
+  mk(3, '2026-07-09', FINAL_AWAY);  // win
+  mk(4, '2026-07-10', null);        // pending — not counted
+  var a = T.computeAllTime(log);
+  assert.strictEqual(a.wins, 2);
+  assert.strictEqual(a.losses, 1);
+  assert.strictEqual(a.graded, 3);
+  assert.strictEqual(Math.round(a.pct), 67);
+  assert.strictEqual(a.since, '2026-05-01');
+  // sanity: the 10-day window sees only the recent win
+  var s = T.computeStats(log, '2026-07-10', 10);
+  assert.strictEqual(s.graded, 1);
+});
+
+test('empty log yields null pct and since', function () {
+  var a = T.computeAllTime(T.emptyLog());
+  assert.strictEqual(a.graded, 0);
+  assert.strictEqual(a.pct, null);
+  assert.strictEqual(a.since, null);
+});
+
 // ── Pre-game snapshot refresh ──────────────────────────────────────────────
 console.log('\nrefreshSnapshot');
 
