@@ -11316,6 +11316,13 @@ function handleHrPredictor() {
   }
   _renderHrPredCards();
   _labShow('labScreenHrPred');
+
+  // Live indicators: pull per-player live stats in the background and
+  // re-render — LIVE/FINAL badges and "HR today" confirmations appear
+  // without blocking the first paint (30s cache inside fetchAllGamesLiveData).
+  fetchAllGamesLiveData().then(() => {
+    if (document.getElementById('labScreenHrPred')?.style.display === 'block') _renderHrPredCards();
+  }).catch(() => { /* live data unavailable — cards stay as rendered */ });
 }
 
 function _renderHrPredCards() {
@@ -11387,16 +11394,34 @@ function _hrPredCardHTML(r, rank) {
   const reason = escHtml(buildReason(p.hrFactors || [], 'hr'));
   const scoreClr = p.hrScore >= 75 ? '#f59e0b' : p.hrScore >= 65 ? '#fbbf24' : '#94a3b8';
 
+  // Game-state indicator: LIVE pulse, FINAL, or first-pitch time for upcoming
+  const rawG    = (state.games || []).find(g => g.gamePk === gamePk);
+  const absSt   = rawG?.status?.abstractGameState;
+  const liveD   = state.allGamesLiveData?.[gamePk];
+  const isLive  = absSt === 'Live'  || !!liveD?.isLive;
+  const isFinal = absSt === 'Final' || !!liveD?.isFinal;
+  const gameTime = (() => {
+    if (isLive || isFinal || !gd.gameDate) return '';
+    const d = new Date(gd.gameDate);
+    return isNaN(d) ? '' : d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  })();
+  const stateBadge = isLive ? `<span class="live-badge live">LIVE</span>`
+    : isFinal ? `<span class="live-badge final">FINAL</span>`
+    : gameTime ? `<span class="live-badge preview">${gameTime}</span>` : '';
+  const hrToday = liveD?.statsMap?.[p.id]?.homeRuns || 0;
+  const hrTodayBadge = hrToday >= 1
+    ? `<span style="font-size:10px;font-weight:800;letter-spacing:.5px;color:#22c55e;background:#22c55e14;border:1px solid #22c55e44;border-radius:4px;padding:2px 7px">&#128165; ${hrToday} HR TODAY</span>` : '';
+
   return `<div class="bts-card" style="cursor:pointer" onclick="labGlobalSelectPlayer(${p.id},${gamePk})">
     <div class="bts-card-rank" style="color:${scoreClr}">${p.hrScore}</div>
     <div class="bts-card-header" style="padding-right:48px">
       <img loading="lazy" decoding="async" class="bts-card-photo" src="${photo}" alt="${escHtml(p.name)}" onerror="this.style.display='none'">
       <div>
         <div class="bts-card-name">#${rank} ${escHtml(p.name)}</div>
-        <div class="bts-card-meta">${escHtml(p.teamAbbr || '')} <span class="lab-global-game-badge">${escHtml(gameLabel)}</span>${pName ? ` vs ${escHtml(pName)}` : ''}${!gd.lineupPosted ? ' · <span style="color:#f59e0b">projected</span>' : ''}</div>
+        <div class="bts-card-meta">${escHtml(p.teamAbbr || '')} <span class="lab-global-game-badge">${escHtml(gameLabel)}</span> ${stateBadge}${pName ? ` vs ${escHtml(pName)}` : ''}${!gd.lineupPosted ? ' · <span style="color:#f59e0b">projected</span>' : ''}</div>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);padding:6px 2px 2px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center">${bits.join(' <span style="opacity:.4">·</span> ')} ${parkChip}</div>
+    <div style="font-size:11px;color:var(--text-muted);padding:6px 2px 2px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center">${hrTodayBadge}${bits.join(' <span style="opacity:.4">·</span> ')} ${parkChip}</div>
     <div style="font-size:11px;color:var(--text-muted);padding:4px 2px 0;line-height:1.4">${reason}</div>
   </div>`;
 }
