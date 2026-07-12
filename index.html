@@ -16514,7 +16514,9 @@ function _twpTrackerRecord(results) {
       const rawGame = (state.games || []).find(g => g.gamePk === r.gamePk);
       if (rawGame) {
         const entry = TwpTracker.makeSnapshot(r, rawGame, { predictedAt: nowIso, appVersion: APP_VERSION });
-        if (entry && TwpTracker.addSnapshot(log, entry)) changed = true;
+        // New game → add; already logged but still pre-game → refresh so the
+        // graded pick uses confirmed pitchers/lineups, not the morning guess.
+        if (entry && (TwpTracker.addSnapshot(log, entry) || TwpTracker.refreshSnapshot(log, entry, nowIso))) changed = true;
       }
       if (r.isFinal && r.actualWinner && Number.isFinite(r.actualAwayScore) && Number.isFinite(r.actualHomeScore)) {
         if (TwpTracker.gradeGame(log, r.gamePk, {

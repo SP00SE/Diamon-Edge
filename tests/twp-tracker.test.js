@@ -280,6 +280,51 @@ test('empty log produces empty-but-valid stats', function () {
   assert.strictEqual(s.bestDay, null);
 });
 
+// ── Pre-game snapshot refresh ──────────────────────────────────────────────
+console.log('\nrefreshSnapshot');
+
+test('pending snapshot refreshes with new pick, keeps predictedAt and sims', function () {
+  var log = T.emptyLog();
+  snap(log, { winner: 'away', awayPitcherName: null }, { }); // morning: TBD pitcher
+  T.attachSim(log, 777001, { awayWins: 60, homeWins: 40, simWinner: 'away' }, 'Preview');
+  var orig = log.games['777001'];
+  assert.strictEqual(orig.awayPitcher, null);
+
+  var evening = T.makeSnapshot(
+    scanResult({ winner: 'home', awayWinProb: 42, homeWinProb: 58, awayPitcherName: 'G. Cole' }),
+    rawGame({}), { predictedAt: '2026-07-10T22:00:00Z' });
+  assert.strictEqual(T.refreshSnapshot(log, evening, '2026-07-10T22:00:00Z'), true);
+  var e = log.games['777001'];
+  assert.strictEqual(e.predWinner, 'home', 'pick updated');
+  assert.strictEqual(e.awayPitcher, 'G. Cole', 'pitcher updated');
+  assert.strictEqual(e.predictedAt, orig.predictedAt, 'original predictedAt preserved');
+  assert.strictEqual(e.simAwayPct, 60, 'sim results carried over');
+  assert.strictEqual(e.updateCount, 1);
+  assert.strictEqual(e.updatedAt, '2026-07-10T22:00:00Z');
+});
+
+test('refresh is a no-op when nothing material changed', function () {
+  var log = T.emptyLog();
+  snap(log);
+  var same = T.makeSnapshot(scanResult({}), rawGame({}), { predictedAt: 'later' });
+  assert.strictEqual(T.refreshSnapshot(log, same, 'later'), false);
+  assert.strictEqual(log.games['777001'].updateCount, undefined);
+});
+
+test('graded and non-pending entries never refresh', function () {
+  var log = T.emptyLog();
+  snap(log);
+  T.gradeGame(log, 777001, FINAL_AWAY); // win — immutable now
+  var upd = T.makeSnapshot(scanResult({ winner: 'home' }), rawGame({}), {});
+  assert.strictEqual(T.refreshSnapshot(log, upd, 'x'), false);
+  assert.strictEqual(log.games['777001'].predWinner, 'away');
+});
+
+test('makeSnapshot still refuses non-Preview, so no refresh after first pitch', function () {
+  var live = T.makeSnapshot(scanResult({ winner: 'home' }), rawGame({ status: { abstractGameState: 'Live' } }), {});
+  assert.strictEqual(live, null);
+});
+
 // ── Miss memory (lessons) ──────────────────────────────────────────────────
 console.log('\nmiss memory');
 
