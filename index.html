@@ -11088,8 +11088,17 @@ function computeArsenalHitEdge(player, gd) {
   const _pBF   = _pIP > 0 ? _pIP * (3 + _pW) : 0;
   const _bbBf  = _pBF > 0 ? _pBB / _pBF : 0;
 
-  // Hit suppressor filter: H/9 < 8 → pitcher suppresses hits, exclude from Arsenal Hit Finder
-  if (_pIP > 10 && _h9 < 8) return { score: 0, hasData: false };
+  // Hit suppressor: graduated penalty instead of the old hard H/9<8 cutoff —
+  // a batter who hits everything this pitcher throws can still beat a good
+  // pitcher (the cutoff hid e.g. Otto Lopez vs a 7.7 H/9 starter entirely).
+  // Only truly elite suppressors (H/9 < 6.5) stay excluded outright.
+  let _suppressorPenalty = 0;
+  let _suppressorRisk = null;
+  if (_pIP > 10 && _h9 < 8) {
+    if (_h9 < 6.5) return { score: 0, hasData: false }; // elite suppressor — never recommend
+    _suppressorPenalty = _h9 < 7 ? -6 : -3;
+    _suppressorRisk = `Hit suppressor: ${_h9.toFixed(1)} H/9 — only a strong pitch-type edge survives`;
+  }
 
   const bMap = new Map(bRows.map(r => [r.pitch_type, r]));
   const _typeColor = code => ['FF','SI','FC'].includes(code) ? '#3b82f6'
@@ -11174,6 +11183,8 @@ function computeArsenalHitEdge(player, gd) {
     raw += hittability;
   }
 
+  raw += _suppressorPenalty;
+
   const score = Math.max(-15, Math.min(15, Math.round(raw)));
   const edgeLabel = score >= 6 ? 'Strong Hitter Edge' : score >= 3 ? 'Hitter Edge'
     : score >= -2 ? 'Neutral' : score >= -6 ? 'Pitcher Edge' : 'Strong Pitcher Edge';
@@ -11205,6 +11216,7 @@ function computeArsenalHitEdge(player, gd) {
   const sampleWarning = matches.some(m => m.bPa > 0 && m.bPa < 15);
 
   const risks = [];
+  if (_suppressorRisk) risks.push(_suppressorRisk);
   if (!gd.lineupPosted && !gd.awayLineupPosted && !gd.homeLineupPosted) risks.push('Lineup unconfirmed');
   if (worstMatch && worstMatch !== topMatch && worstMatch.weighted <= -2 && worstMatch.usage >= 20)
     risks.push(`Weak vs ${worstMatch.pitchName} (${worstMatch.usage.toFixed(0)}% use)`);
