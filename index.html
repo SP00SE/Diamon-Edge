@@ -546,6 +546,15 @@ main { padding: 28px 0 60px; }
 .lab-scan-btn:hover:not(:disabled) { background:#0f2a1a; border-style:solid; }
 .lab-scan-btn:disabled { color:var(--text-muted); border-color:var(--border); cursor:default; border-style:solid; }
 .lab-elite-header { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#4ade80; font-weight:700; padding:4px 0 10px; border-bottom:1px solid #16a34a33; margin-bottom:10px; }
+.lab-verdict-bar { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px 12px; padding:10px 14px; margin-bottom:12px; background:linear-gradient(to right,#052e1638,#0f172a); border:1px solid var(--border); border-left:3px solid #22c55e; border-radius:10px; text-align:center; }
+.lab-verdict-bar.lvb-toss { border-left-color:#f59e0b; background:linear-gradient(to right,rgba(245,158,11,.06),#0f172a); }
+.lab-verdict-eyebrow { font-size:9px; text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted); font-weight:700; }
+.lab-verdict-name { font-size:14px; font-weight:800; color:#22c55e; }
+.lab-verdict-prob { font-size:13px; font-weight:800; color:#4ade80; }
+.lab-verdict-edge { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:#22c55e14; color:#4ade80; border:1px solid #22c55e33; white-space:nowrap; }
+.lab-verdict-toss-lbl { font-size:12px; font-weight:800; color:#f59e0b; }
+.lab-verdict-loading { font-size:11px; color:var(--text-muted); font-style:italic; }
+.lab-elite-filter-bar { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 10px; }
 .lab-elite-card { display:flex; align-items:center; gap:12px; padding:10px 14px; background:#0f2a1a; border:1px solid #16a34a44; border-radius:10px; margin-bottom:8px; }
 .lab-elite-score { font-size:22px; font-weight:800; color:#4ade80; min-width:38px; text-align:center; flex-shrink:0; }
 .lab-elite-info { flex:1; min-width:0; }
@@ -3382,6 +3391,7 @@ main { padding: 28px 0 60px; }
           <button class="lab-back-btn" onclick="labGoGames()">← Games</button>
           <span class="lab-back-crumb" id="labGameCrumb"></span>
         </div>
+        <div id="labGameVerdict" style="display:none"></div>
         <div class="lab-step-label">Select a Hitter — or check 2 players to compare</div>
         <div class="lab-search-row" id="labSearchRow">
           <input class="lab-player-search" id="labPlayerSearch" type="text"
@@ -3396,7 +3406,8 @@ main { padding: 28px 0 60px; }
         </div>
         <button id="labScanBtn" class="lab-scan-btn" onclick="handleLabScan()">🔬 Scan for Top Picks</button>
         <div id="labEliteSection" style="display:none;margin-bottom:14px;">
-          <div class="lab-elite-header">🏆 Top Picks — Ranked by Matchup Score</div>
+          <div class="lab-elite-header" id="labEliteHeader">🏆 Top Picks — Ranked by Matchup Score</div>
+          <div class="lab-elite-filter-bar" id="labEliteFilterBar" style="display:none"></div>
           <div id="labEliteCards"></div>
         </div>
         <div class="lab-player-columns" id="labPlayerColumns"></div>
@@ -12916,6 +12927,14 @@ function labSelectGame(gamePk) {
   if (_scanBtn) { _scanBtn.disabled = false; _scanBtn.textContent = '🔬 Scan for Top Picks'; }
   const _eliteSec = document.getElementById('labEliteSection');
   if (_eliteSec) _eliteSec.style.display = 'none';
+  const _fBar = document.getElementById('labEliteFilterBar');
+  if (_fBar) _fBar.style.display = 'none';
+  _labEliteResults = null;
+  const _eHdr = document.getElementById('labEliteHeader');
+  if (_eHdr) _eHdr.textContent = '🏆 Top Picks — Ranked by Matchup Score';
+
+  // Predicted winning team for this game (cached TWP result or on-demand)
+  _labRenderGameVerdict(gamePk);
 }
 
 function labGoGames() {
@@ -15656,7 +15675,9 @@ function _simPanelHTML(r, sim) {
 }
 
 function runTeamScan(onProgress, filterPk = null) {
-  state.simResults = new Map();
+  // Only a full-slate rescan invalidates simulator results — single-game
+  // verdict lookups (game analysis panel, Lab verdict bar) must not wipe them.
+  if (filterPk == null) state.simResults = new Map();
   const allGames = Object.values(state.predictions).filter(gd => gd.awayTeamId && gd.homeTeamId);
   const results  = [];
 
@@ -16763,6 +16784,103 @@ async function runLabEliteScan(onProgress) {
   return results.sort((a, b) => b.score - a.score);
 }
 
+// ─── THE LAB — GAME VERDICT BAR + ELITE SCAN FILTERS ─────────────────────
+let _labEliteResults = null; // { gamePk, elites, awayAbbr, homeAbbr } from last per-game scan
+let _labEliteFilters = { team: 'all', min: 0, spot: 'any' };
+
+async function _labRenderGameVerdict(gamePk) {
+  const el = document.getElementById('labGameVerdict');
+  if (!el) return;
+  el.style.display = '';
+  el.innerHTML = `<div class="lab-verdict-bar"><span class="lab-verdict-loading">⚙️ Scoring matchup…</span></div>`;
+  let r = state.twpResultsByPk?.get(Number(gamePk));
+  if (!r) {
+    // Same single-game path as the game analysis panel: ensure supporting
+    // data, score just this game, merge into the TWP cache.
+    try {
+      const year = new Date().getFullYear();
+      await ensureSavantData(year);
+      await ensureTeamStandings(year);
+      r = runTeamScan(null, gamePk)[0] || null;
+      if (r) {
+        if (!state.twpResultsByPk) state.twpResultsByPk = new Map();
+        state.twpResultsByPk.set(Number(gamePk), r);
+      }
+    } catch { r = null; }
+  }
+  if (_labState.gamePk !== gamePk) return; // user left this game while loading
+  if (!r) {
+    el.innerHTML = `<div class="lab-verdict-bar lvb-toss"><span class="lab-verdict-loading">Prediction unavailable — lineups or pitchers not loaded yet.</span></div>`;
+    return;
+  }
+  const isToss  = r.winEdge === 'Toss-Up';
+  const winTid  = r.winner === 'away' ? r.awayTeamId : r.homeTeamId;
+  const ti      = TEAM_INFO[winTid] || {};
+  const winName = (ti.city && ti.nick) ? `${ti.city} ${ti.nick}` : (r.winner === 'away' ? r.awayAbbr : r.homeAbbr) || '?';
+  const prob    = r.winner === 'away' ? r.awayWinProb : r.homeWinProb;
+  const udog = (() => {
+    if (r.winner !== 'away' && r.winner !== 'home') return '';
+    const ws = r.winner === 'away' ? r.awayStandings : r.homeStandings;
+    const os = r.winner === 'away' ? r.homeStandings : r.awayStandings;
+    const wG = (ws?.wins ?? 0) + (ws?.losses ?? 0), oG = (os?.wins ?? 0) + (os?.losses ?? 0);
+    return (wG && oG && ws.wins / wG < os.wins / oG)
+      ? `<span class="twp-underdog-chip">&#128062; Underdog</span>` : '';
+  })();
+  el.innerHTML = r.winner === 'tie'
+    ? `<div class="lab-verdict-bar lvb-toss">
+        <span class="lab-verdict-eyebrow">Model pick</span>
+        <span class="lab-verdict-toss-lbl">&#9878; Toss-Up — dead even</span>
+      </div>`
+    : `<div class="lab-verdict-bar${isToss ? ' lvb-toss' : ''}">
+        <span class="lab-verdict-eyebrow">Model pick</span>
+        ${isToss ? `<span class="lab-verdict-toss-lbl">&#9878; Toss-Up</span><span style="font-size:10px;color:#64748b">lean</span>` : ''}
+        <span class="lab-verdict-name">&#127942; ${escHtml(winName)}</span>
+        <span class="lab-verdict-prob">${prob != null ? prob + '%' : ''}</span>
+        ${!isToss && r.winEdge ? `<span class="lab-verdict-edge">${escHtml(r.winEdge)}</span>` : ''}
+        ${udog}
+      </div>`;
+}
+
+function _renderLabEliteCards() {
+  const cards = document.getElementById('labEliteCards');
+  const bar   = document.getElementById('labEliteFilterBar');
+  const hdr   = document.getElementById('labEliteHeader');
+  if (!cards || !_labEliteResults) return;
+  const { gamePk, elites, awayAbbr, homeAbbr } = _labEliteResults;
+  const f = _labEliteFilters;
+  const shown = elites.filter(e => {
+    if (f.team === 'away' && !e.player.isAway) return false;
+    if (f.team === 'home' &&  e.player.isAway) return false;
+    if ((e.score || 0) < f.min) return false;
+    if (f.spot === 'top4' && !(e.player.orderPos >= 1 && e.player.orderPos <= 4)) return false;
+    return true;
+  });
+  if (hdr) hdr.textContent = `🏆 Top Picks — ${shown.length} of ${elites.length} ranked by Matchup Score`;
+  cards.innerHTML = shown.length
+    ? shown.map(({ player, score, reasons, pitchHighlights }) =>
+        _eliteScanCardHTML(player, score, reasons, null, gamePk, false, null, null, pitchHighlights)).join('')
+    : '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No picks match these filters.</div>';
+  if (bar) {
+    const btn = (grp, val, lbl, act) =>
+      `<button class="ahf-filter-btn${act ? ' active' : ''}" onclick="setLabEliteFilter('${grp}','${val}')">${lbl}</button>`;
+    bar.style.display = '';
+    bar.innerHTML = `
+      <div class="ahf-filter-group"><span class="ahf-filter-lbl">Team</span><div class="ahf-filter-btns">
+        ${btn('team', 'all', 'All', f.team === 'all')}${btn('team', 'away', escHtml(awayAbbr || 'Away'), f.team === 'away')}${btn('team', 'home', escHtml(homeAbbr || 'Home'), f.team === 'home')}</div></div>
+      <div class="ahf-filter-group"><span class="ahf-filter-lbl">Score</span><div class="ahf-filter-btns">
+        ${btn('min', '0', 'Any', f.min === 0)}${btn('min', '50', '50+', f.min === 50)}${btn('min', '60', '60+', f.min === 60)}</div></div>
+      <div class="ahf-filter-group"><span class="ahf-filter-lbl">Lineup</span><div class="ahf-filter-btns">
+        ${btn('spot', 'any', 'Any', f.spot === 'any')}${btn('spot', 'top4', 'Top 4', f.spot === 'top4')}</div></div>`;
+  }
+}
+
+function setLabEliteFilter(grp, val) {
+  if      (grp === 'min')  _labEliteFilters.min  = Number(val) || 0;
+  else if (grp === 'team') _labEliteFilters.team = val;
+  else if (grp === 'spot') _labEliteFilters.spot = val;
+  _renderLabEliteCards();
+}
+
 async function handleLabScan() {
   const btn = document.getElementById('labScanBtn');
   if (!btn || btn.disabled) return;
@@ -16801,10 +16919,12 @@ async function handleLabScan() {
     if (!section || !cards) return;
     if (elites.length === 0) {
       cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No player data available for this game — check back once the lineup is posted.</div>';
+      const _fb = document.getElementById('labEliteFilterBar');
+      if (_fb) _fb.style.display = 'none';
     } else {
-      cards.innerHTML = elites.map(({ player, score, reasons, pitchHighlights }) =>
-        _eliteScanCardHTML(player, score, reasons, null, gamePk, false, null, null, pitchHighlights)
-      ).join('');
+      _labEliteResults = { gamePk, elites, awayAbbr: gd.awayAbbr, homeAbbr: gd.homeAbbr };
+      _labEliteFilters = { team: 'all', min: 0, spot: 'any' };
+      _renderLabEliteCards();
     }
     section.style.display = 'block';
     btn.textContent = `✅ Top ${elites.length} Pick${elites.length !== 1 ? 's' : ''} Found`;
