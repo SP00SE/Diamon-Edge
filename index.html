@@ -555,6 +555,13 @@ main { padding: 28px 0 60px; }
 .lab-verdict-toss-lbl { font-size:12px; font-weight:800; color:#f59e0b; }
 .lab-verdict-loading { font-size:11px; color:var(--text-muted); font-style:italic; }
 .lab-elite-filter-bar { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 10px; }
+/* HR Predictor cards */
+#labHrPredCards .bts-card { margin-bottom:10px; }
+.hrp-tier-hdr { font-size:10px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; padding:12px 2px 6px; display:flex; align-items:center; gap:8px; }
+.hrp-tier-hdr::after { content:''; flex:1; height:1px; background:var(--border); }
+.hrp-pill { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:600; font-family:'JetBrains Mono',monospace; padding:2px 8px; border-radius:4px; background:#ffffff07; border:1px solid var(--border); color:var(--text-muted); white-space:nowrap; }
+.hrp-pill b { color:var(--text-primary); font-weight:800; }
+.hrp-score-lbl { font-size:8px; letter-spacing:1.5px; font-weight:700; color:var(--text-muted); text-align:right; margin-top:2px; font-family:inherit; }
 .lab-elite-card { display:flex; align-items:center; gap:12px; padding:10px 14px; background:#0f2a1a; border:1px solid #16a34a44; border-radius:10px; margin-bottom:8px; }
 .lab-elite-score { font-size:22px; font-weight:800; color:#4ade80; min-width:38px; text-align:center; flex-shrink:0; }
 .lab-elite-info { flex:1; min-width:0; }
@@ -11340,9 +11347,20 @@ function _renderHrPredCards() {
     if (f.confirmed && !r.gd.lineupPosted) return false;
     return true;
   });
-  cards.innerHTML = shown.length
-    ? shown.map((r, i) => _hrPredCardHTML(r, i + 1)).join('')
-    : '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitters match these filters.</div>';
+  if (!shown.length) {
+    cards.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">No hitters match these filters.</div>';
+  } else {
+    // Tier dividers so the list scans in bands, not as a wall of 25 cards
+    const tierOf  = s => s >= 75 ? '&#128293; Elite · 75+' : s >= 65 ? 'Strong · 65–74' : 'Warm · below 65';
+    const tierClr = s => s >= 75 ? '#f59e0b' : s >= 65 ? '#fbbf24' : 'var(--text-muted)';
+    let html = '', lastTier = null;
+    shown.forEach((r, i) => {
+      const t = tierOf(r.player.hrScore);
+      if (t !== lastTier) { html += `<div class="hrp-tier-hdr" style="color:${tierClr(r.player.hrScore)}">${t}</div>`; lastTier = t; }
+      html += _hrPredCardHTML(r, i + 1);
+    });
+    cards.innerHTML = html;
+  }
   if (bar) {
     const btn = (grp, val, lbl, act) =>
       `<button class="ahf-filter-btn${act ? ' active' : ''}" onclick="setHrPredFilter('${grp}','${val}')">${lbl}</button>`;
@@ -11381,18 +11399,18 @@ function _hrPredCardHTML(r, rank) {
 
   const pf  = getParkFactor(gd.venueName || '');
   const hrF = p.batSide === 'L' ? (pf.hrL ?? pf.overall ?? 1) : (pf.hrR ?? pf.overall ?? 1);
-  const parkChip = Math.abs(hrF - 1) >= 0.05
-    ? `<span class="bts-score-pill bts-pill-park">Park ${hrF > 1 ? '+' : ''}${Math.round((hrF - 1) * 100)}% HR</span>` : '';
 
-  const bits = [];
-  bits.push(`<b>${hr}</b> HR`);
-  if (iso != null) bits.push(`ISO ${iso.toFixed(3).replace(/^0/, '')}`);
-  if (basePct != null) bits.push(`~${basePct}% base rate`);
-  if (l10hr >= 1) bits.push(`&#128293; ${l10hr} HR last 10`);
-  if (pHR9 != null && pHR9 >= 1.2) bits.push(`<span style="color:#4ade80">SP allows ${pHR9.toFixed(1)} HR/9</span>`);
+  const pills = [];
+  pills.push(`<span class="hrp-pill"><b>${hr}</b> HR</span>`);
+  if (iso != null) pills.push(`<span class="hrp-pill">ISO <b>${iso.toFixed(3).replace(/^0/, '')}</b></span>`);
+  if (basePct != null) pills.push(`<span class="hrp-pill" title="Season HR frequency over ~4.1 PA — context, not a model probability"><b>~${basePct}%</b> base</span>`);
+  if (l10hr >= 1) pills.push(`<span class="hrp-pill" style="color:var(--accent-orange);border-color:#fb923c30;background:#fb923c12">&#128293; <b>${l10hr}</b> last 10</span>`);
+  if (pHR9 != null && pHR9 >= 1.2) pills.push(`<span class="hrp-pill" style="color:#4ade80;border-color:#22c55e30;background:#22c55e10">SP <b>${pHR9.toFixed(1)}</b> HR/9</span>`);
+  if (Math.abs(hrF - 1) >= 0.05) pills.push(`<span class="hrp-pill" style="color:var(--accent-blue);border-color:#60a5fa30;background:#60a5fa10">Park <b>${hrF > 1 ? '+' : ''}${Math.round((hrF - 1) * 100)}%</b> HR</span>`);
 
   const reason = escHtml(buildReason(p.hrFactors || [], 'hr'));
-  const scoreClr = p.hrScore >= 75 ? '#f59e0b' : p.hrScore >= 65 ? '#fbbf24' : '#94a3b8';
+  const scoreClr  = p.hrScore >= 75 ? '#f59e0b' : p.hrScore >= 65 ? '#fbbf24' : '#94a3b8';
+  const stripeClr = p.hrScore >= 75 ? '#f59e0b' : p.hrScore >= 65 ? '#fbbf2477' : '#4a5168';
 
   // Game-state indicator: LIVE pulse, FINAL, or first-pitch time for upcoming
   const rawG    = (state.games || []).find(g => g.gamePk === gamePk);
@@ -11408,21 +11426,33 @@ function _hrPredCardHTML(r, rank) {
   const stateBadge = isLive ? `<span class="live-badge live">LIVE</span>`
     : isFinal ? `<span class="live-badge final">FINAL</span>`
     : gameTime ? `<span class="live-badge preview">${gameTime}</span>` : '';
-  const hrToday = liveD?.statsMap?.[p.id]?.homeRuns || 0;
-  const hrTodayBadge = hrToday >= 1
-    ? `<span style="font-size:10px;font-weight:800;letter-spacing:.5px;color:#22c55e;background:#22c55e14;border:1px solid #22c55e44;border-radius:4px;padding:2px 7px">&#128165; ${hrToday} HR TODAY</span>` : '';
+  // Result line for live/final games: did the pick homer, hit, or go 0-for?
+  const pStats = (isLive || isFinal) ? (liveD?.statsMap?.[p.id] || null) : null;
+  const resultBadge = (() => {
+    const chip = (txt, clr) =>
+      `<span style="font-size:10px;font-weight:800;letter-spacing:.5px;color:${clr};background:${clr}14;border:1px solid ${clr}44;border-radius:4px;padding:2px 7px;white-space:nowrap">${txt}</span>`;
+    if (!isLive && !isFinal) return '';
+    if (!pStats) return isFinal ? chip('DNP', '#64748b') : '';
+    const h   = pStats.hits ?? 0;
+    const ab  = pStats.atBats ?? 0;
+    const hrT = pStats.homeRuns ?? 0;
+    if (hrT >= 1) return chip(`&#128165; ${hrT > 1 ? hrT + ' HR' : 'HR'} · ${h}-${ab}`, '#f59e0b');
+    if (h >= 1)   return chip(`&#10003; HIT · ${h}-${ab}`, '#22c55e');
+    if (ab > 0)   return isFinal ? chip(`&#10007; 0-${ab}`, '#ef4444') : chip(`0-${ab} so far`, '#94a3b8');
+    return isFinal ? chip('DNP', '#64748b') : '';
+  })();
 
-  return `<div class="bts-card" style="cursor:pointer" onclick="labGlobalSelectPlayer(${p.id},${gamePk})">
-    <div class="bts-card-rank" style="color:${scoreClr}">${p.hrScore}</div>
-    <div class="bts-card-header" style="padding-right:48px">
+  return `<div class="bts-card" style="cursor:pointer;border-left:3px solid ${stripeClr}" onclick="labGlobalSelectPlayer(${p.id},${gamePk})">
+    <div class="bts-card-rank" style="color:${scoreClr}">${p.hrScore}<div class="hrp-score-lbl">HR SCORE</div></div>
+    <div class="bts-card-header" style="padding-right:56px">
       <img loading="lazy" decoding="async" class="bts-card-photo" src="${photo}" alt="${escHtml(p.name)}" onerror="this.style.display='none'">
       <div>
         <div class="bts-card-name">#${rank} ${escHtml(p.name)}</div>
         <div class="bts-card-meta">${escHtml(p.teamAbbr || '')} <span class="lab-global-game-badge">${escHtml(gameLabel)}</span> ${stateBadge}${pName ? ` vs ${escHtml(pName)}` : ''}${!gd.lineupPosted ? ' · <span style="color:#f59e0b">projected</span>' : ''}</div>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--text-muted);padding:6px 2px 2px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center">${hrTodayBadge}${bits.join(' <span style="opacity:.4">·</span> ')} ${parkChip}</div>
-    <div style="font-size:11px;color:var(--text-muted);padding:4px 2px 0;line-height:1.4">${reason}</div>
+    <div style="padding:4px 2px 2px;display:flex;flex-wrap:wrap;gap:5px;align-items:center">${resultBadge}${pills.join('')}</div>
+    <div style="font-size:11px;color:var(--text-muted);padding:6px 2px 0;line-height:1.4">${reason}</div>
   </div>`;
 }
 
