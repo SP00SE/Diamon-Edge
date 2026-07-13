@@ -16780,7 +16780,8 @@ function renderTwpTracker(loadFailed = false) {
   const panel = document.getElementById('twpTrackerPanel');
   if (!panel) return;
   const log = _twpLogLoad();
-  const s = TwpTracker.computeStats(log, getTodayStr(), 10);
+  const win = state._twpTrkWin || Number(localStorage.getItem('twpTrkWin')) || 10;
+  const s = TwpTracker.computeStats(log, getTodayStr(), win);
   if (!Object.keys(log.games).length) {
     panel.innerHTML = `<div class="twp-trk-panel">
       <div class="twp-trk-title">Last 10 Days</div>
@@ -16810,7 +16811,7 @@ function renderTwpTracker(loadFailed = false) {
   if (s.bySim.agree.wins    + s.bySim.agree.losses)    simMap['Model+Sim agree']    = s.bySim.agree;
   if (s.bySim.disagree.wins + s.bySim.disagree.losses) simMap['Model+Sim disagree'] = s.bySim.disagree;
   const missPats = (() => {
-    try { return TwpTracker.missPatterns(log, getTodayStr(), 10); } catch { return []; }
+    try { return TwpTracker.missPatterns(log, getTodayStr(), win); } catch { return []; }
   })();
   const missCol = missPats.length
     ? `<div><div class="twp-trk-adv-col-hdr">Recent miss patterns</div>${missPats.slice(0, 5).map(p =>
@@ -16831,7 +16832,11 @@ function renderTwpTracker(loadFailed = false) {
   ].filter(Boolean).join(' · ');
   panel.innerHTML = `<div class="twp-trk-panel">
     <div class="twp-trk-head">
-      <span class="twp-trk-title">Last 10 Days</span>
+      <span class="twp-trk-title">Last ${win} Days</span>
+      <span style="display:inline-flex;gap:4px">
+        <button class="ahf-filter-btn${win === 7 ? ' active' : ''}" onclick="setTwpTrkWin(7)">7d</button>
+        <button class="ahf-filter-btn${win === 10 ? ' active' : ''}" onclick="setTwpTrkWin(10)">10d</button>
+      </span>
       <span class="twp-trk-pct ${pctCls}">${s.pct != null ? s.pct.toFixed(1) + '%' : '—'}</span>
       <div class="twp-trk-stats">
         <span><b>${s.wins}</b>W – <b>${s.losses}</b>L</span>
@@ -16854,7 +16859,7 @@ function renderTwpTracker(loadFailed = false) {
     })()}
     ${dailyRows ? `<div class="twp-trk-days">${dailyRows}</div>` : `<div class="twp-empty-note">No graded predictions in the last 10 days yet.</div>`}
     ${ungradedBits ? `<div class="twp-trk-note">Not counted: ${ungradedBits}</div>` : ''}
-    ${s.daysWithData < 10 ? `<div class="twp-trk-note">Tracker history is still building — ${s.daysWithData} of 10 days logged.</div>` : ''}
+    ${s.daysWithData < win ? `<div class="twp-trk-note">Tracker history is still building — ${s.daysWithData} of ${win} days logged.</div>` : ''}
     ${loadFailed ? `<div class="twp-trk-warn">&#9888; Final scores could not be refreshed. Previously saved results are still shown.</div>` : ''}
     ${advCols ? `<button class="twp-trk-adv-btn" onclick="toggleTwpTrackerAdv()">${state._twpAdvOpen ? '&#9650; Hide breakdowns' : '&#9660; Accuracy breakdowns'}</button>
     <div class="twp-trk-adv" style="display:${state._twpAdvOpen ? 'grid' : 'none'}">${advCols}</div>` : ''}
@@ -16862,6 +16867,11 @@ function renderTwpTracker(loadFailed = false) {
 }
 function toggleTwpTrackerAdv() {
   state._twpAdvOpen = !state._twpAdvOpen;
+  renderTwpTracker();
+}
+function setTwpTrkWin(n) {
+  state._twpTrkWin = n;
+  try { localStorage.setItem('twpTrkWin', String(n)); } catch { /* private mode — session-only */ }
   renderTwpTracker();
 }
 
